@@ -15,6 +15,10 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
+          appBarTheme: AppBarTheme(
+            color: Colors.indigo[800],
+            iconTheme:IconThemeData(color: Colors.white),
+          ),
         ),
         home:StartPage()
     );
