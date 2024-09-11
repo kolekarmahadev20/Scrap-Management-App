@@ -122,7 +122,7 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
                           child: Text("Back"),
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.white,
-                            backgroundColor: Colors.indigo[800],
+                            backgroundColor: Color(0xFF87CEEB),
                             padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -136,7 +136,7 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
                           child: Text("Add"),
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.white,
-                            backgroundColor: Colors.indigo[800],
+                            backgroundColor: Color(0xFF87CEEB),
                             padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -166,8 +166,7 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
             child: Text(
               label,
               style: TextStyle(
-                color: Colors.black54,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -206,8 +205,7 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
             child: Text(
               label,
               style: TextStyle(
-                color: Colors.black54,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),

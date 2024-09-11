@@ -21,7 +21,7 @@ class AppDrawer extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                color: Colors.indigo[900],
+                color: Color(0xFF2F4F4F),
                 borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
               ),
               child: Row(
@@ -29,11 +29,12 @@ class AppDrawer extends StatelessWidget {
                   CircleAvatar(
                     backgroundColor: Colors.white,
                     radius: 35,
-                    child: Icon(
-                      Icons.account_circle,
-                      size: 70,
-                      color: Colors.grey.shade800,
-                    ),
+                    backgroundImage:  AssetImage("assets/images/hello_image.webp"),
+                    // Icon(
+                    //   Icons.account_circle,
+                    //   size: 70,
+                    //   color: Colors.grey.shade800,
+                    // ),
                   ),
                   SizedBox(width: 16.0),
                   Expanded(
@@ -124,16 +125,6 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
             Divider(thickness: 1, color: Colors.indigo[900]),
-            _buildDrawerItem(
-              context,
-              icon: Icons.settings,
-              text: "Setting",
-              onTap: () {
-                Timer(Duration(milliseconds: 300), () {
-                  // Navigator.push(context, MaterialPageRoute(builder: (context) => RefundList()));
-                });
-              },
-            ),
             InkWell(
               onTap:() {
                 Timer(Duration(milliseconds: 300), () {
@@ -147,8 +138,8 @@ class AppDrawer extends StatelessWidget {
               splashColor: Colors.indigo[100],
               highlightColor: Colors.indigo[50],
               child: ListTile(
-                leading: Icon(Icons.logout_outlined, color: Colors.redAccent, size: 30),
-                title: Text("Logout"),
+                leading: Icon(Icons.logout_outlined, color: Color(0xFF2F4F4F), size: 28),
+                title: Text("Logout",style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
               ),
             ),
           ],
@@ -165,7 +156,7 @@ class AppDrawer extends StatelessWidget {
         splashColor: Colors.indigo[100],
         highlightColor: Colors.indigo[50],
         child: ListTile(
-          leading: Icon(icon, color: Colors.indigo[900], size: 30),
+          leading: Icon(icon, color: Color(0xFF2F4F4F), size: 28),
           title: Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
         ),
       ),

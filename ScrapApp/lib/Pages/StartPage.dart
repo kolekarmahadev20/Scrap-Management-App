@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'ProfilePage.dart';
 
 class StartPage extends StatefulWidget {
@@ -6,10 +8,27 @@ class StartPage extends StatefulWidget {
   State<StartPage> createState() => _StartDashBoardPageState();
 }
 
-class _StartDashBoardPageState extends State<StartPage> {
+class _StartDashBoardPageState extends State<StartPage>
+    with SingleTickerProviderStateMixin {
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  bool _obscureText = true; // Variable to manage password visibility
+  bool _obscureText = true;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 2),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeIn,
+    );
+    _animationController.forward();
+  }
 
   void _togglePasswordVisibility() {
     setState(() {
@@ -18,134 +37,128 @@ class _StartDashBoardPageState extends State<StartPage> {
   }
 
   @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Center(child: Text("Log in")),
-        backgroundColor: Colors.indigo[800], // Navy blue for AppBar background
-        titleTextStyle: TextStyle(
-          color: Colors.white,
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
-        iconTheme: IconThemeData(color: Colors.white),
-      ),
-      body: Theme(
-        data: Theme.of(context).copyWith(
-          brightness: Brightness.dark,
-          primaryColor: Colors.indigo[800], // Navy blue primary color
-          colorScheme: ColorScheme.dark(
-            primary: Colors.indigo.shade800,
-            secondary: Colors.lightBlueAccent, // Sky blue accent color
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        children: [
+          // Background Color (Mint Cream)
+          Container(
+            color: Color(0xFFF5FFFA), // Mint Cream
           ),
-          textTheme: TextTheme(
-            bodyLarge: TextStyle(color: Colors.white),
-            bodyMedium: TextStyle(color: Colors.white70),
-            labelLarge: TextStyle(color: Colors.black),
-            headlineMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-          inputDecorationTheme: InputDecorationTheme(
-            prefixIconColor: Colors.white70, // Icon color
-            labelStyle: TextStyle(color: Colors.white70),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.deepPurpleAccent, width: 2.0), // Sky blue border
-              borderRadius: BorderRadius.circular(30),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.white54, width: 1.0),
-              borderRadius: BorderRadius.circular(30),
-            ),
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.blue.shade900, // Button text color
-              backgroundColor: Colors.white, // Sky blue background
-              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-              elevation: 10,
-            ),
-          ),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.indigo[300]!, Colors.indigo.shade50], // Gradient from navy to sky blue
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          height: double.infinity,
-          width: double.infinity,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Placeholder for a logo
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 32.0),
-                    child: Icon(
-                      Icons.account_circle,
+          Center(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // App Logo or Icon
+                    Icon(
+                      Icons.person_pin,
                       size: 100,
-                      color: Colors.deepPurple.shade50,
+                      color: Color(0xFF2F4F4F), // Dark Slate Gray
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextField(
+                    SizedBox(height: 40),
+                    // Username TextField
+                    TextField(
                       controller: usernameController,
                       keyboardType: TextInputType.emailAddress,
+                      style: TextStyle(color: Color(0xFF2F4F4F)), // Dark Slate Gray
                       decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.email),
-                        labelText: 'Username',
-                        fillColor: Colors.white12,
+                        prefixIcon: Icon(Icons.email, color: Color(0xFF2F4F4F)), // Dark Slate Gray
+                        hintText: 'Username',
+                        hintStyle: TextStyle(color: Color(0xFF2F4F4F)), // Dark Slate Gray
                         filled: true,
+                        fillColor: Color(0xFFEFEFEF), // Slightly lighter background for inputs
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: EdgeInsets.symmetric(vertical: 18, horizontal: 20),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextField(
+                    SizedBox(height: 20),
+                    // Password TextField
+                    TextField(
                       controller: passwordController,
                       obscureText: _obscureText,
+                      style: TextStyle(color: Color(0xFF2F4F4F)), // Dark Slate Gray
                       decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.lock, color: Color(0xFF2F4F4F)), // Dark Slate Gray
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscureText ? Icons.visibility_off : Icons.visibility,
-                            color: Colors.white70,
+                            color: Color(0xFF2F4F4F), // Dark Slate Gray
                           ),
-                          onPressed: _togglePasswordVisibility, // Toggle visibility
+                          onPressed: _togglePasswordVisibility,
                         ),
-                        prefixIcon: Icon(Icons.lock),
-                        labelText: 'Password',
-                        fillColor: Colors.white12,
+                        hintText: 'Password',
+                        hintStyle: TextStyle(color: Color(0xFF2F4F4F)), // Dark Slate Gray
                         filled: true,
+                        fillColor: Color(0xFFEFEFEF), // Slightly lighter background for inputs
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: EdgeInsets.symmetric(vertical: 18, horizontal: 20),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: SizedBox(
+                    SizedBox(height: 30),
+                    // Log In Button with Sky Blue color scheme
+                    SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.push(
+                          Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => ProfilePage()),
+                            MaterialPageRoute(
+                                builder: (context) => ProfilePage()),
                           );
-                        },
-                        child: Text("Log In", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                          },
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Color(0xFF2F4F4F), // Dark Slate Gray text
+                          backgroundColor: Color(0xFF87CEEB), // Sky Blue background
+                          padding: EdgeInsets.symmetric(vertical: 18),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: Text(
+                          'Log In',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    SizedBox(height: 20),
+                    // Forgot Password
+                    TextButton(
+                      onPressed: () {
+                        // Handle Forgot Password Logic
+                      },
+                      child: Text(
+                        'Forgot Password?',
+                        style: TextStyle(color: Color(0xFF2F4F4F)), // Dark Slate Gray
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

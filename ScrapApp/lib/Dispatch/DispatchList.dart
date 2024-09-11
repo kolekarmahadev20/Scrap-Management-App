@@ -26,7 +26,7 @@ class DispatchList extends StatelessWidget {
                   Text(
                     "Dispatch",
                     style: TextStyle(
-                      fontSize: 26, // Slightly larger font size for prominence
+                      fontSize: 23, // Slightly larger font size for prominence
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                       letterSpacing: 1.2,
@@ -42,7 +42,7 @@ class DispatchList extends StatelessWidget {
                     label: Text("Filter"),
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      backgroundColor: Colors.indigo[800], // Button color
+                      backgroundColor: Color(0xFF87CEEB), // Sky Blue
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12), // Rounded corners
                       ),
@@ -53,9 +53,9 @@ class DispatchList extends StatelessWidget {
                 ],
               ),
             ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
+            Container(
+              height: 1.5,
+              color: Color(0xFF2F4F4F), // Dark Slate Gray
             ),
             Row(
               children: [
@@ -63,9 +63,7 @@ class DispatchList extends StatelessWidget {
                 Text(
                   "Vendor, Plant",
                   style: TextStyle(
-                    fontSize: 18, // Slightly larger font size
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 18,
                   ),
                 ),
                 Spacer(),
@@ -73,7 +71,7 @@ class DispatchList extends StatelessWidget {
                   icon: Icon(
                     Icons.add_box_outlined,
                     size: 28, // Slightly smaller but prominent icon
-                    color: Colors.indigo[800],
+                    color: Color(0xFF87CEEB), // Sky Blue
                   ),
                   onPressed: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => Add_dispatch_details()));
@@ -81,94 +79,67 @@ class DispatchList extends StatelessWidget {
                 ),
               ],
             ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
+            Container(
+              height: 1.5,
+              color: Color(0xFF2F4F4F), // Dark Slate Gray
             ),
             SizedBox(height: 16),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                child: ListView.builder(
-                  itemCount: 10, // Number of items in the list
-                  itemBuilder: (context, index) {
-                    return buildCustomListTile(context);
-                  },
-                ),
+              child: ListView.builder(
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  return Card(
+                    margin: EdgeInsets.symmetric(vertical: 8),
+                    elevation: 4,
+                    child: Column(
+                      children: [
+                        Container(
+                          color: Color(0xFFE4B5), // Moccasin
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  "Order ID",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF2F4F4F), // Dark Slate Gray
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          color: Colors.white,
+                          child: ListTile(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                            leading: Icon(Icons.description, color: Color(0xFF2F4F4F)), // Dark Slate Gray
+                            title: Text(
+                              'Buyer',
+                              style: TextStyle(color: Color(0xFF2F4F4F)), // Dark Slate Gray
+                            ),
+                            subtitle: Text('Material\nDate', style: TextStyle(color: Color(0xFF2F4F4F))), // Dark Slate Gray
+                            trailing: Icon(Icons.chevron_right, color: Color(0xFF87CEEB)), // Sky Blue
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => View_dispatch_details()),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
-            ),
+            )
           ],
         ),
       ),
     );
   }
 
-  Widget buildCustomListTile(BuildContext context) {
-    return Card(
-      color: Colors.white,
-      elevation: 2, // Slightly higher elevation for a more pronounced shadow
-      margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0), // Reduced margins for compact design
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10), // Slightly rounded corners
-        side: BorderSide(color: Colors.grey[300]!, width: 1), // Subtle border for better visuals
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0), // Reduced padding inside the card
-        leading: CircleAvatar(
-          backgroundColor: Colors.indigo[800],
-          child: Icon(Icons.border_outer, size: 22, color: Colors.white), // Reduced icon size for compactness
-        ),
-        title: Text(
-          "Order Id",
-          style: TextStyle(
-            fontSize: 16, // Consistent title font size
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Buyer",
-              style: TextStyle(
-                color: Colors.black54,
-                fontSize: 14, // Slightly smaller font size for subtitle
-              ),
-            ),
-            Text(
-              "Material : ",
-              style: TextStyle(
-                fontSize: 14, // Consistent subtitle font size
-                color: Colors.black54,
-              ),
-            ),
-            Text(
-              "Date : ",
-              style: TextStyle(
-                fontSize: 14, // Consistent subtitle font size
-                color: Colors.black54,
-              ),
-            ),
-          ],
-        ),
-        trailing: IconButton(
-          icon: Icon(Icons.arrow_forward_ios, size: 18), // Adjusted trailing icon size
-          color: Colors.grey[600],
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => View_dispatch_details()),
-            );
-          },
-        ),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => View_dispatch_details()),
-          );
-        },
-      ),
-    );
-  }
 }

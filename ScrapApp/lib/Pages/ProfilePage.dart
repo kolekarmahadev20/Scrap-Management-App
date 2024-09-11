@@ -1,90 +1,113 @@
 import 'package:flutter/material.dart';
-import 'package:scrapapp/AppClass/AppDrawer.dart';
-import 'package:scrapapp/AppClass/appBar.dart';
+import '../AppClass/AppDrawer.dart';
+import '../AppClass/appBar.dart';
 
 class ProfilePage extends StatelessWidget {
-  final String name = "John Doe";
-  final String bio = "Software Engineer based in San Francisco.";
-  final String contact = "Contact";
-  final String email = "Email";
-  final String otherDetails = "Other Details";
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      drawer: AppDrawer(),
+      appBar: CustomAppBar(),
+      backgroundColor: Color(0xFFF5FFFA), // Mint Cream Background Color
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Profile Picture Section
+              Container(
+                height: 220,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF87CEEB), Color(0xFFfadced)], // Primary Blue and Accent Color
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(40),
+                    bottomRight: Radius.circular(40),
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          image: AssetImage('assets/images/welcome_image.gif'),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Bharat Chaudhari',
+                      style: TextStyle(
+                        color: Color(0xFF2F4F4F), // Dark Slate Gray Text Color
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'bharat.chaudhari@salasarauction.com',
+                      style: TextStyle(
+                        color: Color(0xFF2F4F4F), // Dark Slate Gray Text Color
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
-  final Icon contactIcon = Icon(Icons.contacts, color: Colors.blue.shade900, size: 40);
-  final Icon emailIcon = Icon(Icons.email_outlined, color: Colors.blue.shade900, size: 40);
-  final Icon otherDetailsIcon = Icon(Icons.devices_other_sharp, color: Colors.blue.shade900, size: 40);
-
-  Widget buildProfileListTile(String text, Icon icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      child: SizedBox(
-        height: 100,
-        child: Card(
-          color: Colors.white,
-          elevation: 5,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: ListTile(
-            leading: icon,
-            title: Text(text, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
-            subtitle: Text("XYZ", style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+              SizedBox(height: 20),
+              // User Details
+              _buildProfileItem(Icons.person, 'Name', 'John Doe'),
+              _buildProfileItem(Icons.email, 'Email', 'johndoe@gmail.com'),
+              _buildProfileItem(Icons.phone, 'Phone', '+1 234 567 8901'),
+              _buildProfileItem(Icons.home, 'Address', '1234 Elm Street, Springfield, IL'),
+              _buildProfileItem(Icons.calendar_today, 'Date of Birth', 'January 1, 1990'),
+              _buildProfileItem(Icons.accessibility, 'Gender', 'Male'),
+              _buildProfileItem(Icons.business, 'Occupation', 'Software Developer'),
+              SizedBox(height: 20),
+            ],
           ),
         ),
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: AppDrawer(),
-      appBar: CustomAppBar(),
-      body: Container(
-        height: double.infinity,
-        width : double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.indigo[300]!, Colors.indigo.shade50],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+  // Helper Widget for Profile Info Items
+  Widget _buildProfileItem(IconData icon, String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(icon, color: Color(0xFF87CEEB)), // Primary Blue Icon Color
+          SizedBox(width: 20),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(height: 5),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF2F4F4F), // Dark Slate Gray Text Color
+                ),
+              ),
+            ],
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height: 50),
-                CircleAvatar(
-                  radius: 80,
-                  backgroundColor: Colors.black12,
-                  child: Icon(
-                    Icons.account_circle,
-                    size: 120,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 20),
-                Text(
-                  name,
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.indigo[800]),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  bio,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                ),
-                SizedBox(height: 120),
-                buildProfileListTile(contact, contactIcon),
-                buildProfileListTile(email, emailIcon),
-                buildProfileListTile(otherDetails, otherDetailsIcon),
-                SizedBox(height: 20),
-              ],
-            ),
-          ),
-        ),
+        ],
       ),
     );
   }
