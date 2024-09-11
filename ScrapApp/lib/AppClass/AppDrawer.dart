@@ -124,15 +124,25 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
             Divider(thickness: 1, color: Colors.indigo[900]),
+            _buildDrawerItem(
+              context,
+              icon: Icons.settings,
+              text: "Setting",
+              onTap: () {
+                Timer(Duration(milliseconds: 300), () {
+                  // Navigator.push(context, MaterialPageRoute(builder: (context) => RefundList()));
+                });
+              },
+            ),
             InkWell(
               onTap:() {
-                  Timer(Duration(milliseconds: 300), () {
-                    Navigator.pushAndRemoveUntil(
+                Timer(Duration(milliseconds: 300), () {
+                  Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(builder: (context) => StartPage()),
-                    (Route<dynamic> route) => false,
-                    );
-                  });
+                        (Route<dynamic> route) => false,
+                  );
+                });
               },
               splashColor: Colors.indigo[100],
               highlightColor: Colors.indigo[50],
