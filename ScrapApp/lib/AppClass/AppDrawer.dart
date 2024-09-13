@@ -7,12 +7,11 @@ import 'package:scrapapp/Pages/StartPage.dart';
 import 'package:scrapapp/Payment/PaymentList.dart';
 import 'package:scrapapp/Refund/RefundList.dart';
 
-
 class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: Colors.deepPurple,
+      backgroundColor: Color(0xFFF5FFFA), // Mint Cream Background Color
       child: Container(
         color: Colors.white, // Background color for the drawer
         child: Column(
@@ -21,7 +20,11 @@ class AppDrawer extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                color: Color(0xFF2F4F4F),
+                gradient: LinearGradient(
+                  colors: [Color(0xFF87CEEB), Color(0xFFfadced)], // Primary Blue and Accent Color
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
               ),
               child: Row(
@@ -29,12 +32,7 @@ class AppDrawer extends StatelessWidget {
                   CircleAvatar(
                     backgroundColor: Colors.white,
                     radius: 35,
-                    backgroundImage:  AssetImage("assets/images/hello_image.webp"),
-                    // Icon(
-                    //   Icons.account_circle,
-                    //   size: 70,
-                    //   color: Colors.grey.shade800,
-                    // ),
+                    backgroundImage: AssetImage("assets/images/hello_image.webp"),
                   ),
                   SizedBox(width: 16.0),
                   Expanded(
@@ -43,18 +41,18 @@ class AppDrawer extends StatelessWidget {
                       children: [
                         SizedBox(height: 20),
                         Text(
-                          "Shubham Tiwari",
+                          "Scrap Management",
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Color(0xFF2F4F4F), // Dark Slate Gray Text Color
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                           ),
                         ),
                         SizedBox(height: 4.0),
                         Text(
-                          "shubham.tiwari@salsaarauction.com",
+                          "scrap@gmail.com",
                           style: TextStyle(
-                            color: Colors.white70,
+                            color: Color(0xFF2F4F4F),
                             fontSize: 14,
                           ),
                         ),
@@ -76,7 +74,6 @@ class AppDrawer extends StatelessWidget {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage()));
                       });
-
                     },
                   ),
                   _buildDrawerItem(
@@ -87,7 +84,6 @@ class AppDrawer extends StatelessWidget {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => DashBoard()));
                       });
-
                     },
                   ),
                   _buildDrawerItem(
@@ -98,7 +94,6 @@ class AppDrawer extends StatelessWidget {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentList()));
                       });
-
                     },
                   ),
                   _buildDrawerItem(
@@ -124,9 +119,9 @@ class AppDrawer extends StatelessWidget {
                 ],
               ),
             ),
-            Divider(thickness: 1, color: Colors.indigo[900]),
+            Divider(thickness: 1, color: Color(0xFF2F4F4F)), // Dark Slate Gray Divider
             InkWell(
-              onTap:() {
+              onTap: () {
                 Timer(Duration(milliseconds: 300), () {
                   Navigator.pushAndRemoveUntil(
                     context,
@@ -138,8 +133,8 @@ class AppDrawer extends StatelessWidget {
               splashColor: Colors.indigo[100],
               highlightColor: Colors.indigo[50],
               child: ListTile(
-                leading: Icon(Icons.logout_outlined, color: Color(0xFF2F4F4F), size: 28),
-                title: Text("Logout",style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                leading: Icon(Icons.logout_outlined, color: Color(0xFF2F4F4F), size: 23), // Dark Slate Gray Icon
+                title: Text("Logout", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)), // Dark Slate Gray Text
               ),
             ),
           ],
@@ -156,8 +151,8 @@ class AppDrawer extends StatelessWidget {
         splashColor: Colors.indigo[100],
         highlightColor: Colors.indigo[50],
         child: ListTile(
-          leading: Icon(icon, color: Color(0xFF2F4F4F), size: 28),
-          title: Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          leading: Icon(icon, color: Color(0xFF87CEEB), size: 23), // Primary Blue Icon
+          title: Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)), // Dark Slate Gray Text
         ),
       ),
     );
