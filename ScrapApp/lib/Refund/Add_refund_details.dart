@@ -88,12 +88,12 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
             Expanded(
               child: ListView(
                 children: [
-                  buildDropdown("Order ID", ["Order ID","Order Id 1", "Order Id 2"], (value) {
+                  buildDropdown("Order ID", ["Select","Order Id 1", "Order Id 2"], (value) {
                     setState(() {
                       selectedOrderId = value;
                     });
                   }),
-                  buildDropdown("Payment Type", ["Payment Type","Option A", "Option B"], (value) {
+                  buildDropdown("Payment Type", ["Select","Option A", "Option B"], (value) {
                     setState(() {
                       selectedPaymentType = value;
                     });
@@ -175,7 +175,7 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
             flex: 7, // Adjusts dropdown width
             child: DropdownButtonFormField<String>(
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

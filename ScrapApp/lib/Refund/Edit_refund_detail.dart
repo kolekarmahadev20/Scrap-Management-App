@@ -167,7 +167,7 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
             flex: 7, // Adjusts dropdown width
             child: DropdownButtonFormField<String>(
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

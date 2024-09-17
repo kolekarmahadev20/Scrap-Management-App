@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:scrapapp/URL_CONSTANT.dart';
 import 'ProfilePage.dart';
 
 class StartPage extends StatefulWidget {
@@ -9,12 +10,14 @@ class StartPage extends StatefulWidget {
 }
 
 class _StartDashBoardPageState extends State<StartPage>
-    with SingleTickerProviderStateMixin {
-  TextEditingController usernameController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+  with SingleTickerProviderStateMixin {
+  TextEditingController usernameController = TextEditingController(text: "Bantu");
+  TextEditingController passwordController = TextEditingController(text : "Bantu#123");
   bool _obscureText = true;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+
+/*---------------------------------------------------------------------------------------------------------------*/
 
   @override
   void initState() {
@@ -30,18 +33,80 @@ class _StartDashBoardPageState extends State<StartPage>
     _animationController.forward();
   }
 
+/*---------------------------------------------------------------------------------------------------------------*/
+
+  //function for password visibility
   void _togglePasswordVisibility() {
     setState(() {
       _obscureText = !_obscureText;
     });
   }
 
+/*---------------------------------------------------------------------------------------------------------------*/
+
+  //Api function for Getting login Credentials and setting onto next page
+  Future<void> getCredentials() async {
+    try {
+      final url = Uri.parse("${loginUrl}login");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json",},
+        body: {
+          'user_id': usernameController.text,
+          'user_pass': passwordController.text,
+        },
+      );
+      var jsonData = json.decode(response.body);
+      if (jsonData['success'] == true) {
+          print("hello");
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => ProfilePage())
+          );
+      } else {
+        showErrorDialog("${jsonData['msg']}");
+      }
+    } catch (e) {
+      showErrorDialog("Server Exception: $e");
+    }
+  }
+
+/*---------------------------------------------------------------------------------------------------------------*/
+
+  //Display Error Message
+  showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Error"),
+          content: Text(message , textAlign: TextAlign.center,),
+          icon: Icon(Icons.crisis_alert_sharp, color: Colors.red, size: 60,),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+/*---------------------------------------------------------------------------------------------------------------*/
+
+  //function to drop animation once changed the page
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
   }
 
+/*---------------------------------------------------------------------------------------------------------------*/
+
+  //Main Widget Function
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,11 +183,7 @@ class _StartDashBoardPageState extends State<StartPage>
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ProfilePage()),
-                          );
+                            getCredentials();
                           },
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Color(0xFF2F4F4F), // Dark Slate Gray text

@@ -86,7 +86,7 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
             Expanded(
               child: ListView(
                 children: [
-                  buildDropdown("Payment Type", ["Option A", "Option B"], (value) {
+                  buildDropdown("Payment Type", ["Select","Option A", "Option B"], (value) {
                     setState(() {
                       selectedPaymentType = value;
                     });
@@ -167,7 +167,7 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
             flex: 7, // Adjusts dropdown width
             child: DropdownButtonFormField<String>(
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
