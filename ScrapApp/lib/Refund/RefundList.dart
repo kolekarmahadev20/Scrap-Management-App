@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
@@ -5,8 +7,73 @@ import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Payment/Add_payment_detail.dart';
 import 'package:scrapapp/Refund/Add_refund_details.dart';
 import 'package:scrapapp/Refund/View_refund_details.dart';
+import 'package:http/http.dart' as http;
+import '../URL_CONSTANT.dart';
 
-class RefundList extends StatelessWidget {
+class RefundList extends StatefulWidget {
+  @override
+  State<RefundList> createState() => _RefundListState();
+}
+
+class _RefundListState extends State<RefundList> {
+
+  List<dynamic> dates = [];
+  List<dynamic> orderIds = [];
+  List<dynamic> buyerNames = [];
+  List<dynamic> data = [];
+  bool isLoading = true; // Add a loading flag
+
+  @override
+  void initState() {
+    super.initState();
+    fetchRefundList();
+  }
+
+  Future<void> fetchRefundList() async {
+    try {
+      final url = Uri.parse("${URL}fetch_refund_data");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': 'Bantu',
+          'user_pass': 'Bantu#123',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          var jsonData = json.decode(response.body);
+          data = jsonData['aaData'];
+
+          // Extract the relevant data
+          for (var entry in data) {
+            dates.add(entry[0]); // Date
+            orderIds.add(entry[1]); // Order ID
+            buyerNames.add(entry[5]); // Buyer Name
+          }
+          print(dates);
+          print(orderIds);
+          print(buyerNames);
+
+          isLoading = false; // Set loading to false when data is loaded
+        });
+      } else {
+        print("Unable to fetch data.");
+        setState(() {
+          isLoading = false; // Set loading to false in case of error
+        });
+      }
+    } catch (e) {
+      print("Server Exception: $e");
+      setState(() {
+        isLoading = false; // Set loading to false in case of exception
+      });
+    }
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,10 +153,10 @@ class RefundList extends StatelessWidget {
               height: 1.5,
               color: Color(0xFF2F4F4F), // Dark Slate Gray
             ),
-            SizedBox(height: 16), 
+            SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
-                itemCount: 5,
+                itemCount: data.length,
                 itemBuilder: (context, index) {
                   return Card(
                     margin: EdgeInsets.symmetric(vertical: 8),
@@ -103,7 +170,7 @@ class RefundList extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  "Order ID",
+                                  "${orderIds[index]}",
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
@@ -120,10 +187,10 @@ class RefundList extends StatelessWidget {
                             contentPadding: EdgeInsets.symmetric(horizontal: 16),
                             leading: Icon(Icons.description, color: Color(0xFF2F4F4F)), // Dark Slate Gray
                             title: Text(
-                              'Buyer',
+                              'Buyer : ${buyerNames[index]}',
                               style: TextStyle(color: Color(0xFF2F4F4F)), // Dark Slate Gray
                             ),
-                            subtitle: Text('Material\nDate', style: TextStyle(color: Color(0xFF2F4F4F))), // Dark Slate Gray
+                            subtitle: Text('Material\nDate${dates[index]}', style: TextStyle(color: Color(0xFF2F4F4F))), // Dark Slate Gray
                             trailing: Icon(Icons.chevron_right, color: Color(0xFF87CEEB)), // Sky Blue
                             onTap: () {
                               Navigator.push(

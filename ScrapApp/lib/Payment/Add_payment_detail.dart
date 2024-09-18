@@ -9,6 +9,7 @@ class Add_payment_detail extends StatefulWidget {
 }
 
 class _Add_payment_detailState extends State<Add_payment_detail> {
+  final TextEditingController orderIdController = TextEditingController();
   final TextEditingController dateController1 = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final TextEditingController totalPaymentController = TextEditingController();
@@ -88,26 +89,22 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
             Expanded(
               child: ListView(
                 children: [
-                  buildDropdown("Order ID", ["Order Id 1", "Order Id 2"], (value) {
-                    setState(() {
-                      selectedOrderId = value;
-                    });
-                  }),
-                  buildDropdown("Payment Type", ["Option A", "Option B"], (value) {
+                  buildTextField("Order ID", orderIdController, true),
+                  buildDropdown("Payment Type", ["Select","Received Payment", "Received CMD", "Received EMD"], (value) {
                     setState(() {
                       selectedPaymentType = value;
                     });
                   }),
-                  buildTextField("Date", dateController1),
-                  buildTextField("Amount", amountController),
-                  buildTextField("Total Payment", totalPaymentController),
-                  buildTextField("Total EMD", totalEmdController),
-                  buildTextField("Total Amount Including EMD", totalAmountController),
-                  buildTextField("Note", noteController),
-                  buildTextField("Reference No.", refNoController),
-                  buildTextField("RV No.", rvNoController),
-                  buildTextField("Date", dateController2),
-                  buildTextField("Type Of Transfer", typeTransController),
+                  buildTextField("Date", dateController1, false),
+                  buildTextField("Amount", amountController, false),
+                  buildTextField("Total Payment", totalPaymentController, false),
+                  buildTextField("Total EMD", totalEmdController, false),
+                  buildTextField("Total Amount Including EMD", totalAmountController, false),
+                  buildTextField("Note", noteController, false),
+                  buildTextField("Reference No.", refNoController, false),
+                  buildTextField("RV No.", rvNoController, false),
+                  buildTextField("Date", dateController2, false),
+                  buildTextField("Type Of Transfer", typeTransController, false),
                   SizedBox(height: 40,),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -195,7 +192,7 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
   }
 
 
-  Widget buildTextField(String label, TextEditingController controller) {
+  Widget buildTextField(String label, TextEditingController controller , bool isReadOnly) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0 ,horizontal: 8.0),
       child: Row(
@@ -236,6 +233,7 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
+                readOnly: isReadOnly,
               ),
             ),
           ),

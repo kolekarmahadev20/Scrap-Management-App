@@ -47,7 +47,7 @@ class _StartDashBoardPageState extends State<StartPage>
   //Api function for Getting login Credentials and setting onto next page
   Future<void> getCredentials() async {
     try {
-      final url = Uri.parse("${loginUrl}login");
+      final url = Uri.parse("${URL}login");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json",},
