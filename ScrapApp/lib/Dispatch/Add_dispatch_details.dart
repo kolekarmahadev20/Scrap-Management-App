@@ -25,6 +25,8 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
 
   String? selectedOrderId;
 
+
+
   void clearFields(){
     selectedOrderId = null;
     materialController.clear();

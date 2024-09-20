@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:scrapapp/URL_CONSTANT.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../URL_CONSTANT.dart';
 import 'ProfilePage.dart';
 
 class StartPage extends StatefulWidget {
@@ -9,65 +10,81 @@ class StartPage extends StatefulWidget {
   State<StartPage> createState() => _StartDashBoardPageState();
 }
 
-class _StartDashBoardPageState extends State<StartPage>
-  with SingleTickerProviderStateMixin {
+class _StartDashBoardPageState extends State<StartPage> {
   TextEditingController usernameController = TextEditingController(text: "Bantu");
   TextEditingController passwordController = TextEditingController(text : "Bantu#123");
-  bool _obscureText = true;
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
+  bool _obscureText = true; // Variable to manage password visibility
 
-/*---------------------------------------------------------------------------------------------------------------*/
 
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: Duration(seconds: 2),
-    );
-    _fadeAnimation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeIn,
-    );
-    _animationController.forward();
-  }
-
-/*---------------------------------------------------------------------------------------------------------------*/
-
-  //function for password visibility
   void _togglePasswordVisibility() {
     setState(() {
       _obscureText = !_obscureText;
     });
   }
 
+
+/*---------------------------------------------------------------------------------------------------------------*/
+// Function to save user data
+  Future<void> saveUserData(bool isLoggedIn ,String name, String contact, String email, String empCode, String address) async {
+    final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', isLoggedIn);
+        await prefs.setString('name', name);
+        await prefs.setString('contact', contact);
+        await prefs.setString('email', email);
+        await prefs.setString('empCode', empCode);
+        await prefs.setString('address', address);
+    }
+
+/*---------------------------------------------------------------------------------------------------------------*/
+  checkLogin(String username , String password)async{
+    final login = await SharedPreferences.getInstance();
+    await login.setString("username", username);
+    await login.setString("password", password);
+
+  }
 /*---------------------------------------------------------------------------------------------------------------*/
 
   //Api function for Getting login Credentials and setting onto next page
   Future<void> getCredentials() async {
+    String username = usernameController.text;
+    String password = passwordController.text;
     try {
       final url = Uri.parse("${URL}login");
       var response = await http.post(
         url,
-        headers: {"Accept": "application/json",},
+        headers: {"Accept": "application/json"},
         body: {
-          'user_id': usernameController.text,
-          'user_pass': passwordController.text,
+          'user_id': username,
+          'user_pass': password,
         },
       );
+
       var jsonData = json.decode(response.body);
       if (jsonData['success'] == true) {
-          print("hello");
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => ProfilePage())
-          );
+        var user_data = jsonData['session_data'];
+
+        // Access fields using keys
+        var person_name = user_data['user_name'];
+        var person_email = user_data['user_email'];
+        var emp_code = user_data['emp_code'];
+        var emp_address = user_data['emp_address'];
+        var contact = user_data['Mobile'];
+
+        await saveUserData(true ,person_name, contact, person_email, emp_code, emp_address);
+        await checkLogin(username, password);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ProfilePage()),
+        );
       } else {
         showErrorDialog("${jsonData['msg']}");
+        print("${jsonData['msg']}");
+
       }
     } catch (e) {
       showErrorDialog("Server Exception: $e");
+      print("Server Exception: $e");
     }
   }
 
@@ -97,121 +114,136 @@ class _StartDashBoardPageState extends State<StartPage>
 
 /*---------------------------------------------------------------------------------------------------------------*/
 
-  //function to drop animation once changed the page
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
 
-/*---------------------------------------------------------------------------------------------------------------*/
 
-  //Main Widget Function
+
+
+
+
+
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          // Background Color (Mint Cream)
-          Container(
-            color: Color(0xFFF5FFFA), // Mint Cream
+    return StatefulBuilder(builder: (BuildContext context, StateSetter setState){
+      return Scaffold(
+        appBar: AppBar(
+          title: Center(child: Text("Log in")),
+          backgroundColor: Colors.indigo[800], // Navy blue for AppBar background
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
           ),
-          Center(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30.0),
+          iconTheme: IconThemeData(color: Colors.white),
+        ),
+        body: Theme(
+          data: Theme.of(context).copyWith(
+            brightness: Brightness.dark,
+            primaryColor: Colors.indigo[800], // Navy blue primary color
+            colorScheme: ColorScheme.dark(
+              primary: Colors.indigo.shade800,
+              secondary: Colors.lightBlueAccent, // Sky blue accent color
+            ),
+            textTheme: TextTheme(
+              bodyLarge: TextStyle(color: Colors.white),
+              bodyMedium: TextStyle(color: Colors.white70),
+              labelLarge: TextStyle(color: Colors.black),
+              headlineMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            inputDecorationTheme: InputDecorationTheme(
+              prefixIconColor: Colors.white70, // Icon color
+              labelStyle: TextStyle(color: Colors.white70),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.deepPurpleAccent, width: 2.0), // Sky blue border
+                borderRadius: BorderRadius.circular(30),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.white54, width: 1.0),
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.blue.shade900, // Button text color
+                backgroundColor: Colors.white, // Sky blue background
+                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 10,
+              ),
+            ),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.indigo[300]!, Colors.indigo.shade50], // Gradient from navy to sky blue
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            height: double.infinity,
+            width: double.infinity,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // App Logo or Icon
-                    Icon(
-                      Icons.person_pin,
-                      size: 100,
-                      color: Color(0xFF2F4F4F), // Dark Slate Gray
-                    ),
-                    SizedBox(height: 40),
-                    // Username TextField
-                    TextField(
-                      controller: usernameController,
-                      keyboardType: TextInputType.emailAddress,
-                      style: TextStyle(color: Color(0xFF2F4F4F)), // Dark Slate Gray
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.email, color: Color(0xFF2F4F4F)), // Dark Slate Gray
-                        hintText: 'Username',
-                        hintStyle: TextStyle(color: Color(0xFF2F4F4F)), // Dark Slate Gray
-                        filled: true,
-                        fillColor: Color(0xFFEFEFEF), // Slightly lighter background for inputs
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                    // Placeholder for a logo
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 32.0),
+                      child: Icon(
+                        Icons.account_circle,
+                        size: 100,
+                        color: Colors.deepPurple.shade50,
                       ),
                     ),
-                    SizedBox(height: 20),
-                    // Password TextField
-                    TextField(
-                      controller: passwordController,
-                      obscureText: _obscureText,
-                      style: TextStyle(color: Color(0xFF2F4F4F)), // Dark Slate Gray
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.lock, color: Color(0xFF2F4F4F)), // Dark Slate Gray
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscureText ? Icons.visibility_off : Icons.visibility,
-                            color: Color(0xFF2F4F4F), // Dark Slate Gray
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: TextField(
+                        controller: usernameController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(Icons.email),
+                          labelText: 'Username',
+                          fillColor: Colors.white12,
+                          filled: true,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: TextField(
+                        controller: passwordController,
+                        obscureText: _obscureText,
+                        decoration: InputDecoration(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureText ? Icons.visibility_off : Icons.visibility,
+                              color: Colors.white70,
+                            ),
+                            onPressed: _togglePasswordVisibility, // Toggle visibility
                           ),
-                          onPressed: _togglePasswordVisibility,
+                          prefixIcon: Icon(Icons.lock),
+                          labelText: 'Password',
+                          fillColor: Colors.white12,
+                          filled: true,
                         ),
-                        hintText: 'Password',
-                        hintStyle: TextStyle(color: Color(0xFF2F4F4F)), // Dark Slate Gray
-                        filled: true,
-                        fillColor: Color(0xFFEFEFEF), // Slightly lighter background for inputs
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: EdgeInsets.symmetric(vertical: 18, horizontal: 20),
                       ),
                     ),
-                    SizedBox(height: 30),
-                    // Log In Button with Sky Blue color scheme
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                            getCredentials();
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState((){
+                              getCredentials();
+                            });
                           },
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Color(0xFF2F4F4F), // Dark Slate Gray text
-                          backgroundColor: Color(0xFF87CEEB), // Sky Blue background
-                          padding: EdgeInsets.symmetric(vertical: 18),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
+                          child: Text("Log In", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                         ),
-                        child: Text(
-                          'Log In',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    // Forgot Password
-                    TextButton(
-                      onPressed: () {
-                        // Handle Forgot Password Logic
-                      },
-                      child: Text(
-                        'Forgot Password?',
-                        style: TextStyle(color: Color(0xFF2F4F4F)), // Dark Slate Gray
                       ),
                     ),
                   ],
@@ -219,8 +251,8 @@ class _StartDashBoardPageState extends State<StartPage>
               ),
             ),
           ),
-        ],
-      ),
-    );
+        ),
+      );
+      });
   }
 }

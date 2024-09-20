@@ -6,12 +6,28 @@ import 'package:scrapapp/Pages/ProfilePage.dart';
 import 'package:scrapapp/Pages/StartPage.dart';
 import 'package:scrapapp/Payment/PaymentList.dart';
 import 'package:scrapapp/Refund/RefundList.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class AppDrawer extends StatelessWidget {
+
+
+
+  Future<void> _logout(BuildContext context) async {
+    SharedPreferences login = await SharedPreferences.getInstance();
+    await login.clear(); // Clear all saved data
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => StartPage()),
+          (Route<dynamic> route) => false,
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: Color(0xFFF5FFFA), // Mint Cream Background Color
+      backgroundColor: Colors.deepPurple,
       child: Container(
         color: Colors.white, // Background color for the drawer
         child: Column(
@@ -20,11 +36,7 @@ class AppDrawer extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF87CEEB), Color(0xFFfadced)], // Primary Blue and Accent Color
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: Colors.indigo[900],
                 borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
               ),
               child: Row(
@@ -32,7 +44,11 @@ class AppDrawer extends StatelessWidget {
                   CircleAvatar(
                     backgroundColor: Colors.white,
                     radius: 35,
-                    backgroundImage: AssetImage("assets/images/hello_image.webp"),
+                    child: Icon(
+                      Icons.account_circle,
+                      size: 70,
+                      color: Colors.grey.shade800,
+                    ),
                   ),
                   SizedBox(width: 16.0),
                   Expanded(
@@ -41,18 +57,18 @@ class AppDrawer extends StatelessWidget {
                       children: [
                         SizedBox(height: 20),
                         Text(
-                          "Scrap Management",
+                          "Shubham Tiwari",
                           style: TextStyle(
-                            color: Color(0xFF2F4F4F), // Dark Slate Gray Text Color
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                           ),
                         ),
                         SizedBox(height: 4.0),
                         Text(
-                          "scrap@gmail.com",
+                          "shubham.tiwari@salsaarauction.com",
                           style: TextStyle(
-                            color: Color(0xFF2F4F4F),
+                            color: Colors.white70,
                             fontSize: 14,
                           ),
                         ),
@@ -74,6 +90,7 @@ class AppDrawer extends StatelessWidget {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage()));
                       });
+
                     },
                   ),
                   _buildDrawerItem(
@@ -84,6 +101,7 @@ class AppDrawer extends StatelessWidget {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => DashBoard()));
                       });
+
                     },
                   ),
                   _buildDrawerItem(
@@ -94,6 +112,7 @@ class AppDrawer extends StatelessWidget {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentList()));
                       });
+
                     },
                   ),
                   _buildDrawerItem(
@@ -119,22 +138,28 @@ class AppDrawer extends StatelessWidget {
                 ],
               ),
             ),
-            Divider(thickness: 1, color: Color(0xFF2F4F4F)), // Dark Slate Gray Divider
-            InkWell(
+            Divider(thickness: 1, color: Colors.indigo[900]),
+            _buildDrawerItem(
+              context,
+              icon: Icons.settings,
+              text: "Setting",
               onTap: () {
                 Timer(Duration(milliseconds: 300), () {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => StartPage()),
-                        (Route<dynamic> route) => false,
-                  );
+                  // Navigator.push(context, MaterialPageRoute(builder: (context) => RefundList()));
+                });
+              },
+            ),
+            InkWell(
+              onTap:() {
+                Timer(Duration(milliseconds: 300), () {
+                  _logout(context);
                 });
               },
               splashColor: Colors.indigo[100],
               highlightColor: Colors.indigo[50],
               child: ListTile(
-                leading: Icon(Icons.logout_outlined, color: Color(0xFF2F4F4F), size: 23), // Dark Slate Gray Icon
-                title: Text("Logout", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)), // Dark Slate Gray Text
+                leading: Icon(Icons.logout_outlined, color: Colors.redAccent, size: 30),
+                title: Text("Logout"),
               ),
             ),
           ],
@@ -151,8 +176,8 @@ class AppDrawer extends StatelessWidget {
         splashColor: Colors.indigo[100],
         highlightColor: Colors.indigo[50],
         child: ListTile(
-          leading: Icon(icon, color: Color(0xFF87CEEB), size: 23), // Primary Blue Icon
-          title: Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)), // Dark Slate Gray Text
+          leading: Icon(icon, color: Colors.indigo[900], size: 30),
+          title: Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
         ),
       ),
     );

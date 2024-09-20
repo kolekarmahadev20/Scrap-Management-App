@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:scrapapp/Pages/StartPage.dart';
 
+import 'Pages/splashScreen.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -11,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Flutter Demo',
+        title: 'Scrap Management',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
@@ -20,7 +22,7 @@ class MyApp extends StatelessWidget {
             iconTheme:IconThemeData(color: Colors.white),
           ),
         ),
-        home:StartPage()
+        home:SplashScreen()
     );
   }
 }

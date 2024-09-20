@@ -43,114 +43,127 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: AppDrawer(),
-      appBar: CustomAppBar(),
-      body: Container(
-        padding: const EdgeInsets.symmetric(vertical: 4.0),
-        color: Colors.grey[100],
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "Payment",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                  letterSpacing: 1.5,
-                ),
-              ),
-            ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Add",
+    return StatefulBuilder(builder: (BuildContext context , StateSetter SetState) {
+      return Scaffold(
+        drawer: AppDrawer(),
+        appBar: CustomAppBar(),
+        body: Container(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          color: Colors.grey[100],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Payment",
                   style: TextStyle(
-                    fontSize: 16, // Keep previous font size
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                    letterSpacing: 1.5,
                   ),
                 ),
-              ],
-            ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            SizedBox(height: 16),
-            Expanded(
-              child: ListView(
+              ),
+              Divider(
+                thickness: 1.5,
+                color: Colors.black54,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  buildTextField("Order ID", orderIdController, true),
-                  buildDropdown("Payment Type", ["Select","Received Payment", "Received CMD", "Received EMD"], (value) {
-                    setState(() {
-                      selectedPaymentType = value;
-                    });
-                  }),
-                  buildTextField("Date", dateController1, false),
-                  buildTextField("Amount", amountController, false),
-                  buildTextField("Total Payment", totalPaymentController, false),
-                  buildTextField("Total EMD", totalEmdController, false),
-                  buildTextField("Total Amount Including EMD", totalAmountController, false),
-                  buildTextField("Note", noteController, false),
-                  buildTextField("Reference No.", refNoController, false),
-                  buildTextField("RV No.", rvNoController, false),
-                  buildTextField("Date", dateController2, false),
-                  buildTextField("Type Of Transfer", typeTransController, false),
-                  SizedBox(height: 40,),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            clearFields();
-                            Navigator.of(context).pop();
-                          },
-                          child: Text("Back"),
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Color(0xFF87CEEB),
-                            padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            clearFields();
-                          },
-                          child: Text("Add"),
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Color(0xFF87CEEB),
-                            padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ],
+                  Text(
+                    "Add",
+                    style: TextStyle(
+                      fontSize: 16, // Keep previous font size
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  SizedBox(height: 16),
                 ],
               ),
-            ),
-          ],
+              Divider(
+                thickness: 1.5,
+                color: Colors.black54,
+              ),
+              SizedBox(height: 16),
+              Expanded(
+                child: ListView(
+                  children: [
+                    buildTextField("Order ID", orderIdController, true),
+                    buildDropdown("Payment Type", [
+                      "Select",
+                      "Received Payment",
+                      "Received EMD",
+                      "Received CMD"
+                    ], (value) {
+                      setState(() {
+                        selectedPaymentType = value;
+                      });
+                    }),
+                    buildTextField("Date", dateController1, false),
+                    buildTextField("Amount", amountController, false),
+                    buildTextField(
+                        "Total Payment", totalPaymentController, false),
+                    buildTextField("Total EMD", totalEmdController, false),
+                    buildTextField(
+                        "Total Amount Including EMD", totalAmountController,
+                        false),
+                    buildTextField("Note", noteController, false),
+                    buildTextField("Reference No.", refNoController, false),
+                    buildTextField("RV No.", rvNoController, false),
+                    buildTextField("Date", dateController2, false),
+                    buildTextField(
+                        "Type Of Transfer", typeTransController, false),
+                    SizedBox(height: 40,),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {
+                              clearFields();
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("Back"),
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.indigo[800],
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 50, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              clearFields();
+                            },
+                            child: Text("Add"),
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.indigo[800],
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 50, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget buildDropdown(String label, List<String> options, ValueChanged<String?> onChanged) {
@@ -163,15 +176,17 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
             child: Text(
               label,
               style: TextStyle(
-                fontWeight: FontWeight.bold,
+                color: Colors.black54,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
           Expanded(
             flex: 7, // Adjusts dropdown width
             child: DropdownButtonFormField<String>(
+              isExpanded: true,
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -202,7 +217,8 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
             child: Text(
               label,
               style: TextStyle(
-                fontWeight: FontWeight.bold,
+                color: Colors.black54,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),

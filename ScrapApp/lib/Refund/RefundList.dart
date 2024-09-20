@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:http/http.dart' as http;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
@@ -7,7 +7,7 @@ import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Payment/Add_payment_detail.dart';
 import 'package:scrapapp/Refund/Add_refund_details.dart';
 import 'package:scrapapp/Refund/View_refund_details.dart';
-import 'package:http/http.dart' as http;
+
 import '../URL_CONSTANT.dart';
 
 class RefundList extends StatefulWidget {
@@ -17,10 +17,14 @@ class RefundList extends StatefulWidget {
 
 class _RefundListState extends State<RefundList> {
 
+
+
+
   List<dynamic> dates = [];
   List<dynamic> orderIds = [];
   List<dynamic> buyerNames = [];
   List<dynamic> data = [];
+  List<dynamic> material = [];
   bool isLoading = true; // Add a loading flag
 
   @override
@@ -51,6 +55,8 @@ class _RefundListState extends State<RefundList> {
             dates.add(entry[0]); // Date
             orderIds.add(entry[1]); // Order ID
             buyerNames.add(entry[5]); // Buyer Name
+            material.add(entry[6]);
+
           }
           print(dates);
           print(orderIds);
@@ -73,7 +79,6 @@ class _RefundListState extends State<RefundList> {
   }
 
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,7 +99,7 @@ class _RefundListState extends State<RefundList> {
                   Text(
                     "Refund",
                     style: TextStyle(
-                      fontSize: 23, // Slightly larger font size for prominence
+                      fontSize: 26, // Slightly larger font size for prominence
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                       letterSpacing: 1.2,
@@ -110,7 +115,7 @@ class _RefundListState extends State<RefundList> {
                     label: Text("Filter"),
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      backgroundColor: Color(0xFF87CEEB), // Sky Blue
+                      backgroundColor: Colors.indigo[800], // Text color
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12), // Rounded corners
                       ),
@@ -121,9 +126,9 @@ class _RefundListState extends State<RefundList> {
                 ],
               ),
             ),
-            Container(
-              height: 1.5,
-              color: Color(0xFF2F4F4F), // Dark Slate Gray
+            Divider(
+              thickness: 1.5,
+              color: Colors.black54,
             ),
             Row(
               children: [
@@ -141,7 +146,7 @@ class _RefundListState extends State<RefundList> {
                   icon: Icon(
                     Icons.add_box_outlined,
                     size: 28, // Slightly smaller but prominent icon
-                    color: Color(0xFF87CEEB), // Sky Blue
+                    color: Colors.indigo[800],
                   ),
                   onPressed: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => Add_refund_details()));
@@ -149,65 +154,96 @@ class _RefundListState extends State<RefundList> {
                 ),
               ],
             ),
-            Container(
-              height: 1.5,
-              color: Color(0xFF2F4F4F), // Dark Slate Gray
+            Divider(
+              thickness: 1.5,
+              color: Colors.black54,
             ),
-            SizedBox(height: 16),
             Expanded(
-              child: ListView.builder(
-                itemCount: data.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 8),
-                    elevation: 4,
-                    child: Column(
-                      children: [
-                        Container(
-                          color: Color(0xFFE4B5), // Moccasin
-                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  "${orderIds[index]}",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Color(0xFF2F4F4F), // Dark Slate Gray
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          color: Colors.white,
-                          child: ListTile(
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                            leading: Icon(Icons.description, color: Color(0xFF2F4F4F)), // Dark Slate Gray
-                            title: Text(
-                              'Buyer : ${buyerNames[index]}',
-                              style: TextStyle(color: Color(0xFF2F4F4F)), // Dark Slate Gray
-                            ),
-                            subtitle: Text('Material\nDate${dates[index]}', style: TextStyle(color: Color(0xFF2F4F4F))), // Dark Slate Gray
-                            trailing: Icon(Icons.chevron_right, color: Color(0xFF87CEEB)), // Sky Blue
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => View_refund_details()),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                child: ListView.builder(
+                  itemCount: data.length, // Number of items in the list
+                  itemBuilder: (context, index) {
+                    return buildCustomListTile(context , index);
+                  },
+                ),
               ),
-            )
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget buildCustomListTile(BuildContext context , index) {
+    return Card(
+      color: Colors.white,
+      elevation: 2, // Slightly higher elevation for a more pronounced shadow
+      margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0), // Reduced margins for compact design
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15), // More rounded corners
+        side: BorderSide(color: Colors.indigo[800]!, width: 1.5), // Accent border
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0), // Reduced padding inside the card
+        leading: CircleAvatar(
+          backgroundColor: Colors.indigo[800],
+          child: Icon(Icons.border_outer, size: 22, color: Colors.white), // Reduced icon size for compactness
+        ),
+        title: Center(
+          child: Text(
+            "#${orderIds[index]}",
+            style: TextStyle(
+              fontSize: 16, // Consistent title font size
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Divider( thickness: 1,color: Colors.black87),
+            Text(
+              "Buyer :${buyerNames[index]} ",
+              style: TextStyle(
+                color: Colors.black54,
+                fontSize: 14, // Slightly smaller font size for subtitle
+
+              ),
+            ),
+            Text(
+              "Material : ${material[index]}",
+              style: TextStyle(
+                fontSize: 14, // Consistent subtitle font size
+                color: Colors.black54,
+              ),
+            ),
+            Text(
+              "Date : ${dates[index]}",
+              style: TextStyle(
+                fontSize: 14, // Consistent subtitle font size
+                color: Colors.black54,
+              ),
+            ),
+          ],
+        ),
+        trailing: IconButton(
+          icon: Icon(Icons.arrow_forward_ios, size: 18), // Adjusted trailing icon size
+          color: Colors.grey[600],
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => View_refund_details()),
+            );
+          },
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => View_refund_details()),
+          );
+        },
       ),
     );
   }
