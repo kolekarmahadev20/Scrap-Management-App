@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
-
+import 'package:http/http.dart' as http;
+import '../URL_CONSTANT.dart';
 // imports for image uploader
 import 'package:image_picker/image_picker.dart';
 import 'dart:io'; // Import for File
@@ -24,6 +27,9 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
 
 
   String? selectedOrderId;
+  List<String> orderIDs = ['Select',];
+  String? MaterialSelected;
+  String? materialId ;
 
 
 
@@ -36,6 +42,100 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
     quantityController.clear();
     noteController.clear();
   }
+
+  @override
+  void initState(){
+    super.initState();
+    orderIdDropDowns();
+  }
+  //fetching dropDowns of sale_order_list
+  Future<void> orderIdDropDowns() async {
+    try {
+      final url = Uri.parse("${URL}saleOrder_list");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id':'Bantu',
+          'user_pass':'Bantu#123',
+        },
+      );
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        setState(() {
+          for(var entry in jsonData){
+            if (entry['id'] != null) {
+              orderIDs.add(entry['id']);
+            }else{
+              orderIDs.add("N/A");
+            }
+          }
+        });
+      } else {
+        print("unable to load order ids.");
+      }
+    } catch (e) {
+      print("Server Exception : $e");
+
+    }
+  }
+
+  //fetching the material of selected sale_order_id
+  Future<void> orderIdMaterial() async {
+    try {
+      final url = Uri.parse("${URL}fetch_material_lifting");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id':'Bantu',
+          'user_pass':'Bantu#123',
+          'sale_order_id': selectedOrderId ?? '',
+        },
+      );
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        setState(() {
+          materialController.text = jsonData['sale_order_details'][0]['material_name'];
+          print(materialController.text);
+        });
+      } else {
+        print("unable to load order ids.");
+      }
+    } catch (e) {
+      print("Server Exception : $e");
+
+    }
+  }
+
+  Future<void> materialNameId() async {
+    try {
+      final url = Uri.parse("${URL}get_materialDesc");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id':'Bantu',
+          'user_pass':'Bantu#123',
+          'sale_order_id':selectedOrderId,
+        },
+      );
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        setState(() {
+          materialId = jsonData['material_id'];
+          print(materialId);
+        });
+      } else {
+        print("unable to load order ids.");
+      }
+    } catch (e) {
+      print("Server Exception : $e");
+
+    }
+  }
+
+
 
 
 
@@ -87,17 +187,21 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
             Expanded(
               child: ListView(
                 children: [
-                  buildDropdown("Order ID", ["Order Id 1", "Order Id 2"], (value) {
+                  buildDropdown("Order ID", orderIDs, (value) {
                     setState(() {
                       selectedOrderId = value;
+                      materialController.clear();
+                      orderIdMaterial();
+                      materialNameId();
+                      print(value);
                     });
                   }),
-                  buildTextField("Material", materialController),
-                  buildTextField("Invoice No", invoiceController),
-                  buildTextField("Date", dateController),
-                  buildTextField("Truck No", truckNoController),
-                  buildTextField("Quantity", quantityController),
-                  buildTextField("Note", noteController),
+                  buildTextField("Material", materialController,true),
+                  buildTextField("Invoice No", invoiceController , false),
+                  buildTextField("Date", dateController, false),
+                  buildTextField("Truck No", truckNoController, false),
+                  buildTextField("Quantity", quantityController, false),
+                  buildTextField("Note", noteController, false),
                   SizedBox(height: 100,),
                   Container(
 
@@ -229,7 +333,7 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
   }
 
 
-  Widget buildTextField(String label, TextEditingController controller) {
+  Widget buildTextField(String label, TextEditingController controller , bool isReadOnly) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0 ,horizontal: 8.0),
       child: Row(
@@ -271,6 +375,7 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
+                readOnly: isReadOnly,
               ),
             ),
           ),

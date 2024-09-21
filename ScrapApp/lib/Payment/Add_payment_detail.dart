@@ -1,7 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
+import 'package:http/http.dart' as http;
+import '../URL_CONSTANT.dart';
 
 class Add_payment_detail extends StatefulWidget {
   @override
@@ -9,36 +13,108 @@ class Add_payment_detail extends StatefulWidget {
 }
 
 class _Add_payment_detailState extends State<Add_payment_detail> {
-  final TextEditingController orderIdController = TextEditingController();
   final TextEditingController dateController1 = TextEditingController();
   final TextEditingController amountController = TextEditingController();
-  final TextEditingController totalPaymentController = TextEditingController();
-  final TextEditingController totalEmdController = TextEditingController();
-  final TextEditingController totalAmountController = TextEditingController();
-  final TextEditingController noteController = TextEditingController();
   final TextEditingController refNoController = TextEditingController();
-  final TextEditingController rvNoController = TextEditingController();
-  final TextEditingController dateController2 = TextEditingController();
   final TextEditingController typeTransController = TextEditingController();
 
   String? selectedOrderId;
   String? selectedPaymentType;
+  List<String> orderIDs = ['Select',];
 
   void clearFields(){
     selectedOrderId = null;
     selectedPaymentType = null;
     dateController1.clear();
     amountController.clear();
-    totalPaymentController.clear();
-    totalEmdController.clear();
-    totalAmountController.clear();
-    noteController.clear();
     refNoController.clear();
-    rvNoController.clear();
-    dateController2.clear();
     typeTransController.clear();
   }
 
+  @override
+  void initState(){
+    super.initState();
+    orderIdDropDowns();
+  }
+
+
+  Future<void> addPaymentDetails() async {
+    try {
+      final url = Uri.parse("${URL}add_payment_toSaleOrder");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': 'Bantu',
+          'user_pass': 'Bantu#123',
+          'sale_order_id_pay':selectedOrderId ?? '',
+          'payment_type': selectedPaymentType ?? '',
+          'pay_date': dateController1.text,
+          'amt':amountController.text,
+          'pay_ref_no':refNoController.text,
+          'typeoftransfer':typeTransController.text,
+        },
+      );
+      print('hello');
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        setState(() {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("${jsonData['msg']}")));
+        });
+      } else {
+        Fluttertoast.showToast(
+            msg: 'Unable to insert data.',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.yellow
+        );
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+          msg: 'Server Exception : $e',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.yellow
+      );
+    }
+  }
+
+  //fetching dropDowns of sale_order_list
+  Future<void> orderIdDropDowns() async {
+    try {
+      final url = Uri.parse("${URL}saleOrder_list");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id':'Bantu',
+          'user_pass':'Bantu#123',
+        },
+      );
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        setState(() {
+          for(var entry in jsonData){
+            if (entry['id'] != null) {
+              orderIDs.add(entry['id']);
+            }else{
+              orderIDs.add("N/A");
+            }
+          }
+        });
+      } else {
+       print("unable to load order ids.");
+      }
+    } catch (e) {
+      print("Server Exception : $e");
+
+    }
+  }
 
 
   @override
@@ -90,7 +166,11 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
               Expanded(
                 child: ListView(
                   children: [
-                    buildTextField("Order ID", orderIdController, true),
+                    buildDropdown("Order ID", orderIDs, (value) {
+                      setState(() {
+                        selectedOrderId = value;
+                      });
+                    }),
                     buildDropdown("Payment Type", [
                       "Select",
                       "Received Payment",
@@ -103,19 +183,9 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
                     }),
                     buildTextField("Date", dateController1, false),
                     buildTextField("Amount", amountController, false),
-                    buildTextField(
-                        "Total Payment", totalPaymentController, false),
-                    buildTextField("Total EMD", totalEmdController, false),
-                    buildTextField(
-                        "Total Amount Including EMD", totalAmountController,
-                        false),
-                    buildTextField("Note", noteController, false),
                     buildTextField("Reference No.", refNoController, false),
-                    buildTextField("RV No.", rvNoController, false),
-                    buildTextField("Date", dateController2, false),
-                    buildTextField(
-                        "Type Of Transfer", typeTransController, false),
-                    SizedBox(height: 40,),
+                    buildTextField("Type Of Transfer", typeTransController, false),
+                    SizedBox(height: 180),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: Row(
@@ -139,7 +209,8 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
                           ),
                           ElevatedButton(
                             onPressed: () {
-                              clearFields();
+                              addPaymentDetails();
+                              // clearFields();
                             },
                             child: Text("Add"),
                             style: ElevatedButton.styleFrom(
