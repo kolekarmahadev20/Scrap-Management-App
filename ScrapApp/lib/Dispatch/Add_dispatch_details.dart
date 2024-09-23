@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:http/http.dart' as http;
@@ -30,6 +31,9 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
   List<String> orderIDs = ['Select',];
   String? MaterialSelected;
   String? materialId ;
+  Map <String , String> MaterialMap={};
+  List<File> _uploadedImages = [];
+
 
 
 
@@ -120,6 +124,7 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
           'sale_order_id':selectedOrderId,
         },
       );
+      //variable to send material value instead of name in backend.
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         setState(() {
@@ -135,6 +140,54 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
     }
   }
 
+  Future<void> addDispatchDetails() async {
+    try {
+      final url = Uri.parse("${URL}save_lifting");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id':'Bantu',
+          'user_pass':'Bantu#123',
+          'sale_order_id_lift':selectedOrderId ?? '',
+          'material_id_lifting':materialId ?? '', //sending material Id instead of material Name
+          'invoice_no':invoiceController.text,
+          'date_time':dateController.text,
+          'truck_no':truckNoController.text,
+          'qty':quantityController.text,
+          'note':noteController.text,
+          'certifications':'',
+        },
+      );
+      var request = http.MultipartRequest('POST', url);
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        setState(() {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("${jsonData['msg']}")));
+        });
+      } else {
+        Fluttertoast.showToast(
+            msg: 'Unable to insert data.',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.yellow
+        );
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+          msg: 'Server Exception : $e',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.yellow
+      );
+
+    }
+  }
 
 
 
@@ -194,6 +247,7 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                       orderIdMaterial();
                       materialNameId();
                       print(value);
+
                     });
                   }),
                   buildTextField("Material", materialController,true),
@@ -202,45 +256,76 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                   buildTextField("Truck No", truckNoController, false),
                   buildTextField("Quantity", quantityController, false),
                   buildTextField("Note", noteController, false),
-                  SizedBox(height: 100,),
+                  SizedBox(height: 40,),
                   Container(
-
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Divider(thickness: 1.5,color: Colors.black54),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Text("Upload Images" , style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
                         ),
+                        Divider(thickness: 1.5,color: Colors.black54),
                         ImageWidget(
                           value: '1) Vehicle Front',
                           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
                           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                          onImagesSelected: (images) { // Handle selected images
+                          setState(() {
+                          _uploadedImages.addAll(images); // Store uploaded images
+                          });
+                          }
                         ),
                         ImageWidget(
                           value: '2) Vehicle Back',
                           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
                           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                            onImagesSelected: (images) { // Handle selected images
+                              setState(() {
+                                _uploadedImages.addAll(images); // Store uploaded images
+                              });
+                            }
                         ),
                         ImageWidget(
                           value: '3) Material',
                           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
                           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                            onImagesSelected: (images) { // Handle selected images
+                              setState(() {
+                                _uploadedImages.addAll(images); // Store uploaded images
+                              });
+                            }
                         ),
                         ImageWidget(
                           value: '4) Material Half Load',
                           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
                           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                            onImagesSelected: (images) { // Handle selected images
+                              setState(() {
+                                _uploadedImages.addAll(images); // Store uploaded images
+                              });
+                            }
                         ),
                         ImageWidget(
                           value: '5) Material Full Load',
                           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
                           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                            onImagesSelected: (images) { // Handle selected images
+                              setState(() {
+                                _uploadedImages.addAll(images); // Store uploaded images
+                              });
+                            }
                         ),
                         ImageWidget(
                           value: '6) Other',
                           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
                           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                            onImagesSelected: (images) { // Handle selected images
+                              setState(() {
+                                _uploadedImages.addAll(images); // Store uploaded images
+                              });
+                            }
                         ),
                       ],
                     ),
@@ -268,7 +353,8 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            clearFields();
+                            addDispatchDetails();
+                            // clearFields();
                           },
                           child: Text("Add"),
                           style: ElevatedButton.styleFrom(
@@ -294,42 +380,47 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
   }
 
   Widget buildDropdown(String label, List<String> options, ValueChanged<String?> onChanged) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0 , horizontal: 8.0),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 3, // Adjusts label width
-            child: Text(
-              label,
-              style: TextStyle(
-                color: Colors.black54,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 7, // Adjusts dropdown width
-            child: DropdownButtonFormField<String>(
-              decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+    return StatefulBuilder(builder: (BuildContext context , StateSetter setState)
+    {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 3, // Adjusts label width
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: Colors.black54,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              value: options.isNotEmpty ? options.first : null,
-              items: options.map((String option) {
-                return DropdownMenuItem<String>(
-                  value: option,
-                  child: Text(option),
-                );
-              }).toList(),
-              onChanged: onChanged,
             ),
-          ),
-        ],
-      ),
-    );
+            Expanded(
+              flex: 7, // Adjusts dropdown width
+              child: DropdownButtonFormField<String>(
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                value: selectedOrderId ?? options.first,
+                items: options.map((String option) {
+                  return DropdownMenuItem<String>(
+                    value: option,
+                    child: Text(option),
+                    enabled: option != 'Select',
+                  );
+                }).toList(),
+                onChanged: onChanged,
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
 
@@ -390,12 +481,14 @@ class ImageWidget extends StatefulWidget {
   final String value;
   final Icon cameraIcon;
   final Icon galleryIcon;
+  final Function(List<File>) onImagesSelected;
 
   const ImageWidget({
     Key? key,
     required this.value,
     required this.cameraIcon,
     required this.galleryIcon,
+    required this.onImagesSelected,
   }) : super(key: key);
 
   @override
@@ -414,6 +507,8 @@ class _ImageWidgetState extends State<ImageWidget> {
       setState(() {
         _images = pickedFiles.map((file) => File(file.path)).toList();
       });
+      widget.onImagesSelected(_images);
+      print(widget.onImagesSelected(_images));
     }
   }
 
@@ -426,6 +521,8 @@ class _ImageWidgetState extends State<ImageWidget> {
       setState(() {
         _images.add(File(capturedFile.path)); // Add the captured image to the list
       });
+      widget.onImagesSelected(_images);
+      print(widget.onImagesSelected(_images));
     }
   }
 
@@ -433,6 +530,9 @@ class _ImageWidgetState extends State<ImageWidget> {
   void _deleteImage(int index) {
     setState(() {
       _images.removeAt(index); // Remove the image at the specified index
+      widget.onImagesSelected(_images); // Update parent with the new list
+      print(widget.onImagesSelected(_images));
+
     });
   }
 

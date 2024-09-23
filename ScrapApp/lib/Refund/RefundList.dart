@@ -20,12 +20,9 @@ class _RefundListState extends State<RefundList> {
 
 
 
-  List<dynamic> dates = [];
-  List<dynamic> orderIds = [];
-  List<dynamic> buyerNames = [];
-  List<dynamic> data = [];
-  List<dynamic> material = [];
+
   bool isLoading = true; // Add a loading flag
+  List<Map<String, dynamic>> refundList = [];
 
   @override
   void initState() {
@@ -48,19 +45,9 @@ class _RefundListState extends State<RefundList> {
       if (response.statusCode == 200) {
         setState(() {
           var jsonData = json.decode(response.body);
-          data = jsonData['aaData'];
-
-          // Extract the relevant data
-          for (var entry in data) {
-            dates.add(entry[0]); // Date
-            orderIds.add(entry[1]); // Order ID
-            buyerNames.add(entry[5]); // Buyer Name
-            material.add(entry[6]);
-
-          }
-          print(dates);
-          print(orderIds);
-          print(buyerNames);
+          refundList = List<Map<String, dynamic>>.from(jsonData['saleOrder_refundList']);
+          print(refundList);
+          print(refundList.length);
 
           isLoading = false; // Set loading to false when data is loaded
         });
@@ -162,9 +149,10 @@ class _RefundListState extends State<RefundList> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                 child: ListView.builder(
-                  itemCount: data.length, // Number of items in the list
+                  itemCount: refundList.length, // Number of items in the list
                   itemBuilder: (context, index) {
-                    return buildCustomListTile(context , index);
+                    final refundListIndex = refundList[index];
+                    return buildCustomListTile(context , refundListIndex);
                   },
                 ),
               ),
@@ -192,7 +180,7 @@ class _RefundListState extends State<RefundList> {
         ),
         title: Center(
           child: Text(
-            "#${orderIds[index]}",
+            "#${index['sale_order_code']}",
             style: TextStyle(
               fontSize: 16, // Consistent title font size
               fontWeight: FontWeight.w600,
@@ -205,7 +193,7 @@ class _RefundListState extends State<RefundList> {
           children: [
             Divider( thickness: 1,color: Colors.black87),
             Text(
-              "Buyer :${buyerNames[index]} ",
+              "Buyer: ${index['bidder_name']}",
               style: TextStyle(
                 color: Colors.black54,
                 fontSize: 14, // Slightly smaller font size for subtitle
@@ -213,14 +201,14 @@ class _RefundListState extends State<RefundList> {
               ),
             ),
             Text(
-              "Material : ${material[index]}",
+              "Material :${index['description']}",
               style: TextStyle(
                 fontSize: 14, // Consistent subtitle font size
                 color: Colors.black54,
               ),
             ),
             Text(
-              "Date : ${dates[index]}",
+              "Date : ${index['date']}",
               style: TextStyle(
                 fontSize: 14, // Consistent subtitle font size
                 color: Colors.black54,

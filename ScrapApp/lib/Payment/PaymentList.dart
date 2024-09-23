@@ -16,12 +16,10 @@ class PaymentList extends StatefulWidget {
 class _PaymentListState extends State<PaymentList> {
 
 
-  List<dynamic> dates = [];
-  List<dynamic> orderIds = [];
-  List<dynamic> buyerNames = [];
-  List<dynamic> data = [];
-  List<dynamic> material = [];
+  List<Map<String, dynamic>> paymentList = [];
+
   bool isLoading = true; // Add a loading flag
+
 
   @override
   void initState() {
@@ -44,19 +42,11 @@ class _PaymentListState extends State<PaymentList> {
       if (response.statusCode == 200) {
         setState(() {
           var jsonData = json.decode(response.body);
-          data = jsonData['aaData'];
-
           // Extract the relevant data
-          for (var entry in data) {
-            dates.add(entry[0]); // Date
-            orderIds.add(entry[1]); // Order ID
-            buyerNames.add(entry[5]); // Buyer Name
-            material.add(entry[6]);
-          }
-          print(dates);
-          print(orderIds);
-          print(buyerNames);
-          print(material);
+          paymentList = List<Map<String, dynamic>>.from(jsonData['saleOrder_paymentList']);
+          print(paymentList);
+          print(paymentList.length);
+
 
           isLoading = false; // Set loading to false when data is loaded
         });
@@ -164,9 +154,10 @@ class _PaymentListState extends State<PaymentList> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                 child: ListView.builder(
-                  itemCount: data.length, // Number of items in the list
+                  itemCount: paymentList.length, // Number of items in the list
                   itemBuilder: (context, index) {
-                    return buildCustomListTile(context,index);
+                    final paymentIndex = paymentList[index];
+                    return buildCustomListTile(context,paymentIndex);
                   },
                 ),
               ),
@@ -194,7 +185,7 @@ class _PaymentListState extends State<PaymentList> {
         ),
         title: Center(
           child: Text(
-            "#${orderIds[index]}",
+            "#${index['sale_order_code']}",
             style: TextStyle(
               fontSize: 16, // Consistent font size for the title
               fontWeight: FontWeight.w600,
@@ -207,7 +198,7 @@ class _PaymentListState extends State<PaymentList> {
           children: [
             Divider( thickness: 1,color: Colors.black87),
             Text(
-              "Buyer: ${buyerNames[index]}",
+              "Buyer: ${index['bidder_name']}",
               style: TextStyle(
                 color: Colors.black54,
                 fontSize: 14, // Slightly smaller font size for subtitle
@@ -215,14 +206,14 @@ class _PaymentListState extends State<PaymentList> {
               ),
             ),
             Text(
-              "Material :${material[index]}",
+              "Material :${index['description']}",
               style: TextStyle(
                 fontSize: 14, // Consistent font size
                 color: Colors.black54,
               ),
             ),
             Text(
-              "Date : ${dates[index]}",
+              "Date : ${index['date']}",
               style: TextStyle(
                 fontSize: 14, // Consistent font size
                 color: Colors.black54,
@@ -236,14 +227,14 @@ class _PaymentListState extends State<PaymentList> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => View_payment_detail()),
+              MaterialPageRoute(builder: (context) => View_payment_detail(sale_order_id: index['sale_order_id'],)),
             );
           },
         ),
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => View_payment_detail()),
+            MaterialPageRoute(builder: (context) => View_payment_detail(sale_order_id: index['sale_order_id'],)),
           );
         },
       ),

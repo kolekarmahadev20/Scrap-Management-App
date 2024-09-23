@@ -1,7 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
+import 'package:http/http.dart' as http;
+import '../URL_CONSTANT.dart';
 
 class Edit_payment_detail extends StatefulWidget {
   @override
@@ -11,13 +16,7 @@ class Edit_payment_detail extends StatefulWidget {
 class _Edit_payment_detailState extends State<Edit_payment_detail> {
   final TextEditingController dateController1 = TextEditingController();
   final TextEditingController amountController = TextEditingController();
-  final TextEditingController totalPaymentController = TextEditingController();
-  final TextEditingController totalEmdController = TextEditingController();
-  final TextEditingController totalAmountController = TextEditingController();
-  final TextEditingController noteController = TextEditingController();
   final TextEditingController refNoController = TextEditingController();
-  final TextEditingController rvNoController = TextEditingController();
-  final TextEditingController dateController2 = TextEditingController();
   final TextEditingController typeTransController = TextEditingController();
 
   String? selectedPaymentType;
@@ -26,16 +25,58 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
     selectedPaymentType = null;
     dateController1.clear();
     amountController.clear();
-    totalPaymentController.clear();
-    totalEmdController.clear();
-    totalAmountController.clear();
-    noteController.clear();
     refNoController.clear();
-    rvNoController.clear();
-    dateController2.clear();
     typeTransController.clear();
   }
 
+
+
+  Future<void> editPaymentDetails() async {
+    try {
+      final url = Uri.parse("${URL}add_payment_toSaleOrder");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': 'Bantu',
+          'user_pass': 'Bantu#123',
+          'sale_order_id_pay':'37',
+          'pay_id':'30',
+          'payment_type': selectedPaymentType ?? '',
+          'pay_date': dateController1.text,
+          'amt':amountController.text,
+          'pay_ref_no':refNoController.text,
+          'typeoftransfer':typeTransController.text,
+        },
+      );
+      print('hello');
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        setState(() {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("${jsonData['msg']}")));
+        });
+      } else {
+        Fluttertoast.showToast(
+            msg: 'Unable to insert data.',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.yellow
+        );
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+          msg: 'Server Exception : $e',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.yellow
+      );
+    }
+  }
 
 
   @override
@@ -86,20 +127,19 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
             Expanded(
               child: ListView(
                 children: [
-                  buildDropdown("Payment Type", ["Select","Option A", "Option B"], (value) {
+                  buildDropdown("Payment Type", [
+                    "Select",
+                    "Received Payment",
+                    "Received EMD",
+                    "Received CMD"
+                  ], (value) {
                     setState(() {
                       selectedPaymentType = value;
                     });
                   }),
                   buildTextField("Date", dateController1),
                   buildTextField("Amount", amountController),
-                  buildTextField("Total Payment", totalPaymentController),
-                  buildTextField("Total EMD", totalEmdController),
-                  buildTextField("Total Amount Including EMD", totalAmountController),
-                  buildTextField("Note", noteController),
                   buildTextField("Reference No.", refNoController),
-                  buildTextField("RV No.", rvNoController),
-                  buildTextField("Date", dateController2),
                   buildTextField("Type Of Transfer", typeTransController),
                   SizedBox(height: 40,),
                   Padding(
@@ -124,7 +164,8 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            clearFields();
+                            editPaymentDetails();
+                            // clearFields();
                           },
                           child: Text("Save"),
                           style: ElevatedButton.styleFrom(

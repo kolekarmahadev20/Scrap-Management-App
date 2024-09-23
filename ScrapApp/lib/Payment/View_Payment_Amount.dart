@@ -17,19 +17,7 @@ class View_Payment_Amount extends StatelessWidget {
    String date2='';
    String typeOfTransfer='';
 
-  // View_Payment_Amount({
-  //   required this.paymentType,
-  //   required this.date1,
-  //   required this.amount,
-  //   required this.totalPayment,
-  //   required this.totalEmd,
-  //   required this.totalAmountIncludingEmd,
-  //   required this.note,
-  //   required this.referenceNo,
-  //   required this.rvNo,
-  //   required this.date2,
-  //   required this.typeOfTransfer,
-  // });
+
 
   @override
   Widget build(BuildContext context) {

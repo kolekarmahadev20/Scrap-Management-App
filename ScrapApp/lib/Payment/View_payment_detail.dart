@@ -1,11 +1,80 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Payment/Add_payment_detail.dart';
 import 'package:scrapapp/Payment/View_Payment_Amount.dart';
+import 'package:http/http.dart' as http;
+import '../URL_CONSTANT.dart';
 
-class View_payment_detail extends StatelessWidget {
+class View_payment_detail extends StatefulWidget {
+  final String sale_order_id;
+  View_payment_detail({
+    required this.sale_order_id,
+  });
+
+
   @override
+  State<View_payment_detail> createState() => _View_payment_detailState();
+}
+
+class _View_payment_detailState extends State<View_payment_detail> {
+
+
+
+  Map<String , dynamic> ViewPaymentData = {};
+
+@override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    print(widget.sale_order_id);
+    fetchPaymentList();
+  }
+
+
+
+
+  Future<void> fetchPaymentList() async {
+  try {
+    final url = Uri.parse("${URL}payment_details");
+    var response = await http.post(
+      url,
+      headers: {"Accept": "application/json"},
+      body: {
+        'user_id': 'Bantu',
+        'user_pass': 'Bantu#123',
+        'sale_order_id':widget.sale_order_id,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      setState(() {
+        var jsonData = json.decode(response.body);
+        ViewPaymentData = jsonData;
+        print(ViewPaymentData);
+        // print(ViewPaymentData['sale_order_id']);
+      });
+    } else {
+      print("Unable to fetch data.");
+      setState(() {
+      });
+    }
+  } catch (e) {
+    print("Server Exception: $e");
+    setState(() {
+    });
+  }
+}
+
+
+
+
+
+
+
+@override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: AppDrawer(),
@@ -94,9 +163,9 @@ class View_payment_detail extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildVendorInfoText("Vendor Name :"),
-        buildVendorInfoText("Branch :"),
-        buildVendorInfoText("Buyer Name :"),
+        buildVendorInfoText("Vendor Name : ${ViewPaymentData['vendor_buyer_details']['vendor_name']}"),
+        buildVendorInfoText("Branch :${ViewPaymentData['vendor_buyer_details']['branch_name']}"),
+        buildVendorInfoText("Buyer Name :${ViewPaymentData['vendor_buyer_details']['bidder_name']}"),
       ],
     );
   }
@@ -133,12 +202,12 @@ class View_payment_detail extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                buildListTile("Material Name :"),
-                buildListTile("Total Qty :"),
-                buildListTile("Lifted Qty :"),
-                buildListTile("Rate :"),
-                buildListTile("SO Date :"),
-                buildListTile("SO Validity :"),
+                buildListTile("Material Name :${ViewPaymentData['material_lifting_details']['1']['material_name']}"),
+                buildListTile("Total Qty :${ViewPaymentData['material_lifting_details']['1']['qty']}"),
+                buildListTile("Lifted Qty :${ViewPaymentData['material_lifting_details']['1']['material_name']}"),
+                buildListTile("Rate :${ViewPaymentData['material_lifting_details']['1']['rate']}"),
+                buildListTile("SO Date :${ViewPaymentData['material_lifting_details']['1']['date_time']}"),
+                buildListTile("SO Validity :${ViewPaymentData['material_lifting_details']['1']['material_name']}"),
                 buildTable(),
               ],
             ),

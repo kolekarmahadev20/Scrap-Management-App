@@ -2,6 +2,7 @@
 
   import 'package:flutter/material.dart';
   import 'package:flutter/cupertino.dart';
+import 'package:fluttertoast/fluttertoast.dart';
   import 'package:scrapapp/AppClass/AppDrawer.dart';
   import 'package:scrapapp/AppClass/appBar.dart';
   import 'package:http/http.dart' as http;
@@ -31,6 +32,7 @@
     String? selectedPaymentType;
     List<String> orderIDs = ['Select',];
     List<String> materialId = [];
+    String? totalAmount;
 
 
     void clearFields(){
@@ -86,6 +88,84 @@
       }
     }
 
+    Future<void> fetchTotalAmount() async {
+      try {
+        final url = Uri.parse("${URL}add_refund_payment");
+        var response = await http.post(
+          url,
+          headers: {"Accept": "application/json"},
+          body: {
+            'user_id':'Bantu',
+            'user_pass':'Bantu#123',
+            'sale_order_id':selectedOrderId ?? '',
+          },
+        );
+        if (response.statusCode == 200) {
+          final jsonData = json.decode(response.body);
+          setState(() {
+            totalAmountController.text = jsonData['t_amt'].toString();
+          });
+        } else {
+          print("unable to load order ids.");
+        }
+      } catch (e) {
+        print("Server Exception : $e");
+
+      }
+    }
+
+    Future<void> addRefundDetails() async {
+      try {
+        final url = Uri.parse("${URL}add_refund_toSaleOrdder");
+        var response = await http.post(
+          url,
+          headers: {"Accept": "application/json"},
+          body: {
+            'user_id':'Bantu',
+            'user_pass':'Bantu#123',
+            'sale_order_id_pay': selectedOrderId ?? '',
+            'payment_type':selectedPaymentType ?? '',
+            'pay_date':dateController1.text,
+            'amt':amountController.text,
+            't_amt':totalAmountController.text,
+            'total_emd':totalEmdController.text,
+            'narration':noteController.text,
+            'pay_ref_no':refNoController.text,
+            'receipt_voucher_no':rvNoController.text,
+            'receipt_voucher_date':dateController2.text,
+            'nfa_no':nfaController.text,
+          },
+        );
+        if (response.statusCode == 200) {
+          final jsonData = json.decode(response.body);
+          setState(() {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("${jsonData['msg']}")));
+          });
+        } else {
+          Fluttertoast.showToast(
+              msg: 'Unable to insert data.',
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.yellow
+          );
+        }
+      } catch (e) {
+        Fluttertoast.showToast(
+            msg: 'Server Exception : $e',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.yellow
+        );
+
+      }
+    }
+
+
 
     @override
     Widget build(BuildContext context) {
@@ -138,6 +218,7 @@
                     buildDropdown("Order ID",orderIDs, (value) {
                       setState(() {
                         selectedOrderId = value;
+                        fetchTotalAmount();
                       });
                     }),
                     buildDropdown("Payment Type", ["Select","Refund(Other than EMD/CMD)", "Refund EMD", "Refund CMD","Penalty","Refund All"], (value) {
@@ -201,7 +282,8 @@
                           ),
                           ElevatedButton(
                             onPressed: () {
-                              clearFields();
+                              addRefundDetails();
+                              // clearFields();
                             },
                             child: Text("Add"),
                             style: ElevatedButton.styleFrom(

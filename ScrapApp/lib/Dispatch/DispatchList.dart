@@ -15,12 +15,11 @@ class DispatchList extends StatefulWidget {
 }
 
 class _DispatchListState extends State<DispatchList> {
-  List<dynamic> dates = [];
-  List<dynamic> orderIds = [];
-  List<dynamic> buyerNames = [];
-  List<dynamic> data = [];
-  List<dynamic> material = [];
+
+
   bool isLoading = true; // Add a loading flag
+  List<Map<String, dynamic>> dispatchList = [];
+
 
   @override
   void initState() {
@@ -30,7 +29,7 @@ class _DispatchListState extends State<DispatchList> {
 
   Future<void> fetchPaymentList() async {
     try {
-      final url = Uri.parse("${URL}fetch_payment_data");
+      final url = Uri.parse("${URL}ajax_sale_order_dispatch_list");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
@@ -43,19 +42,11 @@ class _DispatchListState extends State<DispatchList> {
       if (response.statusCode == 200) {
         setState(() {
           var jsonData = json.decode(response.body);
-          data = jsonData['aaData'];
+          dispatchList = List<Map<String, dynamic>>.from(jsonData['saleOrder_dispatchList']);
+          print(dispatchList);
+          print(dispatchList.length);
 
-          // Extract the relevant data
-          for (var entry in data) {
-            dates.add(entry[0]); // Date
-            orderIds.add(entry[1]); // Order ID
-            buyerNames.add(entry[5]); // Buyer Name
-            material.add(entry[6]);
-          }
-          print(dates);
-          print(orderIds);
-          print(buyerNames);
-          print(material);
+
 
           isLoading = false; // Set loading to false when data is loaded
         });
@@ -168,9 +159,10 @@ class _DispatchListState extends State<DispatchList> {
                       padding: const EdgeInsets.symmetric(
                           vertical: 8.0, horizontal: 16.0),
                       child: ListView.builder(
-                        itemCount: 10, // Number of items in the list
+                        itemCount:dispatchList.length, // Number of items in the list
                         itemBuilder: (context, index) {
-                          return buildCustomListTile(context, index);
+                          final dispatchListIndex = dispatchList[index];
+                          return buildCustomListTile(context, dispatchListIndex);
                         },
                       ),
                     ),
@@ -204,7 +196,7 @@ class _DispatchListState extends State<DispatchList> {
               color: Colors.white), // Reduced icon size for compactness
         ),
         title: Text(
-          "#${orderIds[index]}",
+          "#${index['sale_order_code']}",
           style: TextStyle(
             fontSize: 16, // Consistent title font size
             fontWeight: FontWeight.w600,
@@ -216,21 +208,21 @@ class _DispatchListState extends State<DispatchList> {
           children: [
             Divider( thickness: 1,color: Colors.black87),
             Text(
-              "Buyer: ${buyerNames[index]}",
+              "Buyer: ${index['bidder_name']}",
               style: TextStyle(
                 color: Colors.black54,
                 fontSize: 14, // Slightly smaller font size for subtitle
               ),
             ),
             Text(
-              "Material :${material[index]}",
+              "Material :${index['description']}",
               style: TextStyle(
                 fontSize: 14, // Consistent subtitle font size
                 color: Colors.black54,
               ),
             ),
             Text(
-              "Date : ${dates[index]}",
+              "Date : ${index['date']}",
               style: TextStyle(
                 fontSize: 14, // Consistent subtitle font size
                 color: Colors.black54,
