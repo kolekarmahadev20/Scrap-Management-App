@@ -6,6 +6,7 @@ import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Payment/Add_payment_detail.dart';
 import 'package:scrapapp/Payment/View_payment_detail.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
 
 class PaymentList extends StatefulWidget {
@@ -16,26 +17,40 @@ class PaymentList extends StatefulWidget {
 class _PaymentListState extends State<PaymentList> {
 
 
+  String? username = '';
+
+  String? password = '';
+
   List<Map<String, dynamic>> paymentList = [];
 
   bool isLoading = true; // Add a loading flag
 
 
+
+
   @override
   void initState() {
     super.initState();
+    checkLogin();
     fetchPaymentList();
+  }
+
+  checkLogin()async{
+    final login = await SharedPreferences.getInstance();
+    username = await login.getString("username") ?? '';
+    password = await login.getString("password") ?? '';
   }
 
   Future<void> fetchPaymentList() async {
     try {
+      await checkLogin();
       final url = Uri.parse("${URL}fetch_payment_data");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': 'Bantu',
-          'user_pass': 'Bantu#123',
+          'user_id': username,
+          'user_pass': password,
         },
       );
 

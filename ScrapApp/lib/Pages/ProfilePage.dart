@@ -11,6 +11,11 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
 
+
+  String? username ;
+
+  String? password ;
+
   String name = '';
 
    String contact = '';
@@ -22,6 +27,14 @@ class _ProfilePageState extends State<ProfilePage> {
    String empCode = '';
 
    bool isLoggedIn = false;
+
+
+  checkLogin()async{
+    final login = await SharedPreferences.getInstance();
+    username = await login.getString("username");
+    password = await login.getString("password");
+    print(username);
+  }
 
   getCredentialDetails() async{
     final prefs = await SharedPreferences.getInstance();
@@ -50,6 +63,7 @@ class _ProfilePageState extends State<ProfilePage> {
     // TODO: implement initState
     super.initState();
     getCredentialDetails();
+    checkLogin();
   }
 
   final Icon nameIcon =

@@ -40,7 +40,6 @@ class _StartDashBoardPageState extends State<StartPage> {
     final login = await SharedPreferences.getInstance();
     await login.setString("username", username);
     await login.setString("password", password);
-
   }
 /*---------------------------------------------------------------------------------------------------------------*/
 

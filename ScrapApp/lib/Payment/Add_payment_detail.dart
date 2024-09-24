@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
 
 class Add_payment_detail extends StatefulWidget {
@@ -18,8 +19,17 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
   final TextEditingController refNoController = TextEditingController();
   final TextEditingController typeTransController = TextEditingController();
 
+
+  String? username = '';
+  String? password = '';
   String? selectedOrderId;
   String? selectedPaymentType;
+  Map<String , String> PaymentType = {
+    'Select' : 'Select',
+    'Received Payment':'P',
+    'Received EMD':'E',
+    'Received CMD':'C',
+  };
   List<String> orderIDs = ['Select',];
 
   void clearFields(){
@@ -34,19 +44,27 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
   @override
   void initState(){
     super.initState();
+    checkLogin();
     orderIdDropDowns();
+  }
+
+  checkLogin()async{
+    final login = await SharedPreferences.getInstance();
+    username = await login.getString("username") ?? '';
+    password = await login.getString("password") ?? '';
   }
 
 
   Future<void> addPaymentDetails() async {
     try {
+      await checkLogin();
       final url = Uri.parse("${URL}add_payment_toSaleOrder");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': 'Bantu',
-          'user_pass': 'Bantu#123',
+          'user_id': username,
+          'user_pass': password,
           'sale_order_id_pay':selectedOrderId ?? '',
           'payment_type': selectedPaymentType ?? '',
           'pay_date': dateController1.text,
@@ -88,13 +106,14 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
   //fetching dropDowns of sale_order_list
   Future<void> orderIdDropDowns() async {
     try {
+      await checkLogin();
       final url = Uri.parse("${URL}saleOrder_list");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id':'Bantu',
-          'user_pass':'Bantu#123',
+          'user_id':username,
+          'user_pass':password,
         },
       );
       if (response.statusCode == 200) {
@@ -172,14 +191,10 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
                         selectedOrderId = value;
                       });
                     }),
-                    buildDropdown("Payment Type", [
-                      "Select",
-                      "Received Payment",
-                      "Received EMD",
-                      "Received CMD"
-                    ], (value) {
+                    buildDropdownPayment("Payment Type", PaymentType, (value) {
                       setState(() {
                         selectedPaymentType = value;
+                        print(selectedPaymentType);
                       });
                     }),
                     buildTextField("Date", dateController1, false),
@@ -277,7 +292,45 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
       ),
     );
   }
-
+  Widget buildDropdownPayment(String label, Map<String , String> options, ValueChanged<String?> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0 , horizontal: 8.0),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3, // Adjusts label width
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.black54,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 7, // Adjusts dropdown width
+            child: DropdownButtonFormField<String>(
+              isExpanded: true,
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              value: selectedPaymentType ?? options.keys.first ,
+              items: options.entries.map((entry) {
+                return DropdownMenuItem<String>(
+                  value: entry.value, // Key is used as value for Dropdown
+                  child: Text(entry.key), // Value is displayed as text
+                );
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget buildTextField(String label, TextEditingController controller , bool isReadOnly) {
     return Padding(

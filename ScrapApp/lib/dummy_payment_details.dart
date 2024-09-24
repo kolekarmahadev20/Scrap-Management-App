@@ -273,21 +273,21 @@ class View_payment_detail extends StatelessWidget {
             icon: Icon(Icons.arrow_forward_ios, size: 16),
             color: Colors.grey[600],
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => View_Payment_Amount(),
-                ),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (context) => View_Payment_Amount(),
+              //   ),
+              // );
             },
           ),
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => View_Payment_Amount(),
-              ),
-            );
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) => View_Payment_Amount(),
+            //   ),
+            // );
           },
         ),
       ),
@@ -328,21 +328,21 @@ class View_payment_detail extends StatelessWidget {
             icon: Icon(Icons.arrow_forward_ios, size: 16),
             color: Colors.grey[600],
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => View_Payment_Amount(),
-                ),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (context) => View_Payment_Amount(),
+              //   ),
+              // );
             },
           ),
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => View_Payment_Amount(),
-              ),
-            );
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) => View_Payment_Amount(),
+            //   ),
+            // );
           },
         ),
       ),

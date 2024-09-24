@@ -1,14 +1,32 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
 
 class Edit_payment_detail extends StatefulWidget {
+  final String? sale_order_id;
+  final String? paymentId;
+  final String? paymentType;
+  final String? date1;
+  final String? amount;
+  final String? referenceNo;
+  final String? typeOfTransfer;
+
+  Edit_payment_detail({
+    required this.sale_order_id,
+    required this.paymentId,
+    required this.paymentType,
+    required this.date1,
+    required this.amount,
+    required this.referenceNo,
+    required this.typeOfTransfer,
+  });
+
   @override
   _Edit_payment_detailState createState() => _Edit_payment_detailState();
 }
@@ -19,7 +37,23 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
   final TextEditingController refNoController = TextEditingController();
   final TextEditingController typeTransController = TextEditingController();
 
+
+  String? username = '';
+
+  String? password = '';
+
+
+
   String? selectedPaymentType;
+
+
+  Map<String , String> PaymentType = {
+    'Select' : 'Select',
+    'Received Payment':'P',
+    'Received EMD':'E',
+    'Received CMD':'C',
+  };
+
 
   void clearFields(){
     selectedPaymentType = null;
@@ -29,24 +63,46 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
     typeTransController.clear();
   }
 
+  @override
+  initState(){
+    super.initState();
+    checkLogin();
+    if (PaymentType.containsKey(widget.paymentType)) {
+      selectedPaymentType =PaymentType['${widget.paymentType}'];
+      print(selectedPaymentType);
+    } else {
+      selectedPaymentType = 'Select';
+      print(selectedPaymentType);
+    }
+    dateController1.text = widget.date1!;
+    amountController.text = widget.amount!;
+    refNoController.text = widget.referenceNo!;
+    typeTransController.text = widget.typeOfTransfer!;
+  }
 
+  checkLogin()async{
+    final login = await SharedPreferences.getInstance();
+    username = await login.getString("username") ?? '';
+    password = await login.getString("password") ?? '';
+  }
 
   Future<void> editPaymentDetails() async {
     try {
+      await checkLogin();
       final url = Uri.parse("${URL}add_payment_toSaleOrder");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': 'Bantu',
-          'user_pass': 'Bantu#123',
-          'sale_order_id_pay':'37',
-          'pay_id':'30',
+          'user_id': username,
+          'user_pass': password,
+          'sale_order_id_pay':widget.sale_order_id,
+          'pay_id':widget.paymentId,
           'payment_type': selectedPaymentType ?? '',
-          'pay_date': dateController1.text,
-          'amt':amountController.text,
-          'pay_ref_no':refNoController.text,
-          'typeoftransfer':typeTransController.text,
+          'pay_date': dateController1.text ?? '',
+          'amt':amountController.text ?? '',
+          'pay_ref_no':refNoController.text ?? '',
+          'typeoftransfer':typeTransController.text ?? '',
         },
       );
       print('hello');
@@ -127,12 +183,7 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
             Expanded(
               child: ListView(
                 children: [
-                  buildDropdown("Payment Type", [
-                    "Select",
-                    "Received Payment",
-                    "Received EMD",
-                    "Received CMD"
-                  ], (value) {
+                  buildDropdownPayment("Payment Type", PaymentType, (value) {
                     setState(() {
                       selectedPaymentType = value;
                     });
@@ -189,7 +240,7 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
     );
   }
 
-  Widget buildDropdown(String label, List<String> options, ValueChanged<String?> onChanged) {
+  Widget buildDropdownPayment(String label, Map<String , String> options, ValueChanged<String?> onChanged) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0 , horizontal: 8.0),
       child: Row(
@@ -207,17 +258,18 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
           Expanded(
             flex: 7, // Adjusts dropdown width
             child: DropdownButtonFormField<String>(
+              isExpanded: true,
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              value: options.isNotEmpty ? options.first : null,
-              items: options.map((String option) {
+              value: selectedPaymentType,
+              items: options.entries.map((entry) {
                 return DropdownMenuItem<String>(
-                  value: option,
-                  child: Text(option),
+                  value: entry.value, // Key is used as value for Dropdown
+                  child: Text(entry.key), // Value is displayed as text
                 );
               }).toList(),
               onChanged: onChanged,

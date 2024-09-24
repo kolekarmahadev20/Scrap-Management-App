@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
 // imports for image uploader
 import 'package:image_picker/image_picker.dart';
@@ -27,6 +28,8 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
 
 
 
+  String? username = '';
+  String? password = '';
   String? selectedOrderId;
   List<String> orderIDs = ['Select',];
   String? MaterialSelected;
@@ -51,17 +54,26 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
   void initState(){
     super.initState();
     orderIdDropDowns();
+    checkLogin();
   }
+
+  checkLogin()async{
+    final login = await SharedPreferences.getInstance();
+    username = await login.getString("username") ?? '';
+    password = await login.getString("password") ?? '';
+  }
+
   //fetching dropDowns of sale_order_list
   Future<void> orderIdDropDowns() async {
     try {
+      await checkLogin();
       final url = Uri.parse("${URL}saleOrder_list");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id':'Bantu',
-          'user_pass':'Bantu#123',
+          'user_id':username,
+          'user_pass':password,
         },
       );
       if (response.statusCode == 200) {
@@ -87,13 +99,14 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
   //fetching the material of selected sale_order_id
   Future<void> orderIdMaterial() async {
     try {
+      await checkLogin();
       final url = Uri.parse("${URL}fetch_material_lifting");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id':'Bantu',
-          'user_pass':'Bantu#123',
+          'user_id':username,
+          'user_pass':password,
           'sale_order_id': selectedOrderId ?? '',
         },
       );
@@ -114,13 +127,14 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
 
   Future<void> materialNameId() async {
     try {
+      await checkLogin();
       final url = Uri.parse("${URL}get_materialDesc");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id':'Bantu',
-          'user_pass':'Bantu#123',
+          'user_id':username,
+          'user_pass':password,
           'sale_order_id':selectedOrderId,
         },
       );
@@ -142,13 +156,14 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
 
   Future<void> addDispatchDetails() async {
     try {
+      await checkLogin();
       final url = Uri.parse("${URL}save_lifting");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id':'Bantu',
-          'user_pass':'Bantu#123',
+          'user_id':username,
+          'user_pass':password,
           'sale_order_id_lift':selectedOrderId ?? '',
           'material_id_lifting':materialId ?? '', //sending material Id instead of material Name
           'invoice_no':invoiceController.text,
@@ -188,6 +203,9 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
 
     }
   }
+
+
+
 
 
 

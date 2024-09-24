@@ -7,6 +7,7 @@ import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Payment/Add_payment_detail.dart';
 import 'package:scrapapp/Refund/Add_refund_details.dart';
 import 'package:scrapapp/Refund/View_refund_details.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../URL_CONSTANT.dart';
 
@@ -17,9 +18,8 @@ class RefundList extends StatefulWidget {
 
 class _RefundListState extends State<RefundList> {
 
-
-
-
+  String? username = '';
+  String? password = '';
 
   bool isLoading = true; // Add a loading flag
   List<Map<String, dynamic>> refundList = [];
@@ -27,18 +27,27 @@ class _RefundListState extends State<RefundList> {
   @override
   void initState() {
     super.initState();
+    checkLogin();
     fetchRefundList();
+  }
+
+
+  checkLogin()async{
+    final login = await SharedPreferences.getInstance();
+    username = await login.getString("username") ?? '';
+    password = await login.getString("password") ?? '';
   }
 
   Future<void> fetchRefundList() async {
     try {
+      await checkLogin();
       final url = Uri.parse("${URL}fetch_refund_data");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': 'Bantu',
-          'user_pass': 'Bantu#123',
+          'user_id': username,
+          'user_pass': password,
         },
       );
 
@@ -46,8 +55,6 @@ class _RefundListState extends State<RefundList> {
         setState(() {
           var jsonData = json.decode(response.body);
           refundList = List<Map<String, dynamic>>.from(jsonData['saleOrder_refundList']);
-          print(refundList);
-          print(refundList.length);
 
           isLoading = false; // Set loading to false when data is loaded
         });
@@ -222,14 +229,14 @@ class _RefundListState extends State<RefundList> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => View_refund_details()),
+              MaterialPageRoute(builder: (context) => View_refund_details(sale_order_id: index['sale_order_id'],)),
             );
           },
         ),
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => View_refund_details()),
+            MaterialPageRoute(builder: (context) => View_refund_details(sale_order_id: index['sale_order_id'],)),
           );
         },
       ),

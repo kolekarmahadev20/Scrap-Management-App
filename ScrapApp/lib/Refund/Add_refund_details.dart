@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
   import 'package:scrapapp/AppClass/AppDrawer.dart';
   import 'package:scrapapp/AppClass/appBar.dart';
   import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
   import '../URL_CONSTANT.dart';
 
   class Add_refund_details extends StatefulWidget {
@@ -19,20 +20,29 @@ import 'package:fluttertoast/fluttertoast.dart';
     final TextEditingController amountController = TextEditingController();
     final TextEditingController totalPaymentController = TextEditingController();
     final TextEditingController totalEmdController = TextEditingController();
-    final TextEditingController totalAmountController = TextEditingController();
+    final TextEditingController totalAmountEmdController = TextEditingController();
     final TextEditingController noteController = TextEditingController();
     final TextEditingController refNoController = TextEditingController();
     final TextEditingController rvNoController = TextEditingController();
     final TextEditingController dateController2 = TextEditingController();
-    final TextEditingController typeTransController = TextEditingController();
     final TextEditingController nfaController = TextEditingController();
 
 
+    String? username = '';
+    String? password = '';
     String? selectedOrderId;
     String? selectedPaymentType;
     List<String> orderIDs = ['Select',];
     List<String> materialId = [];
     String? totalAmount;
+    Map <String , String> refundMap ={
+      "Select" : "Select",
+      "Refund(Other than EMD/CMD)" :"R",
+      "Refund EMD" : "RE",
+      "Refund CMD" : "Rc",
+      "Penalty" : "P",
+      "Refund All" : "RA"
+    };
 
 
     void clearFields(){
@@ -42,30 +52,37 @@ import 'package:fluttertoast/fluttertoast.dart';
       amountController.clear();
       totalPaymentController.clear();
       totalEmdController.clear();
-      totalAmountController.clear();
+      totalAmountEmdController.clear();
       noteController.clear();
       refNoController.clear();
       rvNoController.clear();
       dateController2.clear();
-      typeTransController.clear();
     }
 
 
     @override
     void initState(){
       super.initState();
+      checkLogin();
       orderIdDropDowns();
+    }
+
+    checkLogin()async{
+      final login = await SharedPreferences.getInstance();
+      username = await login.getString("username") ?? '';
+      password = await login.getString("password") ?? '';
     }
     //fetching dropDowns of sale_order_list
     Future<void> orderIdDropDowns() async {
       try {
+        await checkLogin();
         final url = Uri.parse("${URL}saleOrder_list");
         var response = await http.post(
           url,
           headers: {"Accept": "application/json"},
           body: {
-            'user_id':'Bantu',
-            'user_pass':'Bantu#123',
+            'user_id':username,
+            'user_pass':password,
           },
         );
         if (response.statusCode == 200) {
@@ -88,22 +105,26 @@ import 'package:fluttertoast/fluttertoast.dart';
       }
     }
 
-    Future<void> fetchTotalAmount() async {
+
+    Future<void> fetchRefundPaymentDetails() async {
       try {
-        final url = Uri.parse("${URL}add_refund_payment");
+        await checkLogin();
+        final url = Uri.parse("${URL}Addrefunddata");
         var response = await http.post(
           url,
           headers: {"Accept": "application/json"},
           body: {
-            'user_id':'Bantu',
-            'user_pass':'Bantu#123',
+            'user_id':username,
+            'user_pass':password,
             'sale_order_id':selectedOrderId ?? '',
           },
         );
         if (response.statusCode == 200) {
           final jsonData = json.decode(response.body);
           setState(() {
-            totalAmountController.text = jsonData['t_amt'].toString();
+            totalPaymentController.text = jsonData['totalPayment'].toString();
+            totalEmdController.text = jsonData['total_emd'].toString();
+            totalAmountEmdController.text = jsonData['totalAvailablebalIncludingEmd'].toString();
           });
         } else {
           print("unable to load order ids.");
@@ -121,14 +142,15 @@ import 'package:fluttertoast/fluttertoast.dart';
           url,
           headers: {"Accept": "application/json"},
           body: {
-            'user_id':'Bantu',
-            'user_pass':'Bantu#123',
+            'user_id':username,
+            'user_pass':password,
             'sale_order_id_pay': selectedOrderId ?? '',
             'payment_type':selectedPaymentType ?? '',
             'pay_date':dateController1.text,
             'amt':amountController.text,
-            't_amt':totalAmountController.text,
+            't_amt':totalAmountEmdController.text,
             'total_emd':totalEmdController.text,
+            'total_amount_including_emd': totalAmountEmdController.text,
             'narration':noteController.text,
             'pay_ref_no':refNoController.text,
             'receipt_voucher_no':rvNoController.text,
@@ -137,6 +159,7 @@ import 'package:fluttertoast/fluttertoast.dart';
           },
         );
         if (response.statusCode == 200) {
+          // print('test');
           final jsonData = json.decode(response.body);
           setState(() {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -218,46 +241,52 @@ import 'package:fluttertoast/fluttertoast.dart';
                     buildDropdown("Order ID",orderIDs, (value) {
                       setState(() {
                         selectedOrderId = value;
-                        fetchTotalAmount();
+                        if(selectedOrderId == orderIDs.first){
+                            totalPaymentController.clear();
+                            totalEmdController.clear();
+                            totalAmountEmdController.clear();
+                        }
+                        fetchRefundPaymentDetails();
                       });
                     }),
-                    buildDropdown("Payment Type", ["Select","Refund(Other than EMD/CMD)", "Refund EMD", "Refund CMD","Penalty","Refund All"], (value) {
+                    buildDropdownPayment("Payment Type",refundMap, (value) {
                       setState(() {
                         selectedPaymentType = value;
+                        print(value);
                       });
                     }),
 
-                    if (selectedPaymentType == "Refund(Other than EMD/CMD)") ...[
+                    if (selectedPaymentType == "R") ...[
                       buildTextField("Date", dateController1, false),
                       buildTextField("Amount", amountController, false),
-                      buildTextField("Total Payment", totalPaymentController, false),
+                      buildTextField("Total Payment", totalPaymentController, true),
                       buildTextField("NFA No.", nfaController, false),
-                      buildTextField("Date", dateController2, false),
-                    ] else if (selectedPaymentType == "Refund EMD" || selectedPaymentType =="Refund CMD") ...[
+                      buildTextField("RV Date", dateController2, false),
+                    ] else if (selectedPaymentType == "RE" || selectedPaymentType =="Rc") ...[
                       buildTextField("Date", dateController1, false),
                       buildTextField("Amount", amountController, false),
-                      buildTextField("Total EMD", totalEmdController, false),
-                      buildTextField("Total Amount Including EMD",totalAmountController, false),
+                      buildTextField("Total EMD", totalEmdController, true),
+                      buildTextField("Total Amount Including EMD",totalAmountEmdController, true),
                       buildTextField("NFA No.", nfaController, false),
-                      buildTextField("Date", dateController2, false),
-                    ]else if (selectedPaymentType == "Penalty") ...[
+                      buildTextField("RV Date", dateController2, false),
+                    ]else if (selectedPaymentType == "P") ...[
                       buildTextField("Date", dateController1, false),
                       buildTextField("Amount", amountController, false),
-                      buildTextField("Total EMD", totalEmdController, false),
-                      buildTextField("Total Amount Including EMD",totalAmountController, false),
-                      buildTextField("Date", dateController2, false),
+                      buildTextField("Total Payment", totalPaymentController, true),
+                      buildTextField("Total EMD", totalEmdController, true),
+                      buildTextField("Total Amount Including EMD",totalAmountEmdController, true),
+                      buildTextField("RV Date", dateController2, false),
                     ]
                     else ...[
                       buildTextField("Date", dateController1, false),
                       buildTextField("Amount", amountController, false),
-                      buildTextField("Total Payment", totalPaymentController, false),
-                      buildTextField("Total EMD", totalEmdController, false),
-                      buildTextField("Total Amount Including EMD",totalAmountController, false),
+                      buildTextField("Total Payment", totalPaymentController, true),
+                      buildTextField("Total EMD", totalEmdController, true),
+                      buildTextField("Total Amount Including EMD",totalAmountEmdController, true),
                       buildTextField("Note", noteController, false),
                       buildTextField("Reference No.", refNoController, false),
                       buildTextField("RV No.", rvNoController, false),
-                      buildTextField("Date", dateController2, false),
-                      buildTextField("Type Of Transfer", typeTransController, false),
+                      buildTextField("RV Date", dateController2, false),
                     ],
                     SizedBox(height: 40,),
                     Padding(
@@ -347,6 +376,47 @@ import 'package:fluttertoast/fluttertoast.dart';
         ),
       );
     }
+
+    Widget buildDropdownPayment(String label, Map<String, String> optionsMap, ValueChanged<String?> onChanged) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 3, // Adjusts label width
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: Colors.black54,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 7, // Adjusts dropdown width
+              child: DropdownButtonFormField<String>(
+                isExpanded: true,
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                value: selectedPaymentType ?? optionsMap.values.first, // Use the map's value
+                items: optionsMap.entries.map((option) {
+                  return DropdownMenuItem<String>(
+                    value: option.value, // Ensure the value here is the map's value
+                    child: Text(option.key), // Display the key as the label
+                  );
+                }).toList(),
+                onChanged: onChanged,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
 
 
     Widget buildTextField(String label, TextEditingController controller , bool isReadOnly) {

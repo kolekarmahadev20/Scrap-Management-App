@@ -4,33 +4,99 @@ import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Payment/Edit_payment_detail.dart';
 import 'package:scrapapp/Refund/Edit_refund_detail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class View_Refund_Amount extends StatelessWidget {
+class View_Refund_Amount extends StatefulWidget {
+  final String? sale_order_id;
+  final String? refundId;
+  final String? paymentType;
+  final String? date1;
+  final String? amount;
+  final String? totalPayment;
+  final String? totalEmd;
+  final String? totalAmountIncludingEmd;
+  final String? note;
+  final String? referenceNo;
+  final String? rvNo;
+  final String? date2;
+  final String? typeOfTransfer;
+  final String? nfa;
+  View_Refund_Amount({
+    required this.sale_order_id,
+    required this.refundId,
+    required this.paymentType,
+    required this.date1,
+    required this.amount,
+    required this.totalPayment,
+    required this.totalEmd,
+    required this.totalAmountIncludingEmd,
+    required this.note,
+    required this.referenceNo,
+    required this.rvNo,
+    required this.date2,
+    required this.typeOfTransfer,
+    required this.nfa,
+
+  });
+  @override
+  State<View_Refund_Amount> createState() => _View_Refund_AmountState();
+}
+
+class _View_Refund_AmountState extends State<View_Refund_Amount> {
+
+  String? username = '';
+
+  String? password = '';
+
   String paymentType='';
+
   String date1='';
+
   String amount='';
+
   String totalPayment='';
+
   String totalEmd='';
+
   String totalAmountIncludingEmd='';
+
   String note='';
+
   String referenceNo='';
+
   String rvNo='';
+
   String date2='';
+
   String typeOfTransfer='';
 
-  // View_Payment_Amount({
-  //   required this.paymentType,
-  //   required this.date1,
-  //   required this.amount,
-  //   required this.totalPayment,
-  //   required this.totalEmd,
-  //   required this.totalAmountIncludingEmd,
-  //   required this.note,
-  //   required this.referenceNo,
-  //   required this.rvNo,
-  //   required this.date2,
-  //   required this.typeOfTransfer,
-  // });
+  String nfa = '';
+
+
+  @override
+  void initState() {
+    super.initState();
+    checkLogin();
+    paymentType = widget.paymentType ?? 'Unknown';
+    date1 = widget.date1 ?? 'N/A';
+    amount = widget.amount ?? '0.00';
+    totalPayment = widget.totalPayment ?? '';
+    totalEmd = widget.totalEmd ?? '';
+    totalAmountIncludingEmd = widget.totalAmountIncludingEmd ?? '';
+    note = widget.note ?? 'No note';
+    referenceNo = widget.referenceNo ?? 'N/A';
+    rvNo = widget.rvNo ?? 'N/A';
+    date2 = widget.date2 ?? 'N/A';
+    typeOfTransfer = widget.typeOfTransfer ?? 'Unknown';
+    nfa = widget.nfa ?? 'N/A';
+
+  }
+
+  checkLogin()async{
+    final login = await SharedPreferences.getInstance();
+    username = await login.getString("username") ?? '';
+    password = await login.getString("password") ?? '';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +148,22 @@ class View_Refund_Amount extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => Edit_refund_detail(),
+                        builder: (context) => Edit_refund_detail(
+                            sale_order_id: widget.sale_order_id,
+                            nfa: nfa,
+                            date2: date2,
+                            date1: date1,
+                            rvNo: rvNo,
+                            referenceNo: referenceNo,
+                            note: note,
+                            totalAmountIncludingEmd: totalAmountIncludingEmd,
+                            totalEmd: totalEmd,
+                            totalPayment: totalPayment,
+                            amount: amount,
+                            refundId:widget.refundId,
+                            paymentType: paymentType,
+                            typeOfTransfer: typeOfTransfer,
+                        ),
                       ),
                     );
                   },
@@ -97,17 +178,41 @@ class View_Refund_Amount extends StatelessWidget {
             Expanded(
               child: ListView(
                 children: [
-                  buildDisplay("Payment Type", paymentType),
-                  buildDisplay("Date", date1),
-                  buildDisplay("Amount", amount),
-                  buildDisplay("Total Payment", totalPayment),
-                  buildDisplay("Total EMD", totalEmd),
-                  buildDisplay("Total Amount Including EMD", totalAmountIncludingEmd),
-                  buildDisplay("Note", note),
-                  buildDisplay("Reference No.", referenceNo),
-                  buildDisplay("RV No.", rvNo),
-                  buildDisplay("Date", date2),
-                  buildDisplay("Type Of Transfer", typeOfTransfer),
+                  if( paymentType== "Refund(Other than EMD/CMD)") ...[
+                    buildDisplay("Payment Type", paymentType),
+                    buildDisplay("Date", date1 ),
+                    buildDisplay("Amount", amount),
+                    buildDisplay("Total Payment", totalPayment),
+                    buildDisplay("NFA No.", nfa),
+                    buildDisplay("RV Date", date2),
+                  ]else if (paymentType == "Refund EMD" || paymentType =="Refund CMD") ...[
+                    buildDisplay("Payment Type", paymentType),
+                    buildDisplay("Date", date1),
+                    buildDisplay("Amount", amount),
+                    buildDisplay("Total EMD", totalEmd),
+                    buildDisplay("Total Amount Including EMD",totalAmountIncludingEmd),
+                    buildDisplay("NFA No.", nfa),
+                    buildDisplay("RV Date", date2),
+                  ]else if(paymentType == "Penalty") ...[
+                    buildDisplay("Payment Type", paymentType),
+                    buildDisplay("Date", date1),
+                    buildDisplay("Amount", amount),
+                    buildDisplay("Total EMD", totalEmd),
+                    buildDisplay("Total Amount Including EMD",totalAmountIncludingEmd),
+                    buildDisplay("RV Date", date2),
+                  ] else ...[
+                    buildDisplay("Payment Type", paymentType),
+                    buildDisplay("Date", date1),
+                    buildDisplay("Amount", amount),
+                    buildDisplay("Total Payment", totalPayment),
+                    buildDisplay("Total EMD", totalEmd),
+                    buildDisplay("Total Amount Including EMD",totalAmountIncludingEmd),
+                    buildDisplay("Note", note),
+                    buildDisplay("Reference No.", referenceNo),
+                    buildDisplay("RV No.", rvNo),
+                    buildDisplay("RV Date", date2),
+                    buildDisplay("Type Of Transfer", typeOfTransfer),
+                  ],
                   SizedBox(height: 40,),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),

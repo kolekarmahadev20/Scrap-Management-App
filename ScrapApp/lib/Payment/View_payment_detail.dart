@@ -1,11 +1,11 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Payment/Add_payment_detail.dart';
 import 'package:scrapapp/Payment/View_Payment_Amount.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
 
 class View_payment_detail extends StatefulWidget {
@@ -21,30 +21,40 @@ class View_payment_detail extends StatefulWidget {
 
 class _View_payment_detailState extends State<View_payment_detail> {
 
+  String? username = '';
 
+  String? password = '';
 
   Map<String , dynamic> ViewPaymentData = {};
+  List<dynamic> paymentId =[];
+  List<dynamic> emdStatus =[];
 
 @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    checkLogin();
     print(widget.sale_order_id);
-    fetchPaymentList();
+    fetchPaymentDetails();
+  }
+
+  checkLogin()async{
+    final login = await SharedPreferences.getInstance();
+    username = await login.getString("username") ?? '';
+    password = await login.getString("password") ?? '';
   }
 
 
-
-
-  Future<void> fetchPaymentList() async {
+  Future<void> fetchPaymentDetails() async {
   try {
+    await checkLogin();
     final url = Uri.parse("${URL}payment_details");
     var response = await http.post(
       url,
       headers: {"Accept": "application/json"},
       body: {
-        'user_id': 'Bantu',
-        'user_pass': 'Bantu#123',
+        'user_id': username,
+        'user_pass': password,
         'sale_order_id':widget.sale_order_id,
       },
     );
@@ -54,7 +64,10 @@ class _View_payment_detailState extends State<View_payment_detail> {
         var jsonData = json.decode(response.body);
         ViewPaymentData = jsonData;
         print(ViewPaymentData);
-        // print(ViewPaymentData['sale_order_id']);
+        paymentId = ViewPaymentData['sale_order_payments'] ?? '';
+        print(paymentId);
+        emdStatus =  ViewPaymentData['emd_status'] ?? '';
+        print(emdStatus);
       });
     } else {
       print("Unable to fetch data.");
@@ -67,8 +80,6 @@ class _View_payment_detailState extends State<View_payment_detail> {
     });
   }
 }
-
-
 
 
 
@@ -132,7 +143,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
       children: [
         Spacer(),
         Text(
-          "Order ID",
+          "Order ID : ${ViewPaymentData['sale_order']['sale_order_code'] ?? ''}",
           style: TextStyle(
             fontSize: 16,
             color: Colors.black54,
@@ -163,7 +174,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildVendorInfoText("Vendor Name : ${ViewPaymentData['vendor_buyer_details']['vendor_name']}"),
+        buildVendorInfoText("Vendor Name : ${ViewPaymentData['vendor_buyer_details']['vendor_name']} "),
         buildVendorInfoText("Branch :${ViewPaymentData['vendor_buyer_details']['branch_name']}"),
         buildVendorInfoText("Buyer Name :${ViewPaymentData['vendor_buyer_details']['bidder_name']}"),
       ],
@@ -202,12 +213,12 @@ class _View_payment_detailState extends State<View_payment_detail> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                buildListTile("Material Name :${ViewPaymentData['material_lifting_details']['1']['material_name']}"),
-                buildListTile("Total Qty :${ViewPaymentData['material_lifting_details']['1']['qty']}"),
-                buildListTile("Lifted Qty :${ViewPaymentData['material_lifting_details']['1']['material_name']}"),
-                buildListTile("Rate :${ViewPaymentData['material_lifting_details']['1']['rate']}"),
-                buildListTile("SO Date :${ViewPaymentData['material_lifting_details']['1']['date_time']}"),
-                buildListTile("SO Validity :${ViewPaymentData['material_lifting_details']['1']['material_name']}"),
+                buildListTile("Material Name :${ViewPaymentData['sale_order_details'][0]['material_name'] ?? 'No data'}"),
+                buildListTile("Total Qty :${ViewPaymentData['sale_order_details'][0]['totalqty'] ?? 'No data'}"),
+                buildListTile("Lifted Qty :${ViewPaymentData['lifted_quantity'][0]['quantity'] ?? 'No data'}"),
+                buildListTile("Rate :${ViewPaymentData['sale_order_details'][0]['rate'] ?? 'No data'}"),
+                buildListTile("SO Date :${ViewPaymentData['sale_order_details'][0]['sod'] ?? 'No data'}"),
+                buildListTile("SO Validity :${ViewPaymentData['sale_order_details'][0]['sovu'] ?? 'No data'}"),
                 buildTable(),
               ],
             ),
@@ -241,8 +252,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
           ],
           rows: [
             DataRow(cells: [
-              DataCell(Text('')),
-              DataCell(Text('')),
+              DataCell(Text('${ViewPaymentData['sale_order_details'][0]['taxes'][0]['tax_name']  ?? 'No data'}')),
+              DataCell(Text('${ViewPaymentData['sale_order_details'][0]['taxes'][0]['tax_rate']  ?? 'No data'}')),
             ]),
             DataRow(cells: [
               DataCell(Text('')),
@@ -304,26 +315,27 @@ class _View_payment_detailState extends State<View_payment_detail> {
       ),
     );
   }
-
   Widget buildPaymentDetailListView() {
     return ListView.builder(
-      itemCount: 5,
+      itemCount:paymentId.length,
       itemBuilder: (context, index) {
-        return buildPaymentDetailListTile(context);
+        final paymentIdIndex =paymentId[index];
+        return buildPaymentDetailListTile(context,paymentIdIndex);
       },
     );
   }
 
   Widget buildEmdDetailListView() {
     return ListView.builder(
-      itemCount: 5,
+      itemCount: emdStatus.length,
       itemBuilder: (context, index) {
-        return buildEmdDetailListTile(context);
+        final emdStatusIndex = emdStatus[index];
+        return buildEmdDetailListTile(context,emdStatusIndex);
       },
     );
   }
 
-  Widget buildPaymentDetailListTile(BuildContext context) {
+  Widget buildPaymentDetailListTile(BuildContext context , index) {
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: Card(
@@ -339,7 +351,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
             child: Icon(Icons.border_outer, size: 24, color: Colors.white),
           ),
           title: Text(
-            "Amount",
+            "Amount :${index['amt']  ?? ''}",
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -349,8 +361,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Ref No :", style: TextStyle(color: Colors.black54)),
-              Text("Date : ", style: TextStyle(fontSize: 14, color: Colors.black54)),
+              Text("Ref No :${index['pay_ref_no']  ?? ''}", style: TextStyle(color: Colors.black54)),
+              Text("Date :${index['pay_date']  ?? ''} ", style: TextStyle(fontSize: 14, color: Colors.black54)),
             ],
           ),
           trailing: IconButton(
@@ -361,7 +373,15 @@ class _View_payment_detailState extends State<View_payment_detail> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => View_Payment_Amount(),
+                  builder: (context) => View_Payment_Amount(
+                    sale_order_id: widget.sale_order_id,
+                    paymentId: index['payment_id'],
+                    paymentType: index['payment_type'],
+                    date1: index['pay_date'],
+                    amount: index['amt'],
+                    referenceNo: index['pay_ref_no'],
+                    typeOfTransfer: index['typeoftransfer'],
+                  ),
                 ),
               );
             },
@@ -370,7 +390,15 @@ class _View_payment_detailState extends State<View_payment_detail> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => View_Payment_Amount(),
+                builder: (context) => View_Payment_Amount(
+                  sale_order_id: widget.sale_order_id,
+                  paymentId: index['payment_id'],
+                  paymentType: index['payment_type'],
+                  date1: index['pay_date'],
+                  amount: index['amt'],
+                  referenceNo: index['pay_ref_no'],
+                  typeOfTransfer: index['typeoftransfer'],
+                ),
               ),
             );
           },
@@ -379,7 +407,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
     );
   }
 
-  Widget buildEmdDetailListTile(BuildContext context) {
+  Widget buildEmdDetailListTile(BuildContext context , index) {
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: Card(
@@ -395,7 +423,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
             child: Icon(Icons.account_balance_wallet_rounded, size: 24, color: Colors.white),
           ),
           title: Text(
-            "Amount",
+            "Amount : ${index['amt']}",
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -405,8 +433,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Ref No :", style: TextStyle(color: Colors.black54)),
-              Text("Date : ", style: TextStyle(fontSize: 14, color: Colors.black54)),
+              Text("Ref No :${index['pay_ref_no']}", style: TextStyle(color: Colors.black54)),
+              Text("Date : ${index['date']}", style: TextStyle(fontSize: 14, color: Colors.black54)),
             ],
           ),
           trailing: IconButton(
@@ -417,17 +445,33 @@ class _View_payment_detailState extends State<View_payment_detail> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => View_Payment_Amount(),
+                  builder: (context) => View_Payment_Amount(
+                    sale_order_id: widget.sale_order_id,
+                    paymentId: index['payment_id'],
+                    paymentType: index['payment_type'],
+                    date1: index['date'],
+                    amount: index['amt'],
+                    referenceNo: index['pay_ref_no'],
+                    typeOfTransfer: index['typeoftransfer'],
+                  ),
                 ),
               );
             },
           ),
           onTap: (){
             Navigator.push(
-                context,
-                MaterialPageRoute(
-                builder: (context) => View_Payment_Amount(),
-            ),
+              context,
+              MaterialPageRoute(
+                builder: (context) => View_Payment_Amount(
+                  sale_order_id: widget.sale_order_id,
+                  paymentId: index['payment_id'],
+                  paymentType: index['payment_type'],
+                  date1: index['date'],
+                  amount: index['amt'],
+                  referenceNo: index['pay_ref_no'],
+                  typeOfTransfer: index['typeoftransfer'],
+                ),
+              ),
             );
           },
         ),

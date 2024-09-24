@@ -3,21 +3,63 @@ import 'package:flutter/cupertino.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Payment/Edit_payment_detail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class View_Payment_Amount extends StatelessWidget {
+class View_Payment_Amount extends StatefulWidget {
+  final String? sale_order_id;
+  final String? paymentId;
+  final String? paymentType;
+  final String? date1;
+  final String? amount;
+  final String? referenceNo;
+  final String? typeOfTransfer;
+  View_Payment_Amount({
+    required this.sale_order_id,
+    required this.paymentId,
+    required this.paymentType,
+    required this.date1,
+    required this.amount,
+    required this.referenceNo,
+    required this.typeOfTransfer,
+
+  });
+
+  @override
+  State<View_Payment_Amount> createState() => _View_Payment_AmountState();
+}
+
+class _View_Payment_AmountState extends State<View_Payment_Amount> {
+
+  String? username = '';
+
+  String? password = '';
+
    String paymentType='';
+
    String date1='';
+
    String amount='';
-   String totalPayment='';
-   String totalEmd='';
-   String totalAmountIncludingEmd='';
-   String note='';
+
    String referenceNo='';
-   String rvNo='';
-   String date2='';
+
    String typeOfTransfer='';
 
+   @override
+  void initState() {
+    super.initState();
+    checkLogin();
+    paymentType = widget.paymentType ?? '';
+    date1 = widget.date1 ?? '';
+    amount = widget.amount ?? '';
+    referenceNo = widget.referenceNo ?? '';
+    typeOfTransfer = widget.typeOfTransfer ?? '';
+  }
 
+   checkLogin()async{
+     final login = await SharedPreferences.getInstance();
+     username = await login.getString("username") ?? '';
+     password = await login.getString("password") ?? '';
+   }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +111,15 @@ class View_Payment_Amount extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => Edit_payment_detail(),
+                        builder: (context) => Edit_payment_detail(
+                            sale_order_id: widget.sale_order_id,
+                            paymentId:widget.paymentId,
+                            paymentType: paymentType,
+                            date1: date1,
+                            amount: amount,
+                            referenceNo: referenceNo,
+                            typeOfTransfer: typeOfTransfer,
+                        ),
                       ),
                     );
                   },
@@ -87,13 +137,7 @@ class View_Payment_Amount extends StatelessWidget {
                   buildDisplay("Payment Type", paymentType),
                   buildDisplay("Date", date1),
                   buildDisplay("Amount", amount),
-                  buildDisplay("Total Payment", totalPayment),
-                  buildDisplay("Total EMD", totalEmd),
-                  buildDisplay("Total Amount Including EMD", totalAmountIncludingEmd),
-                  buildDisplay("Note", note),
                   buildDisplay("Reference No.", referenceNo),
-                  buildDisplay("RV No.", rvNo),
-                  buildDisplay("Date", date2),
                   buildDisplay("Type Of Transfer", typeOfTransfer),
                   SizedBox(height: 40,),
                   Padding(

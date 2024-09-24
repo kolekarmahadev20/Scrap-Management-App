@@ -12,10 +12,10 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _checkLoginStatus();
+    _checkLogin();
   }
 
-  Future<void> _checkLoginStatus() async {
+  Future<void> _checkLogin() async {
     SharedPreferences login = await SharedPreferences.getInstance();
     String? username = login.getString('username');
     String? password = login.getString('password');

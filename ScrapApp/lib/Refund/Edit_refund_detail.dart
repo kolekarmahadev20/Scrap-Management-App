@@ -1,9 +1,47 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import '../URL_CONSTANT.dart';
 
 class Edit_refund_detail extends StatefulWidget {
+
+  final String? sale_order_id;
+  final String? refundId;
+  final String? paymentType;
+  final String? date1;
+  final String? amount;
+  final String? totalPayment;
+  final String? totalEmd;
+  final String? totalAmountIncludingEmd;
+  final String? note;
+  final String? referenceNo;
+  final String? rvNo;
+  final String? date2;
+  final String? typeOfTransfer;
+  final String? nfa;
+  Edit_refund_detail({
+    required this.sale_order_id,
+    required this.refundId,
+    required this.paymentType,
+    required this.date1,
+    required this.amount,
+    required this.totalPayment,
+    required this.totalEmd,
+    required this.totalAmountIncludingEmd,
+    required this.note,
+    required this.referenceNo,
+    required this.rvNo,
+    required this.date2,
+    required this.typeOfTransfer,
+    required this.nfa,
+
+  });
   @override
   _Edit_refund_detailState createState() => _Edit_refund_detailState();
 }
@@ -13,14 +51,47 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
   final TextEditingController amountController = TextEditingController();
   final TextEditingController totalPaymentController = TextEditingController();
   final TextEditingController totalEmdController = TextEditingController();
-  final TextEditingController totalAmountController = TextEditingController();
+  final TextEditingController totalAmountEmdController = TextEditingController();
   final TextEditingController noteController = TextEditingController();
   final TextEditingController refNoController = TextEditingController();
   final TextEditingController rvNoController = TextEditingController();
   final TextEditingController dateController2 = TextEditingController();
-  final TextEditingController typeTransController = TextEditingController();
+  final TextEditingController nfaController = TextEditingController();
 
+
+  String? username = '';
+  String? password = '';
+
+  String date1='';
+
+  String amount='';
+
+  String totalPayment='';
+
+  String totalEmd='';
+
+  String totalAmountIncludingEmd='';
+
+  String note='';
+
+  String referenceNo='';
+
+  String rvNo='';
+
+  String date2='';
+
+  String typeOfTransfer='';
+
+  String nfa = '';
   String? selectedPaymentType;
+  Map <String , String> refundMap ={
+    "Select" : "Select",
+    "Refund(Other than EMD/CMD)" :"R",
+    "Refund EMD" : "RE",
+    "Refund CMD" : "Rc",
+    "Penalty" : "P",
+    "Refund All" : "RA"
+  };
 
   void clearFields(){
     selectedPaymentType = null;
@@ -28,13 +99,96 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
     amountController.clear();
     totalPaymentController.clear();
     totalEmdController.clear();
-    totalAmountController.clear();
+    totalAmountEmdController.clear();
     noteController.clear();
     refNoController.clear();
     rvNoController.clear();
     dateController2.clear();
-    typeTransController.clear();
   }
+
+  void initState(){
+    super.initState();
+    checkLogin();
+    if (refundMap.containsKey(widget.paymentType)) {
+      selectedPaymentType =refundMap['${widget.paymentType}'];
+      print(selectedPaymentType);
+    } else {
+      selectedPaymentType = 'Select';
+      print(selectedPaymentType);
+    }
+    print(selectedPaymentType);
+    dateController1.text = widget.date1 ?? 'N/A';
+    amountController.text = widget.amount ?? '0.00';
+    totalPaymentController.text = widget.totalPayment ?? '';
+    totalEmdController.text = widget.totalEmd ?? '';
+    totalAmountEmdController.text = widget.totalAmountIncludingEmd ?? '';
+    noteController.text = widget.note ?? 'No note';
+    refNoController.text = widget.referenceNo ?? 'N/A';
+    rvNoController.text = widget.rvNo ?? 'N/A';
+    dateController2.text = widget.date2 ?? 'N/A';
+    nfa = widget.nfa ?? 'N/A';
+  }
+
+  checkLogin()async{
+    final login = await SharedPreferences.getInstance();
+    username = await login.getString("username") ?? '';
+    password = await login.getString("password") ?? '';
+  }
+
+  Future<void> editRefundDetails() async {
+    try {
+      final url = Uri.parse("${URL}add_refund_toSaleOrdder");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id':username,
+          'user_pass':password,
+          'sale_order_id_pay':widget.sale_order_id,
+          'pay_id':widget.refundId,
+          'payment_type':selectedPaymentType ?? '',
+          'pay_date':dateController1.text,
+          'amt':amountController.text,
+          't_amt':totalAmountEmdController.text,
+          'total_emd':totalEmdController.text,
+          'total_amount_including_emd': totalAmountEmdController.text,
+          'narration':noteController.text,
+          'pay_ref_no':refNoController.text,
+          'receipt_voucher_no':rvNoController.text,
+          'receipt_voucher_date':dateController2.text,
+          'nfa_no':nfaController.text,
+        },
+      );
+      if (response.statusCode == 200) {
+        // print('test');
+        final jsonData = json.decode(response.body);
+        setState(() {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("${jsonData['msg']}")));
+        });
+      } else {
+        Fluttertoast.showToast(
+            msg: 'Unable to insert data.',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.yellow
+        );
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+          msg: 'Server Exception : $e',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.yellow
+      );
+
+    }
+  }
+
 
 
 
@@ -86,21 +240,43 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
             Expanded(
               child: ListView(
                 children: [
-                  buildDropdown("Payment Type", ["Option A", "Option B"], (value) {
+                  buildDropdownPayment("Payment Type", refundMap, (value) {
                     setState(() {
                       selectedPaymentType = value;
                     });
                   }),
-                  buildTextField("Date", dateController1),
-                  buildTextField("Amount", amountController),
-                  buildTextField("Total Payment", totalPaymentController),
-                  buildTextField("Total EMD", totalEmdController),
-                  buildTextField("Total Amount Including EMD", totalAmountController),
-                  buildTextField("Note", noteController),
-                  buildTextField("Reference No.", refNoController),
-                  buildTextField("RV No.", rvNoController),
-                  buildTextField("Date", dateController2),
-                  buildTextField("Type Of Transfer", typeTransController),
+                  if (selectedPaymentType == "R") ...[
+                    buildTextField("Date", dateController1, false),
+                    buildTextField("Amount", amountController, false),
+                    buildTextField("Total Payment", totalPaymentController, true),
+                    buildTextField("NFA No.", nfaController, false),
+                    buildTextField("RV Date", dateController2, false),
+                  ] else if (selectedPaymentType == "RE" || selectedPaymentType =="Rc") ...[
+                    buildTextField("Date", dateController1, false),
+                    buildTextField("Amount", amountController, false),
+                    buildTextField("Total EMD", totalEmdController, true),
+                    buildTextField("Total Amount Including EMD",totalAmountEmdController, true),
+                    buildTextField("NFA No.", nfaController, false),
+                    buildTextField("RV Date", dateController2, false),
+                  ]else if (selectedPaymentType == "P") ...[
+                    buildTextField("Date", dateController1, false),
+                    buildTextField("Amount", amountController, false),
+                    buildTextField("Total Payment", totalPaymentController, true),
+                    buildTextField("Total EMD", totalEmdController, true),
+                    buildTextField("Total Amount Including EMD",totalAmountEmdController, true),
+                    buildTextField("RV Date", dateController2, false),
+                  ]
+                  else ...[
+                      buildTextField("Date", dateController1, false),
+                      buildTextField("Amount", amountController, false),
+                      buildTextField("Total Payment", totalPaymentController, true),
+                      buildTextField("Total EMD", totalEmdController, true),
+                      buildTextField("Total Amount Including EMD",totalAmountEmdController, true),
+                      buildTextField("Note", noteController, false),
+                      buildTextField("Reference No.", refNoController, false),
+                      buildTextField("RV No.", rvNoController, false),
+                      buildTextField("RV Date", dateController2, false),
+                    ],
                   SizedBox(height: 40,),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -124,7 +300,8 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            clearFields();
+                            editRefundDetails();
+                            // clearFields();
                           },
                           child: Text("Save"),
                           style: ElevatedButton.styleFrom(
@@ -148,7 +325,8 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
     );
   }
 
-  Widget buildDropdown(String label, List<String> options, ValueChanged<String?> onChanged) {
+
+  Widget buildDropdownPayment(String label, Map<String , String> options, ValueChanged<String?> onChanged) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0 , horizontal: 8.0),
       child: Row(
@@ -166,17 +344,18 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
           Expanded(
             flex: 7, // Adjusts dropdown width
             child: DropdownButtonFormField<String>(
+              isExpanded: true,
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              value: options.isNotEmpty ? options.first : null,
-              items: options.map((String option) {
+              value: selectedPaymentType ?? options.keys.first ,
+              items: options.entries.map((entry) {
                 return DropdownMenuItem<String>(
-                  value: option,
-                  child: Text(option),
+                  value: entry.value, // Key is used as value for Dropdown
+                  child: Text(entry.key), // Value is displayed as text
                 );
               }).toList(),
               onChanged: onChanged,
@@ -188,7 +367,7 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
   }
 
 
-  Widget buildTextField(String label, TextEditingController controller) {
+  Widget buildTextField(String label, TextEditingController controller , bool isReadOnly) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0 ,horizontal: 8.0),
       child: Row(
@@ -230,6 +409,7 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
+                readOnly: isReadOnly,
               ),
             ),
           ),
