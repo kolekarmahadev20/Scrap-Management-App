@@ -7,7 +7,7 @@ import 'package:scrapapp/Payment/View_Payment_Amount.dart';
 
 
 
-class View_payment_detail extends StatelessWidget {
+class View_payment_detail_dummy extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(

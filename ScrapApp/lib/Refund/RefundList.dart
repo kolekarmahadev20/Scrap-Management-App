@@ -20,8 +20,7 @@ class _RefundListState extends State<RefundList> {
 
   String? username = '';
   String? password = '';
-
-  bool isLoading = true; // Add a loading flag
+  bool isLoading = false; // Add a loading flag
   List<Map<String, dynamic>> refundList = [];
 
   @override
@@ -40,6 +39,9 @@ class _RefundListState extends State<RefundList> {
 
   Future<void> fetchRefundList() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
       await checkLogin();
       final url = Uri.parse("${URL}fetch_refund_data");
       var response = await http.post(
@@ -50,122 +52,138 @@ class _RefundListState extends State<RefundList> {
           'user_pass': password,
         },
       );
-
       if (response.statusCode == 200) {
         setState(() {
           var jsonData = json.decode(response.body);
           refundList = List<Map<String, dynamic>>.from(jsonData['saleOrder_refundList']);
-
-          isLoading = false; // Set loading to false when data is loaded
         });
       } else {
         print("Unable to fetch data.");
-        setState(() {
-          isLoading = false; // Set loading to false in case of error
-        });
       }
-    } catch (e) {
+    }catch (e) {
       print("Server Exception: $e");
+    }finally{
       setState(() {
-        isLoading = false; // Set loading to false in case of exception
+        isLoading = false;
       });
     }
   }
 
 
+  showLoading(){
+    return Container(
+      height: double.infinity,
+      width: double.infinity,
+      color: Colors.black.withOpacity(0.4),
+      child: Center(child: CircularProgressIndicator(),),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: AppDrawer(),
-      appBar: CustomAppBar(),
-      body: Container(
-        height: double.infinity,
-        width: double.infinity,
-        color: Colors.grey[200], // Slightly lighter background color
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(12.0), // Increased padding for the header
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Refund",
-                    style: TextStyle(
-                      fontSize: 26, // Slightly larger font size for prominence
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: Icon(
-                      Icons.filter_list_alt,
-                      color: Colors.white,
-                      size: 20, // Consistent icon size
-                    ),
-                    label: Text("Filter"),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.indigo[800], // Text color
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12), // Rounded corners
-                      ),
-                      elevation: 5,
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Consistent padding
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            Row(
+    return AbsorbPointer(
+      absorbing: isLoading,
+      child: Scaffold(
+        drawer: AppDrawer(),
+        appBar: CustomAppBar(),
+        body: Stack(
+          children:[
+            isLoading
+            ?showLoading()
+            :Container(
+            height: double.infinity,
+            width: double.infinity,
+            color: Colors.grey[200], // Slightly lighter background color
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Spacer(),
-                Text(
-                  "Vendor, Plant",
-                  style: TextStyle(
-                    fontSize: 18, // Slightly larger font size
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w500,
+                Padding(
+                  padding: const EdgeInsets.all(12.0), // Increased padding for the header
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Refund",
+                        style: TextStyle(
+                          fontSize: 26, // Slightly larger font size for prominence
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {},
+                        icon: Icon(
+                          Icons.filter_list_alt,
+                          color: Colors.white,
+                          size: 20, // Consistent icon size
+                        ),
+                        label: Text("Filter"),
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.indigo[800], // Text color
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12), // Rounded corners
+                          ),
+                          elevation: 5,
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Consistent padding
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Spacer(),
-                IconButton(
-                  icon: Icon(
-                    Icons.add_box_outlined,
-                    size: 28, // Slightly smaller but prominent icon
-                    color: Colors.indigo[800],
+                Divider(
+                  thickness: 1.5,
+                  color: Colors.black54,
+                ),
+                Row(
+                  children: [
+                    Spacer(),
+                    Text(
+                      "Vendor, Plant",
+                      style: TextStyle(
+                        fontSize: 18, // Slightly larger font size
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Spacer(),
+                    IconButton(
+                      icon: Icon(
+                        Icons.add_box_outlined,
+                        size: 28, // Slightly smaller but prominent icon
+                        color: Colors.indigo[800],
+                      ),
+                      onPressed: () {
+                        Navigator.push(context,
+                            MaterialPageRoute(
+                                builder: (context) => Add_refund_details())).then((value) => setState((){
+                          fetchRefundList();
+                        }));
+                      },
+                    ),
+                  ],
+                ),
+                Divider(
+                  thickness: 1.5,
+                  color: Colors.black54,
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                    child: ListView.builder(
+                      itemCount: refundList.length, // Number of items in the list
+                      itemBuilder: (context, index) {
+                        final refundListIndex = refundList[index];
+                        return buildCustomListTile(context , refundListIndex);
+                      },
+                    ),
                   ),
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Add_refund_details()));
-                  },
                 ),
               ],
             ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                child: ListView.builder(
-                  itemCount: refundList.length, // Number of items in the list
-                  itemBuilder: (context, index) {
-                    final refundListIndex = refundList[index];
-                    return buildCustomListTile(context , refundListIndex);
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ]),
       ),
     );
   }
@@ -229,15 +247,23 @@ class _RefundListState extends State<RefundList> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => View_refund_details(sale_order_id: index['sale_order_id'],)),
-            );
+              MaterialPageRoute(builder: (context) => View_refund_details(
+                sale_order_id: index['sale_order_id'],
+              )),
+            ).then((value) => setState((){
+              fetchRefundList();
+            }));
           },
         ),
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => View_refund_details(sale_order_id: index['sale_order_id'],)),
-          );
+            MaterialPageRoute(builder: (context) => View_refund_details(
+              sale_order_id: index['sale_order_id'],
+            )),
+          ).then((value) => setState((){
+            fetchRefundList();
+          }));
         },
       ),
     );

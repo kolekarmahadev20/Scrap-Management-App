@@ -16,17 +16,13 @@ class PaymentList extends StatefulWidget {
 
 class _PaymentListState extends State<PaymentList> {
 
-
   String? username = '';
 
   String? password = '';
 
   List<Map<String, dynamic>> paymentList = [];
 
-  bool isLoading = true; // Add a loading flag
-
-
-
+  bool isLoading = false; // Add a loading flag
 
   @override
   void initState() {
@@ -43,6 +39,9 @@ class _PaymentListState extends State<PaymentList> {
 
   Future<void> fetchPaymentList() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
       await checkLogin();
       final url = Uri.parse("${URL}fetch_payment_data");
       var response = await http.post(
@@ -53,131 +52,135 @@ class _PaymentListState extends State<PaymentList> {
           'user_pass': password,
         },
       );
-
       if (response.statusCode == 200) {
         setState(() {
           var jsonData = json.decode(response.body);
           // Extract the relevant data
           paymentList = List<Map<String, dynamic>>.from(jsonData['saleOrder_paymentList']);
-          print(paymentList);
-          print(paymentList.length);
-
-
-          isLoading = false; // Set loading to false when data is loaded
         });
       } else {
         print("Unable to fetch data.");
-        setState(() {
-          isLoading = false; // Set loading to false in case of error
-        });
       }
     } catch (e) {
       print("Server Exception: $e");
+    }finally{
       setState(() {
-        isLoading = false; // Set loading to false in case of exception
+        isLoading = false;
       });
     }
   }
 
-
-
+  showLoading(){
+    return Container(
+      height: double.infinity,
+      width: double.infinity,
+      color: Colors.black.withOpacity(0.4),
+      child: Center(child: CircularProgressIndicator(),),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: AppDrawer(),
-      appBar: CustomAppBar(),
-      body:
-      isLoading
-      ?Center(child: CircularProgressIndicator()) // Show loading spinner while fetching data
-      :Container(
-        height: double.infinity,
-        width: double.infinity,
-         // Increased padding around the body
-        color: Colors.grey[200], // Slightly lighter background color
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(12.0), // Increased padding for the header
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return AbsorbPointer(
+      absorbing: isLoading,
+      child: Scaffold(
+        drawer: AppDrawer(),
+        appBar: CustomAppBar(),
+        body:
+        isLoading
+        ?showLoading()
+        :Container(
+          height: double.infinity,
+          width: double.infinity,
+           // Increased padding around the body
+          color: Colors.grey[200], // Slightly lighter background color
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12.0), // Increased padding for the header
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Payment",
+                      style: TextStyle(
+                        fontSize: 26, // Slightly larger font size for prominence
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: Icon(
+                        Icons.filter_list_alt,
+                        color: Colors.white,
+                        size: 20, // Consistent icon size
+                      ),
+                      label: Text("Filter"),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.indigo[800], // Text color
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12), // Rounded corners
+                        ),
+                        elevation: 5,
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Consistent padding
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(
+                thickness: 1.5,
+                color: Colors.black54,
+              ),
+              Row(
                 children: [
+                  Spacer(),
                   Text(
-                    "Payment",
+                    "Vendor, Plant",
                     style: TextStyle(
-                      fontSize: 26, // Slightly larger font size for prominence
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                      letterSpacing: 1.2,
+                      fontSize: 18, // Slightly larger font size
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  ElevatedButton.icon(
-                    onPressed: () {},
+                  Spacer(),
+                  IconButton(
                     icon: Icon(
-                      Icons.filter_list_alt,
-                      color: Colors.white,
-                      size: 20, // Consistent icon size
+                      Icons.add_box_outlined,
+                      size: 28, // Slightly smaller but prominent icon
+                      color: Colors.indigo[800],
                     ),
-                    label: Text("Filter"),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.indigo[800], // Text color
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12), // Rounded corners
-                      ),
-                      elevation: 5,
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Consistent padding
-                    ),
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                          Add_payment_detail())).then((value) => setState((){
+                            fetchPaymentList();
+                      }));
+                    },
                   ),
                 ],
               ),
-            ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            Row(
-              children: [
-                Spacer(),
-                Text(
-                  "Vendor, Plant",
-                  style: TextStyle(
-                    fontSize: 18, // Slightly larger font size
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w500,
+              Divider(
+                thickness: 1.5,
+                color: Colors.black54,
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                  child: ListView.builder(
+                    itemCount: paymentList.length, // Number of items in the list
+                    itemBuilder: (context, index) {
+                      final paymentIndex = paymentList[index];
+                      return buildCustomListTile(context,paymentIndex);
+                    },
                   ),
-                ),
-                Spacer(),
-                IconButton(
-                  icon: Icon(
-                    Icons.add_box_outlined,
-                    size: 28, // Slightly smaller but prominent icon
-                    color: Colors.indigo[800],
-                  ),
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Add_payment_detail()));
-                  },
-                ),
-              ],
-            ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                child: ListView.builder(
-                  itemCount: paymentList.length, // Number of items in the list
-                  itemBuilder: (context, index) {
-                    final paymentIndex = paymentList[index];
-                    return buildCustomListTile(context,paymentIndex);
-                  },
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -242,15 +245,23 @@ class _PaymentListState extends State<PaymentList> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => View_payment_detail(sale_order_id: index['sale_order_id'],)),
-            );
+              MaterialPageRoute(builder: (context) => View_payment_detail(
+                sale_order_id: index['sale_order_id'],
+              )),
+            ).then((value) => setState((){
+              fetchPaymentList();
+            }));
           },
         ),
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => View_payment_detail(sale_order_id: index['sale_order_id'],)),
-          );
+            MaterialPageRoute(builder: (context) => View_payment_detail(
+              sale_order_id: index['sale_order_id'],
+            )),
+          ).then((value) => setState((){
+            fetchPaymentList();
+          }));
         },
       ),
     );

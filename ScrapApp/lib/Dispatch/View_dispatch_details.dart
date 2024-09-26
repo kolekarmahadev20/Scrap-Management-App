@@ -1,58 +1,152 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Dispatch/Add_dispatch_details.dart';
 import 'package:scrapapp/Dispatch/View_dispatch_lifting_details.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import '../URL_CONSTANT.dart';
 
-class View_dispatch_details extends StatelessWidget {
+class View_dispatch_details extends StatefulWidget {
+  final String sale_order_id;
+
+  View_dispatch_details({
+    required this.sale_order_id,
+  });
+
+  @override
+  State<View_dispatch_details> createState() => _View_dispatch_detailsState();
+}
+
+class _View_dispatch_detailsState extends State<View_dispatch_details> {
+  String? username = '';
+  String? password = '';
+  bool isLoading = false;
+  Map<String, dynamic> ViewDispatchData = {};
+  List<dynamic> liftingDetails = [];
+
+  @override
+  void initState() {
+    super.initState();
+    checkLogin();
+    print(widget.sale_order_id);
+    fetchDispatchDetails();
+  }
+
+  checkLogin() async {
+    final login = await SharedPreferences.getInstance();
+    username = await login.getString("username") ?? '';
+    password = await login.getString("password") ?? '';
+  }
+
+  Future<void> fetchDispatchDetails() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      await checkLogin();
+      final url = Uri.parse("${URL}payment_details");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': username,
+          'user_pass': password,
+          'sale_order_id': widget.sale_order_id,
+        },
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          var jsonData = json.decode(response.body);
+          ViewDispatchData = jsonData;
+          var materialLiftingDetails =
+              ViewDispatchData['material_lifting_details'];
+          if (materialLiftingDetails != null) {
+            // Convert dynamic keys into a list and access the corresponding data
+            liftingDetails = materialLiftingDetails.entries
+                .map((entry) => entry.value)
+                .toList();
+          }
+        });
+      } else {
+        print("Unable to fetch data.");
+      }
+    } catch (e) {
+      print("Server Exception: $e");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  showLoading() {
+    return Container(
+      height: double.infinity,
+      width: double.infinity,
+      color: Colors.black.withOpacity(0.4),
+      child: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: AppDrawer(),
       appBar: CustomAppBar(),
-      body: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), // Match previous padding
-        color: Colors.grey[100],
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "Dispatch",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            buildRowWithIcon(context),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0), // Match padding from previous code
-              child: buildVendorInfo(),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
+      body: Stack(children: [
+        isLoading
+            ? showLoading()
+            : Container(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 8.0, horizontal: 4.0), // Match previous padding
+                color: Colors.grey[100],
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    buildScrollableContainerWithListView("Lifting Details", buildInvoiceListView),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        "Dispatch",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                    Divider(
+                      thickness: 1.5,
+                      color: Colors.black54,
+                    ),
+                    buildRowWithIcon(context),
+                    Divider(
+                      thickness: 1.5,
+                      color: Colors.black54,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(
+                          8.0), // Match padding from previous code
+                      child: buildVendorInfo(),
+                    ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            buildScrollableContainerWithListView(
+                                "Lifting Details", buildInvoiceListView),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
+      ]),
     );
   }
 
@@ -60,12 +154,26 @@ class View_dispatch_details extends StatelessWidget {
     return Row(
       children: [
         Spacer(),
-        Text(
-          "Order ID",
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.black54,
-            fontWeight: FontWeight.w500,
+        RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: "Order ID :  ", // Key text (e.g., "Vendor Name: ")
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black, // Bold key text
+                ),
+              ),
+              TextSpan(
+                text:ViewDispatchData['sale_order']['sale_order_code'], // Value text (e.g., "XYZ Corp")
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.black54, // Normal value text
+                ),
+              ),
+            ],
           ),
         ),
         Spacer(),
@@ -81,7 +189,9 @@ class View_dispatch_details extends StatelessWidget {
               MaterialPageRoute(
                 builder: (context) => Add_dispatch_details(),
               ),
-            );
+            ).then((value) => setState(() {
+                  fetchDispatchDetails();
+                }));
           },
         ),
       ],
@@ -92,26 +202,48 @@ class View_dispatch_details extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildVendorInfoText("Vendor Name :"),
-        buildVendorInfoText("Branch :"),
-        buildVendorInfoText("Buyer Name :"),
+        buildVendorInfoText(
+            "Vendor Name: ", ViewDispatchData['vendor_buyer_details']['vendor_name'] ?? 'N/A'),
+        buildVendorInfoText(
+            "Branch: ", ViewDispatchData['vendor_buyer_details']['branch_name'] ?? 'N/A'),
+        buildVendorInfoText(
+            "Buyer Name: ", ViewDispatchData['vendor_buyer_details']['bidder_name'] ?? 'N/A'),
       ],
     );
   }
 
-  Widget buildVendorInfoText(String text) {
+  Widget buildVendorInfoText(String key, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Text(
-        text,
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      child: RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: key, // Key text (e.g., "Vendor Name: ")
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black, // Bold key text
+              ),
+            ),
+            TextSpan(
+              text: value, // Value text (e.g., "XYZ Corp")
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.normal,
+                color: Colors.black54, // Normal value text
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget buildScrollableContainerWithListView(String title, Widget Function() listViewBuilder) {
+  Widget buildScrollableContainerWithListView(
+      String title, Widget Function() listViewBuilder) {
     return Container(
-      height: 500,
+      height: 580,
       margin: EdgeInsets.all(8.0), // Match margin from previous code
       padding: EdgeInsets.all(8.0), // Match padding from previous code
       decoration: BoxDecoration(
@@ -141,7 +273,7 @@ class View_dispatch_details extends StatelessWidget {
             ),
           ),
           SizedBox(
-            height: 400, // Match height from previous code
+            height: 500, // Match height from previous code
             child: listViewBuilder(),
           ),
         ],
@@ -151,14 +283,15 @@ class View_dispatch_details extends StatelessWidget {
 
   Widget buildInvoiceListView() {
     return ListView.builder(
-      itemCount: 10, // Example number of items
+      itemCount: liftingDetails.length, // Example number of items
       itemBuilder: (context, index) {
-        return buildInvoiceListTile(context);
+        final liftingDetailsIndex = liftingDetails[index];
+        return buildInvoiceListTile(context, liftingDetailsIndex);
       },
     );
   }
 
-  Widget buildInvoiceListTile(BuildContext context) {
+  Widget buildInvoiceListTile(BuildContext context, index) {
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: Card(
@@ -171,30 +304,77 @@ class View_dispatch_details extends StatelessWidget {
           contentPadding: const EdgeInsets.all(12.0),
           leading: CircleAvatar(
             backgroundColor: Colors.indigo[800],
-            child: Icon(Icons.receipt_long, size: 24, color: Colors.white), // Adjust icon size
+            child: Icon(Icons.receipt_long, size: 24, color: Colors.white),
           ),
-          title: Text(
-            "Invoice No",
-            style: TextStyle(
-              fontSize: 16, // Adjust font size to match
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
+          title:RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: "Invoice: ",
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.bold, // Bold key
+                    fontSize:20
+                  ),
+                ),
+                TextSpan(
+                  text: "${index['invoice_no']}",
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.normal, // Normal value
+                    fontSize: 20
+
+                  ),
+                ),
+              ],
             ),
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Material : ",
-                style: TextStyle(
-                  color: Colors.black54,
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "Material: ",
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold, // Bold key
+                        fontSize: 16,
+                      ),
+                    ),
+                    TextSpan(
+                      text: "${index['material_name']}",
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.normal, // Normal value
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Text(
-                "Date : ",
-                style: TextStyle(
-                  fontSize: 14, // Match subtitle font size
-                  color: Colors.black54,
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "Date: ",
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold, // Bold key
+                        fontSize: 16,
+                      ),
+                    ),
+                    TextSpan(
+                      text: "${index['date_time']}",
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.normal, // Normal value
+                        fontSize: 16,
+
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -203,7 +383,23 @@ class View_dispatch_details extends StatelessWidget {
             icon: Icon(Icons.arrow_forward_ios, size: 16),
             color: Colors.grey[600],
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => View_dispatch_lifting_details()));
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => View_dispatch_lifting_details(
+                        sale_order_id: widget.sale_order_id,
+                        lift_id: index['lift_id'],
+                        selectedOrderId: ViewDispatchData['sale_order']
+                        ['sale_order_code'],
+                        material: index['material_name'],
+                        invoiceNo: index['invoice_no'],
+                        date: index['date_time'],
+                        truckNo: index['truck_no'],
+                        quantity: index['qty'],
+                        note: index['note'],
+                      ))).then((value) => setState(() {
+                fetchDispatchDetails();
+              }));
             },
           ),
         ),

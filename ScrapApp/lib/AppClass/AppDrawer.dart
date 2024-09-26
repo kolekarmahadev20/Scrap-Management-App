@@ -57,7 +57,7 @@ class AppDrawer extends StatelessWidget {
                       children: [
                         SizedBox(height: 20),
                         Text(
-                          "Shubham Tiwari",
+                          "Bunty Jain",
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -66,7 +66,7 @@ class AppDrawer extends StatelessWidget {
                         ),
                         SizedBox(height: 4.0),
                         Text(
-                          "shubham.tiwari@salsaarauction.com",
+                          "bunty.jain@salasarauction.com",
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: 14,

@@ -69,7 +69,6 @@ class _View_Refund_AmountState extends State<View_Refund_Amount> {
   String date2='';
 
   String typeOfTransfer='';
-
   String nfa = '';
 
 
@@ -145,6 +144,7 @@ class _View_Refund_AmountState extends State<View_Refund_Amount> {
                     color: Colors.indigo[800],
                   ),
                   onPressed: () {
+                    print(nfa);
                     Navigator.push(
                       context,
                       MaterialPageRoute(

@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:http/http.dart' as http;
+import 'package:scrapapp/Payment/View_payment_detail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
 
@@ -39,13 +41,9 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
 
 
   String? username = '';
-
   String? password = '';
-
-
-
+  bool isLoading = false;
   String? selectedPaymentType;
-
 
   Map<String , String> PaymentType = {
     'Select' : 'Select',
@@ -53,7 +51,6 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
     'Received EMD':'E',
     'Received CMD':'C',
   };
-
 
   void clearFields(){
     selectedPaymentType = null;
@@ -69,10 +66,8 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
     checkLogin();
     if (PaymentType.containsKey(widget.paymentType)) {
       selectedPaymentType =PaymentType['${widget.paymentType}'];
-      print(selectedPaymentType);
     } else {
       selectedPaymentType = 'Select';
-      print(selectedPaymentType);
     }
     dateController1.text = widget.date1!;
     amountController.text = widget.amount!;
@@ -88,6 +83,9 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
 
   Future<void> editPaymentDetails() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
       await checkLogin();
       final url = Uri.parse("${URL}add_payment_toSaleOrder");
       var response = await http.post(
@@ -111,6 +109,11 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
         setState(() {
           ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("${jsonData['msg']}")));
+          clearFields();
+          Navigator.pop(context);
+          Navigator.pop(context);
+          Navigator.pushReplacement(context, MaterialPageRoute(
+              builder: (context) => View_payment_detail(sale_order_id: widget.sale_order_id!)));
         });
       } else {
         Fluttertoast.showToast(
@@ -131,111 +134,132 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
           backgroundColor: Colors.red,
           textColor: Colors.yellow
       );
+    }finally{
+      setState(() {
+        isLoading = false;
+      });
     }
   }
+
+  showLoading(){
+    return Container(
+      height: double.infinity,
+      width: double.infinity,
+      color: Colors.black.withOpacity(0.4),
+      child: Center(child: CircularProgressIndicator(),),
+    );
+  }
+
 
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: AppDrawer(),
-      appBar: CustomAppBar(),
-      body: Container(
-        padding: const EdgeInsets.symmetric(vertical: 4.0),
-        color: Colors.grey[100],
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+    return AbsorbPointer(
+      absorbing: isLoading,
+      child: Scaffold(
+        drawer: AppDrawer(),
+        appBar: CustomAppBar(),
+        body: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "Payment",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                  letterSpacing: 1.5,
-                ),
-              ),
-            ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            isLoading ?
+            showLoading()
+            :Container(
+            padding: const EdgeInsets.symmetric(vertical: 4.0),
+            color: Colors.grey[100],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  "Edit",
-                  style: TextStyle(
-                    fontSize: 16, // Keep previous font size
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w500,
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Payment",
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ),
+                Divider(
+                  thickness: 1.5,
+                  color: Colors.black54,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Edit",
+                      style: TextStyle(
+                        fontSize: 16, // Keep previous font size
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                Divider(
+                  thickness: 1.5,
+                  color: Colors.black54,
+                ),
+                SizedBox(height: 16),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      buildDropdownPayment("Payment Type", PaymentType, (value) {
+                        setState(() {
+                          selectedPaymentType = value;
+                        });
+                      }),
+                      buildTextField("Date", dateController1,true, context),
+                      buildTextField("Amount", amountController,false ,context),
+                      buildTextField("Reference No.", refNoController,false ,context),
+                      buildTextField("Type Of Transfer", typeTransController,false ,context),
+                      SizedBox(height: 40,),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                clearFields();
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Back"),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.indigo[800],
+                                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                editPaymentDetails();
+                              },
+                              child: Text("Save"),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.indigo[800],
+                                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            SizedBox(height: 16),
-            Expanded(
-              child: ListView(
-                children: [
-                  buildDropdownPayment("Payment Type", PaymentType, (value) {
-                    setState(() {
-                      selectedPaymentType = value;
-                    });
-                  }),
-                  buildTextField("Date", dateController1),
-                  buildTextField("Amount", amountController),
-                  buildTextField("Reference No.", refNoController),
-                  buildTextField("Type Of Transfer", typeTransController),
-                  SizedBox(height: 40,),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            clearFields();
-                            Navigator.of(context).pop();
-                          },
-                          child: Text("Back"),
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.indigo[800],
-                            padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            editPaymentDetails();
-                            // clearFields();
-                          },
-                          child: Text("Save"),
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.indigo[800],
-                            padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ]),
       ),
     );
   }
@@ -281,15 +305,30 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
   }
 
 
-  Widget buildTextField(String label, TextEditingController controller) {
+  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null) {
+      String formattedDate = DateFormat('yyyy-MM-dd').format(picked);
+      controller.text = formattedDate;
+    }
+  }
+
+
+  Widget buildTextField(
+      String labelText, TextEditingController controller, bool isDateField, BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0 ,horizontal: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
         children: [
           Expanded(
-            flex: 3, // Adjusts label width
+            flex: 3,
             child: Text(
-              label,
+              labelText,
               style: TextStyle(
                 color: Colors.black54,
                 fontWeight: FontWeight.w500,
@@ -297,31 +336,25 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
             ),
           ),
           Expanded(
-            flex: 7, // Adjusts text field width
-            child: Material(
-              elevation: 2,
-              borderRadius: BorderRadius.circular(12),
-              child: TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: Colors.indigo[800]!,
-                      width: 2.0,
+            flex: 7,
+            child: GestureDetector(
+              onTap: isDateField ? () => _selectDate(context, controller) : null,
+              child: AbsorbPointer(
+                absorbing: isDateField,
+                child: TextFormField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    suffixIcon: isDateField
+                        ? IconButton(
+                      icon: Icon(Icons.calendar_today),
+                      onPressed: () => _selectDate(context, controller),
+                    )
+                        : null,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: Colors.grey[400]!,
-                      width: 1.5,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
               ),
             ),

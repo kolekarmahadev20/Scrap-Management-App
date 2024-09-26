@@ -1,8 +1,8 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:http/http.dart' as http;
@@ -31,10 +31,10 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
   String? username = '';
   String? password = '';
   String? selectedOrderId;
+  bool isLoading = false;
   List<String> orderIDs = ['Select',];
   String? MaterialSelected;
   String? materialId ;
-  Map <String , String> MaterialMap={};
   List<File> _uploadedImages = [];
 
 
@@ -53,8 +53,9 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
   @override
   void initState(){
     super.initState();
-    orderIdDropDowns();
     checkLogin();
+    orderIdDropDowns();
+
   }
 
   checkLogin()async{
@@ -156,243 +157,276 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
 
   Future<void> addDispatchDetails() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
       await checkLogin();
       final url = Uri.parse("${URL}save_lifting");
-      var response = await http.post(
-        url,
-        headers: {"Accept": "application/json"},
-        body: {
-          'user_id':username,
-          'user_pass':password,
-          'sale_order_id_lift':selectedOrderId ?? '',
-          'material_id_lifting':materialId ?? '', //sending material Id instead of material Name
-          'invoice_no':invoiceController.text,
-          'date_time':dateController.text,
-          'truck_no':truckNoController.text,
-          'qty':quantityController.text,
-          'note':noteController.text,
-          'certifications':'',
-        },
-      );
+
+      // Create a Multipart Request
       var request = http.MultipartRequest('POST', url);
+
+      // Add form data
+      request.fields['user_id'] = username!;
+      request.fields['user_pass'] = password! ;
+      request.fields['sale_order_id_lift'] = selectedOrderId ?? '';
+      request.fields['material_id_lifting'] = materialId ?? ''; // sending material Id instead of material Name
+      request.fields['invoice_no'] = invoiceController.text;
+      request.fields['date_time'] = dateController.text;
+      request.fields['truck_no'] = truckNoController.text;
+      request.fields['qty'] = quantityController.text;
+      request.fields['note'] = noteController.text;
+
+
+      print('Form Data: ${request.fields}');
+
+      // Add images to the request
+      for (var image in _uploadedImages) {
+        var stream = http.ByteStream(image.openRead());
+        var length = await image.length();
+        var multipartFile = http.MultipartFile('certifications[]', stream, length, filename: image.path.split('/').last);
+        request.files.add(multipartFile);
+      }
+
+      // Send the request
+      var response = await request.send();
+
+      // Handle response
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
+
+        final res = await http.Response.fromStream(response);
+        final jsonData = json.decode(res.body);
         setState(() {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("${jsonData['msg']}")));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${jsonData['msg']}")));
         });
+        Navigator.pop(context);
       } else {
+
         Fluttertoast.showToast(
-            msg: 'Unable to insert data.',
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.red,
-            textColor: Colors.yellow
+          msg: 'Unable to insert data.',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.yellow,
         );
       }
     } catch (e) {
-      Fluttertoast.showToast(
-          msg: 'Server Exception : $e',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.red,
-          textColor: Colors.yellow
-      );
+      print("print");
 
+      Fluttertoast.showToast(
+        msg: 'Server Exception: $e',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.yellow,
+      );
+    }finally{
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
-
-
-
-
-
+  showLoading(){
+    return Container(
+      height: double.infinity,
+      width: double.infinity,
+      color: Colors.black.withOpacity(0.4),
+      child: Center(child: CircularProgressIndicator(),),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: AppDrawer(),
-      appBar: CustomAppBar(),
-      body: Container(
-        padding: const EdgeInsets.symmetric(vertical: 4.0),
-        color: Colors.grey[100],
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+    return AbsorbPointer(
+      absorbing: isLoading,
+      child: Scaffold(
+        drawer: AppDrawer(),
+        appBar: CustomAppBar(),
+        body: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "Dispatch",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                  letterSpacing: 1.5,
-                ),
-              ),
-            ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            isLoading
+            ?showLoading()
+            :Container(
+            padding: const EdgeInsets.symmetric(vertical: 4.0),
+            color: Colors.grey[100],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  "Add",
-                  style: TextStyle(
-                    fontSize: 16, // Keep previous font size
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w500,
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Dispatch",
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ),
+                Divider(
+                  thickness: 1.5,
+                  color: Colors.black54,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Add",
+                      style: TextStyle(
+                        fontSize: 16, // Keep previous font size
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                Divider(
+                  thickness: 1.5,
+                  color: Colors.black54,
+                ),
+                SizedBox(height: 16),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      buildDropdown("Order ID", orderIDs, (value) {
+                        setState(() {
+                          selectedOrderId = value;
+                          materialController.clear();
+                          orderIdMaterial();
+                          materialNameId();
+                          print(value);
+
+                        });
+                      }),
+                      buildTextField("Material", materialController,true, false , context),
+                      buildTextField("Invoice No", invoiceController , false,false , context),
+                      buildTextField("Date", dateController, false,true , context),
+                      buildTextField("Truck No", truckNoController, false,false , context),
+                      buildTextField("Quantity", quantityController, false,false , context),
+                      buildTextField("Note", noteController, false,false , context),
+                      SizedBox(height: 40,),
+                      Container(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Divider(thickness: 1.5,color: Colors.black54),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text("Upload Images" , style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
+                            ),
+                            Divider(thickness: 1.5,color: Colors.black54),
+                            ImageWidget(
+                              value: '1) Vehicle Front',
+                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                              onImagesSelected: (images) { // Handle selected images
+                              setState(() {
+                              _uploadedImages.addAll(images); // Store uploaded images
+                              });
+                              }
+                            ),
+                            ImageWidget(
+                              value: '2) Vehicle Back',
+                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                onImagesSelected: (images) { // Handle selected images
+                                  setState(() {
+                                    _uploadedImages.addAll(images); // Store uploaded images
+                                  });
+                                }
+                            ),
+                            ImageWidget(
+                              value: '3) Material',
+                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                onImagesSelected: (images) { // Handle selected images
+                                  setState(() {
+                                    _uploadedImages.addAll(images); // Store uploaded images
+                                  });
+                                }
+                            ),
+                            ImageWidget(
+                              value: '4) Material Half Load',
+                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                onImagesSelected: (images) { // Handle selected images
+                                  setState(() {
+                                    _uploadedImages.addAll(images); // Store uploaded images
+                                  });
+                                }
+                            ),
+                            ImageWidget(
+                              value: '5) Material Full Load',
+                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                onImagesSelected: (images) { // Handle selected images
+                                  setState(() {
+                                    _uploadedImages.addAll(images); // Store uploaded images
+                                  });
+                                }
+                            ),
+                            ImageWidget(
+                              value: '6) Other',
+                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                onImagesSelected: (images) { // Handle selected images
+                                  setState(() {
+                                    _uploadedImages.addAll(images); // Store uploaded images
+                                  });
+                                }
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 60,),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                clearFields();
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Back"),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.indigo[800],
+                                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                addDispatchDetails();
+                                // clearFields();
+                              },
+                              child: Text("Add"),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.indigo[800],
+                                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                    ],
                   ),
                 ),
               ],
             ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            SizedBox(height: 16),
-            Expanded(
-              child: ListView(
-                children: [
-                  buildDropdown("Order ID", orderIDs, (value) {
-                    setState(() {
-                      selectedOrderId = value;
-                      materialController.clear();
-                      orderIdMaterial();
-                      materialNameId();
-                      print(value);
-
-                    });
-                  }),
-                  buildTextField("Material", materialController,true),
-                  buildTextField("Invoice No", invoiceController , false),
-                  buildTextField("Date", dateController, false),
-                  buildTextField("Truck No", truckNoController, false),
-                  buildTextField("Quantity", quantityController, false),
-                  buildTextField("Note", noteController, false),
-                  SizedBox(height: 40,),
-                  Container(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Divider(thickness: 1.5,color: Colors.black54),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("Upload Images" , style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
-                        ),
-                        Divider(thickness: 1.5,color: Colors.black54),
-                        ImageWidget(
-                          value: '1) Vehicle Front',
-                          cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                          galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                          onImagesSelected: (images) { // Handle selected images
-                          setState(() {
-                          _uploadedImages.addAll(images); // Store uploaded images
-                          });
-                          }
-                        ),
-                        ImageWidget(
-                          value: '2) Vehicle Back',
-                          cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                          galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                            onImagesSelected: (images) { // Handle selected images
-                              setState(() {
-                                _uploadedImages.addAll(images); // Store uploaded images
-                              });
-                            }
-                        ),
-                        ImageWidget(
-                          value: '3) Material',
-                          cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                          galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                            onImagesSelected: (images) { // Handle selected images
-                              setState(() {
-                                _uploadedImages.addAll(images); // Store uploaded images
-                              });
-                            }
-                        ),
-                        ImageWidget(
-                          value: '4) Material Half Load',
-                          cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                          galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                            onImagesSelected: (images) { // Handle selected images
-                              setState(() {
-                                _uploadedImages.addAll(images); // Store uploaded images
-                              });
-                            }
-                        ),
-                        ImageWidget(
-                          value: '5) Material Full Load',
-                          cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                          galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                            onImagesSelected: (images) { // Handle selected images
-                              setState(() {
-                                _uploadedImages.addAll(images); // Store uploaded images
-                              });
-                            }
-                        ),
-                        ImageWidget(
-                          value: '6) Other',
-                          cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                          galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                            onImagesSelected: (images) { // Handle selected images
-                              setState(() {
-                                _uploadedImages.addAll(images); // Store uploaded images
-                              });
-                            }
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 60,),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            clearFields();
-                            Navigator.of(context).pop();
-                          },
-                          child: Text("Back"),
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.indigo[800],
-                            padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            addDispatchDetails();
-                            // clearFields();
-                          },
-                          child: Text("Add"),
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.indigo[800],
-                            padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ]),
       ),
     );
   }
@@ -442,9 +476,24 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
   }
 
 
-  Widget buildTextField(String label, TextEditingController controller , bool isReadOnly) {
+  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null) {
+      String formattedDate = DateFormat('yyyy-MM-dd').format(picked);
+      controller.text = formattedDate;
+    }
+  }
+
+
+  Widget buildTextField(
+      String label, TextEditingController controller, bool isReadOnly ,bool isDateField ,context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0 ,horizontal: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
         children: [
           Expanded(
@@ -463,8 +512,15 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
               elevation: 2,
               borderRadius: BorderRadius.circular(12),
               child: TextField(
+                onTap: isDateField ? () => _selectDate(context, controller) : null,
                 controller: controller,
                 decoration: InputDecoration(
+                  suffixIcon: isDateField
+                      ? IconButton(
+                    icon: Icon(Icons.calendar_today),
+                    onPressed: () => _selectDate(context, controller),
+                  )
+                      :null,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -482,7 +538,8 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                       width: 1.5,
                     ),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
                 readOnly: isReadOnly,
               ),
@@ -492,7 +549,6 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
       ),
     );
   }
-
 }
 
 class ImageWidget extends StatefulWidget {

@@ -1,10 +1,11 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
+import 'package:scrapapp/Refund/View_refund_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../URL_CONSTANT.dart';
@@ -58,32 +59,22 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
   final TextEditingController dateController2 = TextEditingController();
   final TextEditingController nfaController = TextEditingController();
 
-
   String? username = '';
   String? password = '';
-
   String date1='';
-
   String amount='';
-
   String totalPayment='';
-
   String totalEmd='';
-
   String totalAmountIncludingEmd='';
-
   String note='';
-
   String referenceNo='';
-
   String rvNo='';
-
   String date2='';
-
   String typeOfTransfer='';
-
   String nfa = '';
   String? selectedPaymentType;
+  bool isLoading = false; // Add a loading flag
+
   Map <String , String> refundMap ={
     "Select" : "Select",
     "Refund(Other than EMD/CMD)" :"R",
@@ -111,22 +102,19 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
     checkLogin();
     if (refundMap.containsKey(widget.paymentType)) {
       selectedPaymentType =refundMap['${widget.paymentType}'];
-      print(selectedPaymentType);
     } else {
       selectedPaymentType = 'Select';
-      print(selectedPaymentType);
     }
-    print(selectedPaymentType);
     dateController1.text = widget.date1 ?? 'N/A';
-    amountController.text = widget.amount ?? '0.00';
-    totalPaymentController.text = widget.totalPayment ?? '';
-    totalEmdController.text = widget.totalEmd ?? '';
-    totalAmountEmdController.text = widget.totalAmountIncludingEmd ?? '';
-    noteController.text = widget.note ?? 'No note';
+    amountController.text = widget.amount ?? 'N/A';
+    totalPaymentController.text = widget.totalPayment ?? 'N/A';
+    totalEmdController.text = widget.totalEmd ?? 'N/A';
+    totalAmountEmdController.text = widget.totalAmountIncludingEmd ?? 'N/A';
+    noteController.text = widget.note ?? 'N/A';
     refNoController.text = widget.referenceNo ?? 'N/A';
     rvNoController.text = widget.rvNo ?? 'N/A';
     dateController2.text = widget.date2 ?? 'N/A';
-    nfa = widget.nfa ?? 'N/A';
+    nfaController.text = widget.nfa ?? 'N/A';
   }
 
   checkLogin()async{
@@ -137,6 +125,9 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
 
   Future<void> editRefundDetails() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
       final url = Uri.parse("${URL}add_refund_toSaleOrdder");
       var response = await http.post(
         url,
@@ -160,13 +151,14 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
         },
       );
       if (response.statusCode == 200) {
-        // print('test');
         final jsonData = json.decode(response.body);
         setState(() {
           ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("${jsonData['msg']}")));
+          Navigator.pop(context);
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => View_refund_details(sale_order_id: widget.sale_order_id)));
         });
-      } else {
+      }else {
         Fluttertoast.showToast(
             msg: 'Unable to insert data.',
             toastLength: Toast.LENGTH_SHORT,
@@ -185,142 +177,165 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
           backgroundColor: Colors.red,
           textColor: Colors.yellow
       );
-
+    }finally{
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
-
-
+  showLoading(){
+    return Container(
+      height: double.infinity,
+      width: double.infinity,
+      color: Colors.black.withOpacity(0.4),
+      child: Center(child: CircularProgressIndicator(),),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: AppDrawer(),
-      appBar: CustomAppBar(),
-      body: Container(
-        padding: const EdgeInsets.symmetric(vertical: 4.0),
-        color: Colors.grey[100],
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+    return AbsorbPointer(
+      absorbing: isLoading,
+      child: Scaffold(
+        drawer: AppDrawer(),
+        appBar: CustomAppBar(),
+        body: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "Refund",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                  letterSpacing: 1.5,
-                ),
-              ),
-            ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            isLoading
+            ?showLoading()
+            :Container(
+            padding: const EdgeInsets.symmetric(vertical: 4.0),
+            color: Colors.grey[100],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  "Edit",
-                  style: TextStyle(
-                    fontSize: 16, // Keep previous font size
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w500,
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Refund",
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ),
+                Divider(
+                  thickness: 1.5,
+                  color: Colors.black54,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Edit",
+                      style: TextStyle(
+                        fontSize: 16, // Keep previous font size
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                Divider(
+                  thickness: 1.5,
+                  color: Colors.black54,
+                ),
+                SizedBox(height: 16),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      buildDropdownPayment("Payment Type", refundMap, (value) {
+                        setState(() {
+                          selectedPaymentType = value;
+                        });
+                      }),
+                      if (selectedPaymentType == "R") ...[
+                        buildTextField("Date", dateController1, false, true , context),
+                        buildTextField("Amount", amountController, false ,false , context),
+                        buildTextField(
+                            "Total Payment", totalPaymentController, true, false , context),
+                        buildTextField("NFA No.", nfaController, false,false , context),
+                        buildTextField("RV Date", dateController2, false,true , context),
+                      ] else if (selectedPaymentType == "RE" ||
+                          selectedPaymentType == "Rc") ...[
+                        buildTextField("Date", dateController1, false,true , context),
+                        buildTextField("Amount", amountController, false,false , context),
+                        buildTextField("Total EMD", totalEmdController, true,false , context),
+                        buildTextField("Total Amount Including EMD",
+                            totalAmountEmdController, true,false , context),
+                        buildTextField("NFA No.", nfaController, false,false , context),
+                        buildTextField("RV Date", dateController2, false,true , context),
+                      ] else if (selectedPaymentType == "P") ...[
+                        buildTextField("Date", dateController1, false,true , context),
+                        buildTextField("Amount", amountController, false,false , context),
+                        buildTextField(
+                            "Total Payment", totalPaymentController, true,false , context),
+                        buildTextField("Total EMD", totalEmdController, true,false , context),
+                        buildTextField("Total Amount Including EMD",
+                            totalAmountEmdController, true,false , context),
+                        buildTextField("RV Date", dateController2, false,true , context),
+                      ] else ...[
+                        buildTextField("Date", dateController1, false,true , context),
+                        buildTextField("Amount", amountController, false,false , context),
+                        buildTextField(
+                            "Total Payment", totalPaymentController, true,false , context),
+                        buildTextField("Total EMD", totalEmdController, true,false , context),
+                        buildTextField("Total Amount Including EMD",
+                            totalAmountEmdController, true,false , context),
+                        buildTextField("Note", noteController, false,false , context),
+                        buildTextField("Reference No.", refNoController, false,false , context),
+                        buildTextField("RV No.", rvNoController, false,false , context),
+                        buildTextField("RV Date", dateController2, false,true , context),
+                      ],
+                      SizedBox(height: 40,),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                clearFields();
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Back"),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.indigo[800],
+                                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                editRefundDetails();
+                                // clearFields();
+                              },
+                              child: Text("Save"),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.indigo[800],
+                                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            SizedBox(height: 16),
-            Expanded(
-              child: ListView(
-                children: [
-                  buildDropdownPayment("Payment Type", refundMap, (value) {
-                    setState(() {
-                      selectedPaymentType = value;
-                    });
-                  }),
-                  if (selectedPaymentType == "R") ...[
-                    buildTextField("Date", dateController1, false),
-                    buildTextField("Amount", amountController, false),
-                    buildTextField("Total Payment", totalPaymentController, true),
-                    buildTextField("NFA No.", nfaController, false),
-                    buildTextField("RV Date", dateController2, false),
-                  ] else if (selectedPaymentType == "RE" || selectedPaymentType =="Rc") ...[
-                    buildTextField("Date", dateController1, false),
-                    buildTextField("Amount", amountController, false),
-                    buildTextField("Total EMD", totalEmdController, true),
-                    buildTextField("Total Amount Including EMD",totalAmountEmdController, true),
-                    buildTextField("NFA No.", nfaController, false),
-                    buildTextField("RV Date", dateController2, false),
-                  ]else if (selectedPaymentType == "P") ...[
-                    buildTextField("Date", dateController1, false),
-                    buildTextField("Amount", amountController, false),
-                    buildTextField("Total Payment", totalPaymentController, true),
-                    buildTextField("Total EMD", totalEmdController, true),
-                    buildTextField("Total Amount Including EMD",totalAmountEmdController, true),
-                    buildTextField("RV Date", dateController2, false),
-                  ]
-                  else ...[
-                      buildTextField("Date", dateController1, false),
-                      buildTextField("Amount", amountController, false),
-                      buildTextField("Total Payment", totalPaymentController, true),
-                      buildTextField("Total EMD", totalEmdController, true),
-                      buildTextField("Total Amount Including EMD",totalAmountEmdController, true),
-                      buildTextField("Note", noteController, false),
-                      buildTextField("Reference No.", refNoController, false),
-                      buildTextField("RV No.", rvNoController, false),
-                      buildTextField("RV Date", dateController2, false),
-                    ],
-                  SizedBox(height: 40,),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            clearFields();
-                            Navigator.of(context).pop();
-                          },
-                          child: Text("Back"),
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.indigo[800],
-                            padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            editRefundDetails();
-                            // clearFields();
-                          },
-                          child: Text("Save"),
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.indigo[800],
-                            padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ]),
       ),
     );
   }
@@ -367,9 +382,24 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
   }
 
 
-  Widget buildTextField(String label, TextEditingController controller , bool isReadOnly) {
+  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null) {
+      String formattedDate = DateFormat('yyyy-MM-dd').format(picked);
+      controller.text = formattedDate;
+    }
+  }
+
+
+  Widget buildTextField(
+      String label, TextEditingController controller, bool isReadOnly ,bool isDateField ,context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0 ,horizontal: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
         children: [
           Expanded(
@@ -388,8 +418,15 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
               elevation: 2,
               borderRadius: BorderRadius.circular(12),
               child: TextField(
+                onTap: isDateField ? () => _selectDate(context, controller) : null,
                 controller: controller,
                 decoration: InputDecoration(
+                  suffixIcon: isDateField
+                      ? IconButton(
+                    icon: Icon(Icons.calendar_today),
+                    onPressed: () => _selectDate(context, controller),
+                  )
+                      :null,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -407,7 +444,8 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
                       width: 1.5,
                     ),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
                 readOnly: isReadOnly,
               ),

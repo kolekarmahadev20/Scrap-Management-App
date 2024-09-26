@@ -10,7 +10,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         "Scrap Management",
         style: TextStyle(color: Colors.white),
       ),
-      elevation: 10,
+      elevation: 2,
+      shadowColor: Colors.black,
+      shape: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(21),
+        borderSide: BorderSide(style: BorderStyle.solid)
+      ),
       actions: [
         IconButton(
           icon: Icon(Icons.notifications, color: Colors.white,),

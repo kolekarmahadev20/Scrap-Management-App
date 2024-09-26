@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../URL_CONSTANT.dart';
 
-
 class View_refund_details extends StatefulWidget {
   final String? sale_order_id;
   View_refund_details({
@@ -20,31 +19,31 @@ class View_refund_details extends StatefulWidget {
 }
 
 class _View_refund_detailsState extends State<View_refund_details> {
-
   String? username = '';
   String? password = '';
-  Map<String , dynamic> ViewRefundData = {};
-  List<dynamic> refundId =[];
-  List<dynamic> emdStatus =[];
-
+  bool isLoading = false;
+  Map<String, dynamic> ViewRefundData = {};
+  List<dynamic> refundId = [];
+  List<dynamic> emdStatus = [];
 
   @override
   void initState() {
     super.initState();
     checkLogin();
     fetchRefundDetails();
-    print(widget.sale_order_id);
   }
 
-  checkLogin()async{
+  checkLogin() async {
     final login = await SharedPreferences.getInstance();
     username = await login.getString("username") ?? '';
     password = await login.getString("password") ?? '';
   }
 
-
   Future<void> fetchRefundDetails() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
       await checkLogin();
       final url = Uri.parse("${URL}closuredetails");
       var response = await http.post(
@@ -53,84 +52,97 @@ class _View_refund_detailsState extends State<View_refund_details> {
         body: {
           'user_id': username,
           'user_pass': password,
-          'sale_order_id':widget.sale_order_id,
+          'sale_order_id': widget.sale_order_id,
         },
       );
-
       if (response.statusCode == 200) {
         setState(() {
           var jsonData = json.decode(response.body);
           ViewRefundData = jsonData;
-          print(ViewRefundData);
           refundId = ViewRefundData['sale_order_payments'] ?? '';
-          print(refundId);
-          emdStatus =  ViewRefundData['emd_status'] ?? '';
-          print(emdStatus);
+          emdStatus = ViewRefundData['emd_status'] ?? '';
         });
       } else {
         print("Unable to fetch data.");
-        setState(() {
-        });
       }
     } catch (e) {
       print("Server Exception: $e");
+    }finally{
       setState(() {
+        isLoading = false;
       });
     }
   }
 
-
-
+  showLoading() {
+    return Container(
+      height: double.infinity,
+      width: double.infinity,
+      color: Colors.black.withOpacity(0.4),
+      child: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: AppDrawer(),
-      appBar: CustomAppBar(),
-      body: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-        color: Colors.grey[100],
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "Refund",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                  letterSpacing: 1.2,
+    return AbsorbPointer(
+      absorbing: isLoading,
+      child: Scaffold(
+        drawer: AppDrawer(),
+        appBar: CustomAppBar(),
+        body: Stack(
+          children:[
+            isLoading
+            ?showLoading()
+            :Container(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+            color: Colors.grey[100],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Refund",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            buildRowWithIcon(context),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: buildVendorInfo(),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    buildExpansionTile(),
-                    buildScrollableContainer("Payment Status", buildPaymentListView),
-                    buildScrollableContainer("EMD Status",buildEmdListView ),
-                  ],
+                Divider(
+                  thickness: 1.5,
+                  color: Colors.black54,
                 ),
-              ),
+                buildRowWithIcon(context),
+                Divider(
+                  thickness: 1.5,
+                  color: Colors.black54,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: buildVendorInfo(),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        buildExpansionTile(),
+                        buildScrollableContainer(
+                            "Payment Status", buildPaymentListView),
+                        buildScrollableContainer("EMD Status", buildEmdListView),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ]),
       ),
     );
   }
@@ -139,12 +151,26 @@ class _View_refund_detailsState extends State<View_refund_details> {
     return Row(
       children: [
         Spacer(),
-        Text(
-          "Order ID : ${ViewRefundData['sale_order']['sale_order_code']}",
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.black54,
-            fontWeight: FontWeight.w500,
+        RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: "Order ID :  ", // Key text (e.g., "Vendor Name: ")
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black, // Bold key text
+                ),
+              ),
+              TextSpan(
+                text:ViewRefundData['sale_order']['sale_order_code'], // Value text (e.g., "XYZ Corp")
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.black54, // Normal value text
+                ),
+              ),
+            ],
           ),
         ),
         Spacer(),
@@ -160,7 +186,9 @@ class _View_refund_detailsState extends State<View_refund_details> {
               MaterialPageRoute(
                 builder: (context) => Add_refund_details(),
               ),
-            );
+            ).then((value) => setState((){
+              fetchRefundDetails();
+            }));
           },
         ),
       ],
@@ -171,19 +199,40 @@ class _View_refund_detailsState extends State<View_refund_details> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildVendorInfoText("Vendor Name : ${ViewRefundData['vendor_buyer_details']['vendor_name']}"),
-        buildVendorInfoText("Branch : ${ViewRefundData['vendor_buyer_details']['branch_name']}"),
-        buildVendorInfoText("Buyer Name : ${ViewRefundData['vendor_buyer_details']['bidder_name']}"),
+        buildVendorInfoText(
+            "Vendor Name: ", ViewRefundData['vendor_buyer_details']['vendor_name'] ?? 'N/A'),
+        buildVendorInfoText(
+            "Branch: ", ViewRefundData['vendor_buyer_details']['branch_name'] ?? 'N/A'),
+        buildVendorInfoText(
+            "Buyer Name: ", ViewRefundData['vendor_buyer_details']['bidder_name'] ?? 'N/A'),
       ],
     );
   }
 
-  Widget buildVendorInfoText(String text) {
+  Widget buildVendorInfoText(String key, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Text(
-        text,
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      child: RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: key, // Key text (e.g., "Vendor Name: ")
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black, // Bold key text
+              ),
+            ),
+            TextSpan(
+              text: value, // Value text (e.g., "XYZ Corp")
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.normal,
+                color: Colors.black54, // Normal value text
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -194,7 +243,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
       child: ExpansionTile(
         title: Text(
           "Material Detail",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         leading: Icon(
           Icons.menu,
@@ -210,12 +259,18 @@ class _View_refund_detailsState extends State<View_refund_details> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                buildListTile("Material Name : ${ViewRefundData['sale_order_details'][0]['material_name']}"),
-                buildListTile("Total Qty :${ViewRefundData['sale_order_details'][0]['totalqty']}"),
-                buildListTile("Lifted Qty :${ViewRefundData['lifted_quantity'][0]['quantity']}"),
-                buildListTile("Rate :${ViewRefundData['sale_order_details'][0]['rate']}"),
-                buildListTile("SO Date :${ViewRefundData['sale_order_details'][0]['sod']}"),
-                buildListTile("SO Validity :${ViewRefundData['sale_order_details'][0]['sovu']}"),
+                buildListTile(
+                    "Material Name : ${ViewRefundData['sale_order_details'][0]['material_name']}"),
+                buildListTile(
+                    "Total Qty :${ViewRefundData['sale_order_details'][0]['totalqty']}"),
+                buildListTile(
+                    "Lifted Qty :${ViewRefundData['lifted_quantity'][0]['quantity']}"),
+                buildListTile(
+                    "Rate :${ViewRefundData['sale_order_details'][0]['rate']}"),
+                buildListTile(
+                    "SO Date :${ViewRefundData['sale_order_details'][0]['sod']}"),
+                buildListTile(
+                    "SO Validity :${ViewRefundData['sale_order_details'][0]['sovu']}"),
                 buildTable(),
               ],
             ),
@@ -237,15 +292,25 @@ class _View_refund_detailsState extends State<View_refund_details> {
       child: Container(
         width: 400,
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey), // Add a border around the table
+          border:
+              Border.all(color: Colors.grey), // Add a border around the table
           borderRadius: BorderRadius.circular(8.0),
         ),
         child: DataTable(
           columnSpacing: 16.0,
-          border: TableBorder.all(color: Colors.grey), // Add borders to table cells
+          border:
+              TableBorder.all(color: Colors.grey), // Add borders to table cells
           columns: [
-            DataColumn(label: Text('Tax' ,style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),)),
-            DataColumn(label: Text('Amount',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),)),
+            DataColumn(
+                label: Text(
+              'Tax',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            )),
+            DataColumn(
+                label: Text(
+              'Amount',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            )),
           ],
           rows: [
             DataRow(cells: [
@@ -274,7 +339,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
     );
   }
 
-  Widget buildScrollableContainer(String title, Widget Function() listViewBuilder) {
+  Widget buildScrollableContainer(
+      String title, Widget Function() listViewBuilder) {
     return Container(
       margin: EdgeInsets.all(8.0),
       padding: EdgeInsets.all(8.0),
@@ -318,7 +384,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
       itemCount: emdStatus.length,
       itemBuilder: (context, index) {
         final emdStatusIndex = emdStatus[index];
-        return buildEmdStatusListTile(context ,emdStatusIndex);
+        return buildEmdStatusListTile(context, emdStatusIndex);
       },
     );
   }
@@ -328,18 +394,18 @@ class _View_refund_detailsState extends State<View_refund_details> {
       itemCount: refundId.length,
       itemBuilder: (context, index) {
         final refundIdIndex = refundId[index];
-        return buildPaymentStatusListTile(context ,refundIdIndex);
+        return buildPaymentStatusListTile(context, refundIdIndex);
       },
     );
   }
 
   Widget buildPaymentStatusListTile(BuildContext context, index) {
     // Check the payment_type condition
-    if (index['payment_type'] == "Refund EMD"
-        || index['payment_type'] == "Refund CMD"
-        || index['payment_type'] == "Penalty"
-        || index['payment_type'] == "Refund All"
-        || index['payment_type'] == "Refund(Other than EMD/CMD)") {
+    if (index['payment_type'] == "Refund EMD" ||
+        index['payment_type'] == "Refund CMD" ||
+        index['payment_type'] == "Penalty" ||
+        index['payment_type'] == "Refund All" ||
+        index['payment_type'] == "Refund(Other than EMD/CMD)") {
       return Padding(
         padding: const EdgeInsets.all(4.0),
         child: Card(
@@ -354,19 +420,78 @@ class _View_refund_detailsState extends State<View_refund_details> {
               backgroundColor: Colors.indigo[800],
               child: Icon(Icons.border_outer, size: 24, color: Colors.white),
             ),
-            title: Text(
-              "Amount : ${index['amt']}",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
+            title: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: "Amount : ",
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.bold, // Bold key
+                      fontSize: 20,
+                    ),
+                  ),
+                  TextSpan(
+                    text: "${index['amt'] ?? 'N/A'}",
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.normal, // Normal value
+                      fontSize: 20,
+
+                    ),
+                  ),
+                ],
               ),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Ref No :${index['pay_ref_no']}", style: TextStyle(color: Colors.black54)),
-                Text("Date : ${index['pay_date']} ", style: TextStyle(fontSize: 14, color: Colors.black54)),
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Ref No : ",
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold, // Bold key
+                          fontSize: 16,
+                        ),
+                      ),
+                      TextSpan(
+                        text: "${index['pay_ref_no'] ?? 'N/A'}",
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontWeight: FontWeight.normal, // Normal value
+                          fontSize: 16,
+
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Date : ",
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold, // Bold key
+                          fontSize: 16,
+                        ),
+                      ),
+                      TextSpan(
+                        text: "${index['pay_date'] ?? 'N/A'}",
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontWeight: FontWeight.normal, // Normal value
+                          fontSize: 16,
+
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
             trailing: IconButton(
@@ -385,7 +510,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
                       amount: index['amt'],
                       totalPayment: ViewRefundData['totalPayment'].toString(),
                       totalEmd: ViewRefundData['total_emd'].toString(),
-                      totalAmountIncludingEmd: ViewRefundData['totalAvailablebalIncludingEmd'],
+                      totalAmountIncludingEmd:
+                          ViewRefundData['totalAvailablebalIncludingEmd'],
                       note: index['narration'],
                       referenceNo: index['pay_ref_no'],
                       rvNo: index['receipt_voucher_no'],
@@ -394,7 +520,9 @@ class _View_refund_detailsState extends State<View_refund_details> {
                       nfa: index['nfa_no'],
                     ),
                   ),
-                );
+                ).then((value) => setState((){
+                  fetchRefundDetails();
+                }));
               },
             ),
             onTap: () {
@@ -409,7 +537,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
                     amount: index['amt'],
                     totalPayment: ViewRefundData['totalPayment'].toString(),
                     totalEmd: ViewRefundData['total_emd'].toString(),
-                    totalAmountIncludingEmd: ViewRefundData['totalAvailablebalIncludingEmd'],
+                    totalAmountIncludingEmd:
+                        ViewRefundData['totalAvailablebalIncludingEmd'],
                     note: index['narration'],
                     referenceNo: index['pay_ref_no'],
                     rvNo: index['receipt_voucher_no'],
@@ -418,7 +547,9 @@ class _View_refund_detailsState extends State<View_refund_details> {
                     nfa: index['nfa_no'],
                   ),
                 ),
-              );
+              ).then((value) => setState((){
+                fetchRefundDetails();
+              }));
             },
           ),
         ),
@@ -427,7 +558,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
       return Container(); // Return an empty container if the condition is not met
     }
   }
-  Widget buildEmdStatusListTile(BuildContext context ,index) {
+
+  Widget buildEmdStatusListTile(BuildContext context, index) {
     if (index['payment_type'] == "Refund EMD") {
       return Padding(
         padding: const EdgeInsets.all(4.0),
@@ -441,24 +573,81 @@ class _View_refund_detailsState extends State<View_refund_details> {
             contentPadding: const EdgeInsets.all(12.0),
             leading: CircleAvatar(
               backgroundColor: Colors.indigo[800],
-              child: Icon(Icons.account_balance_wallet_rounded, size: 24,
-                  color: Colors.white),
+              child: Icon(Icons.account_balance_wallet_rounded,
+                  size: 24, color: Colors.white),
             ),
-            title: Text(
-              "Amount : ${index['amt']}",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
+            title: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: "Amount : ",
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.bold, // Bold key
+                      fontSize: 20,
+                    ),
+                  ),
+                  TextSpan(
+                    text: "${index['amt'] ?? 'N/A'}",
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.normal, // Normal value
+                      fontSize: 20,
+
+                    ),
+                  ),
+                ],
               ),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Ref No :${index['pay_ref_no']}",
-                    style: TextStyle(color: Colors.black54)),
-                Text("Date : ${index['date']}",
-                    style: TextStyle(fontSize: 14, color: Colors.black54)),
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Ref No : ",
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold, // Bold key
+                          fontSize: 16,
+                        ),
+                      ),
+                      TextSpan(
+                        text: "${index['pay_ref_no'] ?? 'N/A'}",
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontWeight: FontWeight.normal, // Normal value
+                          fontSize: 16,
+
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Date : ",
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold, // Bold key
+                          fontSize: 16,
+                        ),
+                      ),
+                      TextSpan(
+                        text: "${index['date'] ?? 'N/A'}",
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontWeight: FontWeight.normal, // Normal value
+                          fontSize: 16,
+
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
             trailing: IconButton(
@@ -469,55 +658,59 @@ class _View_refund_detailsState extends State<View_refund_details> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        View_Refund_Amount(
-                          sale_order_id: widget.sale_order_id,
-                          refundId: index['payment_id'],
-                          paymentType: index['payment_type'],
-                          date1: index['date'],
-                          amount: index['amt'],
-                          totalPayment: ViewRefundData['totalPayment'].toString(),
-                          totalEmd: ViewRefundData['total_emd'].toString(),
-                          totalAmountIncludingEmd: ViewRefundData['totalAvailablebalIncludingEmd'],
-                          note: index['narration'],
-                          referenceNo: index['pay_ref_no'],
-                          rvNo: index['receipt_voucher_no'],
-                          date2: index['receipt_voucher_date'],
-                          typeOfTransfer: index['typeoftransfer'],
-                          nfa: index['nfa_no'],
-                        ),
+                    builder: (context) => View_Refund_Amount(
+                      sale_order_id: widget.sale_order_id,
+                      refundId: index['payment_id'],
+                      paymentType: index['payment_type'],
+                      date1: index['date'],
+                      amount: index['amt'],
+                      totalPayment: ViewRefundData['totalPayment'].toString(),
+                      totalEmd: ViewRefundData['total_emd'].toString(),
+                      totalAmountIncludingEmd:
+                          ViewRefundData['totalAvailablebalIncludingEmd'],
+                      note: index['narration'],
+                      referenceNo: index['pay_ref_no'],
+                      rvNo: index['receipt_voucher_no'],
+                      date2: index['receipt_voucher_date'],
+                      typeOfTransfer: index['typeoftransfer'],
+                      nfa: index['nfa_no'],
+                    ),
                   ),
-                );
+                ).then((value) => setState((){
+                  fetchRefundDetails();
+                }));
               },
             ),
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      View_Refund_Amount(
-                        sale_order_id: widget.sale_order_id,
-                        refundId: index['payment_id'],
-                        paymentType: index['payment_type'],
-                        date1: index['date'],
-                        amount: index['amt'],
-                        totalPayment: ViewRefundData['totalPayment'].toString(),
-                        totalEmd: ViewRefundData['total_emd'].toString(),
-                        totalAmountIncludingEmd: ViewRefundData['totalAvailablebalIncludingEmd'],
-                        note: index['narration'],
-                        referenceNo: index['pay_ref_no'],
-                        rvNo: index['receipt_voucher_no'],
-                        date2: index['receipt_voucher_date'],
-                        typeOfTransfer: index['typeoftransfer'],
-                        nfa: index['nfa_no'],
-                      ),
+                  builder: (context) => View_Refund_Amount(
+                    sale_order_id: widget.sale_order_id,
+                    refundId: index['payment_id'],
+                    paymentType: index['payment_type'],
+                    date1: index['date'],
+                    amount: index['amt'],
+                    totalPayment: ViewRefundData['totalPayment'].toString(),
+                    totalEmd: ViewRefundData['total_emd'].toString(),
+                    totalAmountIncludingEmd:
+                        ViewRefundData['totalAvailablebalIncludingEmd'],
+                    note: index['narration'],
+                    referenceNo: index['pay_ref_no'],
+                    rvNo: index['receipt_voucher_no'],
+                    date2: index['receipt_voucher_date'],
+                    typeOfTransfer: index['typeoftransfer'],
+                    nfa: index['nfa_no'],
+                  ),
                 ),
-              );
+              ).then((value) => setState((){
+                fetchRefundDetails();
+              }));
             },
           ),
         ),
       );
-    }else{
+    } else {
       return Container();
     }
   }

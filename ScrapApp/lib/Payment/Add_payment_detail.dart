@@ -7,6 +7,7 @@ import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
+import 'package:intl/intl.dart'; // Add this package for date formatting
 
 class Add_payment_detail extends StatefulWidget {
   @override
@@ -19,11 +20,11 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
   final TextEditingController refNoController = TextEditingController();
   final TextEditingController typeTransController = TextEditingController();
 
-
   String? username = '';
   String? password = '';
   String? selectedOrderId;
   String? selectedPaymentType;
+  bool isLoading = false;
   Map<String , String> PaymentType = {
     'Select' : 'Select',
     'Received Payment':'P',
@@ -54,9 +55,11 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
     password = await login.getString("password") ?? '';
   }
 
-
   Future<void> addPaymentDetails() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
       await checkLogin();
       final url = Uri.parse("${URL}add_payment_toSaleOrder");
       var response = await http.post(
@@ -73,12 +76,13 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
           'typeoftransfer':typeTransController.text,
         },
       );
-      print('hello');
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         setState(() {
           ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("${jsonData['msg']}")));
+          clearFields();
+          Navigator.pop(context);
         });
       } else {
         Fluttertoast.showToast(
@@ -100,8 +104,12 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
           textColor: Colors.yellow
       );
     }
+    finally{
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
-
 
   //fetching dropDowns of sale_order_list
   Future<void> orderIdDropDowns() async {
@@ -128,129 +136,156 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
           }
         });
       } else {
-       print("unable to load order ids.");
+        print("unable to load order ids.");
       }
     } catch (e) {
       print("Server Exception : $e");
-
     }
   }
 
+  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null) {
+      String formattedDate = DateFormat('yyyy-MM-dd').format(picked);
+      controller.text = formattedDate;
+    }
+  }
+
+  showLoading(){
+    return Container(
+      height: double.infinity,
+      width: double.infinity,
+      color: Colors.black.withOpacity(0.4),
+      child: Center(child: CircularProgressIndicator(),),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return StatefulBuilder(builder: (BuildContext context , StateSetter SetState) {
-      return Scaffold(
-        drawer: AppDrawer(),
-        appBar: CustomAppBar(),
-        body: Container(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
-          color: Colors.grey[100],
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+    return AbsorbPointer(
+      absorbing: isLoading,
+      child: StatefulBuilder(builder: (BuildContext context , StateSetter SetState) {
+        return Scaffold(
+          drawer: AppDrawer(),
+          appBar: CustomAppBar(),
+          body:
+          Stack(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Payment",
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-              ),
-              Divider(
-                thickness: 1.5,
-                color: Colors.black54,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              isLoading ?
+              showLoading()
+              :Container(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              color: Colors.grey[100],
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    "Add",
-                    style: TextStyle(
-                      fontSize: 16, // Keep previous font size
-                      color: Colors.black54,
-                      fontWeight: FontWeight.w500,
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      "Payment",
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ),
+                  Divider(
+                    thickness: 1.5,
+                    color: Colors.black54,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Add",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Divider(
+                    thickness: 1.5,
+                    color: Colors.black54,
+                  ),
+                  SizedBox(height: 16),
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        buildDropdown("Order ID", orderIDs, (value) {
+                          setState(() {
+                            selectedOrderId = value;
+                          });
+                        }),
+                        buildDropdownPayment("Payment Type", PaymentType, (value) {
+                          setState(() {
+                            selectedPaymentType = value;
+                          });
+                        }),
+                        buildTextField("Date", dateController1, true, context), // Modified here for DatePicker
+                        buildTextField("Amount", amountController, false, context),
+                        buildTextField("Reference No.", refNoController, false, context),
+                        buildTextField("Type Of Transfer", typeTransController, false, context),
+                        SizedBox(height: 180),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  clearFields();
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text("Back"),
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: Colors.indigo[800],
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 50, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  addPaymentDetails();
+                                },
+                                child: Text("Add"),
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: Colors.indigo[800],
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 50, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                      ],
                     ),
                   ),
                 ],
               ),
-              Divider(
-                thickness: 1.5,
-                color: Colors.black54,
-              ),
-              SizedBox(height: 16),
-              Expanded(
-                child: ListView(
-                  children: [
-                    buildDropdown("Order ID", orderIDs, (value) {
-                      setState(() {
-                        selectedOrderId = value;
-                      });
-                    }),
-                    buildDropdownPayment("Payment Type", PaymentType, (value) {
-                      setState(() {
-                        selectedPaymentType = value;
-                        print(selectedPaymentType);
-                      });
-                    }),
-                    buildTextField("Date", dateController1, false),
-                    buildTextField("Amount", amountController, false),
-                    buildTextField("Reference No.", refNoController, false),
-                    buildTextField("Type Of Transfer", typeTransController, false),
-                    SizedBox(height: 180),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              clearFields();
-                              Navigator.of(context).pop();
-                            },
-                            child: Text("Back"),
-                            style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              backgroundColor: Colors.indigo[800],
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 50, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              addPaymentDetails();
-                              // clearFields();
-                            },
-                            child: Text("Add"),
-                            style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              backgroundColor: Colors.indigo[800],
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 50, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    });
+            ),
+          ]),
+        );
+      }),
+    );
   }
 
   Widget buildDropdown(String label, List<String> options, ValueChanged<String?> onChanged) {
@@ -259,7 +294,7 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
       child: Row(
         children: [
           Expanded(
-            flex: 3, // Adjusts label width
+            flex: 3,
             child: Text(
               label,
               style: TextStyle(
@@ -269,7 +304,7 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
             ),
           ),
           Expanded(
-            flex: 7, // Adjusts dropdown width
+            flex: 7,
             child: DropdownButtonFormField<String>(
               isExpanded: true,
               decoration: InputDecoration(
@@ -292,13 +327,14 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
       ),
     );
   }
-  Widget buildDropdownPayment(String label, Map<String , String> options, ValueChanged<String?> onChanged) {
+
+  Widget buildDropdownPayment(String label, Map<String, String> options, ValueChanged<String?> onChanged) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0 , horizontal: 8.0),
       child: Row(
         children: [
           Expanded(
-            flex: 3, // Adjusts label width
+            flex: 3,
             child: Text(
               label,
               style: TextStyle(
@@ -308,7 +344,7 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
             ),
           ),
           Expanded(
-            flex: 7, // Adjusts dropdown width
+            flex: 7,
             child: DropdownButtonFormField<String>(
               isExpanded: true,
               decoration: InputDecoration(
@@ -317,11 +353,11 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              value: selectedPaymentType ?? options.keys.first ,
+              value: selectedPaymentType ?? options.keys.first,
               items: options.entries.map((entry) {
                 return DropdownMenuItem<String>(
-                  value: entry.value, // Key is used as value for Dropdown
-                  child: Text(entry.key), // Value is displayed as text
+                  value: entry.value,
+                  child: Text(entry.key),
                 );
               }).toList(),
               onChanged: onChanged,
@@ -332,15 +368,15 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
     );
   }
 
-  Widget buildTextField(String label, TextEditingController controller , bool isReadOnly) {
+  Widget buildTextField(String labelText, TextEditingController controller, bool isDateField, BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0 ,horizontal: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
         children: [
           Expanded(
-            flex: 3, // Adjusts label width
+            flex: 3,
             child: Text(
-              label,
+              labelText,
               style: TextStyle(
                 color: Colors.black54,
                 fontWeight: FontWeight.w500,
@@ -348,39 +384,30 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
             ),
           ),
           Expanded(
-            flex: 7, // Adjusts text field width
-            child: Material(
-              elevation: 2,
-              borderRadius: BorderRadius.circular(12),
-              child: TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: Colors.indigo[800]!,
-                      width: 2.0,
+            flex: 7,
+            child: GestureDetector(
+              onTap: isDateField ? () => _selectDate(context, controller) : null,
+              child: AbsorbPointer(
+                absorbing: isDateField,
+                child: TextFormField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    suffixIcon: isDateField
+                        ? IconButton(
+                      icon: Icon(Icons.calendar_today),
+                      onPressed: () => _selectDate(context, controller),
+                    )
+                        : null,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: Colors.grey[400]!,
-                      width: 1.5,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
-                readOnly: isReadOnly,
               ),
             ),
           ),
         ],
       ),
     );
-  }
-
-}
+  }}
