@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -12,6 +13,9 @@ import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../URL_CONSTANT.dart'; // Import for File
+
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 
 class View_dispatch_lifting_details extends StatefulWidget {
 
@@ -64,9 +68,22 @@ class _View_dispatch_lifting_detailsState extends State<View_dispatch_lifting_de
   String? _image ;
 
 
+  Uint8List? _fileBytes;
+
+  Uint8List? _file;
+
+
+  String? filePath;
+
+  String? file_name;
+
+
+
   @override
   void initState() {
     super.initState();
+    print(widget.invoiceNo);
+    print(widget.sale_order_id);
     checkLogin();
     fetchImageList();
      selectedOrderId = widget.selectedOrderId ?? "N/A";
@@ -87,7 +104,7 @@ class _View_dispatch_lifting_detailsState extends State<View_dispatch_lifting_de
   Future<void> fetchImageList() async {
     try {
       await checkLogin();
-      final url = Uri.parse("${URL}viewImage");
+      final url = Uri.parse("${URL}check_url");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
@@ -95,6 +112,7 @@ class _View_dispatch_lifting_detailsState extends State<View_dispatch_lifting_de
           'user_id': username,
           'user_pass': password,
           'sale_order_id':widget.sale_order_id,
+          'invoice_no':widget.invoiceNo,
         },
       );
 
@@ -102,8 +120,15 @@ class _View_dispatch_lifting_detailsState extends State<View_dispatch_lifting_de
         setState(() {
           var jsonData = json.decode(response.body);
           print(jsonData);
-          _image = jsonData['images'];
+          _image = jsonData['bidders_data']['images'];
           print(_image);
+
+          filePath = "${Image_URL}${_image}";
+          print(filePath);
+          file_name = filePath!.split('/').last;
+          print(file_name);
+          _fetchFileBytesFromServer(filePath!);
+
         });
       } else {
         print("Unable to fetch data.");
@@ -116,6 +141,59 @@ class _View_dispatch_lifting_detailsState extends State<View_dispatch_lifting_de
       });
     }
   }
+
+
+  Future<void> _fetchFileBytesFromServer(String fileUrl) async {
+
+    try {
+      var response = await http.get(Uri.parse(fileUrl));
+      if (response.statusCode == 200) {
+        setState(() {
+          _fileBytes = response.bodyBytes;  // Store image bytes
+          _file = _fileBytes;
+          print(_fileBytes);
+
+        });
+      } else {
+        print('Failed to load file from server');
+      }
+    } catch (e) {
+      print('Exception: $e');
+    }
+  }
+
+  Future<void> downloadFile(String url, String fileName) async {
+
+    try {
+      print('Fetching file from URL: $url');
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final directory = await getTemporaryDirectory();
+        final filePath = '${directory.path}/$fileName';
+        final file = File(filePath);
+
+        await file.writeAsBytes(response.bodyBytes);
+        print('File saved to: $filePath');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('File downloaded: $fileName')),
+        );
+        // Open the file
+        OpenFile.open(filePath);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to download file: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
+      print('Exception: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
 
 
 
@@ -468,9 +546,9 @@ class _ImageWidgetState extends State<ImageWidget> {
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3, // Display 3 images per row
-              crossAxisSpacing: 4.0,
-              mainAxisSpacing: 4.0,
+                        crossAxisCount: 3, // Display 3 images per row
+                        crossAxisSpacing: 4.0,
+                        mainAxisSpacing: 4.0,
                         ),
                         itemCount: _images.length,
                         itemBuilder: (context, index) {

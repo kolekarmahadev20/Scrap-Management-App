@@ -133,7 +133,7 @@ class _RefundListState extends State<RefundList> {
                   ),
                 ),
                 Divider(
-                  thickness: 1.5,
+                  thickness: 1,
                   color: Colors.black54,
                 ),
                 Row(
@@ -165,18 +165,21 @@ class _RefundListState extends State<RefundList> {
                   ],
                 ),
                 Divider(
-                  thickness: 1.5,
+                  thickness: 1,
                   color: Colors.black54,
                 ),
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                    child: ListView.builder(
-                      itemCount: refundList.length, // Number of items in the list
-                      itemBuilder: (context, index) {
-                        final refundListIndex = refundList[index];
-                        return buildCustomListTile(context , refundListIndex);
-                      },
+                  child: ListView.separated(
+                    itemCount: refundList.length, // Number of items in the list
+                    itemBuilder: (context, index) {
+                      final refundListIndex = refundList[index];
+                      return buildCustomListTile(context , refundListIndex);
+                    },
+                    separatorBuilder: (context, index) => Divider(
+                      color: Color(0xFF6482AD), // Custom color for the separator
+                      thickness: 1, // Thickness of the divider
+                      indent: 12, // Indentation before the divider
+                      endIndent: 12, // Indentation after the divider
                     ),
                   ),
                 ),
@@ -203,40 +206,98 @@ class _RefundListState extends State<RefundList> {
           backgroundColor: Colors.indigo[800],
           child: Icon(Icons.border_outer, size: 22, color: Colors.white), // Reduced icon size for compactness
         ),
-        title: Center(
-          child: Text(
-            "#${index['sale_order_code']}",
-            style: TextStyle(
-              fontSize: 16, // Consistent title font size
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
+        title: RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: "Order ID :  ", // Key text (e.g., "Vendor Name: ")
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black, // Bold key text
+                ),
+              ),
+              TextSpan(
+                text:index['sale_order_code'] ?? "N/A", // Value text (e.g., "XYZ Corp")
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.black54, // Normal value text
+                ),
+              ),
+            ],
           ),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Divider( thickness: 1,color: Colors.black87),
-            Text(
-              "Buyer: ${index['bidder_name']}",
-              style: TextStyle(
-                color: Colors.black54,
-                fontSize: 14, // Slightly smaller font size for subtitle
+            RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: "Buyer : ",
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.bold, // Bold key
+                      fontSize: 18,
+                    ),
+                  ),
+                  TextSpan(
+                    text: "${index['bidder_name'] ?? 'N/A'}",
+                    style: TextStyle(
+                      color: Colors.black54,
+                      fontWeight: FontWeight.normal, // Normal value
+                      fontSize: 18,
 
+                    ),
+                  ),
+                ],
               ),
             ),
-            Text(
-              "Material :${index['description']}",
-              style: TextStyle(
-                fontSize: 14, // Consistent subtitle font size
-                color: Colors.black54,
+            RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: "Material : ",
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.bold, // Bold key
+                      fontSize: 18,
+                    ),
+                  ),
+                  TextSpan(
+                    text: "${index['description'] ?? 'N/A'}",
+                    style: TextStyle(
+                      color: Colors.black54,
+                      fontWeight: FontWeight.normal, // Normal value
+                      fontSize: 18,
+
+                    ),
+                  ),
+                ],
               ),
             ),
-            Text(
-              "Date : ${index['date']}",
-              style: TextStyle(
-                fontSize: 14, // Consistent subtitle font size
-                color: Colors.black54,
+            RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: "Date : ",
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.bold, // Bold key
+                      fontSize: 18,
+                    ),
+                  ),
+                  TextSpan(
+                    text: "${index['date'] ?? 'N/A'}",
+                    style: TextStyle(
+                      color: Colors.black54,
+                      fontWeight: FontWeight.normal, // Normal value
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

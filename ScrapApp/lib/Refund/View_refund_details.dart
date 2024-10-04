@@ -25,6 +25,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
   Map<String, dynamic> ViewRefundData = {};
   List<dynamic> refundId = [];
   List<dynamic> emdStatus = [];
+  bool? isData;
+
 
   @override
   void initState() {
@@ -263,6 +265,9 @@ class _View_refund_detailsState extends State<View_refund_details> {
                     "Material Name : ${ViewRefundData['sale_order_details'][0]['material_name']}"),
                 buildListTile(
                     "Total Qty :${ViewRefundData['sale_order_details'][0]['totalqty']}"),
+                if(ViewRefundData['lifted_quantity'] != null &&
+                    ViewRefundData['lifted_quantity'] is List &&
+                    ViewRefundData['lifted_quantity'].isNotEmpty)
                 buildListTile(
                     "Lifted Qty :${ViewRefundData['lifted_quantity'][0]['quantity']}"),
                 buildListTile(
@@ -372,7 +377,10 @@ class _View_refund_detailsState extends State<View_refund_details> {
           ),
           SizedBox(
             height: 300, // Adjusted to fit typical content
-            child: listViewBuilder(),
+            child:
+            (isData == false)
+            ?Center(child: Text("No Data"))
+            :listViewBuilder(),
           ),
         ],
       ),
@@ -399,6 +407,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
     );
   }
 
+
   Widget buildPaymentStatusListTile(BuildContext context, index) {
     // Check the payment_type condition
     if (index['payment_type'] == "Refund EMD" ||
@@ -406,6 +415,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
         index['payment_type'] == "Penalty" ||
         index['payment_type'] == "Refund All" ||
         index['payment_type'] == "Refund(Other than EMD/CMD)") {
+      isData = true;
       return Padding(
         padding: const EdgeInsets.all(4.0),
         child: Card(
@@ -555,12 +565,14 @@ class _View_refund_detailsState extends State<View_refund_details> {
         ),
       );
     } else {
+      isData = false;
       return Container(); // Return an empty container if the condition is not met
     }
   }
 
   Widget buildEmdStatusListTile(BuildContext context, index) {
     if (index['payment_type'] == "Refund EMD") {
+      isData = true;
       return Padding(
         padding: const EdgeInsets.all(4.0),
         child: Card(
@@ -711,6 +723,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
         ),
       );
     } else {
+      isData = false;
       return Container();
     }
   }

@@ -5,7 +5,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       centerTitle: true,
-      backgroundColor: Colors.indigo[800],
+      backgroundColor:Color(0xFF6482AD),
       title: Text(
         "Scrap Management",
         style: TextStyle(color: Colors.white),

@@ -27,7 +27,7 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: Colors.deepPurple,
+      backgroundColor: Color(0xFF6482AD),
       child: Container(
         color: Colors.white, // Background color for the drawer
         child: Column(
@@ -36,7 +36,7 @@ class AppDrawer extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                color: Colors.indigo[900],
+                color: Color(0xFF6482AD),
                 borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
               ),
               child: Row(
@@ -176,7 +176,7 @@ class AppDrawer extends StatelessWidget {
         splashColor: Colors.indigo[100],
         highlightColor: Colors.indigo[50],
         child: ListTile(
-          leading: Icon(icon, color: Colors.indigo[900], size: 30),
+          leading: Icon(icon, color: Color(0xFF6482AD), size: 30),
           title: Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
         ),
       ),

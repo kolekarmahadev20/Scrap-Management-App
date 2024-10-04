@@ -30,6 +30,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
   Map<String , dynamic> ViewPaymentData = {};
   List<dynamic> paymentId =[];
   List<dynamic> emdStatus =[];
+  var checkLiftedQty ;
 
   @override
   void initState() {
@@ -68,6 +69,10 @@ class _View_payment_detailState extends State<View_payment_detail> {
         ViewPaymentData = jsonData;
         paymentId = ViewPaymentData['sale_order_payments'] ?? '';
         emdStatus =  ViewPaymentData['emd_status'] ?? '';
+        checkLiftedQty = ViewPaymentData['lifted_quantity'];
+        print(ViewPaymentData);
+        print(paymentId.length);
+        print(emdStatus.length);
       });
     } else {
       print("Unable to fetch data.");
@@ -168,7 +173,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                 ),
               ),
               TextSpan(
-                text:ViewPaymentData['sale_order']['sale_order_code'], // Value text (e.g., "XYZ Corp")
+                text:ViewPaymentData['sale_order']['sale_order_code'] ?? "N/A", // Value text (e.g., "XYZ Corp")
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.normal,
@@ -242,6 +247,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
     );
   }
 
+
+
   Widget buildExpansionTile() {
     return Material(
       elevation: 5,
@@ -266,6 +273,9 @@ class _View_payment_detailState extends State<View_payment_detail> {
               children: [
                 buildListTile("Material Name :${ViewPaymentData['sale_order_details'][0]['material_name'] ?? 'No data'}"),
                 buildListTile("Total Qty :${ViewPaymentData['sale_order_details'][0]['totalqty'] ?? 'No data'}"),
+                if(ViewPaymentData['lifted_quantity'] != null &&
+                    ViewPaymentData['lifted_quantity'] is List &&
+                    ViewPaymentData['lifted_quantity'].isNotEmpty)
                 buildListTile("Lifted Qty :${ViewPaymentData['lifted_quantity'][0]['quantity'] ?? 'No data'}"),
                 buildListTile("Rate :${ViewPaymentData['sale_order_details'][0]['rate'] ?? 'No data'}"),
                 buildListTile("SO Date :${ViewPaymentData['sale_order_details'][0]['sod'] ?? 'No data'}"),
@@ -489,12 +499,12 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     builder: (context) =>
                         View_Payment_Amount(
                           sale_order_id: widget.sale_order_id,
-                          paymentId: index['payment_id'],
-                          paymentType: index['payment_type'],
-                          date1: index['pay_date'],
-                          amount: index['amt'],
-                          referenceNo: index['pay_ref_no'],
-                          typeOfTransfer: index['typeoftransfer'],
+                          paymentId: index['payment_id'] ?? 'N/A',
+                          paymentType: index['payment_type']?? 'N/A',
+                          date1: index['pay_date']?? 'N/A',
+                          amount: index['amt']?? 'N/A',
+                          referenceNo: index['pay_ref_no']?? 'N/A',
+                          typeOfTransfer: index['typeoftransfer']?? 'N/A',
                         ),
                   ),
                 ).then((value) => setState((){
@@ -509,12 +519,12 @@ class _View_payment_detailState extends State<View_payment_detail> {
                   builder: (context) =>
                       View_Payment_Amount(
                         sale_order_id: widget.sale_order_id,
-                        paymentId: index['payment_id'],
-                        paymentType: index['payment_type'],
-                        date1: index['pay_date'],
-                        amount: index['amt'],
-                        referenceNo: index['pay_ref_no'],
-                        typeOfTransfer: index['typeoftransfer'],
+                        paymentId: index['payment_id'] ?? 'N/A',
+                        paymentType: index['payment_type']?? 'N/A',
+                        date1: index['pay_date']?? 'N/A',
+                        amount: index['amt']?? 'N/A',
+                        referenceNo: index['pay_ref_no']?? 'N/A',
+                        typeOfTransfer: index['typeoftransfer']?? 'N/A',
                       ),
                 ),
               ).then((value) => setState((){
@@ -631,12 +641,12 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     builder: (context) =>
                         View_Payment_Amount(
                           sale_order_id: widget.sale_order_id,
-                          paymentId: index['payment_id'],
-                          paymentType: index['payment_type'],
-                          date1: index['date'],
-                          amount: index['amt'],
-                          referenceNo: index['pay_ref_no'],
-                          typeOfTransfer: index['typeoftransfer'],
+                          paymentId: index['payment_id'] ?? "N/A",
+                          paymentType: index['payment_type'] ?? "N/A",
+                          date1: index['date'] ?? "N/A",
+                          amount: index['amt'] ?? "N/A",
+                          referenceNo: index['pay_ref_no'] ?? "N/A",
+                          typeOfTransfer: index['typeoftransfer'] ?? "N/A",
                         ),
                   ),
                 ).then((value) => setState((){
@@ -651,12 +661,12 @@ class _View_payment_detailState extends State<View_payment_detail> {
                   builder: (context) =>
                       View_Payment_Amount(
                         sale_order_id: widget.sale_order_id,
-                        paymentId: index['payment_id'],
-                        paymentType: index['payment_type'],
-                        date1: index['date'],
-                        amount: index['amt'],
-                        referenceNo: index['pay_ref_no'],
-                        typeOfTransfer: index['typeoftransfer'],
+                        paymentId: index['payment_id'] ?? "N/A",
+                        paymentType: index['payment_type'] ?? "N/A",
+                        date1: index['date'] ?? "N/A",
+                        amount: index['amt'] ?? "N/A",
+                        referenceNo: index['pay_ref_no'] ?? "N/A",
+                        typeOfTransfer: index['typeoftransfer'] ?? "N/A",
                       ),
                 ),
               ).then((value) => setState((){
