@@ -1,9 +1,12 @@
 import 'dart:convert';
-
+import 'dart:typed_data';
+import 'package:path/path.dart' as path;
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:http/http.dart' as http;
@@ -53,6 +56,19 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   String? password = '';
   String? materialId ;
   bool isLoading = false;
+  List<File> vehicleFront = [];
+  List<File> vehicleBack = [];
+  List<File> Material = [];
+  List<File> MaterialHalfLoad = [];
+  List<File> MaterialFullLoad = [];
+  List<File> other = [];
+  String? frontVehicle;
+  String? backVehicle;
+  String? materialImg;
+  String? materialHalfLoad;
+  String? materialFullLoad;
+  String? otherImg;
+
 
   @override
   void initState() {
@@ -66,6 +82,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     truckNoController.text=widget.truckNo ?? 'N/A';
     quantityController.text=widget.quantity ?? 'N/A';
     noteController.text=widget.note ?? 'N/A';
+    fetchImageList();
     }
 
 
@@ -114,6 +131,11 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     }
   }
 
+  Future<File?> compressImage(File file) async {
+    final dir = await getTemporaryDirectory();
+    final targetPath = path.join(dir.path, '${DateTime.now().millisecondsSinceEpoch}.jpg');
+    return await FlutterImageCompress.compressAndGetFile(file.absolute.path, targetPath, quality: 20);
+  }
 
 
   Future<void> editDispatchDetails() async {
@@ -139,13 +161,48 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       request.fields['qty'] = quantityController.text;
       request.fields['note'] = noteController.text;
 
+      print('Form Data: ${request.fields}');
+
       // Add images to the request
-      // for (var image in _uploadedImages) {
-      //   var stream = http.ByteStream(image.openRead());
-      //   var length = await image.length();
-      //   var multipartFile = http.MultipartFile('certifications[]', stream, length, filename: image.path.split('/').last);
-      //   request.files.add(multipartFile);
-      // }
+      Future<void> addImages(List<File> images, String keyword, http.MultipartRequest request) async {
+        for (var image in images) {
+          // Compress the image before uploading
+          File? compressedImage = await compressImage(image);
+
+          if (compressedImage != null) {
+            var stream = http.ByteStream(compressedImage.openRead());
+            var length = await compressedImage.length();
+            var multipartFile = http.MultipartFile(
+              'certifications[]',
+              stream,
+              length,
+              filename: '$keyword${compressedImage.path.split('/').last}',
+            );
+            request.files.add(multipartFile);  // Add compressed file
+          }
+        }
+      }
+
+      // Add images from different sources
+      if (vehicleFront != null && vehicleFront!.isNotEmpty) {
+        await addImages(vehicleFront!, "Fr", request);
+      }
+      if (vehicleBack != null && vehicleBack!.isNotEmpty) {
+        await addImages(vehicleBack!, "Ba", request);
+      }
+      if (Material != null && Material!.isNotEmpty) {
+        await addImages(Material!, "Ma", request);
+      }
+      if (MaterialHalfLoad != null && MaterialHalfLoad!.isNotEmpty) {
+        await addImages(MaterialHalfLoad!, "Ha", request);
+      }
+      if (MaterialFullLoad != null && MaterialFullLoad!.isNotEmpty) {
+        await addImages(MaterialFullLoad!, "Fu", request);
+      }
+      if (other != null && other!.isNotEmpty) {
+        await addImages(other!, "ot", request);
+      }
+
 
       // Send the request
       var response = await request.send();
@@ -154,12 +211,14 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       if (response.statusCode == 200) {
         final res = await http.Response.fromStream(response);
         final jsonData = json.decode(res.body);
-        setState(() {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${jsonData['msg']}")));
-          Navigator.pop(context);
-          Navigator.pop(context);
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => View_dispatch_details(sale_order_id: widget.sale_order_id)));
-        });
+        if (mounted) {
+          setState(() {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${jsonData['msg']}")));
+            Navigator.pop(context);
+            Navigator.pop(context);
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => View_dispatch_details(sale_order_id: widget.sale_order_id)));
+          });
+        }
       } else {
         Fluttertoast.showToast(
           msg: 'Unable to insert data.',
@@ -184,13 +243,55 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     }
   }
 
+  Future<void> fetchImageList() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      await checkLogin();
+      final url = Uri.parse("${URL}check_url");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': username,
+          'user_pass': password,
+          'sale_order_id': widget.sale_order_id,
+          'invoice_no': widget.invoiceNo,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          var jsonData = json.decode(response.body);
+          print(jsonData);
+          frontVehicle = '${Image_URL}${jsonData['Fr']}';
+          backVehicle = '${Image_URL}${jsonData['Ba']}';
+          materialImg = '${Image_URL}${jsonData['Ma']}';
+          materialHalfLoad = '${Image_URL}${jsonData['Ha']}';
+          materialFullLoad = '${Image_URL}${jsonData['Fu']}';
+          otherImg = '${Image_URL}${jsonData['ot']}';
+        });
+      } else {
+        print("Unable to fetch data.");
+      }
+    } catch (e) {
+      print("Server Exception: $e");
+    }finally{
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+
 
 
   showLoading() {
     return Container(
       height: double.infinity,
       width: double.infinity,
-      color: Colors.black.withOpacity(0.4),
+      color: Colors.transparent,
       child: Center(
         child: CircularProgressIndicator(),
       ),
@@ -270,34 +371,71 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
                               child: Text("Edit Images" , style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
                             ),
                             ImageWidget(
-                              value: '1) Vehicle Front',
-                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                value: '1) Vehicle Front',
+                                cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                filePath: frontVehicle!,
+                                onImagesSelected: (images) { // Handle selected images
+                                  setState(() {
+                                    vehicleFront.addAll(images); // Store uploaded images
+                                    print(vehicleFront);
+                                  });
+                                }
                             ),
                             ImageWidget(
-                              value: '2) Vehicle Back',
-                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                value: '2) Vehicle Back',
+                                cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                filePath: backVehicle!,
+                                onImagesSelected: (images) { // Handle selected images
+                                  setState(() {
+                                    vehicleBack.addAll(images); // Store uploaded images
+                                  });
+                                }
                             ),
                             ImageWidget(
-                              value: '3) Material',
-                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                value: '3) Material',
+                                cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                filePath: materialImg!,
+                                onImagesSelected: (images) { // Handle selected images
+                                  setState(() {
+                                    Material.addAll(images); // Store uploaded images
+                                  });
+                                }
                             ),
                             ImageWidget(
-                              value: '4) Material Half Load',
-                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                value: '4) Material Half Load',
+                                cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                filePath: materialHalfLoad!,
+                                onImagesSelected: (images) { // Handle selected images
+                                  setState(() {
+                                    MaterialHalfLoad.addAll(images); // Store uploaded images
+                                  });
+                                }
                             ),
                             ImageWidget(
-                              value: '5) Material Full Load',
-                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                value: '5) Material Full Load',
+                                cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                filePath: materialFullLoad!,
+                                onImagesSelected: (images) { // Handle selected images
+                                  setState(() {
+                                    MaterialFullLoad.addAll(images); // Store uploaded images
+                                  });
+                                }
                             ),
                             ImageWidget(
-                              value: '6) Other',
-                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                value: '6) Other',
+                                cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                filePath: otherImg!,
+                                onImagesSelected: (images) { // Handle selected images
+                                  setState(() {
+                                    other.addAll(images); // Store uploaded images
+                                  });
+                                }
                             ),
                           ],
                         ),
@@ -353,45 +491,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     );
   }
 
-  Widget buildDropdown(String label, List<String> options, ValueChanged<String?> onChanged) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0 , horizontal: 8.0),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 3, // Adjusts label width
-            child: Text(
-              label,
-              style: TextStyle(
-                color: Colors.black54,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 7, // Adjusts dropdown width
-            child: DropdownButtonFormField<String>(
-              decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              value: options.isNotEmpty ? options.first : null,
-              items: options.map((String option) {
-                return DropdownMenuItem<String>(
-                  value: option,
-                  child: Text(option),
-                );
-              }).toList(),
-              onChanged: onChanged,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
     DateTime? picked = await showDatePicker(
       context: context,
@@ -424,9 +523,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
           ),
           Expanded(
             flex: 7, // Adjusts text field width
-            child: Material(
-              elevation: 2,
-              borderRadius: BorderRadius.circular(12),
               child: TextField(
                 onTap: isDateField ? () => _selectDate(context, controller) : null,
                 controller: controller,
@@ -460,7 +556,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
                 readOnly: isReadOnly,
               ),
             ),
-          ),
         ],
       ),
     );
@@ -473,12 +568,16 @@ class ImageWidget extends StatefulWidget {
   final String value;
   final Icon cameraIcon;
   final Icon galleryIcon;
+  final String filePath;
+  final Function(List<File>) onImagesSelected;
 
   const ImageWidget({
     Key? key,
     required this.value,
     required this.cameraIcon,
     required this.galleryIcon,
+    required this.filePath,
+    required this.onImagesSelected,
   }) : super(key: key);
 
   @override
@@ -486,8 +585,11 @@ class ImageWidget extends StatefulWidget {
 }
 
 class _ImageWidgetState extends State<ImageWidget> {
+
   List<File> _images = [];
-  int _currentPage = 0;
+
+  Uint8List? imageBytes;
+
   // Function to pick multiple images from the gallery
   Future<void> _pickImagesFromGallery() async {
     final picker = ImagePicker();
@@ -497,6 +599,7 @@ class _ImageWidgetState extends State<ImageWidget> {
       setState(() {
         _images = pickedFiles.map((file) => File(file.path)).toList();
       });
+      widget.onImagesSelected(_images);
     }
   }
 
@@ -509,6 +612,7 @@ class _ImageWidgetState extends State<ImageWidget> {
       setState(() {
         _images.add(File(capturedFile.path)); // Add the captured image to the list
       });
+      widget.onImagesSelected(_images);
     }
   }
 
@@ -516,73 +620,63 @@ class _ImageWidgetState extends State<ImageWidget> {
   void _deleteImage(int index) {
     setState(() {
       _images.removeAt(index); // Remove the image at the specified index
+      widget.onImagesSelected(_images); // Update parent with the new list
+      print(widget.onImagesSelected(_images));
     });
   }
 
-// Function to show a dialog with all the saved images in a pageable view
-  void _showImagesDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Text("View Images"),
-              content: _images.isEmpty ? Center(child: Text("No images to be found ")):
-              Container(
-                width: double.maxFinite,
-                height: 300,
-                child: Stack(
-                  children: [
-                    PageView.builder(
-                      itemCount: _images.length,
-                      controller: PageController(initialPage: _currentPage),
-                      onPageChanged: (int page) {
-                        setState(() {
-                          _currentPage = page;
-                        });
-                      },
-                      itemBuilder: (context, index) {
-                        return Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                _images[index],
-                                fit: BoxFit.cover,
-                                height: 250, // Adjust height as needed
-                                width: double.infinity,
-                              ),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              '${index + 1} of ${_images.length}',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                    // Left arrow to navigate to the previous image
 
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
+  Future<void> _fetchFileBytesFromServer(String fileUrl) async {
+    try {
+      var response = await http.get(Uri.parse(fileUrl));
+      if (response.statusCode == 200) {
+        setState(() {
+          imageBytes = response.bodyBytes; // Store image bytes
+          _showImage();
+        });
+      } else {
+        print('Failed to load file from server');
+      }
+    } catch (e) {
+      print('Exception: $e');
+    } finally {
+      setState(() {});
+    }
+  }
+
+  _showImage() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("${widget.filePath.split('/').last}"),
+            content: imageBytes != null
+                ? Image.memory(imageBytes!, fit: BoxFit.fill)
+                : showLoading(),
+            actions: [
+              TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Navigator.pop(context);
                   },
-                  child: Text("OK"),
-                ),
-              ],
-            );
-          },
-        );
-      },
+                  child: Text("OK"))
+            ],
+          );
+        });
+  }
+
+  showLoading() {
+    return Container(
+      height: double.infinity,
+      width: double.infinity,
+      color: Colors.black.withOpacity(0.4),
+      child: Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
+
+
+
 
 
   @override
@@ -605,7 +699,7 @@ class _ImageWidgetState extends State<ImageWidget> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold ,color: Colors.green),
                 ),
                 onPressed: (){
-                  _showImagesDialog();
+                  _fetchFileBytesFromServer(widget.filePath);
                 },
               ),
               IconButton(

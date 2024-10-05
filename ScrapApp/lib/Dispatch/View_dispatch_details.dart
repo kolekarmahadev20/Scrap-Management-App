@@ -85,7 +85,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
     return Container(
       height: double.infinity,
       width: double.infinity,
-      color: Colors.black.withOpacity(0.4),
+      color: Colors.transparent,
       child: Center(
         child: CircularProgressIndicator(),
       ),

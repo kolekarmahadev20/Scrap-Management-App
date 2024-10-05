@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:http/http.dart' as http;
@@ -11,7 +12,7 @@ import '../URL_CONSTANT.dart';
 // imports for image uploader
 import 'package:image_picker/image_picker.dart';
 import 'dart:io'; // Import for File
-
+import 'package:path/path.dart' as path;
 
 class Add_dispatch_details extends StatefulWidget {
   @override
@@ -35,9 +36,12 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
   List<String> orderIDs = ['Select',];
   String? MaterialSelected;
   String? materialId ;
-  List<File> _uploadedImages = [];
-
-
+  List<File> vehicleFront = [];
+  List<File> vehicleBack = [];
+  List<File> Material = [];
+  List<File> MaterialHalfLoad = [];
+  List<File> MaterialFullLoad = [];
+  List<File> other = [];
 
 
   void clearFields(){
@@ -55,7 +59,6 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
     super.initState();
     checkLogin();
     orderIdDropDowns();
-
   }
 
   checkLogin()async{
@@ -154,12 +157,19 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
 
     }
   }
+  // Function to compress the image
+  Future<File?> compressImage(File file) async {
+    final dir = await getTemporaryDirectory();
+    final targetPath = path.join(dir.path, '${DateTime.now().millisecondsSinceEpoch}.jpg');
+    return await FlutterImageCompress.compressAndGetFile(file.absolute.path, targetPath, quality: 20);
+  }
 
   Future<void> addDispatchDetails() async {
     try {
       setState(() {
         isLoading = true;
       });
+
       await checkLogin();
       final url = Uri.parse("${URL}save_lifting");
 
@@ -168,32 +178,59 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
 
       // Add form data
       request.fields['user_id'] = username!;
-      request.fields['user_pass'] = password! ;
+      request.fields['user_pass'] = password!;
       request.fields['sale_order_id_lift'] = selectedOrderId ?? '';
-      request.fields['material_id_lifting'] = materialId ?? ''; // sending material Id instead of material Name
+      request.fields['material_id_lifting'] = materialId ?? '';
       request.fields['invoice_no'] = invoiceController.text;
       request.fields['date_time'] = dateController.text;
       request.fields['truck_no'] = truckNoController.text;
       request.fields['qty'] = quantityController.text;
       request.fields['note'] = noteController.text;
 
+      // Function to add images to the request
+      Future<void> addImages(List<File> images, String keyword, http.MultipartRequest request) async {
+        for (var image in images) {
+          // Compress the image before uploading
+          File? compressedImage = await compressImage(image);
 
-      print('Form Data: ${request.fields}');
-
-      // Add images to the request
-      for (var image in _uploadedImages) {
-        var stream = http.ByteStream(image.openRead());
-        var length = await image.length();
-        var multipartFile = http.MultipartFile('certifications[]', stream, length, filename: image.path.split('/').last);
-        request.files.add(multipartFile);
+          if (compressedImage != null) {
+            var stream = http.ByteStream(compressedImage.openRead());
+            var length = await compressedImage.length();
+            var multipartFile = http.MultipartFile(
+              'certifications[]',
+              stream,
+              length,
+              filename: '$keyword${compressedImage.path.split('/').last}',
+            );
+            request.files.add(multipartFile);  // Add compressed file
+          }
+        }
       }
 
+      // Add images from different sources
+      if (vehicleFront != null && vehicleFront!.isNotEmpty) {
+        await addImages(vehicleFront!, "Fr", request);
+      }
+      if (vehicleBack != null && vehicleBack!.isNotEmpty) {
+        await addImages(vehicleBack!, "Ba", request);
+      }
+      if (Material != null && Material!.isNotEmpty) {
+        await addImages(Material!, "Ma", request);
+      }
+      if (MaterialHalfLoad != null && MaterialHalfLoad!.isNotEmpty) {
+        await addImages(MaterialHalfLoad!, "Ha", request);
+      }
+      if (MaterialFullLoad != null && MaterialFullLoad!.isNotEmpty) {
+        await addImages(MaterialFullLoad!, "Fu", request);
+      }
+      if (other != null && other!.isNotEmpty) {
+        await addImages(other!, "ot", request);
+      }
       // Send the request
       var response = await request.send();
 
       // Handle response
       if (response.statusCode == 200) {
-
         final res = await http.Response.fromStream(response);
         final jsonData = json.decode(res.body);
         setState(() {
@@ -201,7 +238,6 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
         });
         Navigator.pop(context);
       } else {
-
         Fluttertoast.showToast(
           msg: 'Unable to insert data.',
           toastLength: Toast.LENGTH_SHORT,
@@ -211,8 +247,7 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
         );
       }
     } catch (e) {
-      print("print");
-
+      print("Error: $e");
       Fluttertoast.showToast(
         msg: 'Server Exception: $e',
         toastLength: Toast.LENGTH_SHORT,
@@ -220,7 +255,7 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
         backgroundColor: Colors.red,
         textColor: Colors.yellow,
       );
-    }finally{
+    } finally {
       setState(() {
         isLoading = false;
       });
@@ -231,7 +266,7 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
     return Container(
       height: double.infinity,
       width: double.infinity,
-      color: Colors.black.withOpacity(0.4),
+      color: Colors.transparent,
       child: Center(child: CircularProgressIndicator(),),
     );
   }
@@ -297,7 +332,6 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                           orderIdMaterial();
                           materialNameId();
                           print(value);
-
                         });
                       }),
                       buildTextField("Material", materialController,true, false , context),
@@ -323,7 +357,7 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                               galleryIcon: Icon(Icons.photo_library, color: Colors.green),
                               onImagesSelected: (images) { // Handle selected images
                               setState(() {
-                              _uploadedImages.addAll(images); // Store uploaded images
+                                vehicleFront.addAll(images); // Store uploaded images
                               });
                               }
                             ),
@@ -333,7 +367,7 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                               galleryIcon: Icon(Icons.photo_library, color: Colors.green),
                                 onImagesSelected: (images) { // Handle selected images
                                   setState(() {
-                                    _uploadedImages.addAll(images); // Store uploaded images
+                                    vehicleBack.addAll(images); // Store uploaded images
                                   });
                                 }
                             ),
@@ -343,7 +377,7 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                               galleryIcon: Icon(Icons.photo_library, color: Colors.green),
                                 onImagesSelected: (images) { // Handle selected images
                                   setState(() {
-                                    _uploadedImages.addAll(images); // Store uploaded images
+                                    Material.addAll(images); // Store uploaded images
                                   });
                                 }
                             ),
@@ -353,7 +387,7 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                               galleryIcon: Icon(Icons.photo_library, color: Colors.green),
                                 onImagesSelected: (images) { // Handle selected images
                                   setState(() {
-                                    _uploadedImages.addAll(images); // Store uploaded images
+                                    MaterialHalfLoad.addAll(images); // Store uploaded images
                                   });
                                 }
                             ),
@@ -363,7 +397,7 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                               galleryIcon: Icon(Icons.photo_library, color: Colors.green),
                                 onImagesSelected: (images) { // Handle selected images
                                   setState(() {
-                                    _uploadedImages.addAll(images); // Store uploaded images
+                                    MaterialFullLoad.addAll(images); // Store uploaded images
                                   });
                                 }
                             ),
@@ -373,7 +407,7 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                               galleryIcon: Icon(Icons.photo_library, color: Colors.green),
                                 onImagesSelected: (images) { // Handle selected images
                                   setState(() {
-                                    _uploadedImages.addAll(images); // Store uploaded images
+                                    other.addAll(images); // Store uploaded images
                                   });
                                 }
                             ),
@@ -508,9 +542,6 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
           ),
           Expanded(
             flex: 7, // Adjusts text field width
-            child: Material(
-              elevation: 2,
-              borderRadius: BorderRadius.circular(12),
               child: TextField(
                 onTap: isDateField ? () => _selectDate(context, controller) : null,
                 controller: controller,
@@ -544,7 +575,6 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                 readOnly: isReadOnly,
               ),
             ),
-          ),
         ],
       ),
     );
@@ -582,7 +612,6 @@ class _ImageWidgetState extends State<ImageWidget> {
         _images = pickedFiles.map((file) => File(file.path)).toList();
       });
       widget.onImagesSelected(_images);
-      print(widget.onImagesSelected(_images));
     }
   }
 
@@ -596,7 +625,6 @@ class _ImageWidgetState extends State<ImageWidget> {
         _images.add(File(capturedFile.path)); // Add the captured image to the list
       });
       widget.onImagesSelected(_images);
-      print(widget.onImagesSelected(_images));
     }
   }
 
@@ -605,8 +633,6 @@ class _ImageWidgetState extends State<ImageWidget> {
     setState(() {
       _images.removeAt(index); // Remove the image at the specified index
       widget.onImagesSelected(_images); // Update parent with the new list
-      print(widget.onImagesSelected(_images));
-
     });
   }
 

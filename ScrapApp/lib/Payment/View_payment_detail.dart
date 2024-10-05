@@ -90,7 +90,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
     return Container(
       height: double.infinity,
       width: double.infinity,
-      color: Colors.black.withOpacity(0.4),
+      color: Colors.transparent,
       child: Center(child: CircularProgressIndicator(),),
     );
   }
@@ -340,6 +340,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
 
   Widget buildScrollableContainer(String title, Widget Function() listViewBuilder) {
     return Container(
+      width:double.infinity,
       margin: EdgeInsets.all(8.0), // Match margin from second page
       padding: EdgeInsets.all(8.0), // Match padding from second page
       decoration: BoxDecoration(
@@ -370,13 +371,15 @@ class _View_payment_detailState extends State<View_payment_detail> {
           ),
           SizedBox(
             height: 300,
-            child: listViewBuilder(),
+            child:
+            listViewBuilder(),
           ),
         ],
       ),
     );
   }
   Widget buildPaymentDetailListView() {
+    if(paymentId.length != 0){
     return ListView.builder(
       itemCount:paymentId.length,
       itemBuilder: (context, index) {
@@ -384,9 +387,13 @@ class _View_payment_detailState extends State<View_payment_detail> {
         return buildPaymentDetailListTile(context,paymentIdIndex);
       },
     );
+    }else{
+      return Center(child: Text("No Payment Details Found" ,style: TextStyle(fontWeight:FontWeight.bold , fontSize: 20),));
+    }
   }
 
   Widget buildEmdDetailListView() {
+    if(emdStatus.length != 0){
     return ListView.builder(
       itemCount: emdStatus.length,
       itemBuilder: (context, index) {
@@ -394,6 +401,9 @@ class _View_payment_detailState extends State<View_payment_detail> {
         return buildEmdDetailListTile(context,emdStatusIndex);
       },
     );
+    }else{
+      return Center(child: Text("No EMD Details Found" ,style: TextStyle(fontWeight:FontWeight.bold , fontSize: 20),));
+    }
   }
 
   Widget buildPaymentDetailListTile(BuildContext context , index) {

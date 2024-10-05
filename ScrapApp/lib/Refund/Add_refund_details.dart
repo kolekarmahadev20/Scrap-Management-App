@@ -197,7 +197,7 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
     return Container(
       height: double.infinity,
       width: double.infinity,
-      color: Colors.black.withOpacity(0.4),
+      color: Colors.transparent,
       child: Center(child: CircularProgressIndicator(),),
     );
   }

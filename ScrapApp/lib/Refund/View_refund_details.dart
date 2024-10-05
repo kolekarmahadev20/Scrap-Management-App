@@ -80,7 +80,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
     return Container(
       height: double.infinity,
       width: double.infinity,
-      color: Colors.black.withOpacity(0.4),
+      color: Colors.transparent,
       child: Center(
         child: CircularProgressIndicator(),
       ),
@@ -347,6 +347,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
   Widget buildScrollableContainer(
       String title, Widget Function() listViewBuilder) {
     return Container(
+      width:double.infinity,
       margin: EdgeInsets.all(8.0),
       padding: EdgeInsets.all(8.0),
       decoration: BoxDecoration(
@@ -388,23 +389,31 @@ class _View_refund_detailsState extends State<View_refund_details> {
   }
 
   Widget buildEmdListView() {
-    return ListView.builder(
-      itemCount: emdStatus.length,
-      itemBuilder: (context, index) {
-        final emdStatusIndex = emdStatus[index];
-        return buildEmdStatusListTile(context, emdStatusIndex);
-      },
-    );
+    if(emdStatus.length != 0){
+      return ListView.builder(
+        itemCount: emdStatus.length,
+        itemBuilder: (context, index) {
+          final emdStatusIndex = emdStatus[index];
+          return buildEmdStatusListTile(context,emdStatusIndex);
+        },
+      );
+    }else{
+      return Center(child: Text("No EMD Details Found" ,style: TextStyle(fontWeight:FontWeight.bold , fontSize: 20),));
+    }
   }
 
   Widget buildPaymentListView() {
-    return ListView.builder(
-      itemCount: refundId.length,
-      itemBuilder: (context, index) {
-        final refundIdIndex = refundId[index];
-        return buildPaymentStatusListTile(context, refundIdIndex);
-      },
-    );
+    if(refundId.length != 0){
+      return ListView.builder(
+        itemCount:refundId.length,
+        itemBuilder: (context, index) {
+          final paymentIdIndex =refundId[index];
+          return buildPaymentStatusListTile(context,paymentIdIndex);
+        },
+      );
+    }else{
+      return Center(child: Text("No Refund Details Found" ,style: TextStyle(fontWeight:FontWeight.bold , fontSize: 20),));
+    }
   }
 
 

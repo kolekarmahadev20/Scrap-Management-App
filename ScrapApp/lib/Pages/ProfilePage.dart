@@ -133,10 +133,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       height: 100,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        image: DecorationImage(
-                          image: AssetImage('assets/images/welcome_image.gif'),
-                          fit: BoxFit.cover,
-                        ),
+                        // image: DecorationImage(
+                        //   image: AssetImage('assets/images/welcome_image.gif'),
+                        //   fit: BoxFit.cover,
+                        // ),
                       ),
                     ),
                     SizedBox(height: 10),

@@ -188,7 +188,7 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
     return Container(
       height: double.infinity,
       width: double.infinity,
-      color: Colors.black.withOpacity(0.4),
+      color: Colors.transparent,
       child: Center(child: CircularProgressIndicator(),),
     );
   }

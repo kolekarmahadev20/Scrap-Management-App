@@ -160,7 +160,7 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
     return Container(
       height: double.infinity,
       width: double.infinity,
-      color: Colors.black.withOpacity(0.4),
+      color: Colors.transparent,
       child: Center(child: CircularProgressIndicator(),),
     );
   }
