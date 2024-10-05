@@ -282,13 +282,17 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
   }
 
   Widget buildInvoiceListView() {
-    return ListView.builder(
-      itemCount: liftingDetails.length, // Example number of items
-      itemBuilder: (context, index) {
-        final liftingDetailsIndex = liftingDetails[index];
-        return buildInvoiceListTile(context, liftingDetailsIndex);
-      },
-    );
+    if(liftingDetails.length !=0) {
+      return ListView.builder(
+        itemCount: liftingDetails.length, // Example number of items
+        itemBuilder: (context, index) {
+          final liftingDetailsIndex = liftingDetails[index];
+          return buildInvoiceListTile(context, liftingDetailsIndex);
+        },
+      );
+    }else{
+      return Center(child: Text("No Lifting Details Found.",style: TextStyle(fontWeight:FontWeight.bold , fontSize: 20),),);
+    }
   }
 
   Widget buildInvoiceListTile(BuildContext context, index) {

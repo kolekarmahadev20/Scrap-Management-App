@@ -68,6 +68,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   String? materialHalfLoad;
   String? materialFullLoad;
   String? otherImg;
+  Uint8List? imageBytes;
 
 
   @override
@@ -138,8 +139,11 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   }
 
 
+
+
   Future<void> editDispatchDetails() async {
     try {
+      print("InBlock");
       setState(() {
         isLoading = true;
       });
@@ -183,34 +187,65 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
         }
       }
 
+      Future<void> submitImage(String? fileName , String? keyword, Uint8List? imageByte)async {
+          _fetchFileBytesFromServer("filenames: ${fileName}");
+          print("filenames: ${fileName}");
+          print(imageByte!);
+          var multipartFile = http.MultipartFile.fromBytes(
+            'certification[]',
+            imageByte,
+            filename:'${keyword}${fileName!.split('/').last}',
+          );
+          request.files.add(multipartFile);
+      }
+
       // Add images from different sources
-      if (vehicleFront != null && vehicleFront!.isNotEmpty) {
-        await addImages(vehicleFront!, "Fr", request);
+      if (vehicleFront.isNotEmpty) {
+        await addImages(vehicleFront, "Fr", request);
+      }else{
+        await submitImage(frontVehicle,"Fr", imageBytes!);
       }
-      if (vehicleBack != null && vehicleBack!.isNotEmpty) {
-        await addImages(vehicleBack!, "Ba", request);
+      if (vehicleBack.isNotEmpty) {
+        await addImages(vehicleBack, "Ba", request);
+      }else{
+        await submitImage(backVehicle,"Ba", imageBytes!);
       }
-      if (Material != null && Material!.isNotEmpty) {
-        await addImages(Material!, "Ma", request);
+
+      if (Material.isNotEmpty) {
+        await addImages(Material, "Ma", request);
+      }else{
+        await submitImage(materialImg,"Ma", imageBytes!);
       }
-      if (MaterialHalfLoad != null && MaterialHalfLoad!.isNotEmpty) {
-        await addImages(MaterialHalfLoad!, "Ha", request);
+
+      if (MaterialHalfLoad.isNotEmpty) {
+        await addImages(MaterialHalfLoad, "Ha", request);
+      }else{
+        await submitImage(materialHalfLoad,"Ha", imageBytes!);
       }
-      if (MaterialFullLoad != null && MaterialFullLoad!.isNotEmpty) {
-        await addImages(MaterialFullLoad!, "Fu", request);
+
+      if (MaterialFullLoad.isNotEmpty) {
+        await addImages(MaterialFullLoad, "Fu", request);
+      }else{
+        await submitImage(materialFullLoad,"Fu", imageBytes!);
       }
-      if (other != null && other!.isNotEmpty) {
-        await addImages(other!, "ot", request);
+
+      if (other.isNotEmpty) {
+        await addImages(other, "ot", request);
+      }else{
+        await submitImage(otherImg,"ot", imageBytes!);
       }
 
 
       // Send the request
       var response = await request.send();
 
+      print('Response status code: ${response.statusCode}'); // Debug: Response status
+
       // Handle response
       if (response.statusCode == 200) {
         final res = await http.Response.fromStream(response);
         final jsonData = json.decode(res.body);
+        print('Response body: ${res.body}');
         if (mounted) {
           setState(() {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${jsonData['msg']}")));
@@ -229,6 +264,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
         );
       }
     } catch (e) {
+      print('Server Exception: ${e}');
       Fluttertoast.showToast(
         msg: 'Server Exception: $e',
         toastLength: Toast.LENGTH_SHORT,
@@ -281,6 +317,24 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+
+  Future<void> _fetchFileBytesFromServer(String fileUrl) async {
+    try {
+      var response = await http.get(Uri.parse(fileUrl));
+      if (response.statusCode == 200) {
+        setState(() {
+          imageBytes = response.bodyBytes; // Store image bytes
+        });
+      } else {
+        print('Failed to load file from server');
+      }
+    } catch (e) {
+      print('Exception: $e');
+    } finally {
+      setState(() {});
     }
   }
 
