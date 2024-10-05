@@ -187,14 +187,11 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
         }
       }
 
-      Future<void> submitImage(String? fileName , String? keyword, Uint8List? imageByte)async {
-          _fetchFileBytesFromServer("filenames: ${fileName}");
-          print("filenames: ${fileName}");
-          print(imageByte!);
+      Future<void> submitImage(String fileName , String? keyword, Uint8List? imageByte)async {
           var multipartFile = http.MultipartFile.fromBytes(
             'certification[]',
-            imageByte,
-            filename:'${keyword}${fileName!.split('/').last}',
+            imageByte!,
+            filename:'${keyword}${fileName.split('/').last}',
           );
           request.files.add(multipartFile);
       }
@@ -203,36 +200,42 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       if (vehicleFront.isNotEmpty) {
         await addImages(vehicleFront, "Fr", request);
       }else{
-        await submitImage(frontVehicle,"Fr", imageBytes!);
+        await _fetchFileBytesFromServer(frontVehicle!);
+        await submitImage(frontVehicle!,"Fr", imageBytes!);
       }
       if (vehicleBack.isNotEmpty) {
         await addImages(vehicleBack, "Ba", request);
       }else{
-        await submitImage(backVehicle,"Ba", imageBytes!);
+        await _fetchFileBytesFromServer(backVehicle!);
+        await submitImage(backVehicle!,"Ba", imageBytes!);
       }
 
       if (Material.isNotEmpty) {
         await addImages(Material, "Ma", request);
       }else{
-        await submitImage(materialImg,"Ma", imageBytes!);
+        await _fetchFileBytesFromServer(materialImg!);
+        await submitImage(materialImg!,"Ma", imageBytes!);
       }
 
       if (MaterialHalfLoad.isNotEmpty) {
         await addImages(MaterialHalfLoad, "Ha", request);
       }else{
-        await submitImage(materialHalfLoad,"Ha", imageBytes!);
+        await _fetchFileBytesFromServer(materialHalfLoad!);
+        await submitImage(materialHalfLoad!,"Ha", imageBytes!);
       }
 
       if (MaterialFullLoad.isNotEmpty) {
         await addImages(MaterialFullLoad, "Fu", request);
       }else{
-        await submitImage(materialFullLoad,"Fu", imageBytes!);
+        await _fetchFileBytesFromServer(materialFullLoad!);
+        await submitImage(materialFullLoad!,"Fu", imageBytes!);
       }
 
       if (other.isNotEmpty) {
         await addImages(other, "ot", request);
       }else{
-        await submitImage(otherImg,"ot", imageBytes!);
+        await _fetchFileBytesFromServer(otherImg!);
+        await submitImage(otherImg!,"ot", imageBytes!);
       }
 
 
@@ -263,8 +266,9 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
           textColor: Colors.yellow,
         );
       }
-    } catch (e) {
-      print('Server Exception: ${e}');
+    } catch (e, stackTrace) {
+      print('Server Exception: $e');
+      print('Stack trace: $stackTrace');
       Fluttertoast.showToast(
         msg: 'Server Exception: $e',
         toastLength: Toast.LENGTH_SHORT,
@@ -307,6 +311,13 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
           materialHalfLoad = '${Image_URL}${jsonData['Ha']}';
           materialFullLoad = '${Image_URL}${jsonData['Fu']}';
           otherImg = '${Image_URL}${jsonData['ot']}';
+
+          print(frontVehicle);
+          print(backVehicle);
+          print(materialImg);
+          print(materialHalfLoad);
+          print(materialFullLoad);
+          print(otherImg);
         });
       } else {
         print("Unable to fetch data.");
@@ -323,10 +334,13 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
 
   Future<void> _fetchFileBytesFromServer(String fileUrl) async {
     try {
+      print(fileUrl);
       var response = await http.get(Uri.parse(fileUrl));
       if (response.statusCode == 200) {
         setState(() {
           imageBytes = response.bodyBytes; // Store image bytes
+          print(imageBytes);
+          print(fileUrl);
         });
       } else {
         print('Failed to load file from server');
