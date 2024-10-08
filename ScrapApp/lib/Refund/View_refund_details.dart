@@ -7,6 +7,7 @@ import 'package:scrapapp/Refund/View_Refund_Amount.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../URL_CONSTANT.dart';
+import 'addRefundToSaleOrder.dart';
 
 class View_refund_details extends StatefulWidget {
   final String? sale_order_id;
@@ -186,7 +187,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Add_refund_details(),
+                builder: (context) => addRefundToSaleOrder(sale_order_id: widget.sale_order_id!),
               ),
             ).then((value) => setState((){
               fetchRefundDetails();
@@ -378,10 +379,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
           ),
           SizedBox(
             height: 300, // Adjusted to fit typical content
-            child:
-            (isData == false)
-            ?Center(child: Text("No Data"))
-            :listViewBuilder(),
+            child: listViewBuilder(),
           ),
         ],
       ),

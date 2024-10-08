@@ -9,19 +9,25 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
 
-class Add_refund_details extends StatefulWidget {
+class addRefundToSaleOrder extends StatefulWidget {
+
+  final String sale_order_id;
+
+  addRefundToSaleOrder({
+    required this.sale_order_id,
+  });
+
   @override
-  _Add_refund_detailsState createState() => _Add_refund_detailsState();
+  addRefundToSaleOrderState createState() => addRefundToSaleOrderState();
 }
 
-class _Add_refund_detailsState extends State<Add_refund_details> {
+class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
   final TextEditingController orderIdController = TextEditingController();
   final TextEditingController dateController1 = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final TextEditingController totalPaymentController = TextEditingController();
   final TextEditingController totalEmdController = TextEditingController();
-  final TextEditingController totalAmountEmdController =
-      TextEditingController();
+  final TextEditingController totalAmountEmdController = TextEditingController();
   final TextEditingController noteController = TextEditingController();
   final TextEditingController refNoController = TextEditingController();
   final TextEditingController rvNoController = TextEditingController();
@@ -66,6 +72,9 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
     super.initState();
     checkLogin();
     orderIdDropDowns();
+    orderIdController.text = widget.sale_order_id;
+    if(orderIdController != null || orderIdController.text.isNotEmpty)
+      fetchRefundPaymentDetails();
   }
 
   checkLogin() async {
@@ -116,7 +125,7 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
         body: {
           'user_id': username,
           'user_pass': password,
-          'sale_order_id': selectedOrderId ?? '',
+          'sale_order_id':widget.sale_order_id,
         },
       );
       if (response.statusCode == 200) {
@@ -147,7 +156,7 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
         body: {
           'user_id': username,
           'user_pass': password,
-          'sale_order_id_pay': selectedOrderId ?? '',
+          'sale_order_id_pay': orderIdController.text ?? '',
           'payment_type': selectedPaymentType ?? '',
           'pay_date': dateController1.text,
           'amt': amountController.text,
@@ -210,158 +219,147 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
         drawer: AppDrawer(),
         appBar: CustomAppBar(),
         body: Stack(
-          children: [
-            isLoading
-            ?showLoading()
-            :Container(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            color: Colors.grey[100],
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    "Refund",
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                ),
-                Divider(
-                  thickness: 1.5,
-                  color: Colors.black54,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              isLoading
+                  ?showLoading()
+                  :Container(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                color: Colors.grey[100],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      "Add",
-                      style: TextStyle(
-                        fontSize: 16, // Keep previous font size
-                        color: Colors.black54,
-                        fontWeight: FontWeight.w500,
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        "Refund",
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ),
+                    Divider(
+                      thickness: 1.5,
+                      color: Colors.black54,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Add",
+                          style: TextStyle(
+                            fontSize: 16, // Keep previous font size
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Divider(
+                      thickness: 1.5,
+                      color: Colors.black54,
+                    ),
+                    SizedBox(height: 16),
+                    Expanded(
+                      child: ListView(
+                        children: [
+                          buildTextField("Order ID", orderIdController, true, false , context),
+                          buildDropdownPayment("Payment Type", refundMap, (value) {
+                            setState(() {
+                              selectedPaymentType = value;
+                            });
+                          }),
+                          if (selectedPaymentType == "R") ...[
+                            buildTextField("Date", dateController1, false, true , context),
+                            buildTextField("Amount", amountController, false ,false , context),
+                            buildTextField(
+                                "Total Payment", totalPaymentController, true, false , context),
+                            buildTextField("NFA No.", nfaController, false,false , context),
+                            buildTextField("RV Date", dateController2, false,true , context),
+                          ] else if (selectedPaymentType == "RE" ||
+                              selectedPaymentType == "Rc") ...[
+                            buildTextField("Date", dateController1, false,true , context),
+                            buildTextField("Amount", amountController, false,false , context),
+                            buildTextField("Total EMD", totalEmdController, true,false , context),
+                            buildTextField("Total Amount Including EMD",
+                                totalAmountEmdController, true,false , context),
+                            buildTextField("NFA No.", nfaController, false,false , context),
+                            buildTextField("RV Date", dateController2, false,true , context),
+                          ] else if (selectedPaymentType == "P") ...[
+                            buildTextField("Date", dateController1, false,true , context),
+                            buildTextField("Amount", amountController, false,false , context),
+                            buildTextField(
+                                "Total Payment", totalPaymentController, true,false , context),
+                            buildTextField("Total EMD", totalEmdController, true,false , context),
+                            buildTextField("Total Amount Including EMD",
+                                totalAmountEmdController, true,false , context),
+                            buildTextField("RV Date", dateController2, false,true , context),
+                          ] else ...[
+                            buildTextField("Date", dateController1, false,true , context),
+                            buildTextField("Amount", amountController, false,false , context),
+                            buildTextField(
+                                "Total Payment", totalPaymentController, true,false , context),
+                            buildTextField("Total EMD", totalEmdController, true,false , context),
+                            buildTextField("Total Amount Including EMD",
+                                totalAmountEmdController, true,false , context),
+                            buildTextField("Note", noteController, false,false , context),
+                            buildTextField("Reference No.", refNoController, false,false , context),
+                            buildTextField("RV No.", rvNoController, false,false , context),
+                            buildTextField("RV Date", dateController2, false,true , context),
+                          ],
+                          SizedBox(
+                            height: 40,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    clearFields();
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text("Back"),
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: Colors.indigo[800],
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 50, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    addRefundDetails();
+                                    // clearFields();
+                                  },
+                                  child: Text("Add"),
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: Colors.indigo[800],
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 50, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                        ],
                       ),
                     ),
                   ],
                 ),
-                Divider(
-                  thickness: 1.5,
-                  color: Colors.black54,
-                ),
-                SizedBox(height: 16),
-                Expanded(
-                  child: ListView(
-                    children: [
-                      buildDropdown("Order ID", orderIDs, (value) {
-                        setState(() {
-                          selectedOrderId = value;
-                          if (selectedOrderId == orderIDs.first) {
-                            totalPaymentController.clear();
-                            totalEmdController.clear();
-                            totalAmountEmdController.clear();
-                          }
-                          fetchRefundPaymentDetails();
-                        });
-                      }),
-                      buildDropdownPayment("Payment Type", refundMap, (value) {
-                        setState(() {
-                          selectedPaymentType = value;
-                          print(value);
-                        });
-                      }),
-                      if (selectedPaymentType == "R") ...[
-                        buildTextField("Date", dateController1, false, true , context),
-                        buildTextField("Amount", amountController, false ,false , context),
-                        buildTextField(
-                            "Total Payment", totalPaymentController, true, false , context),
-                        buildTextField("NFA No.", nfaController, false,false , context),
-                        buildTextField("RV Date", dateController2, false,true , context),
-                      ] else if (selectedPaymentType == "RE" ||
-                          selectedPaymentType == "Rc") ...[
-                        buildTextField("Date", dateController1, false,true , context),
-                        buildTextField("Amount", amountController, false,false , context),
-                        buildTextField("Total EMD", totalEmdController, true,false , context),
-                        buildTextField("Total Amount Including EMD",
-                            totalAmountEmdController, true,false , context),
-                        buildTextField("NFA No.", nfaController, false,false , context),
-                        buildTextField("RV Date", dateController2, false,true , context),
-                      ] else if (selectedPaymentType == "P") ...[
-                        buildTextField("Date", dateController1, false,true , context),
-                        buildTextField("Amount", amountController, false,false , context),
-                        buildTextField(
-                            "Total Payment", totalPaymentController, true,false , context),
-                        buildTextField("Total EMD", totalEmdController, true,false , context),
-                        buildTextField("Total Amount Including EMD",
-                            totalAmountEmdController, true,false , context),
-                        buildTextField("RV Date", dateController2, false,true , context),
-                      ] else ...[
-                        buildTextField("Date", dateController1, false,true , context),
-                        buildTextField("Amount", amountController, false,false , context),
-                        buildTextField(
-                            "Total Payment", totalPaymentController, true,false , context),
-                        buildTextField("Total EMD", totalEmdController, true,false , context),
-                        buildTextField("Total Amount Including EMD",
-                            totalAmountEmdController, true,false , context),
-                        buildTextField("Note", noteController, false,false , context),
-                        buildTextField("Reference No.", refNoController, false,false , context),
-                        buildTextField("RV No.", rvNoController, false,false , context),
-                        buildTextField("RV Date", dateController2, false,true , context),
-                      ],
-                      SizedBox(
-                        height: 40,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {
-                                clearFields();
-                                Navigator.of(context).pop();
-                              },
-                              child: Text("Back"),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.indigo[800],
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 50, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                addRefundDetails();
-                                // clearFields();
-                              },
-                              child: Text("Add"),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.indigo[800],
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 50, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ]),
+              ),
+            ]),
       ),
     );
   }
@@ -388,7 +386,7 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
               isExpanded: true,
               decoration: InputDecoration(
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -430,7 +428,7 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
               isExpanded: true,
               decoration: InputDecoration(
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -440,7 +438,7 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
               items: optionsMap.entries.map((option) {
                 return DropdownMenuItem<String>(
                   value:
-                      option.value, // Ensure the value here is the map's value
+                  option.value, // Ensure the value here is the map's value
                   child: Text(option.key), // Display the key as the label
                 );
               }).toList(),
@@ -491,12 +489,12 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
                 onTap: isDateField ? () => _selectDate(context, controller) : null,
                 controller: controller,
                 decoration: InputDecoration(
-                    suffixIcon: isDateField
-                        ? IconButton(
-                      icon: Icon(Icons.calendar_today),
-                      onPressed: () => _selectDate(context, controller),
-                    )
-                  :null,
+                  suffixIcon: isDateField
+                      ? IconButton(
+                    icon: Icon(Icons.calendar_today),
+                    onPressed: () => _selectDate(context, controller),
+                  )
+                      :null,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -515,7 +513,7 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
                     ),
                   ),
                   contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
                 readOnly: isReadOnly,
               ),

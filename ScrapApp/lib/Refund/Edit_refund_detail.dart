@@ -390,7 +390,7 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
       lastDate: DateTime(2101),
     );
     if (picked != null) {
-      String formattedDate = DateFormat('yyyy-MM-dd').format(picked);
+      String formattedDate = DateFormat('dd-MM-yyyy').format(picked);
       controller.text = formattedDate;
     }
   }

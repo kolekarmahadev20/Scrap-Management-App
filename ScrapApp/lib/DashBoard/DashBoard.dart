@@ -1,10 +1,77 @@
+import 'dart:convert';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
+import 'package:scrapapp/DashBoard/saleOrderList.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import '../URL_CONSTANT.dart';
 
-class DashBoard extends StatelessWidget {
+class DashBoard extends StatefulWidget {
+  @override
+  State<DashBoard> createState() => _DashBoardState();
+}
+
+class _DashBoardState extends State<DashBoard> {
+
+
+  String? username = '';
+  String? password = '';
+  String? sale_orders;
+  String? liftingData;
+
+
+
+  @override
+  void initState() {
+    super.initState();
+    checkLogin();
+    fetchDashBoardData();
+  }
+
+
+  checkLogin()async{
+    final login = await SharedPreferences.getInstance();
+    username = await login.getString("username") ?? '';
+    password = await login.getString("password") ?? '';
+  }
+
+
+  Future<void> fetchDashBoardData() async {
+    try {
+      await checkLogin();
+      final url = Uri.parse("${URL}Dashboard");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': username,
+          'user_pass': password,
+        },
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          var jsonData = json.decode(response.body);
+          print(jsonData);
+          sale_orders = jsonData['saleorder']['sale_cnt'];
+          print(sale_orders);
+        });
+      } else {
+        print("Unable to fetch data.");
+      }
+    } catch (e) {
+      print("Server Exception: $e");
+    }finally{
+      setState(() {
+      });
+    }
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     // Get screen width and height
@@ -118,7 +185,16 @@ class DashBoard extends StatelessWidget {
                       child: SummaryCard(
                         icon: Icons.currency_rupee,
                         label: "Active Sale Order",
-                        value: "36",
+                        value: "$sale_orders",
+                        onPressed: (){
+                          setState(() {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => saleOrderList())).then((value) => (){
+                              setState(() {
+                                fetchDashBoardData();
+                              });
+                            });
+                          });
+                        },
                       ),
                     ),
                     SizedBox(width: 16),
@@ -127,6 +203,7 @@ class DashBoard extends StatelessWidget {
                         icon: Icons.currency_rupee,
                         label: "Lifting",
                         value: "92.76",
+                        onPressed: (){},
                       ),
                     ),
                   ],
@@ -203,6 +280,7 @@ class SummaryCard extends StatelessWidget {
   final String value;
   final Color circleColor;
   final Color backgroundColor;
+  final Function() onPressed;
 
   SummaryCard({
     required this.icon,
@@ -210,6 +288,7 @@ class SummaryCard extends StatelessWidget {
     required this.value,
     this.circleColor = Colors.blue,
     this.backgroundColor = Colors.white,
+    required this.onPressed,
   });
 
   @override
@@ -243,10 +322,10 @@ class SummaryCard extends StatelessWidget {
               Row(
                 children: [
                   TextButton(
-                    onPressed:() {},
+                    onPressed:onPressed,
                     child: Text("View More"),
                   ),
-                  IconButton(onPressed: (){}, icon: Icon(Icons.arrow_forward_ios_outlined ,color: Colors.deepPurple,size: 20,),)
+                  IconButton(onPressed:onPressed, icon: Icon(Icons.arrow_forward_ios_outlined ,color: Colors.deepPurple,size: 20,),)
                 ],
               )
             ],

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:scrapapp/DashBoard/DashBoard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
 import 'ProfilePage.dart';
@@ -14,6 +15,7 @@ class _StartDashBoardPageState extends State<StartPage> {
   TextEditingController usernameController = TextEditingController(text: "Bantu");
   TextEditingController passwordController = TextEditingController(text : "Bantu#123");
   bool _obscureText = true; // Variable to manage password visibility
+  int _selectedValue = 1;
 
 
   void _togglePasswordVisibility() {
@@ -61,7 +63,6 @@ class _StartDashBoardPageState extends State<StartPage> {
       var jsonData = json.decode(response.body);
       if (jsonData['success'] == true) {
         var user_data = jsonData['session_data'];
-
         // Access fields using keys
         var person_name = user_data['user_name'];
         var person_email = user_data['user_email'];
@@ -74,7 +75,7 @@ class _StartDashBoardPageState extends State<StartPage> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => ProfilePage()),
+          MaterialPageRoute(builder: (context) => DashBoard()),
         );
       } else {
         showErrorDialog("${jsonData['msg']}");
@@ -123,135 +124,228 @@ class _StartDashBoardPageState extends State<StartPage> {
 
   @override
   Widget build(BuildContext context) {
-    return StatefulBuilder(builder: (BuildContext context, StateSetter setState){
-      return Scaffold(
-        appBar: AppBar(
-          title: Center(child: Text("Log in")),
-          backgroundColor: Colors.indigo[800], // Navy blue for AppBar background
-          titleTextStyle: TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            child: _buildTop(),
           ),
-          iconTheme: IconThemeData(color: Colors.white),
-        ),
-        body: Theme(
-          data: Theme.of(context).copyWith(
-            brightness: Brightness.dark,
-            primaryColor: Colors.indigo[800], // Navy blue primary color
-            colorScheme: ColorScheme.dark(
-              primary: Colors.indigo.shade800,
-              secondary: Colors.lightBlueAccent, // Sky blue accent color
-            ),
-            textTheme: TextTheme(
-              bodyLarge: TextStyle(color: Colors.white),
-              bodyMedium: TextStyle(color: Colors.white70),
-              labelLarge: TextStyle(color: Colors.black),
-              headlineMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-            inputDecorationTheme: InputDecorationTheme(
-              prefixIconColor: Colors.white70, // Icon color
-              labelStyle: TextStyle(color: Colors.white70),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.deepPurpleAccent, width: 2.0), // Sky blue border
-                borderRadius: BorderRadius.circular(30),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.white54, width: 1.0),
-                borderRadius: BorderRadius.circular(30),
-              ),
-            ),
-            elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.blue.shade900, // Button text color
-                backgroundColor: Colors.white, // Sky blue background
-                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                elevation: 10,
-              ),
-            ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildBottom(),
           ),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.indigo[300]!, Colors.indigo.shade50], // Gradient from navy to sky blue
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTop() {
+    return Container(
+      height: 380,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(21),
+        border: Border.all(color: Colors.black, width: 1),
+      ),
+      child: Image.asset(
+        'assets/images/login.gif',
+        fit: BoxFit
+            .cover, // Use BoxFit.cover to ensure the image covers the entire area
+        width: double
+            .infinity, // Ensure the image takes the full width of the container
+      ),
+    );
+  }
+
+  Widget _buildBottom() {
+    return Container(
+      width: double.infinity,
+      height: 600, // Adjust height based on screen size
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topRight: Radius.circular(21),
+            topLeft: Radius.circular(21),
+          ),
+          border:Border.all(width: 1 , color:Colors.deepPurple)
+      ),
+      child: Column(
+        children: [
+          SizedBox(height:40),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text("Welcome Back",style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: Colors.indigo,)),
               ),
-            ),
-            height: double.infinity,
-            width: double.infinity,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Placeholder for a logo
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 32.0),
-                      child: Icon(
-                        Icons.account_circle,
-                        size: 100,
-                        color: Colors.deepPurple.shade50,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextField(
-                        controller: usernameController,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                          prefixIcon: Icon(Icons.email),
-                          labelText: 'Username',
-                          fillColor: Colors.white12,
-                          filled: true,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextField(
-                        controller: passwordController,
-                        obscureText: _obscureText,
-                        decoration: InputDecoration(
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscureText ? Icons.visibility_off : Icons.visibility,
-                              color: Colors.white70,
-                            ),
-                            onPressed: _togglePasswordVisibility, // Toggle visibility
-                          ),
-                          prefixIcon: Icon(Icons.lock),
-                          labelText: 'Password',
-                          fillColor: Colors.white12,
-                          filled: true,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
+              _welcomeGif(),
+            ],),
+          ),
+          Center(child: _buildLoginForm(),),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween, // Align items with space between
+              children: [
+                // Expanded(
+                //   child: Row(
+                //     children: [
+                //       Radio(
+                //         value: 1,
+                //         groupValue: _selectedValue, // The selected value for the radio group
+                //         onChanged: (int? value) {
+                //           setState(() {
+                //             _selectedValue = value!;
+                //           });
+                //         },
+                //       ),
+                //       Text(
+                //         "Remember Me", // Text next to the radio button
+                //         style: TextStyle(fontSize: 16),
+                //       ),
+                //     ],
+                //   ),
+                // ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
                           onPressed: () {
-                            setState((){
+                            setState(() {
                               getCredentials();
                             });
                           },
-                          child: Text("Log In", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                        ),
+                          child: Text(
+                            "Log In",
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.indigo,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5), // Box-shaped with no rounded corners
+                            ),
+                          )
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoginForm() {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Material(
+        elevation: 20,
+        color: Colors.white,
+        shape: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(5),
+          borderSide: BorderSide(color: Colors.white),
+        ),
+        child: Container(
+          height: 300,
+          width: double.infinity,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text("Login", style:TextStyle(fontSize: 25 , fontWeight: FontWeight.bold ,)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: TextField(
+                    controller: usernameController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(Icons.email),
+                      labelText: 'Username',
+                      fillColor: Colors.white12,
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30), // Circular borders
+                        borderSide: BorderSide.none, // No border initially
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30), // Circular focus border
+                        borderSide: BorderSide(color: Colors.blue, width: 2), // Blue focus border
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30), // Circular enabled border
+                        borderSide: BorderSide(color: Colors.grey.shade300, width: 1), // Light grey enabled border
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: TextField(
+                    controller: passwordController,
+                    obscureText: _obscureText,
+                    decoration: InputDecoration(
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureText ? Icons.visibility_off : Icons.visibility,
+                          color: Colors.black,
+                        ),
+                        onPressed: _togglePasswordVisibility,
+                      ),
+                      prefixIcon: Icon(Icons.lock),
+                      labelText: 'Password',
+                      fillColor: Colors.white12,
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30), // Circular borders
+                        borderSide: BorderSide.none, // No border initially
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30), // Circular focus border
+                        borderSide: BorderSide(color: Colors.blue, width: 2), // Blue focus border
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30), // Circular enabled border
+                        borderSide: BorderSide(color: Colors.grey.shade300, width: 1), // Light grey enabled border
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-      );
-      });
+      ),
+    );
+  }
+
+  Widget _welcomeGif(){
+    return Container(
+      height: 100,
+
+      child: Image.asset(
+        'assets/images/welcome.gif',
+        fit: BoxFit.fill, // Use BoxFit.cover to ensure the image covers the entire area
+      ),
+    );
   }
 }

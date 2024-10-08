@@ -10,33 +10,23 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-
-
-  String? username ;
-
-  String? password ;
-
+  String? username;
+  String? password;
   String name = '';
+  String contact = '';
+  String email = '';
+  String address = '';
+  String empCode = '';
+  bool isLoggedIn = false;
 
-   String contact = '';
-
-   String email = '';
-
-   String address = '';
-
-   String empCode = '';
-
-   bool isLoggedIn = false;
-
-
-  checkLogin()async{
+  checkLogin() async {
     final login = await SharedPreferences.getInstance();
     username = await login.getString("username");
     password = await login.getString("password");
     print(username);
   }
 
-  getCredentialDetails() async{
+  getCredentialDetails() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       isLoggedIn = prefs.getBool('isLoggedIn')!;
@@ -46,18 +36,16 @@ class _ProfilePageState extends State<ProfilePage> {
       address = prefs.getString('address') ?? 'N/A';
       empCode = prefs.getString('empCode') ?? 'N/A';
     });
-    if(isLoggedIn != true){
+    if (!isLoggedIn) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => StartPage()),
       );
     }
-
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getCredentialDetails();
     checkLogin();
@@ -65,144 +53,230 @@ class _ProfilePageState extends State<ProfilePage> {
 
   final Icon nameIcon =
       Icon(Icons.person, color: Colors.blue.shade900, size: 40);
-
   final Icon contactIcon =
       Icon(Icons.contacts, color: Colors.blue.shade900, size: 40);
-
   final Icon emailIcon =
       Icon(Icons.email_outlined, color: Colors.blue.shade900, size: 40);
-
   final Icon empCodeIcon =
       Icon(Icons.person, color: Colors.blue.shade900, size: 40);
-
   final Icon addressIcon =
       Icon(Icons.location_pin, color: Colors.blue.shade900, size: 40);
 
-  // Widget buildProfileListTile(String text, String detail, Icon icon) {
-  //   return Padding(
-  //     padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-  //     child: SizedBox(
-  //       child: Card(
-  //         color: Colors.white,
-  //         elevation: 5,
-  //         shape: RoundedRectangleBorder(
-  //             borderRadius: BorderRadius.circular(15),
-  //             side: BorderSide(color: Colors.indigo[800]!)),
-  //         child: ListTile(
-  //           leading: icon,
-  //           title: Text(text,
-  //               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
-  //           subtitle: Text(detail,
-  //               style: TextStyle(fontSize: 16, color: Colors.grey[600])),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
+  Widget buildCard(String text, Icon icon, String path) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        padding: EdgeInsets.all(16),
+        height: 180,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Color(0xFF2F4F4F), width: 2),
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                path,
+                fit: BoxFit.fill,
+              ),
+            ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    text,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: AppDrawer(),
       appBar: CustomAppBar(),
-      backgroundColor: Color(0xFFF5FFFA), // Mint Cream Background Color
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Profile Picture Section
-              Container(
-                height: 230,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Profile Picture Section
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                height: 250,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF87CEEB), Color(0xFFfadced)], // Primary Blue and Accent Color
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(40),
-                    bottomRight: Radius.circular(40),
-                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.blueGrey.shade400,
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        // image: DecorationImage(
-                        //   image: AssetImage('assets/images/welcome_image.gif'),
-                        //   fit: BoxFit.cover,
-                        // ),
+                child: Stack(children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(21),
+                      border: Border.all(color: Colors.black, width: 1),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(
+                          21), // Ensure the image also respects the border radius
+                      child: Image.asset(
+                        'assets/images/themeimg1.jpeg',
+                        fit: BoxFit
+                            .cover, // Use BoxFit.cover to ensure the image covers the entire area
+                        width: double
+                            .infinity, // Ensure the image takes the full width of the container
+                        height: 250, // Set a fixed height or adjust as needed
+                        colorBlendMode: BlendMode.darken,
                       ),
                     ),
-                    SizedBox(height: 10),
+                  ),
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundImage: AssetImage(
+                              'assets/images/hello.gif'), // Replace with user's image
+                          backgroundColor: Colors.blueGrey.shade100,
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          name,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          email,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ]),
+              ),
+            ),
+            // User Details Section (Cards)
+            Row(
+              children: [
+                Expanded(
+                    child:
+                        buildCard(name, nameIcon, 'assets/images/user2.jpg')),
+                SizedBox(width: 8),
+                Expanded(
+                    child: buildCard(
+                        contact, contactIcon, 'assets/images/contact3.jpeg')),
+              ],
+            ),
+            //Additional Info
+            buildListTile('Email', email, 'assets/images/email2.jpeg'),
+            buildListTile('Address', address, 'assets/images/location.jpeg'),
+            buildListTile('Employee Code', empCode, 'assets/images/user.jpeg'),
+            SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildListTile(String text, String value, String path) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Color(0xFF6482AD), width: 2), // Input border
+          borderRadius: BorderRadius.circular(12), // Rounded corners
+          color: Colors.white, // Background color
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: ListTile(
+          contentPadding: EdgeInsets.all(8), // Padding inside ListTile
+          title: Row(
+            children: [
+              // Icon
+              Container(
+                height: 50,
+                width: 50,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(21),
+                  border: Border.all(color: Colors.black, width: 1),
+                ),
+                child: ClipOval(
+                  // Clip the image to ensure it fits within the rounded container
+                  child: Image.asset(
+                    path,
+                    fit: BoxFit.cover, // Change to BoxFit.cover or BoxFit.contain
+                    width: 50, // Ensure the width matches the container's width
+                    height: 50, // Ensure the height matches the container's height
+                  ),
+                ),
+              ),
+              // Vertical Divider
+              Container(
+                width: 1, // Width of the vertical line
+                height: 60, // Height of the vertical line
+                color: Colors.green.shade900, // Color of the vertical line
+                margin: EdgeInsets.symmetric(
+                    horizontal: 16), // Space around the vertical line
+              ),
+              // Text Column
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      name,
+                      text,
                       style: TextStyle(
-                        color: Color(0xFF2F4F4F), // Dark Slate Gray Text Color
-                        fontSize: 24,
+                        color: Color(0xFF2F4F4F),
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    SizedBox(height: 4), // Space between title and subtitle
                     Text(
-                      email,
+                      value,
                       style: TextStyle(
-                        color: Color(0xFF2F4F4F), // Dark Slate Gray Text Color
+                        color: Color(0xFF2F4F4F),
                         fontSize: 16,
                       ),
                     ),
                   ],
                 ),
               ),
-
-              SizedBox(height: 20),
-              // User Details
-              _buildProfileItem(Icons.person, 'Name', name),
-              _buildProfileItem(Icons.email, 'Email', email),
-              _buildProfileItem(Icons.phone, 'Phone',contact ),
-              _buildProfileItem(Icons.home, 'Address',address ),
-              _buildProfileItem(Icons.code, 'Employee Code', empCode),
-              SizedBox(height: 20),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  // Helper Widget for Profile Info Items
-  Widget _buildProfileItem(IconData icon, String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Row(
-        children: [
-          Icon(icon, color: Color(0xFF87CEEB)), // Primary Blue Icon Color
-          SizedBox(width: 20),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              SizedBox(height: 5),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF2F4F4F), // Dark Slate Gray Text Color
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

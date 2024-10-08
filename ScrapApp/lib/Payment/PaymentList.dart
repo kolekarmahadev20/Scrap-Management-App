@@ -16,11 +16,15 @@ class PaymentList extends StatefulWidget {
 
 class _PaymentListState extends State<PaymentList> {
 
+  TextEditingController searchController = TextEditingController(); // Controller for search input
+
   String? username = '';
 
   String? password = '';
 
   List<Map<String, dynamic>> paymentList = [];
+  List<dynamic> filteredPaymentList = []; // For filtered search results
+
 
   bool isLoading = false; // Add a loading flag
 
@@ -50,6 +54,7 @@ class _PaymentListState extends State<PaymentList> {
         body: {
           'user_id': username,
           'user_pass': password,
+          'sale_order':searchController.text,
         },
       );
       if (response.statusCode == 200) {
@@ -68,6 +73,121 @@ class _PaymentListState extends State<PaymentList> {
         isLoading = false;
       });
     }
+  }
+
+
+
+  showFilterDialog() {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Search Sale Orders",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close, color: Colors.black54),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    )
+                  ],
+                ),
+                SizedBox(height: 10),
+                TextField(
+                  controller: searchController,
+                  onChanged: (value) {},
+                  style: TextStyle(fontSize: 18),
+                  decoration: InputDecoration(
+                    hintText: "Enter Order ID",
+                    prefixIcon: Icon(Icons.search, color: Colors.grey),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(color:Colors.indigo)// No border for cleaner look
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                  ),
+                ),
+                SizedBox(height: 20),
+               Row(
+                 children: [
+                 Expanded(
+                   child: Padding(
+                     padding: const EdgeInsets.all(8.0),
+                     child: ElevatedButton(
+                       onPressed: () {
+                         setState(() {
+                           searchController.clear();
+                           fetchPaymentList();
+                         });
+                         Navigator.pop(context); // Close dialog
+                       },
+                       style: ElevatedButton.styleFrom(
+                         backgroundColor: Colors.indigo, // Primary color
+                         shape: RoundedRectangleBorder(
+                           borderRadius: BorderRadius.circular(15),
+                         ),
+                         padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+                         elevation: 5,
+                       ),
+                       child: Text(
+                         "Reset",
+                         style: TextStyle(fontSize: 18, color: Colors.white),
+                       ),
+                     ),
+                   ),
+                 ),
+                 Expanded(
+                     child: Padding(
+                       padding: const EdgeInsets.all(8.0),
+                       child: ElevatedButton(
+                         onPressed: () {
+                           setState(() {
+                             fetchPaymentList();
+                           });
+                           Navigator.pop(context); // Close dialog
+                         },
+                         style: ElevatedButton.styleFrom(
+                           backgroundColor: Colors.indigo, // Primary color
+                           shape: RoundedRectangleBorder(
+                             borderRadius: BorderRadius.circular(15),
+                           ),
+                           padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+                           elevation: 5,
+                         ),
+                         child: Text(
+                           "Apply",
+                           style: TextStyle(fontSize: 18, color: Colors.white),
+                         ),
+                       ),
+                     ),
+                   ),
+               ],)
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   showLoading(){
@@ -112,7 +232,11 @@ class _PaymentListState extends State<PaymentList> {
                       ),
                     ),
                     ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        setState(() {
+                          showFilterDialog();
+                        });
+                      },
                       icon: Icon(
                         Icons.filter_list_alt,
                         color: Colors.white,

@@ -567,7 +567,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       lastDate: DateTime(2101),
     );
     if (picked != null) {
-      String formattedDate = DateFormat('yyyy-MM-dd').format(picked);
+      String formattedDate = DateFormat('dd-MM-yyyy').format(picked);
       controller.text = formattedDate;
     }
   }

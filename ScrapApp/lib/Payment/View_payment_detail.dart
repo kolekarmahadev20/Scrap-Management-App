@@ -7,6 +7,7 @@ import 'package:scrapapp/Payment/View_Payment_Amount.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
+import 'addPaymentToSaleOrder.dart';
 
 class View_payment_detail extends StatefulWidget {
   final String sale_order_id;
@@ -194,7 +195,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Add_payment_detail()
+                builder: (context) => addPaymentToSaleOrder(sale_order_id: widget.sale_order_id,)
               ),
             ).then((value) => setState((){
               fetchPaymentDetails();

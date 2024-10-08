@@ -7,6 +7,7 @@ import 'package:scrapapp/Dispatch/View_dispatch_lifting_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../URL_CONSTANT.dart';
+import 'addDispatchToSaleOrder.dart';
 
 class View_dispatch_details extends StatefulWidget {
   final String sale_order_id;
@@ -187,7 +188,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Add_dispatch_details(),
+                builder: (context) => addDispatchToSaleOrder(sale_order_id: widget.sale_order_id),
               ),
             ).then((value) => setState(() {
                   fetchDispatchDetails();

@@ -13,8 +13,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 2,
       shadowColor: Colors.black,
       shape: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(21),
-        borderSide: BorderSide(style: BorderStyle.solid)
+
+        borderSide: BorderSide(style: BorderStyle.solid ,color: Colors.white60)
       ),
       actions: [
         IconButton(

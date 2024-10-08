@@ -14,12 +14,20 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io'; // Import for File
 import 'package:path/path.dart' as path;
 
-class Add_dispatch_details extends StatefulWidget {
+class addDispatchToSaleOrder extends StatefulWidget {
+
+  final String sale_order_id;
+
+  addDispatchToSaleOrder({
+    required this.sale_order_id,
+  });
+
   @override
-  _Add_dispatch_detailState createState() => _Add_dispatch_detailState();
+  addDispatchToSaleOrderState createState() => addDispatchToSaleOrderState();
 }
 
-class _Add_dispatch_detailState extends State<Add_dispatch_details> {
+class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
+  final TextEditingController orderIdController = TextEditingController();
   final TextEditingController materialController = TextEditingController();
   final TextEditingController invoiceController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
@@ -59,6 +67,9 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
     super.initState();
     checkLogin();
     orderIdDropDowns();
+    orderIdController.text = widget.sale_order_id;
+    if(orderIdController != null || orderIdController.text.isNotEmpty)
+      orderIdMaterial();
   }
 
   checkLogin()async{
@@ -111,14 +122,13 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
         body: {
           'user_id':username,
           'user_pass':password,
-          'sale_order_id': selectedOrderId ?? '',
+          'sale_order_id': widget.sale_order_id ?? 'N/A',
         },
       );
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         setState(() {
           materialController.text = jsonData['sale_order_details'][0]['material_name'];
-          print(materialController.text);
         });
       } else {
         print("unable to load order ids.");
@@ -147,7 +157,6 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
         final jsonData = json.decode(response.body);
         setState(() {
           materialId = jsonData['material_id'];
-          print(materialId);
         });
       } else {
         print("unable to load order ids.");
@@ -157,6 +166,8 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
 
     }
   }
+
+
   // Function to compress the image
   Future<File?> compressImage(File file) async {
     final dir = await getTemporaryDirectory();
@@ -279,188 +290,180 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
         drawer: AppDrawer(),
         appBar: CustomAppBar(),
         body: Stack(
-          children: [
-            isLoading
-            ?showLoading()
-            :Container(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            color: Colors.grey[100],
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    "Dispatch",
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                ),
-                Divider(
-                  thickness: 1.5,
-                  color: Colors.black54,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              isLoading
+                  ?showLoading()
+                  :Container(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                color: Colors.grey[100],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      "Add",
-                      style: TextStyle(
-                        fontSize: 16, // Keep previous font size
-                        color: Colors.black54,
-                        fontWeight: FontWeight.w500,
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        "Dispatch",
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ),
+                    Divider(
+                      thickness: 1.5,
+                      color: Colors.black54,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Add",
+                          style: TextStyle(
+                            fontSize: 16, // Keep previous font size
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Divider(
+                      thickness: 1.5,
+                      color: Colors.black54,
+                    ),
+                    SizedBox(height: 16),
+                    Expanded(
+                      child: ListView(
+                        children: [
+                          buildTextField("Order ID", orderIdController,true, false , context),
+                          buildTextField("Material", materialController,true, false , context),
+                          buildTextField("Invoice No", invoiceController , false,false , context),
+                          buildTextField("Date", dateController, false,true , context),
+                          buildTextField("Truck No", truckNoController, false,false , context),
+                          buildTextField("Quantity", quantityController, false,false , context),
+                          buildTextField("Note", noteController, false,false , context),
+                          SizedBox(height: 40,),
+                          Container(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Divider(thickness: 1.5,color: Colors.black54),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text("Upload Images" , style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
+                                ),
+                                Divider(thickness: 1.5,color: Colors.black54),
+                                ImageWidget(
+                                    value: '1) Vehicle Front',
+                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    onImagesSelected: (images) { // Handle selected images
+                                      setState(() {
+                                        vehicleFront.addAll(images); // Store uploaded images
+                                      });
+                                    }
+                                ),
+                                ImageWidget(
+                                    value: '2) Vehicle Back',
+                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    onImagesSelected: (images) { // Handle selected images
+                                      setState(() {
+                                        vehicleBack.addAll(images); // Store uploaded images
+                                      });
+                                    }
+                                ),
+                                ImageWidget(
+                                    value: '3) Material',
+                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    onImagesSelected: (images) { // Handle selected images
+                                      setState(() {
+                                        Material.addAll(images); // Store uploaded images
+                                      });
+                                    }
+                                ),
+                                ImageWidget(
+                                    value: '4) Material Half Load',
+                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    onImagesSelected: (images) { // Handle selected images
+                                      setState(() {
+                                        MaterialHalfLoad.addAll(images); // Store uploaded images
+                                      });
+                                    }
+                                ),
+                                ImageWidget(
+                                    value: '5) Material Full Load',
+                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    onImagesSelected: (images) { // Handle selected images
+                                      setState(() {
+                                        MaterialFullLoad.addAll(images); // Store uploaded images
+                                      });
+                                    }
+                                ),
+                                ImageWidget(
+                                    value: '6) Other',
+                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    onImagesSelected: (images) { // Handle selected images
+                                      setState(() {
+                                        other.addAll(images); // Store uploaded images
+                                      });
+                                    }
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 60,),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    clearFields();
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text("Back"),
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: Colors.indigo[800],
+                                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    addDispatchDetails();
+                                    // clearFields();
+                                  },
+                                  child: Text("Add"),
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: Colors.indigo[800],
+                                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                        ],
                       ),
                     ),
                   ],
                 ),
-                Divider(
-                  thickness: 1.5,
-                  color: Colors.black54,
-                ),
-                SizedBox(height: 16),
-                Expanded(
-                  child: ListView(
-                    children: [
-                      buildDropdown("Order ID", orderIDs, (value) {
-                        setState(() {
-                          selectedOrderId = value;
-                          materialController.clear();
-                          orderIdMaterial();
-                          materialNameId();
-                          print(value);
-                        });
-                      }),
-                      buildTextField("Material", materialController,true, false , context),
-                      buildTextField("Invoice No", invoiceController , false,false , context),
-                      buildTextField("Date", dateController, false,true , context),
-                      buildTextField("Truck No", truckNoController, false,false , context),
-                      buildTextField("Quantity", quantityController, false,false , context),
-                      buildTextField("Note", noteController, false,false , context),
-                      SizedBox(height: 40,),
-                      Container(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Divider(thickness: 1.5,color: Colors.black54),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text("Upload Images" , style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
-                            ),
-                            Divider(thickness: 1.5,color: Colors.black54),
-                            ImageWidget(
-                              value: '1) Vehicle Front',
-                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                              onImagesSelected: (images) { // Handle selected images
-                              setState(() {
-                                vehicleFront.addAll(images); // Store uploaded images
-                              });
-                              }
-                            ),
-                            ImageWidget(
-                              value: '2) Vehicle Back',
-                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                onImagesSelected: (images) { // Handle selected images
-                                  setState(() {
-                                    vehicleBack.addAll(images); // Store uploaded images
-                                  });
-                                }
-                            ),
-                            ImageWidget(
-                              value: '3) Material',
-                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                onImagesSelected: (images) { // Handle selected images
-                                  setState(() {
-                                    Material.addAll(images); // Store uploaded images
-                                  });
-                                }
-                            ),
-                            ImageWidget(
-                              value: '4) Material Half Load',
-                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                onImagesSelected: (images) { // Handle selected images
-                                  setState(() {
-                                    MaterialHalfLoad.addAll(images); // Store uploaded images
-                                  });
-                                }
-                            ),
-                            ImageWidget(
-                              value: '5) Material Full Load',
-                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                onImagesSelected: (images) { // Handle selected images
-                                  setState(() {
-                                    MaterialFullLoad.addAll(images); // Store uploaded images
-                                  });
-                                }
-                            ),
-                            ImageWidget(
-                              value: '6) Other',
-                              cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                              galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                onImagesSelected: (images) { // Handle selected images
-                                  setState(() {
-                                    other.addAll(images); // Store uploaded images
-                                  });
-                                }
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 60,),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {
-                                clearFields();
-                                Navigator.of(context).pop();
-                              },
-                              child: Text("Back"),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.indigo[800],
-                                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                addDispatchDetails();
-                                // clearFields();
-                              },
-                              child: Text("Add"),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.indigo[800],
-                                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ]),
+              ),
+            ]),
       ),
     );
   }
@@ -542,39 +545,39 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
           ),
           Expanded(
             flex: 7, // Adjusts text field width
-              child: TextField(
-                onTap: isDateField ? () => _selectDate(context, controller) : null,
-                controller: controller,
-                decoration: InputDecoration(
-                  suffixIcon: isDateField
-                      ? IconButton(
-                    icon: Icon(Icons.calendar_today),
-                    onPressed: () => _selectDate(context, controller),
-                  )
-                      :null,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: Colors.indigo[800]!,
-                      width: 2.0,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: Colors.grey[400]!,
-                      width: 1.5,
-                    ),
-                  ),
-                  contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: TextField(
+              onTap: isDateField ? () => _selectDate(context, controller) : null,
+              controller: controller,
+              decoration: InputDecoration(
+                suffixIcon: isDateField
+                    ? IconButton(
+                  icon: Icon(Icons.calendar_today),
+                  onPressed: () => _selectDate(context, controller),
+                )
+                    :null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                readOnly: isReadOnly,
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: Colors.indigo[800]!,
+                    width: 2.0,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: Colors.grey[400]!,
+                    width: 1.5,
+                  ),
+                ),
+                contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
+              readOnly: isReadOnly,
             ),
+          ),
         ],
       ),
     );
