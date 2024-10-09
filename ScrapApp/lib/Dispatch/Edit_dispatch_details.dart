@@ -396,26 +396,40 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
                     ),
                   ),
                 ),
-                Divider(
-                  thickness: 1.5,
-                  color: Colors.black54,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Edit",
-                      style: TextStyle(
-                        fontSize: 16, // Keep previous font size
-                        color: Colors.black54,
-                        fontWeight: FontWeight.w500,
-                      ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white, // Background color
+                      border:Border.all(color: Colors.black12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26, // Shadow color
+                          blurRadius: 4, // Softness of the shadow
+                          offset: Offset(2, 2), // Position of the shadow
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                Divider(
-                  thickness: 1.5,
-                  color: Colors.black54,
+                    child: Column(
+                      children: [
+                        SizedBox(height: 8,),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "EDIT MATERIAL LIFTING DETAIL",
+                              style: TextStyle(
+                                fontSize: 16, // Keep previous font size
+                                color: Colors.black54,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 8,),
+                      ],
+                    ),
+                  ),
                 ),
                 SizedBox(height: 16),
                 Expanded(

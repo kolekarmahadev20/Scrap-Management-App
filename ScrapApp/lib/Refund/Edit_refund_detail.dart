@@ -222,26 +222,36 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
                     ),
                   ),
                 ),
-                Divider(
-                  thickness: 1.5,
-                  color: Colors.black54,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Edit",
-                      style: TextStyle(
-                        fontSize: 16, // Keep previous font size
-                        color: Colors.black54,
-                        fontWeight: FontWeight.w500,
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Material(
+                    elevation: 2,
+                    color: Colors.white,
+                    shape: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black12)
+                    ),
+                    child: Container(
+                      child: Column(
+                        children: [
+                          SizedBox(height: 8,),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "EDIT REFUND DETAILS",
+                                style: TextStyle(
+                                  fontSize: 16, // Keep previous font size
+                                  color: Colors.black54,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8,),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-                Divider(
-                  thickness: 1.5,
-                  color: Colors.black54,
+                  ),
                 ),
                 SizedBox(height: 16),
                 Expanded(

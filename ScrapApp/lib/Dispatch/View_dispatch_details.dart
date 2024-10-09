@@ -120,15 +120,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                         ),
                       ),
                     ),
-                    Divider(
-                      thickness: 1.5,
-                      color: Colors.black54,
-                    ),
                     buildRowWithIcon(context),
-                    Divider(
-                      thickness: 1.5,
-                      color: Colors.black54,
-                    ),
                     Padding(
                       padding: const EdgeInsets.all(
                           8.0), // Match padding from previous code
@@ -152,50 +144,62 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
   }
 
   Widget buildRowWithIcon(BuildContext context) {
-    return Row(
-      children: [
-        Spacer(),
-        RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: "Order ID :  ", // Key text (e.g., "Vendor Name: ")
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black, // Bold key text
-                ),
+    return Material(
+      elevation: 2,
+      shape: OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.black12),
+      ),
+      child: Container(
+        child: Row(
+          children: [
+            Spacer(),
+            RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: "Order ID :  ", // Key text (e.g., "Vendor Name: ")
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black, // Bold key text
+                    ),
+                  ),
+                  TextSpan(
+                    text: ViewDispatchData['sale_order']
+                        ['sale_order_code'], // Value text (e.g., "XYZ Corp")
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black54, // Normal value text
+                    ),
+                  ),
+                ],
               ),
-              TextSpan(
-                text:ViewDispatchData['sale_order']['sale_order_code'], // Value text (e.g., "XYZ Corp")
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.black54, // Normal value text
-                ),
+            ),
+            Spacer(),
+            IconButton(
+              icon: Icon(
+                Icons.add_box_outlined,
+                size: 30,
+                color: Colors.indigo[800],
               ),
-            ],
-          ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => addDispatchToSaleOrder(
+                        sale_order_id: widget.sale_order_id,
+                        sale_order_code: ViewDispatchData['sale_order']
+                            ['sale_order_code']),
+                  ),
+                ).then((value) => setState(() {
+                      fetchDispatchDetails();
+                    }));
+              },
+            ),
+          ],
         ),
-        Spacer(),
-        IconButton(
-          icon: Icon(
-            Icons.add_box_outlined,
-            size: 30,
-            color: Colors.indigo[800],
-          ),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => addDispatchToSaleOrder(sale_order_id: widget.sale_order_id),
-              ),
-            ).then((value) => setState(() {
-                  fetchDispatchDetails();
-                }));
-          },
-        ),
-      ],
+      ),
     );
   }
 
@@ -203,12 +207,12 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildVendorInfoText(
-            "Vendor Name: ", ViewDispatchData['vendor_buyer_details']['vendor_name'] ?? 'N/A'),
-        buildVendorInfoText(
-            "Branch: ", ViewDispatchData['vendor_buyer_details']['branch_name'] ?? 'N/A'),
-        buildVendorInfoText(
-            "Buyer Name: ", ViewDispatchData['vendor_buyer_details']['bidder_name'] ?? 'N/A'),
+        buildVendorInfoText("Vendor Name: ",
+            ViewDispatchData['vendor_buyer_details']['vendor_name'] ?? 'N/A'),
+        buildVendorInfoText("Branch: ",
+            ViewDispatchData['vendor_buyer_details']['branch_name'] ?? 'N/A'),
+        buildVendorInfoText("Buyer Name: ",
+            ViewDispatchData['vendor_buyer_details']['bidder_name'] ?? 'N/A'),
       ],
     );
   }
@@ -283,7 +287,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
   }
 
   Widget buildInvoiceListView() {
-    if(liftingDetails.length !=0) {
+    if (liftingDetails.length != 0) {
       return ListView.builder(
         itemCount: liftingDetails.length, // Example number of items
         itemBuilder: (context, index) {
@@ -291,8 +295,13 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
           return buildInvoiceListTile(context, liftingDetailsIndex);
         },
       );
-    }else{
-      return Center(child: Text("No Lifting Details Found.",style: TextStyle(fontWeight:FontWeight.bold , fontSize: 20),),);
+    } else {
+      return Center(
+        child: Text(
+          "No Lifting Details Found.",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        ),
+      );
     }
   }
 
@@ -311,25 +320,22 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
             backgroundColor: Colors.indigo[800],
             child: Icon(Icons.receipt_long, size: 24, color: Colors.white),
           ),
-          title:RichText(
+          title: RichText(
             text: TextSpan(
               children: [
                 TextSpan(
                   text: "Invoice: ",
                   style: TextStyle(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold, // Bold key
-                    fontSize:20
-                  ),
+                      color: Colors.black87,
+                      fontWeight: FontWeight.bold, // Bold key
+                      fontSize: 20),
                 ),
                 TextSpan(
                   text: "${index['invoice_no']}",
                   style: TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.normal, // Normal value
-                    fontSize: 20
-
-                  ),
+                      color: Colors.blue,
+                      fontWeight: FontWeight.normal, // Normal value
+                      fontSize: 20),
                 ),
               ],
             ),
@@ -376,7 +382,6 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                         color: Colors.black54,
                         fontWeight: FontWeight.normal, // Normal value
                         fontSize: 16,
-
                       ),
                     ),
                   ],
@@ -392,19 +397,19 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => View_dispatch_lifting_details(
-                        sale_order_id: widget.sale_order_id,
-                        lift_id: index['lift_id'],
-                        selectedOrderId: ViewDispatchData['sale_order']
-                        ['sale_order_code'],
-                        material: index['material_name'],
-                        invoiceNo: index['invoice_no'],
-                        date: index['date_time'],
-                        truckNo: index['truck_no'],
-                        quantity: index['qty'],
-                        note: index['note'],
-                      ))).then((value) => setState(() {
-                fetchDispatchDetails();
-              }));
+                            sale_order_id: widget.sale_order_id,
+                            lift_id: index['lift_id'],
+                            selectedOrderId: ViewDispatchData['sale_order']
+                                ['sale_order_code'],
+                            material: index['material_name'],
+                            invoiceNo: index['invoice_no'],
+                            date: index['date_time'],
+                            truckNo: index['truck_no'],
+                            quantity: index['qty'],
+                            note: index['note'],
+                          ))).then((value) => setState(() {
+                    fetchDispatchDetails();
+                  }));
             },
           ),
         ),

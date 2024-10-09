@@ -113,14 +113,14 @@ class saleOrderListState extends State<saleOrderList> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
+              Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
                           "Active Sale Order",
                           style: TextStyle(
                             fontSize: 24, // Slightly larger font size for prominence
@@ -129,32 +129,43 @@ class saleOrderListState extends State<saleOrderList> {
                             letterSpacing: 1.2,
                           ),
                         ),
+                      ),
+                    ],
+                  ),],
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Material(
+                  elevation: 2,
+                  color: Colors.white,
+                  shape: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black12)
+                  ),
+                  child: Container(
+                    width:double.infinity,
+                    child: Column(
+                      children: [
+                        SizedBox(height: 8,),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Spacer(),
+                            Text(
+                              "Vendor, Plant",
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.black54,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Spacer(),
+                          ],
+                        ),
+                        SizedBox(height: 8,),
                       ],
-                    ),],
-                ),
-              ),
-              Divider(
-                thickness: 1,
-                color: Colors.black54,
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Spacer(),
-                  Text(
-                    "Vendor, Plant",
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.black54,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  Spacer(),
-                ],
-              ),
-              Divider(
-                thickness: 1,
-                color: Colors.black54,
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -176,7 +187,9 @@ class saleOrderListState extends State<saleOrderList> {
               ),
               SizedBox(height: 20,),
               Expanded(
-                child: ListView.separated(
+                child:
+                (filteredSaleOrderList.isNotEmpty)
+                ?ListView.separated(
                   itemCount: filteredSaleOrderList.length, // Number of items in the filtered list
                   itemBuilder: (context, index) {
                     final paymentIndex = filteredSaleOrderList[index];
@@ -188,7 +201,8 @@ class saleOrderListState extends State<saleOrderList> {
                     indent: 12, // Indentation before the divider
                     endIndent: 12, // Indentation after the divider
                   ),
-                ),
+                )
+                :Center(child: Text("No data", style: TextStyle(fontWeight: FontWeight.bold , fontSize: 20))),
               ),
             ],
           ),

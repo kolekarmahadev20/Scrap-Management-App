@@ -218,12 +218,12 @@ class _RefundListState extends State<RefundList> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(12.0), // Increased padding for the header
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
                         "Refund",
                         style: TextStyle(
                           fontSize: 26, // Slightly larger font size for prominence
@@ -232,7 +232,10 @@ class _RefundListState extends State<RefundList> {
                           letterSpacing: 1.2,
                         ),
                       ),
-                      ElevatedButton.icon(
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton.icon(
                         onPressed: () {
                           setState(() {
                             showFilterDialog();
@@ -254,47 +257,55 @@ class _RefundListState extends State<RefundList> {
                           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Consistent padding
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                Divider(
-                  thickness: 1,
-                  color: Colors.black54,
-                ),
-                Row(
-                  children: [
-                    Spacer(),
-                    Text(
-                      "Vendor, Plant",
-                      style: TextStyle(
-                        fontSize: 18, // Slightly larger font size
-                        color: Colors.black54,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Spacer(),
-                    IconButton(
-                      icon: Icon(
-                        Icons.add_box_outlined,
-                        size: 28, // Slightly smaller but prominent icon
-                        color: Colors.indigo[800],
-                      ),
-                      onPressed: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(
-                                builder: (context) => Add_refund_details())).then((value) => setState((){
-                          fetchRefundList();
-                        }));
-                      },
                     ),
                   ],
                 ),
-                Divider(
-                  thickness: 1,
-                  color: Colors.black54,
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Material(
+                    elevation: 2,
+                    color: Colors.white,
+                    shape: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black12)
+                    ),
+                    child: Container(
+                      width:double.infinity,
+                      child: Row(
+                        children: [
+                          Spacer(),
+                          Text(
+                            "Vendor, Plant",
+                            style: TextStyle(
+                              fontSize: 18, // Slightly larger font size
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Spacer(),
+                          IconButton(
+                            icon: Icon(
+                              Icons.add_box_outlined,
+                              size: 28, // Slightly smaller but prominent icon
+                              color: Colors.indigo[800],
+                            ),
+                            onPressed: () {
+                              Navigator.push(context,
+                                  MaterialPageRoute(
+                                      builder: (context) => Add_refund_details())).then((value) => setState((){
+                                fetchRefundList();
+                              }));
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
+                SizedBox(height:20),
                 Expanded(
-                  child: ListView.separated(
+                  child:
+                  (refundList.length !=0)
+                  ?ListView.separated(
                     itemCount: refundList.length, // Number of items in the list
                     itemBuilder: (context, index) {
                       final refundListIndex = refundList[index];
@@ -306,7 +317,8 @@ class _RefundListState extends State<RefundList> {
                       indent: 12, // Indentation before the divider
                       endIndent: 12, // Indentation after the divider
                     ),
-                  ),
+                  )
+                  :Center(child: Text("No data", style: TextStyle(fontWeight: FontWeight.bold , fontSize: 20))),
                 ),
               ],
             ),

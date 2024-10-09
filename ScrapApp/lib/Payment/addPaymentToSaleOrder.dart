@@ -12,9 +12,11 @@ import 'package:intl/intl.dart'; // Add this package for date formatting
 class addPaymentToSaleOrder extends StatefulWidget {
 
   final String sale_order_id;
+  final String sale_order_code;
 
   addPaymentToSaleOrder({
    required this.sale_order_id,
+   required this.sale_order_code,
 });
 
   @override
@@ -56,8 +58,8 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
   void initState(){
     super.initState();
     checkLogin();
-    orderIdDropDowns();
-    orderIdController.text = widget.sale_order_id;
+    orderIdController.text = widget.sale_order_code;
+
   }
 
   checkLogin()async{
@@ -66,11 +68,13 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
     password = await login.getString("password") ?? '';
   }
 
+
   Future<void> addPaymentDetails() async {
     try {
       setState(() {
         isLoading = true;
       });
+      print(widget.sale_order_id);
       await checkLogin();
       final url = Uri.parse("${URL}add_payment_toSaleOrder");
       var response = await http.post(
@@ -79,7 +83,7 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
         body: {
           'user_id': username,
           'user_pass': password,
-          'sale_order_id_pay':orderIdController.text ?? '',
+          'sale_order_id_pay':widget.sale_order_id ?? '',
           'payment_type': selectedPaymentType ?? '',
           'pay_date': dateController1.text,
           'amt':amountController.text,
@@ -122,37 +126,6 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
     }
   }
 
-  //fetching dropDowns of sale_order_list
-  Future<void> orderIdDropDowns() async {
-    try {
-      await checkLogin();
-      final url = Uri.parse("${URL}saleOrder_list");
-      var response = await http.post(
-        url,
-        headers: {"Accept": "application/json"},
-        body: {
-          'user_id':username,
-          'user_pass':password,
-        },
-      );
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        setState(() {
-          for(var entry in jsonData){
-            if (entry['id'] != null) {
-              orderIDs.add(entry['id']);
-            }else{
-              orderIDs.add("N/A");
-            }
-          }
-        });
-      } else {
-        print("unable to load order ids.");
-      }
-    } catch (e) {
-      print("Server Exception : $e");
-    }
-  }
 
   Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
     DateTime? picked = await showDatePicker(
@@ -207,26 +180,36 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
                           ),
                         ),
                       ),
-                      Divider(
-                        thickness: 1.5,
-                        color: Colors.black54,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Add Payment Details",
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.black54,
-                              fontWeight: FontWeight.w500,
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Material(
+                          elevation: 2,
+                          color: Colors.white,
+                          shape: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.black12)
+                          ),
+                          child: Container(
+                            child: Column(
+                              children: [
+                                SizedBox(height: 8,),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "ADD PAYMENT DETAILS",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.black54,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 8,),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                      Divider(
-                        thickness: 1.5,
-                        color: Colors.black54,
+                        ),
                       ),
                       SizedBox(height: 16),
                       Expanded(

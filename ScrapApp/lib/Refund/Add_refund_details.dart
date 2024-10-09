@@ -33,9 +33,6 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
   String? selectedOrderId;
   String? selectedPaymentType;
   bool isLoading = false; // Add a loading flag
-  List<String> orderIDs = [
-    'Select',
-  ];
   List<String> materialId = [];
   String? totalAmount;
   Map<String, String> refundMap = {
@@ -45,6 +42,9 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
     "Refund CMD": "Rc",
     "Penalty": "P",
     "Refund All": "RA"
+  };
+  Map<String,String> dropDownMap= {
+    'Select' : 'Select',
   };
 
   void clearFields() {
@@ -65,7 +65,7 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
   void initState() {
     super.initState();
     checkLogin();
-    orderIdDropDowns();
+    fetchDropDwonKeyValuePair();
   }
 
   checkLogin() async {
@@ -74,11 +74,13 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
     password = await login.getString("password") ?? '';
   }
 
-  //fetching dropDowns of sale_order_list
-  Future<void> orderIdDropDowns() async {
+  Future<void> fetchDropDwonKeyValuePair() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
       await checkLogin();
-      final url = Uri.parse("${URL}saleOrder_list");
+      final url = Uri.parse("${URL}fetch_refund_data");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
@@ -88,21 +90,29 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
         },
       );
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
         setState(() {
-          for (var entry in jsonData) {
-            if (entry['id'] != null) {
-              orderIDs.add(entry['id']);
-            } else {
-              orderIDs.add("N/A");
-            }
+          var jsonData = json.decode(response.body);
+          // Extract the relevant data
+          List<Map<String, dynamic>> keyValuePair = List<Map<String, dynamic>>.from(jsonData['saleOrder_refundList']);
+          for (var keyValue in keyValuePair) {
+            // Example key-value pairs of sale_order_code and vendor_name
+            var saleOrderCode = keyValue['sale_order_code'] ?? "N/A";
+            var saleOrderId = keyValue['sale_order_id']?? "N/A";
+
+            // You can store these key-value pairs in a map if needed
+            dropDownMap[saleOrderCode] = saleOrderId;
           }
+          print(dropDownMap);
         });
       } else {
-        print("unable to load order ids.");
+        print("Unable to fetch data.");
       }
     } catch (e) {
-      print("Server Exception : $e");
+      print("Server Exception: $e");
+    }finally{
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -151,7 +161,7 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
           'payment_type': selectedPaymentType ?? '',
           'pay_date': dateController1.text,
           'amt': amountController.text,
-          't_amt': totalAmountEmdController.text,
+          't_amt': totalPaymentController.text,
           'total_emd': totalEmdController.text,
           'total_amount_including_emd': totalAmountEmdController.text,
           'narration': noteController.text,
@@ -161,6 +171,7 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
           'nfa_no': nfaController.text,
         },
       );
+      print(response.body);
       if (response.statusCode == 200) {
         // print('test');
         final jsonData = json.decode(response.body);
@@ -231,35 +242,46 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
                     ),
                   ),
                 ),
-                Divider(
-                  thickness: 1.5,
-                  color: Colors.black54,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Add",
-                      style: TextStyle(
-                        fontSize: 16, // Keep previous font size
-                        color: Colors.black54,
-                        fontWeight: FontWeight.w500,
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Material(
+                    elevation: 2,
+                    color: Colors.white,
+                    shape: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black12)
+                    ),
+                    child: Container(
+                      child: Column(
+                        children: [
+                          SizedBox(height: 8,),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "ADD REFUND DETAILS",
+                                style: TextStyle(
+                                  fontSize: 16, // Keep previous font size
+                                  color: Colors.black54,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8,),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-                Divider(
-                  thickness: 1.5,
-                  color: Colors.black54,
+                  ),
                 ),
                 SizedBox(height: 16),
                 Expanded(
                   child: ListView(
                     children: [
-                      buildDropdown("Order ID", orderIDs, (value) {
+                      buildDropdown("Order ID", dropDownMap, (value) {
                         setState(() {
                           selectedOrderId = value;
-                          if (selectedOrderId == orderIDs.first) {
+                          print(value);
+                          if (selectedOrderId == dropDownMap.keys.first) {
                             totalPaymentController.clear();
                             totalEmdController.clear();
                             totalAmountEmdController.clear();
@@ -366,14 +388,13 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
     );
   }
 
-  Widget buildDropdown(
-      String label, List<String> options, ValueChanged<String?> onChanged) {
+  Widget buildDropdown(String label, Map<String,String> options, ValueChanged<String?> onChanged) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0 , horizontal: 8.0),
       child: Row(
         children: [
           Expanded(
-            flex: 3, // Adjusts label width
+            flex: 3,
             child: Text(
               label,
               style: TextStyle(
@@ -383,21 +404,20 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
             ),
           ),
           Expanded(
-            flex: 7, // Adjusts dropdown width
+            flex: 7,
             child: DropdownButtonFormField<String>(
               isExpanded: true,
               decoration: InputDecoration(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              value: options.isNotEmpty ? options.first : null,
-              items: options.map((String option) {
+              value: selectedOrderId ?? options.keys.first,
+              items: options.entries.map((option) {
                 return DropdownMenuItem<String>(
-                  value: option,
-                  child: Text(option),
+                  value: option.value,
+                  child: Text(option.key),
                 );
               }).toList(),
               onChanged: onChanged,
@@ -407,6 +427,7 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
       ),
     );
   }
+
 
   Widget buildDropdownPayment(String label, Map<String, String> optionsMap,
       ValueChanged<String?> onChanged) {

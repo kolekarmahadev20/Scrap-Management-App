@@ -256,47 +256,54 @@ class _DispatchListState extends State<DispatchList> {
                           ],
                         ),
                       ),
-                      Divider(
-                        thickness: 1.5,
-                        color: Colors.black54,
-                      ),
-                      Row(
-                        children: [
-                          Spacer(),
-                          Text(
-                            "Vendor, Plant",
-                            style: TextStyle(
-                              fontSize: 18, // Slightly larger font size
-                              color: Colors.black54,
-                              fontWeight: FontWeight.w500,
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Material(
+                          elevation: 2,
+                          color: Colors.white,
+                          shape: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.black12)
+                          ),
+                          child: Container(
+                            width:double.infinity,
+                            child: Row(
+                              children: [
+                                Spacer(),
+                                Text(
+                                  "Vendor, Plant",
+                                  style: TextStyle(
+                                    fontSize: 18, // Slightly larger font size
+                                    color: Colors.black54,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Spacer(),
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.add_box_outlined,
+                                    size: 28, // Slightly smaller but prominent icon
+                                    color: Colors.indigo[800],
+                                  ),
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                Add_dispatch_details())).then((value) => setState((){
+                                      fetchDispatchList();
+                                    }));
+                                  },
+                                ),
+                              ],
                             ),
                           ),
-                          Spacer(),
-                          IconButton(
-                            icon: Icon(
-                              Icons.add_box_outlined,
-                              size: 28, // Slightly smaller but prominent icon
-                              color: Colors.indigo[800],
-                            ),
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          Add_dispatch_details())).then((value) => setState((){
-                                fetchDispatchList();
-                              }));
-                            },
-                          ),
-                        ],
+                        ),
                       ),
-                      Divider(
-                        thickness: 1.5,
-                        color: Colors.black54,
-                      ),
-                      (dispatchList.isEmpty || dispatchList == null) ? Center(child: Text("No Data"))
-                      :Expanded(
-                        child: ListView.separated(
+                      SizedBox(height: 20,),
+                      Expanded(
+                        child:
+                        (dispatchList.length != 0)
+                        ?ListView.separated(
                           itemCount:dispatchList.length, // Number of items in the list
                           itemBuilder: (context, index) {
                             final dispatchListIndex = dispatchList[index];
@@ -308,8 +315,9 @@ class _DispatchListState extends State<DispatchList> {
                             indent: 12, // Indentation before the divider
                             endIndent: 12, // Indentation after the divider
                           ),
-                        ),
-                      ),
+                        )
+                        :Center(child: Text("No data", style: TextStyle(fontWeight: FontWeight.bold , fontSize: 20))),
+                      )
                     ],
                   ),
             ),

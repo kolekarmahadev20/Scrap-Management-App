@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
 import 'package:intl/intl.dart'; // Add this package for date formatting
 
+
 class Add_payment_detail extends StatefulWidget {
   @override
   _Add_payment_detailState createState() => _Add_payment_detailState();
@@ -31,7 +32,9 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
     'Received EMD':'E',
     'Received CMD':'C',
   };
-  List<String> orderIDs = ['Select',];
+  Map<String,String> dropDownMap= {
+    'Select' : 'Select',
+  };
 
   void clearFields(){
     selectedOrderId = null;
@@ -46,7 +49,7 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
   void initState(){
     super.initState();
     checkLogin();
-    orderIdDropDowns();
+    fetchDropDwonKeyValuePair();
   }
 
   checkLogin()async{
@@ -111,35 +114,45 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
     }
   }
 
-  //fetching dropDowns of sale_order_list
-  Future<void> orderIdDropDowns() async {
+  Future<void> fetchDropDwonKeyValuePair() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
       await checkLogin();
-      final url = Uri.parse("${URL}saleOrder_list");
+      final url = Uri.parse("${URL}fetch_payment_data");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id':username,
-          'user_pass':password,
+          'user_id': username,
+          'user_pass': password,
         },
       );
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
         setState(() {
-          for(var entry in jsonData){
-            if (entry['id'] != null) {
-              orderIDs.add(entry['id']);
-            }else{
-              orderIDs.add("N/A");
-            }
+          var jsonData = json.decode(response.body);
+          // Extract the relevant data
+          List<Map<String, dynamic>> keyValuePair = List<Map<String, dynamic>>.from(jsonData['saleOrder_paymentList']);
+          for (var keyValue in keyValuePair) {
+            // Example key-value pairs of sale_order_code and vendor_name
+            var saleOrderCode = keyValue['sale_order_code'] ?? "N/A";
+            var saleOrderId = keyValue['sale_order_id']?? "N/A";
+
+            // You can store these key-value pairs in a map if needed
+            dropDownMap[saleOrderCode] = saleOrderId;
           }
+          print(dropDownMap);
         });
       } else {
-        print("unable to load order ids.");
+        print("Unable to fetch data.");
       }
     } catch (e) {
-      print("Server Exception : $e");
+      print("Server Exception: $e");
+    }finally{
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -196,34 +209,45 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
                       ),
                     ),
                   ),
-                  Divider(
-                    thickness: 1.5,
-                    color: Colors.black54,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Add Payment Details",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.black54,
-                          fontWeight: FontWeight.w500,
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Material(
+                      elevation: 2,
+                      color: Colors.white,
+                      shape: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black12)
+                      ),
+                      child: Container(
+                        child: Column(
+                          children: [
+                            SizedBox(height: 8,),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "ADD PAYMENT DETAILS",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black54,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8,),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                  Divider(
-                    thickness: 1.5,
-                    color: Colors.black54,
+                    ),
                   ),
                   SizedBox(height: 16),
                   Expanded(
                     child: ListView(
                       children: [
-                        buildDropdown("Order ID", orderIDs, (value) {
+                        buildDropdown("Order ID", dropDownMap, (value) {
                           setState(() {
                             selectedOrderId = value;
+                            print(value);
                           });
                         }),
                         buildDropdownPayment("Payment Type", PaymentType, (value) {
@@ -288,7 +312,7 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
     );
   }
 
-  Widget buildDropdown(String label, List<String> options, ValueChanged<String?> onChanged) {
+  Widget buildDropdown(String label, Map<String,String> options, ValueChanged<String?> onChanged) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0 , horizontal: 8.0),
       child: Row(
@@ -313,11 +337,11 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              value: options.isNotEmpty ? options.first : null,
-              items: options.map((String option) {
+              value: selectedOrderId ?? options.keys.first,
+              items: options.entries.map((option) {
                 return DropdownMenuItem<String>(
-                  value: option,
-                  child: Text(option),
+                  value: option.value,
+                  child: Text(option.key),
                 );
               }).toList(),
               onChanged: onChanged,

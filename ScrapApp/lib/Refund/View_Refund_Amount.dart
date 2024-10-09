@@ -120,59 +120,64 @@ class _View_Refund_AmountState extends State<View_Refund_Amount> {
                 ),
               ),
             ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Spacer(),
-                Text(
-                  "View",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w500,
-                  ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Material(
+                elevation: 2,
+                color: Colors.white,
+                shape: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black12)
                 ),
-                Spacer(),
-                IconButton(
-                  icon: Icon(
-                    Icons.edit,
-                    size: 30,
-                    color: Colors.indigo[800],
-                  ),
-                  onPressed: () {
-                    print(nfa);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Edit_refund_detail(
-                            sale_order_id: widget.sale_order_id,
-                            nfa: nfa,
-                            date2: date2,
-                            date1: date1,
-                            rvNo: rvNo,
-                            referenceNo: referenceNo,
-                            note: note,
-                            totalAmountIncludingEmd: totalAmountIncludingEmd,
-                            totalEmd: totalEmd,
-                            totalPayment: totalPayment,
-                            amount: amount,
-                            refundId:widget.refundId,
-                            paymentType: paymentType,
-                            typeOfTransfer: typeOfTransfer,
+                child: Container(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Spacer(),
+                      Spacer(),
+                      Text(
+                        "VIEW REFUND DETAILS",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                    );
-                  },
+                      Spacer(),
+                      IconButton(
+                        icon: Icon(
+                          Icons.edit,
+                          size: 30,
+                          color: Colors.indigo[800],
+                        ),
+                        onPressed: () {
+                          print(nfa);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Edit_refund_detail(
+                                  sale_order_id: widget.sale_order_id,
+                                  nfa: nfa,
+                                  date2: date2,
+                                  date1: date1,
+                                  rvNo: rvNo,
+                                  referenceNo: referenceNo,
+                                  note: note,
+                                  totalAmountIncludingEmd: totalAmountIncludingEmd,
+                                  totalEmd: totalEmd,
+                                  totalPayment: totalPayment,
+                                  amount: amount,
+                                  refundId:widget.refundId,
+                                  paymentType: paymentType,
+                                  typeOfTransfer: typeOfTransfer,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
+              ),
             ),
             SizedBox(height: 16),
             Expanded(

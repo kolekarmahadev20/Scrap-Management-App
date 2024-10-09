@@ -126,15 +126,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     ),
                   ),
                 ),
-                Divider(
-                  thickness: 1.5,
-                  color: Colors.black54,
-                ),
                 buildRowWithIcon(context),
-                Divider(
-                  thickness: 1.5,
-                  color: Colors.black54,
-                ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: buildVendorInfo(),
@@ -159,50 +151,59 @@ class _View_payment_detailState extends State<View_payment_detail> {
   }
 
   Widget buildRowWithIcon(BuildContext context) {
-    return Row(
-      children: [
-        Spacer(),
-        RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: "Order ID :  ", // Key text (e.g., "Vendor Name: ")
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black, // Bold key text
-                ),
+    return Material(
+      elevation: 2,
+      color: Colors.white,
+      shape: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.black12)
+      ),
+      child: Container(
+        child: Row(
+          children: [
+            Spacer(),
+            RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: "Order ID :  ", // Key text (e.g., "Vendor Name: ")
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black, // Bold key text
+                    ),
+                  ),
+                  TextSpan(
+                    text:ViewPaymentData['sale_order']['sale_order_code'] ?? "N/A", // Value text (e.g., "XYZ Corp")
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black54, // Normal value text
+                    ),
+                  ),
+                ],
               ),
-              TextSpan(
-                text:ViewPaymentData['sale_order']['sale_order_code'] ?? "N/A", // Value text (e.g., "XYZ Corp")
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.black54, // Normal value text
-                ),
+            ),
+            Spacer(),
+            IconButton(
+              icon: Icon(
+                Icons.add_box_outlined,
+                size: 30,
+                color: Colors.indigo[800],
               ),
-            ],
-          ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => addPaymentToSaleOrder(sale_order_id: widget.sale_order_id,sale_order_code: ViewPaymentData['sale_order']['sale_order_code'] ?? "N/A",)
+                  ),
+                ).then((value) => setState((){
+                  fetchPaymentDetails();
+                }));
+              },
+            ),
+          ],
         ),
-        Spacer(),
-        IconButton(
-          icon: Icon(
-            Icons.add_box_outlined,
-            size: 30,
-            color: Colors.indigo[800],
-          ),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => addPaymentToSaleOrder(sale_order_id: widget.sale_order_id,)
-              ),
-            ).then((value) => setState((){
-              fetchPaymentDetails();
-            }));
-          },
-        ),
-      ],
+      ),
     );
   }
 

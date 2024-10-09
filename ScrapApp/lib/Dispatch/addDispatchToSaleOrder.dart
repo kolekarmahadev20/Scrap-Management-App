@@ -17,9 +17,10 @@ import 'package:path/path.dart' as path;
 class addDispatchToSaleOrder extends StatefulWidget {
 
   final String sale_order_id;
-
+  final String sale_order_code;
   addDispatchToSaleOrder({
     required this.sale_order_id,
+    required this.sale_order_code,
   });
 
   @override
@@ -66,8 +67,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   void initState(){
     super.initState();
     checkLogin();
-    orderIdDropDowns();
-    orderIdController.text = widget.sale_order_id;
+    orderIdController.text = widget.sale_order_code;
     if(orderIdController != null || orderIdController.text.isNotEmpty)
       orderIdMaterial();
   }
@@ -78,38 +78,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     password = await login.getString("password") ?? '';
   }
 
-  //fetching dropDowns of sale_order_list
-  Future<void> orderIdDropDowns() async {
-    try {
-      await checkLogin();
-      final url = Uri.parse("${URL}saleOrder_list");
-      var response = await http.post(
-        url,
-        headers: {"Accept": "application/json"},
-        body: {
-          'user_id':username,
-          'user_pass':password,
-        },
-      );
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        setState(() {
-          for(var entry in jsonData){
-            if (entry['id'] != null) {
-              orderIDs.add(entry['id']);
-            }else{
-              orderIDs.add("N/A");
-            }
-          }
-        });
-      } else {
-        print("unable to load order ids.");
-      }
-    } catch (e) {
-      print("Server Exception : $e");
-
-    }
-  }
 
   //fetching the material of selected sale_order_id
   Future<void> orderIdMaterial() async {
@@ -190,7 +158,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       // Add form data
       request.fields['user_id'] = username!;
       request.fields['user_pass'] = password!;
-      request.fields['sale_order_id_lift'] = selectedOrderId ?? '';
+      request.fields['sale_order_id_lift'] = widget.sale_order_id ?? '';
       request.fields['material_id_lifting'] = materialId ?? '';
       request.fields['invoice_no'] = invoiceController.text;
       request.fields['date_time'] = dateController.text;
@@ -311,27 +279,42 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
                         ),
                       ),
                     ),
-                    Divider(
-                      thickness: 1.5,
-                      color: Colors.black54,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Add",
-                          style: TextStyle(
-                            fontSize: 16, // Keep previous font size
-                            color: Colors.black54,
-                            fontWeight: FontWeight.w500,
-                          ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white, // Background color
+                          border:Border.all(color: Colors.black12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26, // Shadow color
+                              blurRadius: 4, // Softness of the shadow
+                              offset: Offset(2, 2), // Position of the shadow
+                            ),
+                          ],
                         ),
-                      ],
+                        child: Column(
+                          children: [
+                            SizedBox(height: 8,),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "ADD MATERIAL LIFTING DETAIL",
+                                  style: TextStyle(
+                                    fontSize: 16, // Keep previous font size
+                                    color: Colors.black54,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8,),
+                          ],
+                        ),
+                      ),
                     ),
-                    Divider(
-                      thickness: 1.5,
-                      color: Colors.black54,
-                    ),
+
                     SizedBox(height: 16),
                     Expanded(
                       child: ListView(

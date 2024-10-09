@@ -34,6 +34,9 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
   String? selectedOrderId;
   bool isLoading = false;
   List<String> orderIDs = ['Select',];
+  Map<String,String> dropDownMap= {
+    'Select' : 'Select',
+  };
   String? MaterialSelected;
   String? materialId ;
   List<File> vehicleFront = [];
@@ -58,7 +61,7 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
   void initState(){
     super.initState();
     checkLogin();
-    orderIdDropDowns();
+    fetchDropDwonKeyValuePair();
   }
 
   checkLogin()async{
@@ -68,37 +71,48 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
   }
 
   //fetching dropDowns of sale_order_list
-  Future<void> orderIdDropDowns() async {
+  Future<void> fetchDropDwonKeyValuePair() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
       await checkLogin();
-      final url = Uri.parse("${URL}saleOrder_list");
+      final url = Uri.parse("${URL}fetch_payment_data");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id':username,
-          'user_pass':password,
+          'user_id': username,
+          'user_pass': password,
         },
       );
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
         setState(() {
-          for(var entry in jsonData){
-            if (entry['id'] != null) {
-              orderIDs.add(entry['id']);
-            }else{
-              orderIDs.add("N/A");
-            }
+          var jsonData = json.decode(response.body);
+          // Extract the relevant data
+          List<Map<String, dynamic>> keyValuePair = List<Map<String, dynamic>>.from(jsonData['saleOrder_paymentList']);
+          for (var keyValue in keyValuePair) {
+            // Example key-value pairs of sale_order_code and vendor_name
+            var saleOrderCode = keyValue['sale_order_code'] ?? "N/A";
+            var saleOrderId = keyValue['sale_order_id']?? "N/A";
+
+            // You can store these key-value pairs in a map if needed
+            dropDownMap[saleOrderCode] = saleOrderId;
           }
+          print(dropDownMap);
         });
       } else {
-        print("unable to load order ids.");
+        print("Unable to fetch data.");
       }
     } catch (e) {
-      print("Server Exception : $e");
-
+      print("Server Exception: $e");
+    }finally{
+      setState(() {
+        isLoading = false;
+      });
     }
   }
+
 
   //fetching the material of selected sale_order_id
   Future<void> orderIdMaterial() async {
@@ -300,38 +314,52 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                     ),
                   ),
                 ),
-                Divider(
-                  thickness: 1.5,
-                  color: Colors.black54,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Add",
-                      style: TextStyle(
-                        fontSize: 16, // Keep previous font size
-                        color: Colors.black54,
-                        fontWeight: FontWeight.w500,
-                      ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white, // Background color
+                      border:Border.all(color: Colors.black12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26, // Shadow color
+                          blurRadius: 4, // Softness of the shadow
+                          offset: Offset(2, 2), // Position of the shadow
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                Divider(
-                  thickness: 1.5,
-                  color: Colors.black54,
+                    child: Column(
+                      children: [
+                        SizedBox(height: 8,),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "ADD MATERIAL LIFTING DETAIL",
+                              style: TextStyle(
+                                fontSize: 16, // Keep previous font size
+                                color: Colors.black54,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 8,),
+                      ],
+                    ),
+                  ),
                 ),
                 SizedBox(height: 16),
                 Expanded(
                   child: ListView(
                     children: [
-                      buildDropdown("Order ID", orderIDs, (value) {
+                      buildDropdown("Order ID", dropDownMap, (value) {
                         setState(() {
                           selectedOrderId = value;
+                          print(value);
                           materialController.clear();
                           orderIdMaterial();
                           materialNameId();
-                          print(value);
                         });
                       }),
                       buildTextField("Material", materialController,true, false , context),
@@ -465,48 +493,44 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
     );
   }
 
-  Widget buildDropdown(String label, List<String> options, ValueChanged<String?> onChanged) {
-    return StatefulBuilder(builder: (BuildContext context , StateSetter setState)
-    {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 3, // Adjusts label width
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: Colors.black54,
-                  fontWeight: FontWeight.w500,
-                ),
+  Widget buildDropdown(String label, Map<String,String> options, ValueChanged<String?> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0 , horizontal: 8.0),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.black54,
+                fontWeight: FontWeight.w500,
               ),
             ),
-            Expanded(
-              flex: 7, // Adjusts dropdown width
-              child: DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+          ),
+          Expanded(
+            flex: 7,
+            child: DropdownButtonFormField<String>(
+              isExpanded: true,
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                value: selectedOrderId ?? options.first,
-                items: options.map((String option) {
-                  return DropdownMenuItem<String>(
-                    value: option,
-                    child: Text(option),
-                    enabled: option != 'Select',
-                  );
-                }).toList(),
-                onChanged: onChanged,
               ),
+              value: selectedOrderId ?? options.keys.first,
+              items: options.entries.map((option) {
+                return DropdownMenuItem<String>(
+                  value: option.value,
+                  child: Text(option.key),
+                );
+              }).toList(),
+              onChanged: onChanged,
             ),
-          ],
-        ),
-      );
-    });
+          ),
+        ],
+      ),
+    );
   }
 
 

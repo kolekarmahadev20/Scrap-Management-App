@@ -84,51 +84,59 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
                 ),
               ),
             ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Spacer(),
-                Text(
-                  "View",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w500,
-                  ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Material(
+                elevation: 2,
+                color: Colors.white,
+                shape: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black12)
                 ),
-                Spacer(),
-                IconButton(
-                  icon: Icon(
-                    Icons.edit,
-                    size: 30,
-                    color: Colors.indigo[800],
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Edit_payment_detail(
-                            sale_order_id: widget.sale_order_id,
-                            paymentId:widget.paymentId,
-                            paymentType: paymentType,
-                            date1: date1,
-                            amount: amount,
-                            referenceNo: referenceNo,
-                            typeOfTransfer: typeOfTransfer,
+                child: Container(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Spacer(),
+                      Spacer(),
+                      Center(
+                        child: Text(
+                          "VIEW PAYMENT DETAILS",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
                       ),
-                    );
-                  },
+                      Spacer(),
+                      IconButton(
+                        icon: Icon(
+                          Icons.edit,
+                          size: 30,
+                          color: Colors.indigo[800],
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Edit_payment_detail(
+                                  sale_order_id: widget.sale_order_id,
+                                  paymentId:widget.paymentId,
+                                  paymentType: paymentType,
+                                  date1: date1,
+                                  amount: amount,
+                                  referenceNo: referenceNo,
+                                  typeOfTransfer: typeOfTransfer,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-            Divider(
-              thickness: 1.5,
-              color: Colors.black54,
+              ),
             ),
             SizedBox(height: 16),
             Expanded(

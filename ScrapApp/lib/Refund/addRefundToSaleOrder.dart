@@ -12,9 +12,11 @@ import '../URL_CONSTANT.dart';
 class addRefundToSaleOrder extends StatefulWidget {
 
   final String sale_order_id;
+  final String sale_order_code;
 
   addRefundToSaleOrder({
     required this.sale_order_id,
+    required this.sale_order_code,
   });
 
   @override
@@ -71,8 +73,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
   void initState() {
     super.initState();
     checkLogin();
-    orderIdDropDowns();
-    orderIdController.text = widget.sale_order_id;
+    orderIdController.text = widget.sale_order_code;
     if(orderIdController != null || orderIdController.text.isNotEmpty)
       fetchRefundPaymentDetails();
   }
@@ -83,37 +84,6 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
     password = await login.getString("password") ?? '';
   }
 
-  //fetching dropDowns of sale_order_list
-  Future<void> orderIdDropDowns() async {
-    try {
-      await checkLogin();
-      final url = Uri.parse("${URL}saleOrder_list");
-      var response = await http.post(
-        url,
-        headers: {"Accept": "application/json"},
-        body: {
-          'user_id': username,
-          'user_pass': password,
-        },
-      );
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        setState(() {
-          for (var entry in jsonData) {
-            if (entry['id'] != null) {
-              orderIDs.add(entry['id']);
-            } else {
-              orderIDs.add("N/A");
-            }
-          }
-        });
-      } else {
-        print("unable to load order ids.");
-      }
-    } catch (e) {
-      print("Server Exception : $e");
-    }
-  }
 
   Future<void> fetchRefundPaymentDetails() async {
     try {
@@ -156,7 +126,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
         body: {
           'user_id': username,
           'user_pass': password,
-          'sale_order_id_pay': orderIdController.text ?? '',
+          'sale_order_id_pay': widget.sale_order_id ?? '',
           'payment_type': selectedPaymentType ?? '',
           'pay_date': dateController1.text,
           'amt': amountController.text,
@@ -240,26 +210,36 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
                         ),
                       ),
                     ),
-                    Divider(
-                      thickness: 1.5,
-                      color: Colors.black54,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Add",
-                          style: TextStyle(
-                            fontSize: 16, // Keep previous font size
-                            color: Colors.black54,
-                            fontWeight: FontWeight.w500,
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Material(
+                        elevation: 2,
+                        color: Colors.white,
+                        shape: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.black12)
+                        ),
+                        child: Container(
+                          child: Column(
+                            children: [
+                              SizedBox(height: 8,),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "ADD REFUND DETAILS",
+                                    style: TextStyle(
+                                      fontSize: 16, // Keep previous font size
+                                      color: Colors.black54,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 8,),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                    Divider(
-                      thickness: 1.5,
-                      color: Colors.black54,
+                      ),
                     ),
                     SizedBox(height: 16),
                     Expanded(

@@ -217,12 +217,12 @@ class _PaymentListState extends State<PaymentList> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(12.0), // Increased padding for the header
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
                       "Payment",
                       style: TextStyle(
                         fontSize: 26, // Slightly larger font size for prominence
@@ -231,7 +231,10 @@ class _PaymentListState extends State<PaymentList> {
                         letterSpacing: 1.2,
                       ),
                     ),
-                    ElevatedButton.icon(
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton.icon(
                       onPressed: () {
                         setState(() {
                           showFilterDialog();
@@ -245,7 +248,7 @@ class _PaymentListState extends State<PaymentList> {
                       label: Text("Filter"),
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
-                        backgroundColor: Color(0xFF6482AD), // Text color
+                        backgroundColor: Colors.indigo[800], // Text color
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12), // Rounded corners
                         ),
@@ -253,51 +256,64 @@ class _PaymentListState extends State<PaymentList> {
                         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Consistent padding
                       ),
                     ),
-                  ],
-                ),
-              ),
-              Divider(
-                thickness: 1,
-                color: Colors.black54,
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Spacer(),
-                  Text(
-                    "Vendor, Plant",
-                    style: TextStyle(
-                      fontSize: 18, // Slightly larger font size
-                      color: Colors.black54,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Spacer(),
-                  IconButton(
-                    icon: Icon(
-                      Icons.add_box_outlined,
-                      size: 28, // Slightly smaller but prominent icon
-                      color: Colors.indigo[800],
-                    ),
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                          Add_payment_detail())).then((value) => setState((){
-                            fetchPaymentList();
-                      }));
-                    },
                   ),
                 ],
               ),
-              Divider(
-                thickness: 1,
-                color: Colors.black54,
+
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Material(
+                  elevation: 2,
+                  color: Colors.white,
+                  shape: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black12)
+                  ),
+                  child: Container(
+                    width:double.infinity,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Spacer(),
+                        Text(
+                          "Vendor, Plant",
+                          style: TextStyle(
+                            fontSize: 18, // Slightly larger font size
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Spacer(),
+                        IconButton(
+                          icon: Icon(
+                            Icons.add_box_outlined,
+                            size: 28, // Slightly smaller but prominent icon
+                            color: Colors.indigo[800],
+                          ),
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                                Add_payment_detail())).then((value) => setState((){
+                                  fetchPaymentList();
+                            }));
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
+              SizedBox(height:20),
               Expanded(
-                child: ListView.separated(
+                child:
+                (paymentList.length !=0)
+                ?ListView.separated(
                   itemCount: paymentList.length, // Number of items in the list
                   itemBuilder: (context, index) {
                     final paymentIndex = paymentList[index];
-                    return buildCustomListTile(context,paymentIndex);
+                    if(paymentList.length !=0) {
+                      return buildCustomListTile(context, paymentIndex);
+                    }else{
+                      return Text("No data");
+                    }
                   },
                   separatorBuilder: (context, index) => Divider(
                     color: Color(0xFF6482AD), // Custom color for the separator
@@ -305,7 +321,8 @@ class _PaymentListState extends State<PaymentList> {
                     indent: 12, // Indentation before the divider
                     endIndent: 12, // Indentation after the divider
                   ),
-                ),
+                )
+                :Center(child: Text("No data", style: TextStyle(fontWeight: FontWeight.bold , fontSize: 20))),
               ),
             ],
           ),
