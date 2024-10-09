@@ -97,6 +97,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
         final jsonData = json.decode(response.body);
         setState(() {
           materialController.text = jsonData['sale_order_details'][0]['material_name'];
+          materialNameId();
         });
       } else {
         print("unable to load order ids.");
@@ -117,14 +118,15 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
         body: {
           'user_id':username,
           'user_pass':password,
-          'sale_order_id':selectedOrderId,
+          'sale_order_id': widget.sale_order_id,
         },
       );
       //variable to send material value instead of name in backend.
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         setState(() {
-          materialId = jsonData['material_id'];
+          materialId = jsonData['material_id'] ?? 'N/A';
+          print(materialId);
         });
       } else {
         print("unable to load order ids.");
@@ -148,6 +150,8 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       setState(() {
         isLoading = true;
       });
+      print("hello hello hello");// Add compressed file
+
 
       await checkLogin();
       final url = Uri.parse("${URL}save_lifting");
@@ -155,13 +159,22 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       // Create a Multipart Request
       var request = http.MultipartRequest('POST', url);
 
+
+      print(username);
+      print(password);
+      print(widget.sale_order_id);
+      print(materialId);
+      print(invoiceController.text);
+      print(truckNoController.text);
+      print(quantityController.text);
+      print(noteController.text);
       // Add form data
       request.fields['user_id'] = username!;
       request.fields['user_pass'] = password!;
       request.fields['sale_order_id_lift'] = widget.sale_order_id ?? '';
       request.fields['material_id_lifting'] = materialId ?? '';
       request.fields['invoice_no'] = invoiceController.text;
-      request.fields['date_time'] = dateController.text;
+      request.fields['date_time'] = "2024-10-10";
       request.fields['truck_no'] = truckNoController.text;
       request.fields['qty'] = quantityController.text;
       request.fields['note'] = noteController.text;
@@ -181,7 +194,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
               length,
               filename: '$keyword${compressedImage.path.split('/').last}',
             );
-            request.files.add(multipartFile);  // Add compressed file
+            request.files.add(multipartFile);
           }
         }
       }
@@ -208,6 +221,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       // Send the request
       var response = await request.send();
 
+      print(response);
       // Handle response
       if (response.statusCode == 200) {
         final res = await http.Response.fromStream(response);
@@ -314,7 +328,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
                         ),
                       ),
                     ),
-
                     SizedBox(height: 16),
                     Expanded(
                       child: ListView(
