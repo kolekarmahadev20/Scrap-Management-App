@@ -55,6 +55,14 @@ class _View_dispatch_lifting_detailsState
 
   String truckNo = '';
 
+  String firstWeight= '';
+
+  String fullWeight = '';
+
+  String moistureWeight = '';
+
+  String netWeight = '';
+
   String quantity = '';
 
   String note = '';
@@ -197,55 +205,58 @@ class _View_dispatch_lifting_detailsState
                       ),
                     ),
                   ),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white, // Background color
-                      border:Border.all(color: Colors.black12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26, // Shadow color
-                          blurRadius: 4, // Softness of the shadow
-                          offset: Offset(2, 2), // Position of the shadow
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Spacer(),
-                        Text(
-                          "VIEW MATERIAL LIFTING DETAIL",
-                          style: TextStyle(
-                            fontSize: 16, // Keep previous font size
-                            color: Colors.black54,
-                            fontWeight: FontWeight.w500,
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white, // Background color
+                        border:Border.all(color: Colors.blueGrey[400]!),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26, // Shadow color
+                            blurRadius: 4, // Softness of the shadow
+                            offset: Offset(2, 2), // Position of the shadow
                           ),
-                        ),
-                        Spacer(),
-                        IconButton(
-                          icon: Icon(
-                            Icons.edit,
-                            size: 30, // Keep previous icon size
-                            color: Colors.indigo[800],
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Spacer(),
+                          Text(
+                            "VIEW MATERIAL LIFTING DETAIL",
+                            style: TextStyle(
+                              fontSize: 16, // Keep previous font size
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => Edit_dispatch_details(
-                                          sale_order_id: widget.sale_order_id,
-                                          lift_id: widget.lift_id,
-                                          material: material,
-                                          invoiceNo: invoiceNo,
-                                          truckNo: truckNo,
-                                          note: note,
-                                          quantity: quantity,
-                                          selectedOrderId: selectedOrderId,
-                                          date: date,
-                                        )));
-                          },
-                        ),
-                      ],
+                          Spacer(),
+                          IconButton(
+                            icon: Icon(
+                              Icons.edit,
+                              size: 30, // Keep previous icon size
+                              color: Colors.indigo[800],
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => Edit_dispatch_details(
+                                            sale_order_id: widget.sale_order_id,
+                                            lift_id: widget.lift_id,
+                                            material: material,
+                                            invoiceNo: invoiceNo,
+                                            truckNo: truckNo,
+                                            note: note,
+                                            quantity: quantity,
+                                            selectedOrderId: selectedOrderId,
+                                            date: date,
+                                          )));
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   SizedBox(height: 16),
@@ -257,6 +268,10 @@ class _View_dispatch_lifting_detailsState
                         buildDisplayField("Invoice No", invoiceNo),
                         buildDisplayField("Date", date),
                         buildDisplayField("Truck No", truckNo),
+                        buildDisplayField("First Weight", firstWeight),
+                        buildDisplayField("Full Weight", fullWeight),
+                        buildDisplayField("Moisture Weight",moistureWeight),
+                        buildDisplayField("Net Weight",netWeight),
                         buildDisplayField("Quantity", quantity),
                         buildDisplayField("Note", note),
                         SizedBox(

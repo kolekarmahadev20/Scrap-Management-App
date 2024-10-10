@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -16,13 +15,13 @@ class DashBoard extends StatefulWidget {
 }
 
 class _DashBoardState extends State<DashBoard> {
-
-
-  String? username = '';
-  String? password = '';
-  String? sale_orders;
-  String? liftingData;
-
+  String? username;
+  String? password;
+  String? saleOrders;
+  String? buyerCount;
+  String? auctionCmp;
+  List<int> saleOrder =[];
+  String? totalSaleOrder = '92';
 
 
   @override
@@ -32,14 +31,14 @@ class _DashBoardState extends State<DashBoard> {
     fetchDashBoardData();
   }
 
-
-  checkLogin()async{
-    final login = await SharedPreferences.getInstance();
-    username = await login.getString("username") ?? '';
-    password = await login.getString("password") ?? '';
+  // Fetch saved login data from SharedPreferences
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
   }
 
-
+  // Fetch dashboard data from the server
   Future<void> fetchDashBoardData() async {
     try {
       await checkLogin();
@@ -52,29 +51,31 @@ class _DashBoardState extends State<DashBoard> {
           'user_pass': password,
         },
       );
+
       if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
         setState(() {
-          var jsonData = json.decode(response.body);
-          print(jsonData);
-          sale_orders = jsonData['saleorder']['sale_cnt'];
-          print(sale_orders);
+          saleOrders = jsonData['saleorder']['sale_cnt'];
+          buyerCount = jsonData['bidders']['bidder_cnt'];
+          auctionCmp = jsonData['auction_company']['auc_cnt'];
         });
       } else {
-        print("Unable to fetch data.");
+        _handleError("Unable to fetch data: ${response.statusCode}");
       }
     } catch (e) {
-      print("Server Exception: $e");
-    }finally{
-      setState(() {
-      });
+      _handleError("Server Exception: $e");
     }
   }
 
-
+  // Handle errors
+  void _handleError(String message) {
+    print(message);
+    // You can also show a dialog or a snackbar to inform the user
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Get screen width and height
+    // Get screen dimensions
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -82,197 +83,173 @@ class _DashBoardState extends State<DashBoard> {
       drawer: AppDrawer(),
       appBar: CustomAppBar(),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Graph with static values
-            Container(
-              height: screenHeight * 0.3, // 30% of screen height
-              padding: EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: LineChart(
-                      LineChartData(
-                        lineBarsData: [
-                          LineChartBarData(
-                            spots: [
-                              FlSpot(0, 3),
-                              FlSpot(1, 1),
-                              FlSpot(2, 4),
-                              FlSpot(3, 2),
-                              FlSpot(4, 5),
-                              FlSpot(5, 3),
-                            ],
-                            isCurved: true,
-                            color: Colors.green,
-                            barWidth: 2,
-                            belowBarData: BarAreaData(show: false),
-                          ),
-                          LineChartBarData(
-                            spots: [
-                              FlSpot(0, 2),
-                              FlSpot(1, 3),
-                              FlSpot(2, 2),
-                              FlSpot(3, 5),
-                              FlSpot(4, 3),
-                              FlSpot(5, 4),
-                            ],
-                            isCurved: true,
-                            color: Colors.orange,
-                            barWidth: 2,
-                            belowBarData: BarAreaData(show: false),
-                          ),
-                        ],
-                        titlesData: FlTitlesData(show: false),
-                        gridData: FlGridData(show: true),
-                        borderData: FlBorderData(show: true),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 15),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(width: 10, height: 10, color: Colors.green),
-                            SizedBox(width: 4),
-                            Text("Active SO"),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(width: 10, height: 10, color: Colors.orange),
-                            SizedBox(width: 4),
-                            Text("Closed SO"),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: _buildGraph(screenHeight,screenWidth),
             ),
-
             SizedBox(height: 16),
-            // Summary Cards
-            Material(
-              elevation: 1,
-              child: Container(
-                width: screenWidth * 0.9, // 90% of screen width
-                height: screenHeight * 0.3, // 30% of screen height
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SummaryCard(
-                        icon: Icons.currency_rupee,
-                        label: "Active Sale Order",
-                        value: "$sale_orders",
-                        onPressed: (){
-                          setState(() {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => saleOrderList())).then((value) => (){
-                              setState(() {
-                                fetchDashBoardData();
-                              });
-                            });
-                          });
-                        },
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: SummaryCard(
-                        icon: Icons.currency_rupee,
-                        label: "Lifting",
-                        value: "92.76",
-                        onPressed: (){},
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            SizedBox(height: 16),
-            // Bottom graph with static values
-            Container(
-              height: screenHeight * 0.3, // 30% of screen height
-              padding: EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildProgressBar(progress: 5, maxProgress: 10, label: 'Item'),
-                  _buildProgressBar(progress: 6, maxProgress: 10, label: 'Item'),
-                  _buildProgressBar(progress: 7, maxProgress: 10, label: 'Item'),
-                  _buildProgressBar(progress: 8, maxProgress: 10, label: 'Item'),
-                  _buildProgressBar(progress: 9, maxProgress: 10, label: 'Item'),
-                ],
-              ),
-            ),
+            _buildSummaryCards(screenWidth, screenHeight),
           ],
         ),
       ),
     );
   }
-}
 
-Widget _buildProgressBar({required String label, required int progress, required int maxProgress}) {
-  return Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      SizedBox(height: 8),
-      Container(
-        width: 16,
-        height: 160,
-        decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: FractionallySizedBox(
-          heightFactor: progress / maxProgress,
-          alignment: Alignment.bottomCenter,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(4),
+  // Build the graph section
+  Widget _buildGraph(double screenHeight , double screenWidth) {
+    return Container(
+        width: screenWidth * 1.0,
+        height: screenHeight * 0.3,
+      padding: EdgeInsets.all(16.0),
+      decoration: _boxDecoration(),
+      child: Column(
+        children: [
+          Expanded(
+            child: LineChart(
+              LineChartData(
+                lineBarsData: [
+                  _buildLineChartBarData([FlSpot(0, 3), FlSpot(1, 1), FlSpot(2, 4), FlSpot(3, 2), FlSpot(4, 5), FlSpot(5, 3)], Colors.green),
+                  _buildLineChartBarData([FlSpot(0, 2), FlSpot(1, 3), FlSpot(2, 2), FlSpot(3, 5), FlSpot(4, 3), FlSpot(5, 4)], Colors.orange),
+                ],
+                titlesData: FlTitlesData(show: false),
+                gridData: FlGridData(show: true),
+                borderData: FlBorderData(show: true),
+              ),
             ),
+          ),
+          SizedBox(height: 15),
+          _buildGraphLegend(),
+        ],
+      ),
+    );
+  }
+
+  // Build line chart bar data
+  LineChartBarData _buildLineChartBarData(List<FlSpot> spots, Color color) {
+    return LineChartBarData(
+      spots: spots,
+      isCurved: true,
+      color: color,
+      barWidth: 2,
+      belowBarData: BarAreaData(show: false),
+    );
+  }
+
+  // Build the graph legend
+  Widget _buildGraphLegend() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildLegendItem(Colors.green, "Active SO"),
+        _buildLegendItem(Colors.orange, "Closed SO"),
+      ],
+    );
+  }
+
+  // Build a legend item for the graph
+  Widget _buildLegendItem(Color color, String label) {
+    return Expanded(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(width: 10, height: 10, color: color),
+          SizedBox(width: 4),
+          Text(label),
+        ],
+      ),
+    );
+  }
+
+  // Build summary cards
+  Widget _buildSummaryCards(double screenWidth, double screenHeight) {
+    return Column(
+      children: [
+        SizedBox(height: 10,),
+        Container(
+          width: screenWidth * 1.0,
+          height: screenHeight * 0.25,
+          child: Row(
+            children: [
+              _buildCard("$saleOrders", "Auction Company", () {}, true),
+              _buildCard("$totalSaleOrder", "Total Sale Order", () {}, false),
+            ],
+          ),
+        ),
+        SizedBox(height: 10,),
+        Container(
+          width: screenWidth * 1.0,
+          height: screenHeight * 0.25,
+          child: Row(
+            children: [
+              _buildCard("$auctionCmp", "Auction Company", () {}, false),
+              _buildCard("$buyerCount", "Buyer", () {}, false),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Build a card widget
+  Widget _buildCard(String value, String label, VoidCallback onPressed, bool isOnPressed) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Container(
+          padding: EdgeInsets.all(16.0),
+          decoration: _boxDecoration(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(value, style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+              Text(label),
+              Spacer(),
+              if (isOnPressed) _buildCardActions(onPressed),
+            ],
           ),
         ),
       ),
-      Text(label),
-    ],
-  );
+    );
+  }
+
+  // Build card actions
+  Widget _buildCardActions(VoidCallback onPressed) {
+    return Row(
+      children: [
+        TextButton(
+            onPressed: (){
+              Navigator.push(context, MaterialPageRoute(builder: (context) => saleOrderList()));
+            }, child: Text("View More")),
+        Expanded(
+          child: IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.arrow_forward_ios_outlined, color: Colors.deepPurple, size: 20),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Box decoration for containers
+  BoxDecoration _boxDecoration() {
+    return BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(8.0),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.5),
+          spreadRadius: 2,
+          blurRadius: 5,
+          offset: Offset(0, 3),
+        ),
+      ],
+    );
+  }
 }
+
+
 
 class SummaryCard extends StatelessWidget {
   final IconData icon;

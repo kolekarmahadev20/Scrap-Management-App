@@ -82,6 +82,7 @@ class _PaymentListState extends State<PaymentList> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
+          backgroundColor: Colors.blueGrey[200],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -142,7 +143,7 @@ class _PaymentListState extends State<PaymentList> {
                          Navigator.pop(context); // Close dialog
                        },
                        style: ElevatedButton.styleFrom(
-                         backgroundColor: Colors.indigo, // Primary color
+                         backgroundColor: Colors.red[400], // Primary color
                          shape: RoundedRectangleBorder(
                            borderRadius: BorderRadius.circular(15),
                          ),
@@ -167,7 +168,7 @@ class _PaymentListState extends State<PaymentList> {
                            Navigator.pop(context); // Close dialog
                          },
                          style: ElevatedButton.styleFrom(
-                           backgroundColor: Colors.indigo, // Primary color
+                           backgroundColor: Colors.green[400], // Primary color
                            shape: RoundedRectangleBorder(
                              borderRadius: BorderRadius.circular(15),
                            ),
@@ -248,7 +249,7 @@ class _PaymentListState extends State<PaymentList> {
                       label: Text("Filter"),
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
-                        backgroundColor: Colors.indigo[800], // Text color
+                        backgroundColor: Colors.blueGrey[400], // Text color
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12), // Rounded corners
                         ),
@@ -266,7 +267,7 @@ class _PaymentListState extends State<PaymentList> {
                   elevation: 2,
                   color: Colors.white,
                   shape: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black12)
+                    borderSide: BorderSide(color: Colors.blueGrey[400]!)
                   ),
                   child: Container(
                     width:double.infinity,
@@ -332,120 +333,130 @@ class _PaymentListState extends State<PaymentList> {
   }
 
   Widget buildCustomListTile(BuildContext context , index) {
-    return Card(
-      color: Colors.white,
-      elevation: 2, // Slightly higher elevation for a more pronounced shadow
-      margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0), // Reduced margins
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15), // More rounded corners
-        side: BorderSide(color: Color(0xFF6482AD), width: 1.5), // Accent border
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0), // Reduced padding
-        leading: CircleAvatar(
-          backgroundColor: Colors.indigo[800]!,
-          child: Icon(Icons.border_outer, size: 22, color: Colors.white), // Reduced icon size
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Material(
+        elevation: 2,
+        shape: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(5)
         ),
-        title: RichText(
-          text: TextSpan(
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0), // Reduced padding
+          leading: CircleAvatar(
+            backgroundColor: Colors.indigo[800]!,
+            child: Icon(Icons.border_outer, size: 22, color: Colors.white), // Reduced icon size
+          ),
+          title: RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: "Order ID :  ", // Key text (e.g., "Vendor Name: ")
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black, // Bold key text
+                  ),
+                ),
+                TextSpan(
+                  text:index['sale_order_code'] ?? "N/A", // Value text (e.g., "XYZ Corp")
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.indigo[800]!, // Normal value text
+                  ),
+                ),
+              ],
+            ),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextSpan(
-                text: "Order ID :  ", // Key text (e.g., "Vendor Name: ")
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black, // Bold key text
+              Divider( thickness: 1,color: Colors.black87),
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "Buyer : ",
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold, // Bold key
+                        fontSize: 18,
+                      ),
+                    ),
+                    TextSpan(
+                      text: "${index['bidder_name'] ?? 'N/A'}",
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.normal, // Normal value
+                        fontSize: 18,
+
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              TextSpan(
-                text:index['sale_order_code'] ?? "N/A", // Value text (e.g., "XYZ Corp")
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.black54, // Normal value text
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "Material : ",
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold, // Bold key
+                        fontSize: 18,
+                      ),
+                    ),
+                    TextSpan(
+                      text: "${index['description'] ?? 'N/A'}",
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.normal, // Normal value
+                        fontSize: 18,
+
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "Date : ",
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold, // Bold key
+                        fontSize: 18,
+                      ),
+                    ),
+                    TextSpan(
+                      text: "${index['date'] ?? 'N/A'}",
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.normal, // Normal value
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Divider( thickness: 1,color: Colors.black87),
-            RichText(
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: "Buyer : ",
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.bold, // Bold key
-                      fontSize: 18,
-                    ),
-                  ),
-                  TextSpan(
-                    text: "${index['bidder_name'] ?? 'N/A'}",
-                    style: TextStyle(
-                      color: Colors.black54,
-                      fontWeight: FontWeight.normal, // Normal value
-                      fontSize: 18,
-
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            RichText(
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: "Material : ",
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.bold, // Bold key
-                      fontSize: 18,
-                    ),
-                  ),
-                  TextSpan(
-                    text: "${index['description'] ?? 'N/A'}",
-                    style: TextStyle(
-                      color: Colors.black54,
-                      fontWeight: FontWeight.normal, // Normal value
-                      fontSize: 18,
-
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            RichText(
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: "Date : ",
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.bold, // Bold key
-                      fontSize: 18,
-                    ),
-                  ),
-                  TextSpan(
-                    text: "${index['date'] ?? 'N/A'}",
-                    style: TextStyle(
-                      color: Colors.black54,
-                      fontWeight: FontWeight.normal, // Normal value
-                      fontSize: 18,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        trailing: IconButton(
-          icon: Icon(Icons.arrow_forward_ios, size: 18), // Adjusted icon size
-          color: Colors.grey[600],
-          onPressed: () {
+          trailing: IconButton(
+            icon: Icon(Icons.arrow_forward_ios, size: 18), // Adjusted icon size
+            color: Colors.grey[600],
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => View_payment_detail(
+                  sale_order_id: index['sale_order_id'],
+                )),
+              ).then((value) => setState((){
+                fetchPaymentList();
+              }));
+            },
+          ),
+          onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => View_payment_detail(
@@ -456,16 +467,6 @@ class _PaymentListState extends State<PaymentList> {
             }));
           },
         ),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => View_payment_detail(
-              sale_order_id: index['sale_order_id'],
-            )),
-          ).then((value) => setState((){
-            fetchPaymentList();
-          }));
-        },
       ),
     );
   }

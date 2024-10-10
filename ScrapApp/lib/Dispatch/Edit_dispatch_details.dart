@@ -49,6 +49,10 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   final TextEditingController invoiceController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
   final TextEditingController truckNoController = TextEditingController();
+  final TextEditingController firstWeightNoController = TextEditingController();
+  final TextEditingController fullWeightController = TextEditingController();
+  final TextEditingController moistureWeightController = TextEditingController();
+  final TextEditingController netWeightController = TextEditingController();
   final TextEditingController quantityController = TextEditingController();
   final TextEditingController noteController = TextEditingController();
 
@@ -84,6 +88,9 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     quantityController.text=widget.quantity ?? 'N/A';
     noteController.text=widget.note ?? 'N/A';
     fetchImageList();
+    firstWeightNoController.addListener(calculateNetWeight);
+    fullWeightController.addListener(calculateNetWeight);
+    moistureWeightController.addListener(calculateNetWeight);
     }
 
 
@@ -91,6 +98,17 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     final login = await SharedPreferences.getInstance();
     username = await login.getString("username") ?? '';
     password = await login.getString("password") ?? '';
+  }
+
+  void calculateNetWeight() {
+    double firstWeight = double.tryParse(firstWeightNoController.text) ?? 0.0;
+    double fullWeight = double.tryParse(fullWeightController.text) ?? 0.0;
+    double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
+
+    double netWeight = fullWeight - firstWeight - moistureWeight;
+
+    // Update the net weight controller with the result
+    netWeightController.text = netWeight.toStringAsFixed(2);
   }
 
   void clearFields(){
@@ -153,6 +171,16 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       // Create a Multipart Request
       var request = http.MultipartRequest('POST', url);
 
+
+      print(username);
+      print(password);
+      print(widget.sale_order_id);
+      print(widget.lift_id);
+      print(materialId);
+      print(invoiceController.text);
+      print(truckNoController.text);
+      print(quantityController.text);
+      print(noteController.text);
       // Add form data
       request.fields['user_id'] = username!;
       request.fields['user_pass'] = password! ;
@@ -165,7 +193,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       request.fields['qty'] = quantityController.text;
       request.fields['note'] = noteController.text;
 
-      print('Form Data: ${request.fields}');
+      print('Form Data: ${request.fields}\n');
 
       // Add images to the request
       Future<void> addImages(List<File> images, String keyword, http.MultipartRequest request) async {
@@ -401,7 +429,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white, // Background color
-                      border:Border.all(color: Colors.black12),
+                      border:Border.all(color: Colors.blueGrey[400]!),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black26, // Shadow color
@@ -440,6 +468,10 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
                       buildTextField("Invoice No", invoiceController,false , false ,context),
                       buildTextField("Date", dateController,false , true ,context),
                       buildTextField("Truck No", truckNoController,false , false ,context),
+                      buildTextField("First Weight", firstWeightNoController, false,false , context),
+                      buildTextField("Full Weight", fullWeightController, false,false , context),
+                      buildTextField("Moisture Weight", moistureWeightController, false,false , context),
+                      buildTextField("Net Weight", netWeightController, true,false , context),
                       buildTextField("Quantity", quantityController,false , false ,context),
                       buildTextField("Note", noteController,false , false ,context),
                       SizedBox(height: 100,),
@@ -675,13 +707,14 @@ class _ImageWidgetState extends State<ImageWidget> {
   // Function to pick multiple images from the gallery
   Future<void> _pickImagesFromGallery() async {
     final picker = ImagePicker();
-    final List<XFile>? pickedFiles = await picker.pickMultiImage(); // For multiple image selection
+    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery); // Pick only one image
 
-    if (pickedFiles != null) {
+    if (pickedFile != null) {
       setState(() {
-        _images = pickedFiles.map((file) => File(file.path)).toList();
+        _images = [File(pickedFile.path)]; // Replace the list with the new image
       });
       widget.onImagesSelected(_images);
+      _showSingleImageNotification();
     }
   }
 
@@ -690,14 +723,30 @@ class _ImageWidgetState extends State<ImageWidget> {
     final picker = ImagePicker();
     final XFile? capturedFile = await picker.pickImage(source: ImageSource.camera);
 
-    if (capturedFile != null) {
+    if (capturedFile  != null) {
       setState(() {
-        _images.add(File(capturedFile.path)); // Add the captured image to the list
+        _images = [File(capturedFile.path)]; // Replace the list with the new captured image
       });
       widget.onImagesSelected(_images);
+      _showSingleImageNotification();
+      print("hello Hheloo captured");
     }
   }
 
+  // Function to show a SnackBar notifying the user
+  void _showSingleImageNotification() {
+    // Use Future to delay the snackbar to ensure widget is mounted
+    Future.delayed(Duration.zero, () {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("You can only upload one image at a time."),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    });
+  }
   // Function to delete a selected image
   void _deleteImage(int index) {
     setState(() {

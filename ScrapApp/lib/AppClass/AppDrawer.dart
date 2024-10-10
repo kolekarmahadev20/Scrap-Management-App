@@ -27,7 +27,7 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: Color(0xFF6482AD),
+      elevation: 5,
       child: Container(
         color: Colors.white, // Background color for the drawer
         child: Column(
@@ -36,8 +36,7 @@ class AppDrawer extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                color: Color(0xFF6482AD),
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+                color: Colors.blueGrey[700],
               ),
               child: Row(
                 children: [
@@ -138,17 +137,17 @@ class AppDrawer extends StatelessWidget {
                 ],
               ),
             ),
-            Divider(thickness: 1, color: Colors.indigo[900]),
-            _buildDrawerItem(
-              context,
-              icon: Icons.settings,
-              text: "Setting",
-              onTap: () {
-                Timer(Duration(milliseconds: 300), () {
-                  // Navigator.push(context, MaterialPageRoute(builder: (context) => RefundList()));
-                });
-              },
-            ),
+            Divider(thickness: 1, color: Colors.blueGrey[400]),
+            // _buildDrawerItem(
+            //   context,
+            //   icon: Icons.settings,
+            //   text: "Setting",
+            //   onTap: () {
+            //     Timer(Duration(milliseconds: 300), () {
+            //       // Navigator.push(context, MaterialPageRoute(builder: (context) => RefundList()));
+            //     });
+            //   },
+            // ),
             InkWell(
               onTap:() {
                 Timer(Duration(milliseconds: 300), () {
@@ -171,13 +170,15 @@ class AppDrawer extends StatelessWidget {
   Widget _buildDrawerItem(BuildContext context, {required IconData icon, required String text, required VoidCallback onTap}) {
     return Material(
       color: Colors.transparent,
+
       child: InkWell(
         onTap: onTap,
         splashColor: Colors.indigo[100],
         highlightColor: Colors.indigo[50],
         child: ListTile(
-          leading: Icon(icon, color: Color(0xFF6482AD), size: 30),
+          leading: Icon(icon, color: Colors.blueGrey[700], size: 30),
           title: Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+
         ),
       ),
     );

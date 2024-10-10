@@ -147,7 +147,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
       elevation: 2,
       color: Colors.white,
       shape: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.black12)
+          borderSide: BorderSide(color: Colors.blueGrey[400]!)
       ),
       child: Container(
         child: Row(
@@ -388,32 +388,56 @@ class _View_refund_detailsState extends State<View_refund_details> {
   }
 
   Widget buildEmdListView() {
-    print("length : ${emdStatus}");
-    if(emdStatus.length != 0){
-      return ListView.builder(
-        itemCount: emdStatus.length,
-        itemBuilder: (context, index) {
-          final emdStatusIndex = emdStatus[index];
-          return buildEmdStatusListTile(context,emdStatusIndex);
-        },
+    // Filter the list to only include items with "Refund EMD"
+    final filteredEmdStatus = emdStatus.where((status) => status == "Refund EMD").toList();
+
+    // If there are no matching items, display the "No EMD Details Found" message
+    if (filteredEmdStatus.isEmpty) {
+      return Center(
+        child: Text(
+          "No EMD Details Found",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        ),
       );
-    }else{
-      return Center(child: Text("No EMD Details Found" ,style: TextStyle(fontWeight:FontWeight.bold , fontSize: 20),));
     }
+
+    // Build the ListView with filtered items
+    return ListView.builder(
+      itemCount: filteredEmdStatus.length,
+      itemBuilder: (context, index) {
+        final emdStatusIndex = filteredEmdStatus[index];
+        return buildEmdStatusListTile(context, emdStatusIndex);
+      },
+    );
   }
 
   Widget buildPaymentListView() {
-    if(refundId.length != 0){
-      return ListView.builder(
-        itemCount:refundId.length,
-        itemBuilder: (context, index) {
-          final paymentIdIndex =refundId[index];
-          return buildPaymentStatusListTile(context,paymentIdIndex);
-        },
+    // Filter the list based on the allowed payment types
+    final filteredPayments = refundId.where((payment) =>
+    payment['payment_type'] == "Refund EMD" ||
+        payment['payment_type'] == "Refund CMD" ||
+        payment['payment_type'] == "Penalty" ||
+        payment['payment_type'] == "Refund All" ||
+        payment['payment_type'] == "Refund(Other than EMD/CMD)").toList();
+
+    // If there are no matching items, display the "No Payment Details Found" message
+    if (filteredPayments.isEmpty) {
+      return Center(
+        child: Text(
+          "No Payment Details Found",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        ),
       );
-    }else{
-      return Center(child: Text("No Payment Details Found" ,style: TextStyle(fontWeight:FontWeight.bold , fontSize: 20),));
     }
+
+    // Otherwise, build the ListView with filtered items
+    return ListView.builder(
+      itemCount: filteredPayments.length,
+      itemBuilder: (context, index) {
+        final payment = filteredPayments[index];
+        return buildPaymentStatusListTile(context, payment);
+      },
+    );
   }
 
 

@@ -5,7 +5,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       centerTitle: true,
-      backgroundColor:Color(0xFF6482AD),
+      backgroundColor:Colors.blueGrey[700],
       title: Text(
         "Scrap Management",
         style: TextStyle(color: Colors.white),
@@ -16,28 +16,28 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
         borderSide: BorderSide(style: BorderStyle.solid ,color: Colors.white60)
       ),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.notifications, color: Colors.white,),
-          onPressed: () {
-            // Handle notification icon press here
-            showDialog(context: context, builder: (BuildContext context){
-              return AlertDialog(
-                title: Text("Notification"),
-                content: Text('You have new notifications!'),
-                actions: <Widget>[
-                  TextButton(
-                    child: Text('OK'),
-                    onPressed: () {
-                      Navigator.of(context).pop(); // Close the dialog
-                    },
-                  ),
-                ],
-              );
-            });
-          },
-        ),
-      ],
+      // actions: [
+      //   IconButton(
+      //     icon: Icon(Icons.notifications, color: Colors.white,),
+      //     onPressed: () {
+      //       // Handle notification icon press here
+      //       showDialog(context: context, builder: (BuildContext context){
+      //         return AlertDialog(
+      //           title: Text("Notification"),
+      //           content: Text('You have new notifications!'),
+      //           actions: <Widget>[
+      //             TextButton(
+      //               child: Text('OK'),
+      //               onPressed: () {
+      //                 Navigator.of(context).pop(); // Close the dialog
+      //               },
+      //             ),
+      //           ],
+      //         );
+      //       });
+      //     },
+      //   ),
+      // ],
     );
   }
 

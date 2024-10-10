@@ -100,6 +100,7 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
   void initState(){
     super.initState();
     checkLogin();
+    print(widget.refundId);
     if (refundMap.containsKey(widget.paymentType)) {
       selectedPaymentType =refundMap['${widget.paymentType}'];
     } else {
@@ -128,6 +129,14 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
       setState(() {
         isLoading = true;
       });
+      print(username);
+      print(password);
+      print(widget.sale_order_id);
+      print(widget.refundId);
+      print(selectedPaymentType);
+      print(dateController1.text);
+      print(amountController.text);
+      print(totalPaymentController.text);
       final url = Uri.parse("${URL}add_refund_toSaleOrdder");
       var response = await http.post(
         url,
@@ -140,7 +149,7 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
           'payment_type':selectedPaymentType ?? '',
           'pay_date':dateController1.text,
           'amt':amountController.text,
-          't_amt':totalAmountEmdController.text,
+          't_amt':totalPaymentController.text,
           'total_emd':totalEmdController.text,
           'total_amount_including_emd': totalAmountEmdController.text,
           'narration':noteController.text,
@@ -228,7 +237,7 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
                     elevation: 2,
                     color: Colors.white,
                     shape: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.black12)
+                        borderSide: BorderSide(color: Colors.blueGrey[400]!)
                     ),
                     child: Container(
                       child: Column(

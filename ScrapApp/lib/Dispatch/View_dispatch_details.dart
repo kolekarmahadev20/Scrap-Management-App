@@ -147,7 +147,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
     return Material(
       elevation: 2,
       shape: OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.black12),
+        borderSide: BorderSide(color: Colors.blueGrey[400]!),
       ),
       child: Container(
         child: Row(

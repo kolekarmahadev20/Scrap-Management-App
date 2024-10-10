@@ -24,6 +24,10 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
   final TextEditingController invoiceController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
   final TextEditingController truckNoController = TextEditingController();
+  final TextEditingController firstWeightNoController = TextEditingController();
+  final TextEditingController fullWeightController = TextEditingController();
+  final TextEditingController moistureWeightController = TextEditingController();
+  final TextEditingController netWeightController = TextEditingController();
   final TextEditingController quantityController = TextEditingController();
   final TextEditingController noteController = TextEditingController();
 
@@ -62,12 +66,26 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
     super.initState();
     checkLogin();
     fetchDropDwonKeyValuePair();
+    firstWeightNoController.addListener(calculateNetWeight);
+    fullWeightController.addListener(calculateNetWeight);
+    moistureWeightController.addListener(calculateNetWeight);
   }
 
   checkLogin()async{
     final login = await SharedPreferences.getInstance();
     username = await login.getString("username") ?? '';
     password = await login.getString("password") ?? '';
+  }
+
+  void calculateNetWeight() {
+    double firstWeight = double.tryParse(firstWeightNoController.text) ?? 0.0;
+    double fullWeight = double.tryParse(fullWeightController.text) ?? 0.0;
+    double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
+
+    double netWeight = fullWeight - firstWeight - moistureWeight;
+
+    // Update the net weight controller with the result
+    netWeightController.text = netWeight.toStringAsFixed(2);
   }
 
   //fetching dropDowns of sale_order_list
@@ -319,7 +337,7 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white, // Background color
-                      border:Border.all(color: Colors.black12),
+                      border:Border.all(color: Colors.blueGrey[400]!),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black26, // Shadow color
@@ -356,7 +374,6 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                       buildDropdown("Order ID", dropDownMap, (value) {
                         setState(() {
                           selectedOrderId = value;
-                          print(value);
                           materialController.clear();
                           orderIdMaterial();
                           materialNameId();
@@ -366,6 +383,10 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
                       buildTextField("Invoice No", invoiceController , false,false , context),
                       buildTextField("Date", dateController, false,true , context),
                       buildTextField("Truck No", truckNoController, false,false , context),
+                      buildTextField("First Weight", firstWeightNoController, false,false , context),
+                      buildTextField("Full Weight", fullWeightController, false,false , context),
+                      buildTextField("Moisture Weight", moistureWeightController, false,false , context),
+                      buildTextField("Net Weight", netWeightController, true,false , context),
                       buildTextField("Quantity", quantityController, false,false , context),
                       buildTextField("Note", noteController, false,false , context),
                       SizedBox(height: 40,),
@@ -629,13 +650,14 @@ class _ImageWidgetState extends State<ImageWidget> {
   // Function to pick multiple images from the gallery
   Future<void> _pickImagesFromGallery() async {
     final picker = ImagePicker();
-    final List<XFile>? pickedFiles = await picker.pickMultiImage(); // For multiple image selection
+    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery); // Pick only one image
 
-    if (pickedFiles != null) {
+    if (pickedFile != null) {
       setState(() {
-        _images = pickedFiles.map((file) => File(file.path)).toList();
+        _images = [File(pickedFile.path)]; // Replace the list with the new image
       });
       widget.onImagesSelected(_images);
+      _showSingleImageNotification();
     }
   }
 
@@ -644,13 +666,29 @@ class _ImageWidgetState extends State<ImageWidget> {
     final picker = ImagePicker();
     final XFile? capturedFile = await picker.pickImage(source: ImageSource.camera);
 
-    if (capturedFile != null) {
+    if (capturedFile  != null) {
       setState(() {
-        _images.add(File(capturedFile.path)); // Add the captured image to the list
+        _images = [File(capturedFile.path)]; // Replace the list with the new captured image
       });
       widget.onImagesSelected(_images);
+      _showSingleImageNotification();
     }
   }
+
+  void _showSingleImageNotification() {
+    // Use Future to delay the snackbar to ensure widget is mounted
+    Future.delayed(Duration.zero, () {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("You can only upload one image at a time."),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    });
+  }
+
 
   // Function to delete a selected image
   void _deleteImage(int index) {

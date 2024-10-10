@@ -216,7 +216,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
                         elevation: 2,
                         color: Colors.white,
                         shape: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.black12)
+                            borderSide: BorderSide(color: Colors.blueGrey[400]!)
                         ),
                         child: Container(
                           child: Column(
