@@ -399,10 +399,13 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                       builder: (context) => View_dispatch_lifting_details(
                             sale_order_id: widget.sale_order_id,
                             lift_id: index['lift_id'],
-                            selectedOrderId: ViewDispatchData['sale_order']
-                                ['sale_order_code'],
+                            selectedOrderId: ViewDispatchData['sale_order']['sale_order_code'],
                             material: index['material_name'],
                             invoiceNo: index['invoice_no'],
+                            firstWeight: index['truck_weight'],
+                            fullWeight: index['full_weight'],
+                            moistureWeight: index['mois_weight'],
+                            netWeight: index['net_weight'],
                             date: index['date_time'],
                             truckNo: index['truck_no'],
                             quantity: index['qty'],

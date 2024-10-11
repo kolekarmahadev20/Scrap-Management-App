@@ -64,7 +64,9 @@ class _View_refund_detailsState extends State<View_refund_details> {
           ViewRefundData = jsonData;
           refundId = ViewRefundData['sale_order_payments'] ?? '';
           emdStatus = ViewRefundData['emd_status'] ?? '';
-        });
+          print(refundId);
+          print(emdStatus);
+;        });
       } else {
         print("Unable to fetch data.");
       }
@@ -443,12 +445,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
 
   Widget buildPaymentStatusListTile(BuildContext context, index) {
     // Check the payment_type condition
-    if (index['payment_type'] == "Refund EMD" ||
-        index['payment_type'] == "Refund CMD" ||
-        index['payment_type'] == "Penalty" ||
-        index['payment_type'] == "Refund All" ||
-        index['payment_type'] == "Refund(Other than EMD/CMD)") {
-      isData = true;
+
       return Padding(
         padding: const EdgeInsets.all(4.0),
         child: Card(
@@ -597,15 +594,9 @@ class _View_refund_detailsState extends State<View_refund_details> {
           ),
         ),
       );
-    } else {
-      isData = false;
-      return Container(); // Return an empty container if the condition is not met
-    }
   }
 
   Widget buildEmdStatusListTile(BuildContext context, index) {
-    if (index['payment_type'] == "Refund EMD") {
-      isData = true;
       return Padding(
         padding: const EdgeInsets.all(4.0),
         child: Card(
@@ -755,9 +746,5 @@ class _View_refund_detailsState extends State<View_refund_details> {
           ),
         ),
       );
-    } else {
-      isData = false;
-      return Container();
     }
-  }
 }

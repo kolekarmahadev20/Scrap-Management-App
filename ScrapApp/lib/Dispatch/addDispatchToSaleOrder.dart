@@ -188,6 +188,10 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       request.fields['invoice_no'] = invoiceController.text;
       request.fields['date_time'] = "2024-10-10";
       request.fields['truck_no'] = truckNoController.text;
+      request.fields['truck_weight'] = firstWeightNoController.text;
+      request.fields['full_weight'] = fullWeightController.text;
+      request.fields['mois_weight'] = moistureWeightController.text;
+      request.fields['net_weight'] = netWeightController.text;
       request.fields['qty'] = quantityController.text;
       request.fields['note'] = noteController.text;
 
@@ -212,28 +216,41 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       }
 
       // Add images from different sources
-      if (vehicleFront != null && vehicleFront!.isNotEmpty) {
-        await addImages(vehicleFront!, "Fr", request);
+      if (vehicleFront.isNotEmpty) {
+        await addImages(vehicleFront, "Fr", request);
       }
-      if (vehicleBack != null && vehicleBack!.isNotEmpty) {
-        await addImages(vehicleBack!, "Ba", request);
+      if (vehicleBack.isNotEmpty) {
+        await addImages(vehicleBack, "Ba", request);
       }
-      if (Material != null && Material!.isNotEmpty) {
-        await addImages(Material!, "Ma", request);
+      if (Material.isNotEmpty) {
+        await addImages(Material, "Ma", request);
       }
-      if (MaterialHalfLoad != null && MaterialHalfLoad!.isNotEmpty) {
-        await addImages(MaterialHalfLoad!, "Ha", request);
+      if (MaterialHalfLoad.isNotEmpty) {
+        await addImages(MaterialHalfLoad, "Ha", request);
       }
-      if (MaterialFullLoad != null && MaterialFullLoad!.isNotEmpty) {
-        await addImages(MaterialFullLoad!, "Fu", request);
+      if (MaterialFullLoad.isNotEmpty) {
+        await addImages(MaterialFullLoad, "Fu", request);
       }
-      if (other != null && other!.isNotEmpty) {
-        await addImages(other!, "ot", request);
+      if (other.isNotEmpty) {
+        await addImages(other, "ot", request);
       }
+
+      // print('Fields sent:');
+      // request.fields.forEach((key, value) {
+      //   print('$key: $value');
+      // });
+      //
+      // print("**************************************************************");
+
+
+      // print('Files sent:');
+      // request.files.forEach((file) {
+      //   print('File: ${file.filename}, length: ${file.length}');
+      // });
+
       // Send the request
       var response = await request.send();
 
-      print(response);
       // Handle response
       if (response.statusCode == 200) {
         final res = await http.Response.fromStream(response);

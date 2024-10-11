@@ -26,6 +26,10 @@ class Edit_dispatch_details extends StatefulWidget {
   final String?  invoiceNo;
   final String?  date;
   final String?  truckNo;
+  final String? firstWeight;
+  final String? fullWeight;
+  final String? moistureWeight;
+  final String? netWeight;
   final String?  quantity;
   final String?  note;
 
@@ -37,6 +41,10 @@ class Edit_dispatch_details extends StatefulWidget {
     required this.invoiceNo,
     required this.date,
     required this.truckNo,
+    required this.firstWeight,
+    required this.fullWeight,
+    required this.moistureWeight,
+    required this.netWeight,
     required this.quantity,
     required this.note,
   });
@@ -58,6 +66,10 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
 
   String? username = '';
   String? password = '';
+  String firstWeight= '';
+  String fullWeight = '';
+  String moistureWeight = '';
+  String netWeight = '';
   String? materialId ;
   bool isLoading = false;
   List<File> vehicleFront = [];
@@ -85,6 +97,10 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     invoiceController.text=widget.invoiceNo ?? 'N/A';
     dateController.text=widget.date ?? 'N/A';
     truckNoController.text=widget.truckNo ?? 'N/A';
+    firstWeightNoController.text = widget.firstWeight ?? "N/A";
+    fullWeightController.text = widget.fullWeight ?? "N/A";
+    moistureWeightController.text = widget.moistureWeight ?? "N/A";
+    netWeightController.text = widget.netWeight ?? "N/A";
     quantityController.text=widget.quantity ?? 'N/A';
     noteController.text=widget.note ?? 'N/A';
     fetchImageList();
@@ -161,46 +177,33 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
 
   Future<void> editDispatchDetails() async {
     try {
-      print("InBlock");
       setState(() {
         isLoading = true;
       });
       await checkLogin();
       final url = Uri.parse("${URL}save_lifting");
 
-      // Create a Multipart Request
       var request = http.MultipartRequest('POST', url);
 
-
-      print(username);
-      print(password);
-      print(widget.sale_order_id);
-      print(widget.lift_id);
-      print(materialId);
-      print(invoiceController.text);
-      print(truckNoController.text);
-      print(quantityController.text);
-      print(noteController.text);
-      // Add form data
       request.fields['user_id'] = username!;
-      request.fields['user_pass'] = password! ;
+      request.fields['user_pass'] = password!;
       request.fields['sale_order_id_lift'] = widget.sale_order_id;
       request.fields['lift_id'] = widget.lift_id;
-      request.fields['material_id_lifting'] = materialId ?? ''; // sending material Id instead of material Name
+      request.fields['material_id_lifting'] = materialId ?? '';
       request.fields['invoice_no'] = invoiceController.text;
       request.fields['date_time'] = dateController.text;
       request.fields['truck_no'] = truckNoController.text;
+      request.fields['truck_weight'] = firstWeightNoController.text;
+      request.fields['full_weight'] = fullWeightController.text;
+      request.fields['mois_weight'] = moistureWeightController.text;
+      request.fields['net_weight'] = netWeightController.text;
       request.fields['qty'] = quantityController.text;
       request.fields['note'] = noteController.text;
-
-      print('Form Data: ${request.fields}\n');
 
       // Add images to the request
       Future<void> addImages(List<File> images, String keyword, http.MultipartRequest request) async {
         for (var image in images) {
-          // Compress the image before uploading
           File? compressedImage = await compressImage(image);
-
           if (compressedImage != null) {
             var stream = http.ByteStream(compressedImage.openRead());
             var length = await compressedImage.length();
@@ -210,81 +213,105 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
               length,
               filename: '$keyword${compressedImage.path.split('/').last}',
             );
-            request.files.add(multipartFile);  // Add compressed file
+            request.files.add(multipartFile);
           }
         }
       }
 
-      Future<void> submitImage(String fileName , String? keyword, Uint8List? imageByte)async {
+      Future<void> submitImage(String fileName, String? keyword, Uint8List? imageByte) async {
+        if (imageByte != null) {  // Ensure imageBytes is valid
           var multipartFile = http.MultipartFile.fromBytes(
             'certification[]',
-            imageByte!,
-            filename:'${keyword}${fileName.split('/').last}',
+            imageByte,
+            filename: '${keyword}${fileName.split('/').last}',
           );
+          print(multipartFile.filename);
           request.files.add(multipartFile);
+        }
       }
 
       // Add images from different sources
       if (vehicleFront.isNotEmpty) {
         await addImages(vehicleFront, "Fr", request);
-      }else{
+      } else if (frontVehicle != null) {
         await _fetchFileBytesFromServer(frontVehicle!);
-        await submitImage(frontVehicle!,"Fr", imageBytes!);
+        if (imageBytes != null) {
+          await submitImage(frontVehicle!, "Fr", imageBytes);
+        }
       }
+
       if (vehicleBack.isNotEmpty) {
         await addImages(vehicleBack, "Ba", request);
-      }else{
+      } else if (backVehicle != null) {
         await _fetchFileBytesFromServer(backVehicle!);
-        await submitImage(backVehicle!,"Ba", imageBytes!);
+        if (imageBytes != null) {
+          await submitImage(backVehicle!, "Ba", imageBytes);
+        }
       }
 
       if (Material.isNotEmpty) {
         await addImages(Material, "Ma", request);
-      }else{
+      } else if (materialImg != null) {
         await _fetchFileBytesFromServer(materialImg!);
-        await submitImage(materialImg!,"Ma", imageBytes!);
+        if (imageBytes != null) {
+          await submitImage(materialImg!, "Ma", imageBytes);
+        }
       }
 
       if (MaterialHalfLoad.isNotEmpty) {
         await addImages(MaterialHalfLoad, "Ha", request);
-      }else{
+      } else if (materialHalfLoad != null) {
         await _fetchFileBytesFromServer(materialHalfLoad!);
-        await submitImage(materialHalfLoad!,"Ha", imageBytes!);
+        if (imageBytes != null) {
+          await submitImage(materialHalfLoad!, "Ha", imageBytes);
+        }
       }
 
       if (MaterialFullLoad.isNotEmpty) {
         await addImages(MaterialFullLoad, "Fu", request);
-      }else{
+      } else if (materialFullLoad != null) {
         await _fetchFileBytesFromServer(materialFullLoad!);
-        await submitImage(materialFullLoad!,"Fu", imageBytes!);
+        if (imageBytes != null) {
+          await submitImage(materialFullLoad!, "Fu", imageBytes);
+        }
       }
 
       if (other.isNotEmpty) {
         await addImages(other, "ot", request);
-      }else{
+      } else if (otherImg != null) {
         await _fetchFileBytesFromServer(otherImg!);
-        await submitImage(otherImg!,"ot", imageBytes!);
+        if (imageBytes != null) {
+          await submitImage(otherImg!, "ot", imageBytes);
+        }
       }
 
+      // print('Fields sent:');
+      // request.fields.forEach((key, value) {
+      //   print('$key: $value');
+      // });
+      //
+      // print("**************************************************************");
+      //
+      // print('Files sent:');
+      // request.files.forEach((file) {
+      //   print('File: ${file.filename}, length: ${file.length}');
+      // });
 
       // Send the request
       var response = await request.send();
 
-      print('Response status code: ${response.statusCode}'); // Debug: Response status
 
-      // Handle response
       if (response.statusCode == 200) {
         final res = await http.Response.fromStream(response);
         final jsonData = json.decode(res.body);
-        print('Response body: ${res.body}');
-        if (mounted) {
-          setState(() {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${jsonData['msg']}")));
-            Navigator.pop(context);
-            Navigator.pop(context);
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => View_dispatch_details(sale_order_id: widget.sale_order_id)));
-          });
-        }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${jsonData['msg']}")));
+        Navigator.pop(context);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => View_dispatch_details(sale_order_id: widget.sale_order_id),
+          ),
+        );
       } else {
         Fluttertoast.showToast(
           msg: 'Unable to insert data.',
@@ -294,9 +321,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
           textColor: Colors.yellow,
         );
       }
-    } catch (e, stackTrace) {
-      print('Server Exception: $e');
-      print('Stack trace: $stackTrace');
+    } catch (e) {
       Fluttertoast.showToast(
         msg: 'Server Exception: $e',
         toastLength: Toast.LENGTH_SHORT,
@@ -304,7 +329,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
         backgroundColor: Colors.red,
         textColor: Colors.yellow,
       );
-    }finally{
+    } finally {
       setState(() {
         isLoading = false;
       });
@@ -332,27 +357,43 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       if (response.statusCode == 200) {
         setState(() {
           var jsonData = json.decode(response.body);
-          print(jsonData);
-          frontVehicle = '${Image_URL}${jsonData['Fr']}';
-          backVehicle = '${Image_URL}${jsonData['Ba']}';
-          materialImg = '${Image_URL}${jsonData['Ma']}';
-          materialHalfLoad = '${Image_URL}${jsonData['Ha']}';
-          materialFullLoad = '${Image_URL}${jsonData['Fu']}';
-          otherImg = '${Image_URL}${jsonData['ot']}';
 
-          print(frontVehicle);
-          print(backVehicle);
-          print(materialImg);
-          print(materialHalfLoad);
-          print(materialFullLoad);
-          print(otherImg);
+          // Check if the response is empty
+          if (jsonData.isEmpty) {
+            print("No data returned from the API.");
+            frontVehicle = "";
+            backVehicle = "";
+            materialImg = "";
+            materialHalfLoad = "";
+            materialFullLoad = "";
+            otherImg = "N/A";
+          } else if (jsonData is Map<String, dynamic>) {
+            // Handle the valid map response
+            frontVehicle = jsonData['Fr'] != null ? '${Image_URL}${jsonData['Fr']}' : "";
+            backVehicle = jsonData['Ba'] != null ? '${Image_URL}${jsonData['Ba']}' : "";
+            materialImg = jsonData['Ma'] != null ? '${Image_URL}${jsonData['Ma']}' : "";
+            materialHalfLoad = jsonData['Ha'] != null ? '${Image_URL}${jsonData['Ha']}' : "";
+            materialFullLoad = jsonData['Fu'] != null ? '${Image_URL}${jsonData['Fu']}' : "";
+            otherImg = jsonData['ot'] != null ? '${Image_URL}${jsonData['ot']}' : "";
+          } else if (jsonData is List) {
+            // Handle the case if the response is a list (unexpected)
+            print("API returned a list instead of a map. List: $jsonData");
+            frontVehicle = "";
+            backVehicle = "";
+            materialImg = "";
+            materialHalfLoad = "";
+            materialFullLoad = "";
+            otherImg = "";
+          } else {
+            print("Unexpected data structure: $jsonData");
+          }
         });
       } else {
-        print("Unable to fetch data.");
+        print("Unable to fetch data. Status code: ${response.statusCode}");
       }
     } catch (e) {
       print("Server Exception: $e");
-    }finally{
+    } finally {
       setState(() {
         isLoading = false;
       });
@@ -362,7 +403,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
 
   Future<void> _fetchFileBytesFromServer(String fileUrl) async {
     try {
-      print(fileUrl);
       var response = await http.get(Uri.parse(fileUrl));
       if (response.statusCode == 200) {
         setState(() {
@@ -682,7 +722,7 @@ class ImageWidget extends StatefulWidget {
   final String value;
   final Icon cameraIcon;
   final Icon galleryIcon;
-  final String filePath;
+  final String? filePath;
   final Function(List<File>) onImagesSelected;
 
   const ImageWidget({
@@ -729,7 +769,6 @@ class _ImageWidgetState extends State<ImageWidget> {
       });
       widget.onImagesSelected(_images);
       _showSingleImageNotification();
-      print("hello Hheloo captured");
     }
   }
 
@@ -760,27 +799,51 @@ class _ImageWidgetState extends State<ImageWidget> {
   Future<void> _fetchFileBytesFromServer(String fileUrl) async {
     try {
       var response = await http.get(Uri.parse(fileUrl));
-      if (response.statusCode == 200) {
+      if(response.statusCode == 200) {
         setState(() {
-          imageBytes = response.bodyBytes; // Store image bytes
+          imageBytes = response.bodyBytes;
           _showImage();
         });
       } else {
-        print('Failed to load file from server');
+        if(imageBytes == null){
+          showNoImage();
+        }else{
+          print("Unable to load the Image");
+        }
       }
     } catch (e) {
-      print('Exception: $e');
+      if(imageBytes == null){
+        showNoImage();
+      }else{
+        print('Exception: $e');
+      }
     } finally {
       setState(() {});
     }
   }
 
+  showNoImage(){
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Center(child: Text("No Image Found")),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("OK"))
+            ],
+          );
+      });
+  }
   _showImage() {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("${widget.filePath.split('/').last}"),
+            title: Text("${widget.filePath!.split('/').last}"),
             content: imageBytes != null
                 ? Image.memory(imageBytes!, fit: BoxFit.fill)
                 : showLoading(),
@@ -830,7 +893,11 @@ class _ImageWidgetState extends State<ImageWidget> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold ,color: Colors.green),
                 ),
                 onPressed: (){
-                  _fetchFileBytesFromServer(widget.filePath);
+                  if(widget.filePath == null){
+                    showNoImage();
+                  }else{
+                  _fetchFileBytesFromServer(widget.filePath!);
+                  }
                 },
               ),
               IconButton(

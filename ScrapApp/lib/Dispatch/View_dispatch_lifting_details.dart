@@ -19,6 +19,10 @@ class View_dispatch_lifting_details extends StatefulWidget {
   final String? invoiceNo;
   final String? date;
   final String? truckNo;
+  final String? firstWeight;
+  final String? fullWeight;
+  final String? moistureWeight;
+  final String? netWeight;
   final String? quantity;
   final String? note;
 
@@ -30,13 +34,16 @@ class View_dispatch_lifting_details extends StatefulWidget {
     required this.invoiceNo,
     required this.date,
     required this.truckNo,
+    required this.firstWeight,
+    required this.fullWeight,
+    required this.moistureWeight,
+    required this.netWeight,
     required this.quantity,
     required this.note,
   });
 
   @override
-  State<View_dispatch_lifting_details> createState() =>
-      _View_dispatch_lifting_detailsState();
+  State<View_dispatch_lifting_details> createState() => _View_dispatch_lifting_detailsState();
 }
 
 class _View_dispatch_lifting_detailsState
@@ -86,6 +93,10 @@ class _View_dispatch_lifting_detailsState
     invoiceNo = widget.invoiceNo ?? 'N/A';
     date = widget.date ?? 'N/A';
     truckNo = widget.truckNo ?? 'N/A';
+    firstWeight = widget.firstWeight ?? "N/A";
+    fullWeight = widget.fullWeight ?? "N/A";
+    moistureWeight = widget.moistureWeight ?? "N/A";
+    netWeight = widget.netWeight ?? "N/A";
     quantity = widget.quantity ?? 'N/A';
     note = widget.note ?? 'N/A';
   }
@@ -128,16 +139,41 @@ class _View_dispatch_lifting_detailsState
       if (response.statusCode == 200) {
         setState(() {
           var jsonData = json.decode(response.body);
-          print(jsonData);
-          frontVehicle = '${Image_URL}${jsonData['Fr']}';
-          backVehicle = '${Image_URL}${jsonData['Ba']}';
-          materialImg = '${Image_URL}${jsonData['Ma']}';
-          materialHalfLoad = '${Image_URL}${jsonData['Ha']}';
-          materialFullLoad = '${Image_URL}${jsonData['Fu']}';
-          otherImg = '${Image_URL}${jsonData['ot']}';
+
+          print("Response Data: $jsonData");
+
+          // Check if the response is empty
+          if (jsonData.isEmpty) {
+            print("No data returned from the API.");
+            frontVehicle = "";
+            backVehicle = "";
+            materialImg = "";
+            materialHalfLoad = "";
+            materialFullLoad = "";
+            otherImg = "N/A";
+          } else if (jsonData is Map<String, dynamic>) {
+            // Handle the valid map response
+            frontVehicle = jsonData['Fr'] != null ? '${Image_URL}${jsonData['Fr']}' : "";
+            backVehicle = jsonData['Ba'] != null ? '${Image_URL}${jsonData['Ba']}' : "";
+            materialImg = jsonData['Ma'] != null ? '${Image_URL}${jsonData['Ma']}' : "";
+            materialHalfLoad = jsonData['Ha'] != null ? '${Image_URL}${jsonData['Ha']}' : "";
+            materialFullLoad = jsonData['Fu'] != null ? '${Image_URL}${jsonData['Fu']}' : "";
+            otherImg = jsonData['ot'] != null ? '${Image_URL}${jsonData['ot']}' : "";
+          } else if (jsonData is List) {
+            // Handle the case if the response is a list (unexpected)
+            print("API returned a list instead of a map. List: $jsonData");
+            frontVehicle = "";
+            backVehicle = "";
+            materialImg = "";
+            materialHalfLoad = "";
+            materialFullLoad = "";
+            otherImg = "";
+          } else {
+            print("Unexpected data structure: $jsonData");
+          }
         });
       } else {
-        print("Unable to fetch data.");
+        print("Unable to fetch data. Status code: ${response.statusCode}");
       }
     } catch (e) {
       print("Server Exception: $e");
@@ -248,6 +284,10 @@ class _View_dispatch_lifting_detailsState
                                             material: material,
                                             invoiceNo: invoiceNo,
                                             truckNo: truckNo,
+                                            firstWeight:firstWeight ,
+                                            fullWeight: fullWeight,
+                                            moistureWeight: moistureWeight,
+                                            netWeight:netWeight,
                                             note: note,
                                             quantity: quantity,
                                             selectedOrderId: selectedOrderId,
@@ -392,7 +432,7 @@ class _View_dispatch_lifting_detailsState
 
 class ImageWidget extends StatefulWidget {
   final String value;
-  final String filePath;
+  final String? filePath;
 
   const ImageWidget({
     Key? key,
@@ -409,13 +449,31 @@ class _ImageWidgetState extends State<ImageWidget> {
 
   Uint8List? imageBytes;
 
+
+  showNoImage(){
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Center(child: Text("No Image Found")),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("OK"))
+            ],
+          );
+        });
+  }
+
 // Function to show a dialog with all the saved images in a pageable view
   _showImage() {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("${widget.filePath.split('/').last}"),
+            title: Text("${widget.filePath!.split('/').last}"),
             content: imageBytes != null
                 ? Image.memory(imageBytes!, fit: BoxFit.fill)
                 : showLoading(),
@@ -433,16 +491,27 @@ class _ImageWidgetState extends State<ImageWidget> {
   Future<void> _fetchFileBytesFromServer(String fileUrl) async {
     try {
       var response = await http.get(Uri.parse(fileUrl));
+      print(response);
+      print("hello hello");
       if (response.statusCode == 200) {
         setState(() {
           imageBytes = response.bodyBytes; // Store image bytes
           _showImage();
         });
-      } else {
-        print('Failed to load file from server');
+      }  else {
+        if(imageBytes == null){
+          showNoImage();
+        }else{
+          print("Unable to load the Image");
+        }
       }
     } catch (e) {
-      print('Exception: $e');
+      if(imageBytes == null){
+        showNoImage();
+      }else{
+        print('Exception: $e');
+      }
+
     } finally {
       setState(() {});
     }
@@ -484,7 +553,11 @@ class _ImageWidgetState extends State<ImageWidget> {
                 ),
                 onPressed: () {
                   setState(() {
-                    _fetchFileBytesFromServer(widget.filePath);
+                    if(widget.filePath == null){
+                      showNoImage();
+                    }else{
+                      _fetchFileBytesFromServer(widget.filePath!);
+                    }
                   });
                 },
               ),
