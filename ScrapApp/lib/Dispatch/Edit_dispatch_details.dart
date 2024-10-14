@@ -822,22 +822,18 @@ class _ImageWidgetState extends State<ImageWidget> {
     }
   }
 
-  showNoImage(){
-    return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            content: Center(child: Text("No Image Found")),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text("OK"))
-            ],
-          );
-      });
+  void showNoImage() {
+    Fluttertoast.showToast(
+      msg: "No images Found",
+      toastLength: Toast.LENGTH_SHORT, // Can be LENGTH_SHORT or LENGTH_LONG
+      gravity: ToastGravity.BOTTOM,    // Position of the toast
+      backgroundColor: Colors.black,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
   }
+
+
   _showImage() {
     return showDialog(
         context: context,

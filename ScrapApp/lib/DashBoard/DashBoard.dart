@@ -22,6 +22,9 @@ class _DashBoardState extends State<DashBoard> {
   String? auctionCmp;
   List<int> saleOrder =[];
   String? totalSaleOrder = '92';
+  String? curr_year;
+  List<dynamic> graph =[];
+
 
 
   @override
@@ -29,6 +32,7 @@ class _DashBoardState extends State<DashBoard> {
     super.initState();
     checkLogin();
     fetchDashBoardData();
+    getLastSixMonths();
   }
 
   // Fetch saved login data from SharedPreferences
@@ -58,6 +62,8 @@ class _DashBoardState extends State<DashBoard> {
           saleOrders = jsonData['saleorder']['sale_cnt'];
           buyerCount = jsonData['bidders']['bidder_cnt'];
           auctionCmp = jsonData['auction_company']['auc_cnt'];
+          graph = jsonData['six_month_data'];
+          print(graph);
         });
       } else {
         _handleError("Unable to fetch data: ${response.statusCode}");
@@ -83,67 +89,153 @@ class _DashBoardState extends State<DashBoard> {
       drawer: AppDrawer(),
       appBar: CustomAppBar(),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: _buildGraph(screenHeight,screenWidth),
-            ),
-            SizedBox(height: 16),
-            _buildSummaryCards(screenWidth, screenHeight),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _buildGraph(screenHeight,screenWidth),
+              ),
+              _buildSummaryCards(screenWidth, screenHeight),
+            ],
+          ),
         ),
       ),
     );
   }
 
   // Build the graph section
-  Widget _buildGraph(double screenHeight , double screenWidth) {
+// Build the graph section
+  Widget _buildGraph(double screenHeight, double screenWidth) {
+    List<String> lastSixMonths = getLastSixMonths();
     return Container(
-        width: screenWidth * 1.0,
-        height: screenHeight * 0.3,
+      width: screenWidth * 1.0,
+      height: screenHeight * 0.35,
       padding: EdgeInsets.all(16.0),
       decoration: _boxDecoration(),
       child: Column(
         children: [
           Expanded(
-            child: LineChart(
-              LineChartData(
-                lineBarsData: [
-                  _buildLineChartBarData([FlSpot(0, 3), FlSpot(1, 1), FlSpot(2, 4), FlSpot(3, 2), FlSpot(4, 5), FlSpot(5, 3)], Colors.green),
-                  _buildLineChartBarData([FlSpot(0, 2), FlSpot(1, 3), FlSpot(2, 2), FlSpot(3, 5), FlSpot(4, 3), FlSpot(5, 4)], Colors.orange),
-                ],
-                titlesData: FlTitlesData(show: false),
-                gridData: FlGridData(show: true),
+            child: BarChart(
+              BarChartData(
+                alignment: BarChartAlignment.spaceAround,
+                maxY: 100,
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 35, // Increase the reserved space for the Y-axis labels
+                      getTitlesWidget: (double value, TitleMeta meta) {
+                        return SideTitleWidget(
+                          axisSide: meta.axisSide,
+                          space: 10, // Add space between the labels and the bars
+                          child: Text(
+                            value.toStringAsFixed(0), // Display the Y-axis values
+                            style: TextStyle(fontSize: 12, color: Colors.black),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  show: true,
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      reservedSize: 50, // Increase the reserved size to give more space for labels
+                      showTitles: true,
+                      getTitlesWidget: (double value, TitleMeta meta) {
+                        if (value >= 0 && value < lastSixMonths.length) {
+                          return SideTitleWidget(
+                            axisSide: meta.axisSide,
+                            child: Text(lastSixMonths[value.toInt()]), // Get the month name from the list
+                          );
+                        }
+                        return SideTitleWidget(
+                          axisSide: meta.axisSide,
+                          child: Text(''), // Return empty if out of range
+                        );
+                      },
+                    ),
+                  ),
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                ),
                 borderData: FlBorderData(show: true),
+                barGroups: _buildBarGroups(),
+                gridData: FlGridData(show: false),
               ),
             ),
           ),
-          SizedBox(height: 15),
           _buildGraphLegend(),
         ],
       ),
     );
   }
 
-  // Build line chart bar data
-  LineChartBarData _buildLineChartBarData(List<FlSpot> spots, Color color) {
-    return LineChartBarData(
-      spots: spots,
-      isCurved: true,
-      color: color,
-      barWidth: 2,
-      belowBarData: BarAreaData(show: false),
+// Build the bar chart data groups
+  List<BarChartGroupData> _buildBarGroups() {
+    if (graph.isEmpty) {
+      return [];
+    }
+    return List.generate(graph.length, (index) {
+      int count = int.tryParse(graph[index]['cnt'].toString()) ?? 0; // Use tryParse for safety
+      return _buildBarGroup(index, count, Colors.green);
+    });
+  }
+// Create a bar chart group for a specific index and value
+  BarChartGroupData _buildBarGroup(int x, int y, Color color) {
+    // double clampedValue = y.clamp(0, 100);
+    return BarChartGroupData(
+      x: x,
+      barRods: [
+        BarChartRodData(
+          toY: y.toDouble(),
+          color: color,
+          width: 30,
+          borderRadius: BorderRadius.circular(4),
+        ),
+      ],
     );
   }
+
+  //To dynamically get the Last six months on the chart
+  List<String> getLastSixMonths() {
+    DateTime now = DateTime.now();
+    List<String> months = [];
+
+    for (int i = 0; i < graph.length; i++) {
+      DateTime date = DateTime(now.year, now.month - i, 1);
+      String month = "${_getMonthName(date.month)}";
+      months.add(month);
+      curr_year ='${date.year}';
+    }
+
+    return months.reversed.toList();
+  }
+  String _getMonthName(int month) {
+    const monthNames = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return monthNames[month - 1];
+  }
+
+
 
   // Build the graph legend
   Widget _buildGraphLegend() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildLegendItem(Colors.green, "Active SO"),
-        _buildLegendItem(Colors.orange, "Closed SO"),
+        _buildLegendItem(Colors.green, "Active SO (${curr_year})"),
       ],
     );
   }
@@ -172,8 +264,8 @@ class _DashBoardState extends State<DashBoard> {
           height: screenHeight * 0.25,
           child: Row(
             children: [
-              _buildCard("$saleOrders", "Auction Company", () {}, true),
-              _buildCard("$totalSaleOrder", "Total Sale Order", () {}, false),
+              _buildCard("$saleOrders", "Active Sale Order", () {}, true , Colors.blue),
+              _buildCard("$saleOrders", "Total Sale Order", () {}, false , Colors.green),
             ],
           ),
         ),
@@ -183,8 +275,8 @@ class _DashBoardState extends State<DashBoard> {
           height: screenHeight * 0.25,
           child: Row(
             children: [
-              _buildCard("$auctionCmp", "Auction Company", () {}, false),
-              _buildCard("$buyerCount", "Buyer", () {}, false),
+              _buildCard("$auctionCmp", "Auction Company", () {}, false ,  Colors.deepPurple),
+              _buildCard("$buyerCount", "Buyer", () {}, false , Colors.pink),
             ],
           ),
         ),
@@ -193,17 +285,29 @@ class _DashBoardState extends State<DashBoard> {
   }
 
   // Build a card widget
-  Widget _buildCard(String value, String label, VoidCallback onPressed, bool isOnPressed) {
+  Widget _buildCard(String value, String label, VoidCallback onPressed, bool isOnPressed , Color color) {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Container(
           padding: EdgeInsets.all(16.0),
-          decoration: _boxDecoration(),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.0),
+            border: Border.all(color: color),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 2,
+                blurRadius: 5,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(value, style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+              Text(value, style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold , color: color)),
               Text(label),
               Spacer(),
               if (isOnPressed) _buildCardActions(onPressed),
@@ -221,11 +325,12 @@ class _DashBoardState extends State<DashBoard> {
         TextButton(
             onPressed: (){
               Navigator.push(context, MaterialPageRoute(builder: (context) => saleOrderList()));
-            }, child: Text("View More")),
+            },
+            child: Text("View More" , style: TextStyle(color: Colors.blue),)),
         Expanded(
           child: IconButton(
             onPressed: () {},
-            icon: Icon(Icons.arrow_forward_ios_outlined, color: Colors.deepPurple, size: 20),
+            icon: Icon(Icons.arrow_forward_ios_outlined, color: Colors.blue, size: 20),
           ),
         ),
       ],
@@ -251,64 +356,3 @@ class _DashBoardState extends State<DashBoard> {
 
 
 
-class SummaryCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color circleColor;
-  final Color backgroundColor;
-  final Function() onPressed;
-
-  SummaryCard({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.circleColor = Colors.blue,
-    this.backgroundColor = Colors.white,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(8.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-              ),
-              Text(label),
-              Spacer(),
-              Row(
-                children: [
-                  TextButton(
-                    onPressed:onPressed,
-                    child: Text("View More"),
-                  ),
-                  IconButton(onPressed:onPressed, icon: Icon(Icons.arrow_forward_ios_outlined ,color: Colors.deepPurple,size: 20,),)
-                ],
-              )
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}

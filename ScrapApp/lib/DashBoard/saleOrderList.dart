@@ -212,91 +212,91 @@ class saleOrderListState extends State<saleOrderList> {
   }
 
   Widget buildCustomListTile(BuildContext context, index) {
-    return Card(
-      color: Colors.white,
-      elevation: 2, // Slightly higher elevation for a more pronounced shadow
-      margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0), // Reduced margins
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15), // More rounded corners
-        side: BorderSide(color: Color(0xFF6482AD), width: 1.5), // Accent border
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0), // Reduced padding
-        leading: CircleAvatar(
-          backgroundColor: Colors.indigo[800]!,
-          child: Icon(Icons.border_outer, size: 22, color: Colors.white), // Reduced icon size
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Material(
+        elevation: 2,
+        shape: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(5)
         ),
-        title: RichText(
-          text: TextSpan(
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0), // Reduced padding
+          leading: CircleAvatar(
+            backgroundColor: Colors.indigo[800]!,
+            child: Icon(Icons.border_outer, size: 22, color: Colors.white), // Reduced icon size
+          ),
+          title: RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: "Order ID :  ", // Key text (e.g., "Vendor Name: ")
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black, // Bold key text
+                  ),
+                ),
+                TextSpan(
+                  text: index['sale_order_code'] ?? "N/A", // Value text (e.g., "XYZ Corp")
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.indigo[800]!, // Normal value text
+                  ),
+                ),
+              ],
+            ),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextSpan(
-                text: "Order ID :  ", // Key text (e.g., "Vendor Name: ")
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black, // Bold key text
+              Divider(thickness: 1, color: Colors.black87),
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "Vendor Name : ",
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold, // Bold key
+                        fontSize: 18,
+                      ),
+                    ),
+                    TextSpan(
+                      text: "${index['vendor_name'] ?? 'N/A'}",
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.normal, // Normal value
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              TextSpan(
-                text: index['sale_order_code'] ?? "N/A", // Value text (e.g., "XYZ Corp")
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.black54, // Normal value text
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "Buyer : ",
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold, // Bold key
+                        fontSize: 18,
+                      ),
+                    ),
+                    TextSpan(
+                      text: "${index['bidder_name'] ?? 'N/A'}",
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.normal, // Normal value
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Divider(thickness: 1, color: Colors.black87),
-            RichText(
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: "Vendor Name : ",
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.bold, // Bold key
-                      fontSize: 18,
-                    ),
-                  ),
-                  TextSpan(
-                    text: "${index['vendor_name'] ?? 'N/A'}",
-                    style: TextStyle(
-                      color: Colors.black54,
-                      fontWeight: FontWeight.normal, // Normal value
-                      fontSize: 18,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            RichText(
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: "Buyer : ",
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.bold, // Bold key
-                      fontSize: 18,
-                    ),
-                  ),
-                  TextSpan(
-                    text: "${index['bidder_name'] ?? 'N/A'}",
-                    style: TextStyle(
-                      color: Colors.black54,
-                      fontWeight: FontWeight.normal, // Normal value
-                      fontSize: 18,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );

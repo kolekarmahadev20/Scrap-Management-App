@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -450,21 +451,15 @@ class _ImageWidgetState extends State<ImageWidget> {
   Uint8List? imageBytes;
 
 
-  showNoImage(){
-    return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            content: Center(child: Text("No Image Found")),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text("OK"))
-            ],
-          );
-        });
+  void showNoImage() {
+    Fluttertoast.showToast(
+      msg: "No images Found",
+      toastLength: Toast.LENGTH_SHORT, // Can be LENGTH_SHORT or LENGTH_LONG
+      gravity: ToastGravity.BOTTOM,    // Position of the toast
+      backgroundColor: Colors.black,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
   }
 
 // Function to show a dialog with all the saved images in a pageable view

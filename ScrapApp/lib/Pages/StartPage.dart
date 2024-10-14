@@ -62,16 +62,30 @@ class _StartDashBoardPageState extends State<StartPage> {
 
       var jsonData = json.decode(response.body);
       if (jsonData['success'] == true) {
-        var user_data = jsonData['session_data'];
-        // Access fields using keys
-        var person_name = user_data['user_name'];
-        var person_email = user_data['user_email'];
-        var emp_code = user_data['emp_code'];
-        var emp_address = user_data['emp_address'];
-        var contact = user_data['Mobile'];
+        if(jsonData['session_data'] != null && jsonData != null ){
+          var user_data = jsonData['session_data'] ?? "N?A";
+          // Access fields using keys
+          var person_name = user_data['user_name']?? "N?A";
+          var person_email = user_data['user_email']?? "N?A";
+          var emp_code = user_data['emp_code']?? "N?A";
+          var emp_address = user_data['emp_address']?? "N?A";
+          var contact = user_data['Mobile']?? "N?A";
+          await saveUserData(true ,person_name, contact, person_email, emp_code, emp_address);
+          await checkLogin(username, password);
+        }else{
+          var user_data = "N/A";
+          // Access fields using keys
+          var person_name = "N/A";
+          var person_email ="N/A";
+          var emp_code ="N/A";
+          var emp_address = "N/A";
+          var contact ="N/A";
+          await saveUserData(true ,person_name, contact, person_email, emp_code, emp_address);
+          await checkLogin(username, password);
+        }
 
-        await saveUserData(true ,person_name, contact, person_email, emp_code, emp_address);
-        await checkLogin(username, password);
+
+
 
         Navigator.pushReplacement(
           context,
@@ -147,17 +161,13 @@ class _StartDashBoardPageState extends State<StartPage> {
 
   Widget _buildTop() {
     return Container(
-      height: 380,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(21),
         border: Border.all(color: Colors.black, width: 1),
       ),
       child: Image.asset(
-        'assets/images/login.gif',
-        fit: BoxFit
-            .cover, // Use BoxFit.cover to ensure the image covers the entire area
-        width: double
-            .infinity, // Ensure the image takes the full width of the container
+        'assets/images/login.png',
+        fit: BoxFit.fill, // Use BoxFit.cover to ensure the image covers the entire area
       ),
     );
   }
@@ -165,14 +175,13 @@ class _StartDashBoardPageState extends State<StartPage> {
   Widget _buildBottom() {
     return Container(
       width: double.infinity,
-      height: 600, // Adjust height based on screen size
       decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
             topRight: Radius.circular(21),
             topLeft: Radius.circular(21),
           ),
-          border:Border.all(width: 1 , color:Colors.deepPurple)
+          border:Border.all(width: 1 , color:Colors.black12)
       ),
       child: Column(
         children: [

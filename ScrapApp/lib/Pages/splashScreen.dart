@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scrapapp/Pages/ProfilePage.dart';
+import 'package:scrapapp/DashBoard/DashBoard.dart';
 import 'package:scrapapp/Pages/StartPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (username != null && password !=null) {
       // Token exists, auto-login
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) =>ProfilePage()));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) =>DashBoard()));
     } else {
       // No token found, navigate to login screen
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) =>StartPage()));

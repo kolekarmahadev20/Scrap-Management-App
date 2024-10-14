@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
-import 'package:scrapapp/Refund/Add_refund_details.dart';
 import 'package:scrapapp/Refund/View_Refund_Amount.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -266,20 +265,20 @@ class _View_refund_detailsState extends State<View_refund_details> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 buildListTile(
-                    "Material Name : ${ViewRefundData['sale_order_details'][0]['material_name']}"),
+                    "Material Name : ${ViewRefundData['sale_order_details'][0]['material_name'] ?? "N/A"}"),
                 buildListTile(
-                    "Total Qty :${ViewRefundData['sale_order_details'][0]['totalqty']}"),
+                    "Total Qty :${ViewRefundData['sale_order_details'][0]['totalqty'] ?? "N/A"}"),
                 if(ViewRefundData['lifted_quantity'] != null &&
                     ViewRefundData['lifted_quantity'] is List &&
                     ViewRefundData['lifted_quantity'].isNotEmpty)
                 buildListTile(
-                    "Lifted Qty :${ViewRefundData['lifted_quantity'][0]['quantity']}"),
+                    "Lifted Qty :${ViewRefundData['lifted_quantity'][0]['quantity'] ?? "N/A"}"),
                 buildListTile(
-                    "Rate :${ViewRefundData['sale_order_details'][0]['rate']}"),
+                    "Rate :${ViewRefundData['sale_order_details'][0]['rate'] ?? "N/A"}"),
                 buildListTile(
-                    "SO Date :${ViewRefundData['sale_order_details'][0]['sod']}"),
+                    "SO Date :${ViewRefundData['sale_order_details'][0]['sod'] ?? "N/A"}"),
                 buildListTile(
-                    "SO Validity :${ViewRefundData['sale_order_details'][0]['sovu']}"),
+                    "SO Validity :${ViewRefundData['sale_order_details'][0]['sovu'] ?? "N/A"}"),
                 buildTable(),
               ],
             ),
