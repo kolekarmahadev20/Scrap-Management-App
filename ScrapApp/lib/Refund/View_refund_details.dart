@@ -25,6 +25,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
   Map<String, dynamic> ViewRefundData = {};
   List<dynamic> refundId = [];
   List<dynamic> emdStatus = [];
+  List<dynamic> taxes =[];
   bool? isData;
 
 
@@ -63,8 +64,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
           ViewRefundData = jsonData;
           refundId = ViewRefundData['sale_order_payments'] ?? '';
           emdStatus = ViewRefundData['emd_status'] ?? '';
-          print(refundId);
-          print(emdStatus);
+          taxes = ViewRefundData['tax_and_rate'][0]['taxes'];
+          print(taxes);
 ;        });
       } else {
         print("Unable to fetch data.");
@@ -300,45 +301,38 @@ class _View_refund_detailsState extends State<View_refund_details> {
       child: Container(
         width: 400,
         decoration: BoxDecoration(
-          border:
-              Border.all(color: Colors.grey), // Add a border around the table
+          border: Border.all(color: Colors.grey), // Add a border around the table
           borderRadius: BorderRadius.circular(8.0),
         ),
         child: DataTable(
           columnSpacing: 16.0,
-          border:
-              TableBorder.all(color: Colors.grey), // Add borders to table cells
+          border: TableBorder.all(color: Colors.grey), // Add borders to table cells
           columns: [
             DataColumn(
-                label: Text(
-              'Tax',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            )),
+              label: Text(
+                'Tax',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
             DataColumn(
-                label: Text(
-              'Amount',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            )),
+              label: Text(
+                'Amount',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
           ],
           rows: [
+            // Dynamically add rows based on the 'taxes' list
+            if (taxes != null && taxes.isNotEmpty)
+              ...taxes.map((tax) {
+                return DataRow(cells: [
+                  DataCell(Text(tax['tax_name'] ?? 'No data')),
+                  DataCell(Text('${tax['tax_amount'] ?? 'No data'}')),
+                ]);
+              }).toList(),
+            // Add a TOTAL row at the end
             DataRow(cells: [
-              DataCell(Text('')),
-              DataCell(Text('')),
-            ]),
-            DataRow(cells: [
-              DataCell(Text('')),
-              DataCell(Text('')),
-            ]),
-            DataRow(cells: [
-              DataCell(Text('')),
-              DataCell(Text('')),
-            ]),
-            DataRow(cells: [
-              DataCell(Text('')),
-              DataCell(Text('')),
-            ]),
-            DataRow(cells: [
-              DataCell(Text('TOTAL')),
+              DataCell(Text('TOTAL', style: TextStyle(fontWeight: FontWeight.bold))),
               DataCell(Text('')),
             ]),
           ],
@@ -346,6 +340,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
       ),
     );
   }
+
 
   Widget buildScrollableContainer(
       String title, Widget Function() listViewBuilder) {

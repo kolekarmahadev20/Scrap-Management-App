@@ -31,6 +31,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
   Map<String , dynamic> ViewPaymentData = {};
   List<dynamic> paymentId =[];
   List<dynamic> emdStatus =[];
+  List<dynamic> taxes =[];
+
   var checkLiftedQty ;
 
   @override
@@ -71,9 +73,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
         paymentId = ViewPaymentData['sale_order_payments'] ?? '';
         emdStatus =  ViewPaymentData['emd_status'] ?? '';
         checkLiftedQty = ViewPaymentData['lifted_quantity'];
-        print(ViewPaymentData);
-        print(paymentId.length);
-        print(emdStatus.length);
+        taxes = ViewPaymentData['tax_and_rate'][0]['taxes'];
+        print(taxes);
       });
     } else {
       print("Unable to fetch data.");
@@ -310,28 +311,31 @@ class _View_payment_detailState extends State<View_payment_detail> {
           columnSpacing: 16.0,
           border: TableBorder.all(color: Colors.grey), // Add borders to table cells
           columns: [
-            DataColumn(label: Text('Tax' ,style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),)),
-            DataColumn(label: Text('Amount',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),)),
+            DataColumn(
+              label: Text(
+                'Tax',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+            DataColumn(
+              label: Text(
+                'Amount',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
           ],
           rows: [
+            // Dynamically add rows based on the 'taxes' list
+            if (taxes != null && taxes.isNotEmpty)
+              ...taxes.map((tax) {
+                return DataRow(cells: [
+                  DataCell(Text(tax['tax_name'] ?? 'No data')),
+                  DataCell(Text('${tax['tax_amount'] ?? 'No data'}')),
+                ]);
+              }).toList(),
+            // Add a TOTAL row at the end
             DataRow(cells: [
-              DataCell(Text('${ViewPaymentData['sale_order_details'][0]['taxes'][0]['tax_name']  ?? 'No data'}')),
-              DataCell(Text('${ViewPaymentData['sale_order_details'][0]['taxes'][0]['tax_rate']  ?? 'No data'}')),
-            ]),
-            DataRow(cells: [
-              DataCell(Text('')),
-              DataCell(Text('')),
-            ]),
-            DataRow(cells: [
-              DataCell(Text('')),
-              DataCell(Text('')),
-            ]),
-            DataRow(cells: [
-              DataCell(Text('')),
-              DataCell(Text('')),
-            ]),
-            DataRow(cells: [
-              DataCell(Text('TOTAL')),
+              DataCell(Text('TOTAL', style: TextStyle(fontWeight: FontWeight.bold))),
               DataCell(Text('')),
             ]),
           ],
