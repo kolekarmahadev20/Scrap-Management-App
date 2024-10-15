@@ -160,14 +160,16 @@ class _StartDashBoardPageState extends State<StartPage> {
   }
 
   Widget _buildTop() {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(21),
-        border: Border.all(color: Colors.black, width: 1),
-      ),
-      child: Image.asset(
-        'assets/images/login.png',
-        fit: BoxFit.fill, // Use BoxFit.cover to ensure the image covers the entire area
+    return Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(21),
+          border: Border.all(color: Colors.black, width: 1),
+        ),
+        child: Image.asset(
+          'assets/images/log.png',
+          fit: BoxFit.fill, // Use BoxFit.cover to ensure the image covers the entire area
+        ),
       ),
     );
   }
@@ -185,7 +187,6 @@ class _StartDashBoardPageState extends State<StartPage> {
       ),
       child: Column(
         children: [
-          SizedBox(height:40),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -195,7 +196,10 @@ class _StartDashBoardPageState extends State<StartPage> {
                 padding: const EdgeInsets.all(8.0),
                 child: Text("Welcome Back",style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: Colors.indigo,)),
               ),
-              _welcomeGif(),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _welcomeGif(),
+              ),
             ],),
           ),
           Center(child: _buildLoginForm(),),
@@ -263,7 +267,7 @@ class _StartDashBoardPageState extends State<StartPage> {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Material(
-        elevation: 20,
+        elevation: 50,
         color: Colors.white,
         shape: OutlineInputBorder(
           borderRadius: BorderRadius.circular(5),
@@ -272,6 +276,18 @@ class _StartDashBoardPageState extends State<StartPage> {
         child: Container(
           height: 300,
           width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 3,
+                blurRadius: 5,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
