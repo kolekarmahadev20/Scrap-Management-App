@@ -64,8 +64,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
           ViewRefundData = jsonData;
           refundId = ViewRefundData['sale_order_payments'] ?? '';
           emdStatus = ViewRefundData['emd_status'] ?? '';
-          taxes = ViewRefundData['tax_and_rate'][0]['taxes'];
-          print(taxes);
+          taxes = ViewRefundData['tax_and_rate'][0]['taxes'] ?? 'N/A';
 ;        });
       } else {
         print("Unable to fetch data.");
@@ -296,6 +295,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
   }
 
   Widget buildTable() {
+    int total_tax_amount = 0;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Container(
@@ -325,6 +325,9 @@ class _View_refund_detailsState extends State<View_refund_details> {
             // Dynamically add rows based on the 'taxes' list
             if (taxes != null && taxes.isNotEmpty)
               ...taxes.map((tax) {
+                var total_taxes = int.tryParse(tax['tax_amount'].toString());
+                print(total_taxes);
+                total_tax_amount = total_tax_amount + total_taxes!;
                 return DataRow(cells: [
                   DataCell(Text(tax['tax_name'] ?? 'No data')),
                   DataCell(Text('${tax['tax_amount'] ?? 'No data'}')),
@@ -333,7 +336,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
             // Add a TOTAL row at the end
             DataRow(cells: [
               DataCell(Text('TOTAL', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataCell(Text('')),
+              DataCell(Text('₹$total_tax_amount', style: TextStyle(fontWeight: FontWeight.bold ,))),
             ]),
           ],
         ),

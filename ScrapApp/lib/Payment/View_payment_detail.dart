@@ -33,6 +33,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
   List<dynamic> emdStatus =[];
   List<dynamic> taxes =[];
 
+
   var checkLiftedQty ;
 
   @override
@@ -299,6 +300,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
   }
 
   Widget buildTable() {
+    int total_tax_amount = 0;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Container(
@@ -328,6 +330,9 @@ class _View_payment_detailState extends State<View_payment_detail> {
             // Dynamically add rows based on the 'taxes' list
             if (taxes != null && taxes.isNotEmpty)
               ...taxes.map((tax) {
+                var total_taxes = int.tryParse(tax['tax_amount'].toString());
+                print(total_taxes);
+                total_tax_amount = total_tax_amount + total_taxes!;
                 return DataRow(cells: [
                   DataCell(Text(tax['tax_name'] ?? 'No data')),
                   DataCell(Text('${tax['tax_amount'] ?? 'No data'}')),
@@ -336,7 +341,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
             // Add a TOTAL row at the end
             DataRow(cells: [
               DataCell(Text('TOTAL', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataCell(Text('')),
+              DataCell(Text('₹$total_tax_amount' , style: TextStyle(fontWeight: FontWeight.bold))),
             ]),
           ],
         ),

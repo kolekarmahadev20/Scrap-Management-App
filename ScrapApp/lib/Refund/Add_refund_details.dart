@@ -102,7 +102,6 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
             // You can store these key-value pairs in a map if needed
             dropDownMap[saleOrderCode] = saleOrderId;
           }
-          print(dropDownMap);
         });
       } else {
         print("Unable to fetch data.");
@@ -118,6 +117,10 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
 
   Future<void> fetchRefundPaymentDetails() async {
     try {
+      print("Hello");
+      print("Hello");
+      print("Hello");
+      print("Hello");
       await checkLogin();
       final url = Uri.parse("${URL}Addrefunddata");
       var response = await http.post(
