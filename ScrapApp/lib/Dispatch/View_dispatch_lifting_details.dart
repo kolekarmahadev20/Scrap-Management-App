@@ -463,31 +463,46 @@ class _ImageWidgetState extends State<ImageWidget> {
   }
 
 // Function to show a dialog with all the saved images in a pageable view
-  _showImage() {
-    return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("${widget.filePath!.split('/').last}"),
-            content: imageBytes != null
-                ? Image.memory(imageBytes!, fit: BoxFit.fill)
-                : showLoading(),
-            actions: [
-              TextButton(
+  void _showImage() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  widget.filePath!.split('/').last,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 10),
+                imageBytes != null
+                    ?Container(
+                    height: 300,
+                    width: 300,
+                    child: Image.memory(imageBytes!, fit: BoxFit.contain))
+                    : showLoading(),
+                SizedBox(height: 10),
+                TextButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: Text("OK"))
-            ],
-          );
-        });
+                  child: Text("Close"),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _fetchFileBytesFromServer(String fileUrl) async {
     try {
       var response = await http.get(Uri.parse(fileUrl));
-      print(response);
-      print("hello hello");
       if (response.statusCode == 200) {
         setState(() {
           imageBytes = response.bodyBytes; // Store image bytes

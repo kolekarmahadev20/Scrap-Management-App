@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:scrapapp/DashBoard/DashBoard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
-import 'ProfilePage.dart';
 
 class StartPage extends StatefulWidget {
   @override
@@ -194,7 +193,7 @@ class _StartDashBoardPageState extends State<StartPage> {
               children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Text("Welcome Back",style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: Colors.indigo,)),
+                child: Text("Welcome Back",style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: Colors.blueGrey[700],)),
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -246,7 +245,7 @@ class _StartDashBoardPageState extends State<StartPage> {
                                 color: Colors.white),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.indigo,
+                            backgroundColor:Colors.blueGrey[700],
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5), // Box-shaped with no rounded corners
                             ),

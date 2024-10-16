@@ -146,20 +146,38 @@ class saleOrderListState extends State<saleOrderList> {
                     child: Column(
                       children: [
                         SizedBox(height: 8,),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Spacer(),
-                            Text(
-                              "Vendor, Plant",
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.black54,
-                                fontWeight: FontWeight.w500,
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Material(
+                            elevation: 2,
+                            color: Colors.white,
+                            shape: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.blueGrey[400]!)
+                            ),
+                            child: Container(
+                              child: Column(
+                                children: [
+                                  SizedBox(height: 8,),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Spacer(),
+                                      Text(
+                                        "Vendor, Plant",
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.black54,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      Spacer(),
+                                    ],
+                                  ),
+                                  SizedBox(height: 8,),
+                                ],
                               ),
                             ),
-                            Spacer(),
-                          ],
+                          ),
                         ),
                         SizedBox(height: 8,),
                       ],
@@ -213,90 +231,187 @@ class saleOrderListState extends State<saleOrderList> {
 
   Widget buildCustomListTile(BuildContext context, index) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Material(
-        elevation: 2,
-        shape: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5)
-        ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0), // Reduced padding
-          leading: CircleAvatar(
-            backgroundColor: Colors.indigo[800]!,
-            child: Icon(Icons.border_outer, size: 22, color: Colors.white), // Reduced icon size
-          ),
-          title: RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: "Order ID :  ", // Key text (e.g., "Vendor Name: ")
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black, // Bold key text
-                  ),
-                ),
-                TextSpan(
-                  text: index['sale_order_code'] ?? "N/A", // Value text (e.g., "XYZ Corp")
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.indigo[800]!, // Normal value text
-                  ),
-                ),
-              ],
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: Offset(0, 3), // changes position of shadow
             ),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Divider(thickness: 1, color: Colors.black87),
-              RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: "Vendor Name : ",
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.bold, // Bold key
-                        fontSize: 18,
-                      ),
-                    ),
-                    TextSpan(
-                      text: "${index['vendor_name'] ?? 'N/A'}",
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontWeight: FontWeight.normal, // Normal value
-                        fontSize: 18,
-                      ),
-                    ),
-                  ],
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(15),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blueGrey[700]!, Colors.blueGrey[500]!],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(15),
+                  topRight: Radius.circular(15),
                 ),
               ),
-              RichText(
-                text: TextSpan(
+              child: Row(
+                children: [
+                  // Static Text
+                  RichText(
+                    text: TextSpan(
+                      text: "Material : ",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                  // Scrollable Text
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Text(
+                        "${index['description'] ?? 'N/A'}",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.normal,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Material(
+              elevation: 0,
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(15),
+                bottomRight: Radius.circular(15),
+              ),
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                leading: CircleAvatar(
+                  backgroundColor: Colors.indigo[800]!,
+                  child: Icon(Icons.border_outer, size: 22, color: Colors.white),
+                ),
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextSpan(
-                      text: "Buyer : ",
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.bold, // Bold key
-                        fontSize: 18,
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "Order ID :  ",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          TextSpan(
+                            text: index['sale_order_code'] ?? "N/A",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.indigo[800]!,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    TextSpan(
-                      text: "${index['bidder_name'] ?? 'N/A'}",
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontWeight: FontWeight.normal, // Normal value
-                        fontSize: 18,
-                      ),
-                    ),
+                    // SingleChildScrollView(
+                    //   scrollDirection: Axis.horizontal,
+                    //   child: RichText(
+                    //     text: TextSpan(
+                    //       children: [
+                    //         TextSpan(
+                    //           text: "Material : ",
+                    //           style: TextStyle(
+                    //             color: Colors.black87,
+                    //             fontWeight: FontWeight.bold,
+                    //             fontSize: 18,
+                    //           ),
+                    //         ),
+                    //         TextSpan(
+                    //           text: "${index['description'] ?? 'N/A'}",
+                    //           style: TextStyle(
+                    //             color: Colors.black54,
+                    //             fontWeight: FontWeight.normal,
+                    //             fontSize: 18,
+                    //           ),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Divider(thickness: 1, color: Colors.black87),
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "Vendor Name : ",
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          TextSpan(
+                            text: "${index['vendor_name'] ?? 'N/A'}",
+                            style: TextStyle(
+                              color: Colors.black54,
+                              fontWeight: FontWeight.normal,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "Buyer : ",
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          TextSpan(
+                            text: "${index['bidder_name'] ?? 'N/A'}",
+                            style: TextStyle(
+                              color: Colors.black54,
+                              fontWeight: FontWeight.normal,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  ],
+                ),
+
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -207,17 +207,19 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        buildVendorInfoText(
+            "Material Name : ", ViewDispatchData ['sale_order_details'][0]['material_name'] ?? 'N/A',true),
         buildVendorInfoText("Vendor Name: ",
-            ViewDispatchData['vendor_buyer_details']['vendor_name'] ?? 'N/A'),
+            ViewDispatchData['vendor_buyer_details']['vendor_name'] ?? 'N/A',false),
         buildVendorInfoText("Branch: ",
-            ViewDispatchData['vendor_buyer_details']['branch_name'] ?? 'N/A'),
+            ViewDispatchData['vendor_buyer_details']['branch_name'] ?? 'N/A',false),
         buildVendorInfoText("Buyer Name: ",
-            ViewDispatchData['vendor_buyer_details']['bidder_name'] ?? 'N/A'),
+            ViewDispatchData['vendor_buyer_details']['bidder_name'] ?? 'N/A',false),
       ],
     );
   }
 
-  Widget buildVendorInfoText(String key, String value) {
+  Widget buildVendorInfoText(String key, String value ,bool isRed) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: RichText(
@@ -231,7 +233,16 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                 color: Colors.black, // Bold key text
               ),
             ),
-            TextSpan(
+            (isRed)
+                ?TextSpan(
+              text: value, // Value text (e.g., "XYZ Corp")
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.redAccent, // Normal value text
+              ),
+            )
+                :TextSpan(
               text: value, // Value text (e.g., "XYZ Corp")
               style: TextStyle(
                 fontSize: 16,
