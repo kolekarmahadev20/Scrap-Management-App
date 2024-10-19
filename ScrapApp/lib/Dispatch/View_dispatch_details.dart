@@ -140,6 +140,24 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                 ),
               ),
       ]),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Action when FAB is pressed
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => addDispatchToSaleOrder(
+                  sale_order_id: widget.sale_order_id,
+                  sale_order_code: ViewDispatchData['sale_order']
+                      ['sale_order_code']),
+            ),
+          ).then((value) => setState(() {
+                fetchDispatchDetails();
+              }));
+        },
+        child: Icon(Icons.add), // FAB icon
+        backgroundColor: Colors.blueGrey[200], // FAB background color
+      ),
     );
   }
 
@@ -150,52 +168,63 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
         borderSide: BorderSide(color: Colors.blueGrey[400]!),
       ),
       child: Container(
-        child: Row(
+        child: Column(
           children: [
-            Spacer(),
-            RichText(
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: "Order ID :  ", // Key text (e.g., "Vendor Name: ")
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black, // Bold key text
-                    ),
-                  ),
-                  TextSpan(
-                    text: ViewDispatchData['sale_order']
-                        ['sale_order_code'], // Value text (e.g., "XYZ Corp")
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.black54, // Normal value text
-                    ),
-                  ),
-                ],
-              ),
+            SizedBox(
+              height: 8,
             ),
-            Spacer(),
-            IconButton(
-              icon: Icon(
-                Icons.add_box_outlined,
-                size: 30,
-                color: Colors.indigo[800],
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => addDispatchToSaleOrder(
-                        sale_order_id: widget.sale_order_id,
-                        sale_order_code: ViewDispatchData['sale_order']
-                            ['sale_order_code']),
+            Row(
+              children: [
+                Spacer(),
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text:
+                            "Order ID :  ", // Key text (e.g., "Vendor Name: ")
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black, // Bold key text
+                        ),
+                      ),
+                      TextSpan(
+                        text: ViewDispatchData['sale_order'][
+                            'sale_order_code'], // Value text (e.g., "XYZ Corp")
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.black54, // Normal value text
+                        ),
+                      ),
+                    ],
                   ),
-                ).then((value) => setState(() {
-                      fetchDispatchDetails();
-                    }));
-              },
+                ),
+                Spacer(),
+                // IconButton(
+                //   icon: Icon(
+                //     Icons.add_box_outlined,
+                //     size: 30,
+                //     color: Colors.indigo[800],
+                //   ),
+                //   onPressed: () {
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //         builder: (context) => addDispatchToSaleOrder(
+                //             sale_order_id: widget.sale_order_id,
+                //             sale_order_code: ViewDispatchData['sale_order']
+                //                 ['sale_order_code']),
+                //       ),
+                //     ).then((value) => setState(() {
+                //           fetchDispatchDetails();
+                //         }));
+                //   },
+                // ),
+              ],
+            ),
+            SizedBox(
+              height: 8,
             ),
           ],
         ),
@@ -208,18 +237,26 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         buildVendorInfoText(
-            "Material Name : ", ViewDispatchData ['sale_order_details'][0]['material_name'] ?? 'N/A',true),
-        buildVendorInfoText("Vendor Name: ",
-            ViewDispatchData['vendor_buyer_details']['vendor_name'] ?? 'N/A',false),
-        buildVendorInfoText("Branch: ",
-            ViewDispatchData['vendor_buyer_details']['branch_name'] ?? 'N/A',false),
-        buildVendorInfoText("Buyer Name: ",
-            ViewDispatchData['vendor_buyer_details']['bidder_name'] ?? 'N/A',false),
+            "Material Name : ",
+            ViewDispatchData['sale_order_details'][0]['material_name'] ?? 'N/A',
+            true),
+        buildVendorInfoText(
+            "Vendor Name: ",
+            ViewDispatchData['vendor_buyer_details']['vendor_name'] ?? 'N/A',
+            false),
+        buildVendorInfoText(
+            "Branch: ",
+            ViewDispatchData['vendor_buyer_details']['branch_name'] ?? 'N/A',
+            false),
+        buildVendorInfoText(
+            "Buyer Name: ",
+            ViewDispatchData['vendor_buyer_details']['bidder_name'] ?? 'N/A',
+            false),
       ],
     );
   }
 
-  Widget buildVendorInfoText(String key, String value ,bool isRed) {
+  Widget buildVendorInfoText(String key, String value, bool isRed) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: RichText(
@@ -234,22 +271,22 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
               ),
             ),
             (isRed)
-                ?TextSpan(
-              text: value, // Value text (e.g., "XYZ Corp")
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.redAccent, // Normal value text
-              ),
-            )
-                :TextSpan(
-              text: value, // Value text (e.g., "XYZ Corp")
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.normal,
-                color: Colors.black54, // Normal value text
-              ),
-            ),
+                ? TextSpan(
+                    text: value, // Value text (e.g., "XYZ Corp")
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.redAccent, // Normal value text
+                    ),
+                  )
+                : TextSpan(
+                    text: value, // Value text (e.g., "XYZ Corp")
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black54, // Normal value text
+                    ),
+                  ),
           ],
         ),
       ),
@@ -410,7 +447,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                       builder: (context) => View_dispatch_lifting_details(
                             sale_order_id: widget.sale_order_id,
                             lift_id: index['lift_id'],
-                            selectedOrderId: ViewDispatchData['sale_order']['sale_order_code'],
+                            selectedOrderId: ViewDispatchData['sale_order']
+                                ['sale_order_code'],
                             material: index['material_name'],
                             invoiceNo: index['invoice_no'],
                             firstWeight: index['truck_weight'],

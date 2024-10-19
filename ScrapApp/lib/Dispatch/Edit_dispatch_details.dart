@@ -883,10 +883,6 @@ class _ImageWidgetState extends State<ImageWidget> {
     );
   }
 
-
-
-
-
   @override
   Widget build(BuildContext context) {
     return Column(

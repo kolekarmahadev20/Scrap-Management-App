@@ -258,7 +258,6 @@ class _PaymentListState extends State<PaymentList> {
                   ),
                 ],
               ),
-
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Material(

@@ -14,7 +14,6 @@ class _StartDashBoardPageState extends State<StartPage> {
   TextEditingController usernameController = TextEditingController(text: "Bantu");
   TextEditingController passwordController = TextEditingController(text : "Bantu#123");
   bool _obscureText = true; // Variable to manage password visibility
-  int _selectedValue = 1;
 
 
   void _togglePasswordVisibility() {
@@ -82,9 +81,6 @@ class _StartDashBoardPageState extends State<StartPage> {
           await saveUserData(true ,person_name, contact, person_email, emp_code, emp_address);
           await checkLogin(username, password);
         }
-
-
-
 
         Navigator.pushReplacement(
           context,

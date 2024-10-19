@@ -135,53 +135,46 @@ class saleOrderListState extends State<saleOrderList> {
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Material(
-                  elevation: 2,
-                  color: Colors.white,
-                  shape: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black12)
-                  ),
-                  child: Container(
-                    width:double.infinity,
-                    child: Column(
-                      children: [
-                        SizedBox(height: 8,),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Material(
-                            elevation: 2,
-                            color: Colors.white,
-                            shape: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.blueGrey[400]!)
-                            ),
-                            child: Container(
-                              child: Column(
-                                children: [
-                                  SizedBox(height: 8,),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Spacer(),
-                                      Text(
-                                        "Vendor, Plant",
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          color: Colors.black54,
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                child: Container(
+                  width:double.infinity,
+                  child: Column(
+                    children: [
+                      SizedBox(height: 8,),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Material(
+                          elevation: 2,
+                          color: Colors.white,
+                          shape: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.blueGrey[400]!)
+                          ),
+                          child: Container(
+                            child: Column(
+                              children: [
+                                SizedBox(height: 8,),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Spacer(),
+                                    Text(
+                                      "Vendor, Plant",
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.black54,
+                                        fontWeight: FontWeight.w500,
                                       ),
-                                      Spacer(),
-                                    ],
-                                  ),
-                                  SizedBox(height: 8,),
-                                ],
-                              ),
+                                    ),
+                                    Spacer(),
+                                  ],
+                                ),
+                                SizedBox(height: 8,),
+                              ],
                             ),
                           ),
                         ),
-                        SizedBox(height: 8,),
-                      ],
-                    ),
+                      ),
+                      SizedBox(height: 8,),
+                    ],
                   ),
                 ),
               ),

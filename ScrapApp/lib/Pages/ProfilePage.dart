@@ -196,8 +196,59 @@ class _ProfilePageState extends State<ProfilePage> {
             //Additional Info
             buildListTile('Email', email, 'assets/images/email2.jpeg'),
             buildListTile('Address', address, 'assets/images/location.jpeg'),
-            buildListTile('Employee Code', empCode, 'assets/images/user.jpeg'),
             SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      child: Text("Punch In", style: TextStyle(color: Colors.white)),
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.greenAccent[200],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 5,
+                        shadowColor: Colors.greenAccent[700],
+                      ).copyWith(
+                        backgroundColor: MaterialStateProperty.resolveWith((states) {
+                          if (states.contains(MaterialState.pressed)) {
+                            return Colors.greenAccent[400];
+                          }
+                          return Colors.greenAccent[200];
+                        }),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      child: Text("Punch Out", style: TextStyle(color: Colors.white)),
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent[200],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 5,
+                        shadowColor: Colors.redAccent[700],
+                      ).copyWith(
+                        backgroundColor: MaterialStateProperty.resolveWith((states) {
+                          if (states.contains(MaterialState.pressed)) {
+                            return Colors.redAccent[400];
+                          }
+                          return Colors.redAccent[200];
+                        }),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),

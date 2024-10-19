@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:scrapapp/DashBoard/DashBoard.dart';
+import 'package:scrapapp/DashBoard/saleOrderList.dart';
 import 'package:scrapapp/Dispatch/DispatchList.dart';
 import 'package:scrapapp/Pages/ProfilePage.dart';
 import 'package:scrapapp/Pages/StartPage.dart';
@@ -110,6 +111,17 @@ class AppDrawer extends StatelessWidget {
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentList()));
+                      });
+
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.border_outer,
+                    text: "Sale Order",
+                    onTap: () {
+                      Timer(Duration(milliseconds: 300), () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => saleOrderList()));
                       });
 
                     },
