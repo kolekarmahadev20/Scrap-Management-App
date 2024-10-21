@@ -121,7 +121,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     double fullWeight = double.tryParse(fullWeightController.text) ?? 0.0;
     double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
 
-    double netWeight = fullWeight - firstWeight - moistureWeight;
+    double netWeight = ((fullWeight - firstWeight) * moistureWeight)/100;
 
     // Update the net weight controller with the result
     netWeightController.text = netWeight.toStringAsFixed(2);
@@ -155,7 +155,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
         final jsonData = json.decode(response.body);
         setState(() {
           materialId = jsonData['material_id'];
-          print(materialId);
         });
       } else {
         print("unable to load order ids.");
@@ -171,8 +170,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     final targetPath = path.join(dir.path, '${DateTime.now().millisecondsSinceEpoch}.jpg');
     return await FlutterImageCompress.compressAndGetFile(file.absolute.path, targetPath, quality: 20);
   }
-
-
 
 
   Future<void> editDispatchDetails() async {
@@ -509,9 +506,9 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
                       buildTextField("Date", dateController,false , true ,context),
                       buildTextField("Truck No", truckNoController,false , false ,context),
                       buildTextField("First Weight", firstWeightNoController, false,false , context),
-                      buildTextField("Full Weight", fullWeightController, false,false , context),
+                      buildTextField("Gross Weight", fullWeightController, false,false , context),
+                      buildTextField("Net/DMT Weight", netWeightController, true,false , context),
                       buildTextField("Moisture Weight", moistureWeightController, false,false , context),
-                      buildTextField("Net Weight", netWeightController, true,false , context),
                       buildTextField("Quantity", quantityController,false , false ,context),
                       buildTextField("Note", noteController,false , false ,context),
                       SizedBox(height: 100,),

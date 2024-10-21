@@ -17,10 +17,10 @@ import 'package:path/path.dart' as path;
 class addDispatchToSaleOrder extends StatefulWidget {
 
   final String sale_order_id;
-  final String sale_order_code;
+  final String material_name;
   addDispatchToSaleOrder({
     required this.sale_order_id,
-    required this.sale_order_code,
+    required this.material_name,
   });
 
   @override
@@ -71,9 +71,8 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   void initState(){
     super.initState();
     checkLogin();
-    orderIdController.text = widget.sale_order_code;
-    if(orderIdController != null || orderIdController.text.isNotEmpty)
-      orderIdMaterial();
+    materialController.text = widget.material_name;
+    materialNameId();
     firstWeightNoController.addListener(calculateNetWeight);
     fullWeightController.addListener(calculateNetWeight);
     moistureWeightController.addListener(calculateNetWeight);
@@ -90,7 +89,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     double fullWeight = double.tryParse(fullWeightController.text) ?? 0.0;
     double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
 
-    double netWeight = fullWeight - firstWeight - moistureWeight;
+    double netWeight = ((fullWeight - firstWeight) * moistureWeight)/100;
 
     // Update the net weight controller with the result
     netWeightController.text = netWeight.toStringAsFixed(2);
@@ -99,33 +98,33 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
 
 
   //fetching the material of selected sale_order_id
-  Future<void> orderIdMaterial() async {
-    try {
-      await checkLogin();
-      final url = Uri.parse("${URL}fetch_material_lifting");
-      var response = await http.post(
-        url,
-        headers: {"Accept": "application/json"},
-        body: {
-          'user_id':username,
-          'user_pass':password,
-          'sale_order_id': widget.sale_order_id ?? 'N/A',
-        },
-      );
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        setState(() {
-          materialController.text = jsonData['sale_order_details'][0]['material_name'];
-          materialNameId();
-        });
-      } else {
-        print("unable to load order ids.");
-      }
-    } catch (e) {
-      print("Server Exception : $e");
-
-    }
-  }
+  // Future<void> orderIdMaterial() async {
+  //   try {
+  //     await checkLogin();
+  //     final url = Uri.parse("${URL}fetch_material_lifting");
+  //     var response = await http.post(
+  //       url,
+  //       headers: {"Accept": "application/json"},
+  //       body: {
+  //         'user_id':username,
+  //         'user_pass':password,
+  //         'sale_order_id': widget.sale_order_id ?? 'N/A',
+  //       },
+  //     );
+  //     if (response.statusCode == 200) {
+  //       final jsonData = json.decode(response.body);
+  //       setState(() {
+  //         materialController.text = jsonData['sale_order_details'][0]['material_name'];
+  //         materialNameId();
+  //       });
+  //     } else {
+  //       print("unable to load order ids.");
+  //     }
+  //   } catch (e) {
+  //     print("Server Exception : $e");
+  //
+  //   }
+  // }
 
   Future<void> materialNameId() async {
     try {
@@ -145,7 +144,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
         final jsonData = json.decode(response.body);
         setState(() {
           materialId = jsonData['material_id'] ?? 'N/A';
-          print(materialId);
         });
       } else {
         print("unable to load order ids.");
@@ -169,9 +167,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       setState(() {
         isLoading = true;
       });
-      print("hello hello hello");// Add compressed file
-
-
       await checkLogin();
       final url = Uri.parse("${URL}save_lifting");
 
@@ -361,17 +356,16 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
                     Expanded(
                       child: ListView(
                         children: [
-                          buildTextField("Order ID", orderIdController,true, false , context),
-                          buildTextField("Material", materialController,true, false , context),
-                          buildTextField("Invoice No", invoiceController , false,false , context),
-                          buildTextField("Date", dateController, false,true , context),
-                          buildTextField("Truck No", truckNoController, false,false , context),
-                          buildTextField("First Weight", firstWeightNoController, false,false , context),
-                          buildTextField("Full Weight", fullWeightController, false,false , context),
-                          buildTextField("Moisture Weight", moistureWeightController, false,false , context),
-                          buildTextField("Net Weight", netWeightController, true,false , context),
-                          buildTextField("Quantity", quantityController, false,false , context),
-                          buildTextField("Note", noteController, false,false , context),
+                          buildTextField("Material", materialController,true, false , Colors.white,context),
+                          buildTextField("Invoice No", invoiceController , false,false ,Colors.white, context),
+                          buildTextField("Date", dateController, false,true , Colors.white,context),
+                          buildTextField("Truck No", truckNoController, false,false ,Colors.white, context),
+                          buildTextField("First Weight", firstWeightNoController, false,false ,Colors.white, context),
+                          buildTextField("Gross Weight", fullWeightController, false,false , Colors.white,context),
+                          buildTextField("Net/DMT Weight", netWeightController, true,false ,Colors.grey[400]!, context),
+                          buildTextField("Moisture Weight", moistureWeightController, false,false ,Colors.white, context),
+                          buildTextField("Quantity", quantityController, false,false , Colors.white,context),
+                          buildTextField("Note", noteController, false,false , Colors.white,context),
                           SizedBox(height: 40,),
                           Container(
                             child: Column(
@@ -557,7 +551,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
 
 
   Widget buildTextField(
-      String label, TextEditingController controller, bool isReadOnly ,bool isDateField ,context) {
+      String label, TextEditingController controller, bool isReadOnly ,bool isDateField , Color color ,context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
@@ -574,37 +568,43 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
           ),
           Expanded(
             flex: 7, // Adjusts text field width
-            child: TextField(
-              onTap: isDateField ? () => _selectDate(context, controller) : null,
-              controller: controller,
-              decoration: InputDecoration(
-                suffixIcon: isDateField
-                    ? IconButton(
-                  icon: Icon(Icons.calendar_today),
-                  onPressed: () => _selectDate(context, controller),
-                )
-                    :null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: Colors.indigo[800]!,
-                    width: 2.0,
+            child: Container(
+               decoration: BoxDecoration(
+                 borderRadius: BorderRadius.circular(12),
+                 color: color,
+               ),
+              child: TextField(
+                onTap: isDateField ? () => _selectDate(context, controller) : null,
+                controller: controller,
+                decoration: InputDecoration(
+                  suffixIcon: isDateField
+                      ? IconButton(
+                    icon: Icon(Icons.calendar_today),
+                    onPressed: () => _selectDate(context, controller),
+                  )
+                      :null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: Colors.grey[400]!,
-                    width: 1.5,
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.indigo[800]!,
+                      width: 2.0,
+                    ),
                   ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.grey[400]!,
+                      width: 1.5,
+                    ),
+                  ),
+                  contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
-                contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                readOnly: isReadOnly,
               ),
-              readOnly: isReadOnly,
             ),
           ),
         ],

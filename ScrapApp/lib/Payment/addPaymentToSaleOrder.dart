@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -12,11 +13,11 @@ import 'package:intl/intl.dart'; // Add this package for date formatting
 class addPaymentToSaleOrder extends StatefulWidget {
 
   final String sale_order_id;
-  final String sale_order_code;
+  final String material_name;
 
   addPaymentToSaleOrder({
    required this.sale_order_id,
-   required this.sale_order_code,
+   required this.material_name,
 });
 
   @override
@@ -26,11 +27,16 @@ class addPaymentToSaleOrder extends StatefulWidget {
 class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
 
 
-  final TextEditingController orderIdController = TextEditingController();
+  final TextEditingController totalPaymentController = TextEditingController();
+  final TextEditingController totalEmdController = TextEditingController();
+  final TextEditingController totalCmdController = TextEditingController();
+  final TextEditingController totalEmdCmdController = TextEditingController();
+  final TextEditingController materialNameController = TextEditingController();
   final TextEditingController dateController1 = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final TextEditingController refNoController = TextEditingController();
   final TextEditingController typeTransController = TextEditingController();
+  final TextEditingController remarkController = TextEditingController();
 
   String? username = '';
   String? password = '';
@@ -58,8 +64,9 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
   void initState(){
     super.initState();
     checkLogin();
-    orderIdController.text = widget.sale_order_code;
-
+    fetchPaymentDetails();
+    materialNameController.text = widget.material_name;
+    print(widget.material_name);
   }
 
   checkLogin()async{
@@ -74,7 +81,6 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
       setState(() {
         isLoading = true;
       });
-      print(widget.sale_order_id);
       await checkLogin();
       final url = Uri.parse("${URL}add_payment_toSaleOrder");
       var response = await http.post(
@@ -89,6 +95,7 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
           'amt':amountController.text,
           'pay_ref_no':refNoController.text,
           'typeoftransfer':typeTransController.text,
+          'narration':remarkController.text,
         },
       );
       if (response.statusCode == 200) {
@@ -110,6 +117,58 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
         );
       }
     } catch (e) {
+      Fluttertoast.showToast(
+          msg: 'Server Exception : $e',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.yellow
+      );
+    }
+    finally{
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+  Future<void> fetchPaymentDetails() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      await checkLogin();
+      final url = Uri.parse("${URL}EMD_CMD_details");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': username,
+          'user_pass': password,
+          'sale_order_id':widget.sale_order_id,
+        },
+      );
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        setState(() {
+          totalPaymentController.text = jsonData['t_amt'].toString()?? 'N/A';
+          totalEmdController.text = jsonData['total_EMD'].toString() ?? 'N/A';
+          totalCmdController.text = jsonData['total_CMD'].toString()  ?? 'N/A';
+          totalEmdCmdController.text = jsonData['total_amount_included_emdCmd'].toString() ?? 'N/A';
+        });
+      } else {
+        Fluttertoast.showToast(
+            msg: 'Unable to load data.',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.yellow
+        );
+      }
+    } catch (e) {
+      print('$e');
+
       Fluttertoast.showToast(
           msg: 'Server Exception : $e',
           toastLength: Toast.LENGTH_SHORT,
@@ -215,17 +274,23 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
                       Expanded(
                         child: ListView(
                           children: [
-                            buildTextField("Order ID", orderIdController,true, false, context), // Modified here for DatePicker
+                            buildTextField("Total Payment", totalPaymentController,true, false, Colors.grey[400]!,context),
+                            buildTextField("Total EMD", totalEmdController,true, false,Colors.grey[400]!, context),
+                            buildTextField("Total CMD", totalCmdController,true, false, Colors.grey[400]!,context),
+                            buildTextField("Total Amount Including EMD/CMD", totalEmdCmdController,true, false,Colors.grey[400]!, context),
+                            Divider(),
+                            buildTextField("Material Name", materialNameController,true, false,Colors.grey[400]!, context), // Modified here for DatePicker
                             buildDropdownPayment("Payment Type", PaymentType, (value) {
                               setState(() {
                                 selectedPaymentType = value;
                               });
                             }),
-                            buildTextField("Date", dateController1,false, true, context), // Modified here for DatePicker
-                            buildTextField("Amount", amountController,false, false, context),
-                            buildTextField("Reference No.", refNoController,false, false, context),
-                            buildTextField("Type Of Transfer", typeTransController, false,false, context),
-                            SizedBox(height: 180),
+                            buildTextField("Date", dateController1,false, true, Colors.white,context), // Modified here for DatePicker
+                            buildTextField("Amount", amountController,false, false,Colors.white, context),
+                            buildTextField("Ref/Rv No", refNoController,false, false, Colors.white,context),
+                            buildTextField("Type Of Transfer", typeTransController, false,false, Colors.white,context),
+                            buildTextField("Remark", remarkController, false,false, Colors.white,context),
+                            SizedBox(height: 20),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 8.0),
                               child: Row(
@@ -319,7 +384,7 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
     );
   }
 
-  Widget buildTextField(String labelText, TextEditingController controller,bool isReadOnly, bool isDateField, BuildContext context) {
+  Widget buildTextField(String labelText, TextEditingController controller,bool isReadOnly, bool isDateField, Color color,BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
@@ -340,21 +405,28 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
               onTap: isDateField ? () => _selectDate(context, controller) : null,
               child: AbsorbPointer(
                 absorbing: isDateField,
-                child: TextFormField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                    suffixIcon: isDateField
-                        ? IconButton(
-                      icon: Icon(Icons.calendar_today),
-                      onPressed: () => _selectDate(context, controller),
-                    )
-                        : null,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                child: Container(
+                  decoration: BoxDecoration(
+                     borderRadius: BorderRadius.circular(12),
+                    color: color
                   ),
-                  readOnly: isReadOnly,
+                  child: TextFormField(
+
+                    controller: controller,
+                    decoration: InputDecoration(
+                      suffixIcon: isDateField
+                          ? IconButton(
+                        icon: Icon(Icons.calendar_today),
+                        onPressed: () => _selectDate(context, controller),
+                      )
+                          : null,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    readOnly: isReadOnly,
+                  ),
                 ),
               ),
             ),

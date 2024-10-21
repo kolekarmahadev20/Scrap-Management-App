@@ -267,34 +267,40 @@ class _DispatchListState extends State<DispatchList> {
                           ),
                           child: Container(
                             width:double.infinity,
-                            child: Row(
+                            child: Column(
                               children: [
-                                Spacer(),
-                                Text(
-                                  "Vendor, Plant",
-                                  style: TextStyle(
-                                    fontSize: 18, // Slightly larger font size
-                                    color: Colors.black54,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                SizedBox(height: 8,),
+                                Row(
+                                  children: [
+                                    Spacer(),
+                                    Text(
+                                      "Vendor, Plant",
+                                      style: TextStyle(
+                                        fontSize: 18, // Slightly larger font size
+                                        color: Colors.black54,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    Spacer(),
+                                    // IconButton(
+                                    //   icon: Icon(
+                                    //     Icons.add_box_outlined,
+                                    //     size: 28, // Slightly smaller but prominent icon
+                                    //     color: Colors.indigo[800],
+                                    //   ),
+                                    //   onPressed: () {
+                                    //     Navigator.push(
+                                    //         context,
+                                    //         MaterialPageRoute(
+                                    //             builder: (context) =>
+                                    //                 Add_dispatch_details())).then((value) => setState((){
+                                    //       fetchDispatchList();
+                                    //     }));
+                                    //   },
+                                    // ),
+                                  ],
                                 ),
-                                Spacer(),
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.add_box_outlined,
-                                    size: 28, // Slightly smaller but prominent icon
-                                    color: Colors.indigo[800],
-                                  ),
-                                  onPressed: () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                Add_dispatch_details())).then((value) => setState((){
-                                      fetchDispatchList();
-                                    }));
-                                  },
-                                ),
+                                SizedBox(height: 8,),
                               ],
                             ),
                           ),
@@ -410,47 +416,22 @@ class _DispatchListState extends State<DispatchList> {
                       text: TextSpan(
                         children: [
                           TextSpan(
-                            text: "Order ID :  ",
+                            text: "Vendor Name : ",
                             style: TextStyle(
-                              fontSize: 18,
+                              color: Colors.black87,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                              fontSize: 18,
                             ),
                           ),
                           TextSpan(
-                            text: index['sale_order_code'] ?? "N/A",
+                            text: "${index['vendor_name'] ?? 'N/A'}",
                             style: TextStyle(
-                              fontSize: 18,
+                              color: Colors.black54,
                               fontWeight: FontWeight.normal,
-                              color: Colors.indigo[800]!,
+                              fontSize: 18,
                             ),
                           ),
                         ],
-                      ),
-                    ),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: RichText(
-                        text: TextSpan(
-                          children: [
-                            TextSpan(
-                              text: "Material : ",
-                              style: TextStyle(
-                                color: Colors.black87,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                            ),
-                            TextSpan(
-                              text: "${index['description'] ?? 'N/A'}",
-                              style: TextStyle(
-                                color: Colors.black54,
-                                fontWeight: FontWeight.normal,
-                                fontSize: 18,
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
                     ),
                   ],

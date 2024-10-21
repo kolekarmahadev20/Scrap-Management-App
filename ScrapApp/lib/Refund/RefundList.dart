@@ -412,49 +412,25 @@ class _RefundListState extends State<RefundList> {
                       text: TextSpan(
                         children: [
                           TextSpan(
-                            text: "Order ID :  ",
+                            text: "Vendor Name : ",
                             style: TextStyle(
-                              fontSize: 18,
+                              color: Colors.black87,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                              fontSize: 18,
                             ),
                           ),
                           TextSpan(
-                            text: index['sale_order_code'] ?? "N/A",
+                            text: "${index['vendor_name'] ?? 'N/A'}",
                             style: TextStyle(
-                              fontSize: 18,
+                              color: Colors.black54,
                               fontWeight: FontWeight.normal,
-                              color: Colors.indigo[800]!,
+                              fontSize: 18,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: RichText(
-                        text: TextSpan(
-                          children: [
-                            TextSpan(
-                              text: "Material : ",
-                              style: TextStyle(
-                                color: Colors.black87,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                            ),
-                            TextSpan(
-                              text: "${index['description'] ?? 'N/A'}",
-                              style: TextStyle(
-                                color: Colors.black54,
-                                fontWeight: FontWeight.normal,
-                                fontSize: 18,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+
                   ],
                 ),
                 subtitle: Column(

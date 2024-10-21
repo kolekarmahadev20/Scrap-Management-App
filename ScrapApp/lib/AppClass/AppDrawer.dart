@@ -106,17 +106,6 @@ class AppDrawer extends StatelessWidget {
                   ),
                   _buildDrawerItem(
                     context,
-                    icon: Icons.payment_rounded,
-                    text: "Payment",
-                    onTap: () {
-                      Timer(Duration(milliseconds: 300), () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentList()));
-                      });
-
-                    },
-                  ),
-                  _buildDrawerItem(
-                    context,
                     icon: Icons.border_outer,
                     text: "Sale Order",
                     onTap: () {
@@ -126,6 +115,18 @@ class AppDrawer extends StatelessWidget {
 
                     },
                   ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.payment_rounded,
+                    text: "Payment",
+                    onTap: () {
+                      Timer(Duration(milliseconds: 300), () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentList()));
+                      });
+
+                    },
+                  ),
+
                   _buildDrawerItem(
                     context,
                     icon: Icons.local_shipping_rounded,

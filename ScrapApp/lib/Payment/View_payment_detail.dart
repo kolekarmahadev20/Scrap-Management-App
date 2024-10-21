@@ -27,6 +27,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
   Map<String , dynamic> ViewPaymentData = {};
   List<dynamic> paymentId =[];
   List<dynamic> emdStatus =[];
+  List<dynamic> cmdStatus =[];
   List<dynamic> taxes =[];
   var checkLiftedQty ;
 
@@ -69,6 +70,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
         ViewPaymentData = jsonData;
         paymentId = ViewPaymentData['sale_order_payments'] ?? '';
         emdStatus =  ViewPaymentData['emd_status'] ?? '';
+        cmdStatus =  ViewPaymentData['cmd_status'] ?? '';
         checkLiftedQty = ViewPaymentData['lifted_quantity'];
         taxes = ViewPaymentData['tax_and_rate'][0]['taxes'];
         print(taxes);
@@ -162,7 +164,22 @@ class _View_payment_detailState extends State<View_payment_detail> {
                 ),
               ],
             ),
-        ])
+        ]),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              print(ViewPaymentData['sale_order']['description']?? "N/A");
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => addPaymentToSaleOrder(sale_order_id: widget.sale_order_id,material_name: ViewPaymentData['sale_order']['description'] ?? "N/A",)
+                ),
+              ).then((value) => setState((){
+                fetchPaymentDetails();
+              }));
+            },
+            child: Icon(Icons.add), // FAB icon
+            backgroundColor: Colors.blueGrey[200],
+      ),
       ),
     )
     );
@@ -183,64 +200,58 @@ class _View_payment_detailState extends State<View_payment_detail> {
           borderSide: BorderSide(color: Colors.blueGrey[400]!)
       ),
       child: Container(
-        child: Row(
+        child: Column(
           children: [
-            Spacer(),
-            RichText(
-              text: TextSpan(
+            SizedBox(
+              height: 8,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
                 children: [
-                  TextSpan(
-                    text: "Order ID :  ", // Key text (e.g., "Vendor Name: ")
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black, // Bold key text
+                  // Static Text
+                  RichText(
+                    text: TextSpan(
+                      text: "Material Name: ",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
+                      ),
                     ),
                   ),
-                  TextSpan(
-                    text:ViewPaymentData['sale_order']['sale_order_code'] ?? "N/A", // Value text (e.g., "XYZ Corp")
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.black54, // Normal value text
+                  // Scrollable Text
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Text(
+                        "${ViewPaymentData['sale_order']['description'] ?? 'N/A'}",
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.normal,
+                          fontSize: 18,
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            Spacer(),
-            IconButton(
-              icon: Icon(
-                Icons.add_box_outlined,
-                size: 30,
-                color: Colors.indigo[800],
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => addPaymentToSaleOrder(sale_order_id: widget.sale_order_id,sale_order_code: ViewPaymentData['sale_order']['sale_order_code'] ?? "N/A",)
-                  ),
-                ).then((value) => setState((){
-                  fetchPaymentDetails();
-                }));
-              },
+            SizedBox(
+              height: 8,
             ),
           ],
         ),
+
       ),
     );
   }
+
 
   Widget buildVendorInfo() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if(ViewPaymentData['sale_order_details'] != null &&
-            ViewPaymentData['sale_order_details'] is List &&
-            ViewPaymentData['sale_order_details'].isNotEmpty)
-        buildVendorInfoText(
-            "Material Name : ", ViewPaymentData['sale_order_details'][0]['material_name'] ?? 'N/A',true),
         buildVendorInfoText(
             "Vendor Name : ", ViewPaymentData['vendor_buyer_details']['vendor_name'] ?? 'N/A',false),
         buildVendorInfoText(
@@ -423,12 +434,18 @@ class _View_payment_detailState extends State<View_payment_detail> {
   }
 
   Widget buildCMDDetailListView() {
-    return ListView.builder(
-      itemCount: 10,
-      itemBuilder: (context, index) {
-        return buildCMDDetailListTile(context);
-      },
-    );
+    if (cmdStatus.length != 0) {
+      return ListView.builder(
+        itemCount: cmdStatus.length,
+        itemBuilder: (context, index) {
+          final cmdStatusIndex = cmdStatus[index];
+          return buildCMDDetailListTile(context, cmdStatusIndex);
+        },
+      );
+    } else {
+      return Center(child: Text("No CMD Details Found",
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),));
+    }
   }
 
   Widget buildPaymentDetailListTile(BuildContext context , index) {
@@ -711,6 +728,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                             amount: index['amt'] ?? "N/A",
                             referenceNo: index['pay_ref_no'] ?? "N/A",
                             typeOfTransfer: index['typeoftransfer'] ?? "N/A",
+                            // remark : index['remark'] ?? "N/A";
                           ),
                     ),
                   ).then((value) => setState((){
@@ -746,7 +764,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
     }
   }
 
-  Widget buildCMDDetailListTile(BuildContext context) {
+  Widget buildCMDDetailListTile(BuildContext context , index) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
@@ -787,7 +805,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     ),
                   ),
                   TextSpan(
-                    text: "N/A",
+                    text: "${index['amt'] ?? 'N/A'}",
                     style: TextStyle(
                       color: Colors.green,
                       fontWeight: FontWeight.normal, // Normal value
@@ -813,7 +831,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                         ),
                       ),
                       TextSpan(
-                        text: "N/A",
+                        text: "${index['pay_ref_no'] ?? 'N/A'}",
                         style: TextStyle(
                           color: Colors.black54,
                           fontWeight: FontWeight.normal, // Normal value
@@ -836,7 +854,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                         ),
                       ),
                       TextSpan(
-                        text: "N/A",
+                        text: "${index['date'] ?? 'N/A'}",
                         style: TextStyle(
                           color: Colors.black54,
                           fontWeight: FontWeight.normal, // Normal value
@@ -853,21 +871,41 @@ class _View_payment_detailState extends State<View_payment_detail> {
               icon: Icon(Icons.arrow_forward_ios, size: 16),
               color: Colors.grey[600],
               onPressed: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => View_Payment_Amount(),
-                //   ),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => View_Payment_Amount(
+                      sale_order_id: widget.sale_order_id,
+                      paymentId: index['payment_id'] ?? "N/A",
+                      paymentType: index['payment_type'] ?? "N/A",
+                      date1: index['date'] ?? "N/A",
+                      amount: index['amt'] ?? "N/A",
+                      referenceNo: index['pay_ref_no'] ?? "N/A",
+                      typeOfTransfer: index['typeoftransfer'] ?? "N/A",
+                    ),
+                  ),
+                ).then((value) => setState((){
+                  fetchPaymentDetails();
+                }));
               },
             ),
             onTap: () {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) => View_Payment_Amount(),
-              //   ),
-              // );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => View_Payment_Amount(
+                    sale_order_id: widget.sale_order_id,
+                    paymentId: index['payment_id'] ?? "N/A",
+                    paymentType: index['payment_type'] ?? "N/A",
+                    date1: index['date'] ?? "N/A",
+                    amount: index['amt'] ?? "N/A",
+                    referenceNo: index['pay_ref_no'] ?? "N/A",
+                    typeOfTransfer: index['typeoftransfer'] ?? "N/A",
+                  ),
+                ),
+              ).then((value) => setState((){
+                fetchPaymentDetails();
+              }));
             },
           ),
         ),

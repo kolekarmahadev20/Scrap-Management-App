@@ -1,9 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Payment/Edit_payment_detail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+
+
+import '../URL_CONSTANT.dart';
 
 class View_Payment_Amount extends StatefulWidget {
   final String? sale_order_id;
@@ -34,6 +41,10 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
 
   String? password = '';
 
+   String totalPayment='';
+   String totalEmd='';
+   String totalCmd='';
+   String totalEmdCmd='';
    String paymentType='';
 
    String date1='';
@@ -48,6 +59,7 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
   void initState() {
     super.initState();
     checkLogin();
+    fetchPaymentDetails();
     paymentType = widget.paymentType ?? '';
     date1 = widget.date1 ?? '';
     amount = widget.amount ?? '';
@@ -60,6 +72,53 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
      username = await login.getString("username") ?? '';
      password = await login.getString("password") ?? '';
    }
+
+  Future<void> fetchPaymentDetails() async {
+    try {
+      await checkLogin();
+      final url = Uri.parse("${URL}EMD_CMD_details");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': username,
+          'user_pass': password,
+          'sale_order_id':widget.sale_order_id,
+        },
+      );
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        setState(() {
+          totalPayment= jsonData['t_amt'].toString() ;
+          totalEmd= jsonData['total_EMD'].toString();
+          totalCmd= jsonData['total_CMD'].toString();
+          totalEmdCmd = jsonData['total_amount_included_emdCmd'].toString();
+        });
+      } else {
+        Fluttertoast.showToast(
+            msg: 'Unable to load data.',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.yellow
+        );
+      }
+    } catch (e) {
+      print('$e');
+      Fluttertoast.showToast(
+          msg: 'Server Exception : $e',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.yellow
+      );
+    }
+    finally{
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -142,11 +201,16 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
             Expanded(
               child: ListView(
                 children: [
+                  buildDisplay("Total Payment", totalPayment),
+                  buildDisplay("Total EMD", totalEmd),
+                  buildDisplay("Total CMD", totalCmd),
+                  buildDisplay("Total Amount Including EMD/CMD", totalEmdCmd),
                   buildDisplay("Payment Type", paymentType),
                   buildDisplay("Date", date1),
                   buildDisplay("Amount", amount),
-                  buildDisplay("Reference No.", referenceNo),
+                  buildDisplay("Ref/RV No.", referenceNo),
                   buildDisplay("Type Of Transfer", typeOfTransfer),
+                  buildDisplay("Remark", ''),
                   SizedBox(height: 40,),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),

@@ -148,8 +148,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
             MaterialPageRoute(
               builder: (context) => addDispatchToSaleOrder(
                   sale_order_id: widget.sale_order_id,
-                  sale_order_code: ViewDispatchData['sale_order']
-                      ['sale_order_code']),
+                  material_name: ViewDispatchData['sale_order']
+                      ['description']),
             ),
           ).then((value) => setState(() {
                 fetchDispatchDetails();
@@ -173,55 +173,37 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
             SizedBox(
               height: 8,
             ),
-            Row(
-              children: [
-                Spacer(),
-                RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text:
-                            "Order ID :  ", // Key text (e.g., "Vendor Name: ")
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black, // Bold key text
-                        ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
+                children: [
+                  // Static Text
+                  RichText(
+                    text: TextSpan(
+                      text: "Material Name: ",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
                       ),
-                      TextSpan(
-                        text: ViewDispatchData['sale_order'][
-                            'sale_order_code'], // Value text (e.g., "XYZ Corp")
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.black54, // Normal value text
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-                Spacer(),
-                // IconButton(
-                //   icon: Icon(
-                //     Icons.add_box_outlined,
-                //     size: 30,
-                //     color: Colors.indigo[800],
-                //   ),
-                //   onPressed: () {
-                //     Navigator.push(
-                //       context,
-                //       MaterialPageRoute(
-                //         builder: (context) => addDispatchToSaleOrder(
-                //             sale_order_id: widget.sale_order_id,
-                //             sale_order_code: ViewDispatchData['sale_order']
-                //                 ['sale_order_code']),
-                //       ),
-                //     ).then((value) => setState(() {
-                //           fetchDispatchDetails();
-                //         }));
-                //   },
-                // ),
-              ],
+                  // Scrollable Text
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Text(
+                        "${ViewDispatchData['sale_order']['description'] ?? 'N/A'}",
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.normal,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             SizedBox(
               height: 8,
@@ -236,10 +218,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildVendorInfoText(
-            "Material Name : ",
-            ViewDispatchData['sale_order_details'][0]['material_name'] ?? 'N/A',
-            true),
+
         buildVendorInfoText(
             "Vendor Name: ",
             ViewDispatchData['vendor_buyer_details']['vendor_name'] ?? 'N/A',

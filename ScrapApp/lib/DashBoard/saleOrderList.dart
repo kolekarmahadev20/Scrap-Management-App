@@ -133,51 +133,51 @@ class saleOrderListState extends State<saleOrderList> {
                     ],
                   ),],
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  width:double.infinity,
-                  child: Column(
-                    children: [
-                      SizedBox(height: 8,),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Material(
-                          elevation: 2,
-                          color: Colors.white,
-                          shape: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.blueGrey[400]!)
-                          ),
-                          child: Container(
-                            child: Column(
-                              children: [
-                                SizedBox(height: 8,),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Spacer(),
-                                    Text(
-                                      "Vendor, Plant",
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.black54,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    Spacer(),
-                                  ],
-                                ),
-                                SizedBox(height: 8,),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 8,),
-                    ],
-                  ),
-                ),
-              ),
+              // Padding(
+              //   padding: const EdgeInsets.all(8.0),
+              //   child: Container(
+              //     width:double.infinity,
+              //     child: Column(
+              //       children: [
+              //         SizedBox(height: 8,),
+              //         Padding(
+              //           padding: const EdgeInsets.all(8.0),
+              //           child: Material(
+              //             elevation: 2,
+              //             color: Colors.white,
+              //             shape: OutlineInputBorder(
+              //                 borderSide: BorderSide(color: Colors.blueGrey[400]!)
+              //             ),
+              //             child: Container(
+              //               child: Column(
+              //                 children: [
+              //                   SizedBox(height: 8,),
+              //                   Row(
+              //                     mainAxisSize: MainAxisSize.min,
+              //                     children: [
+              //                       Spacer(),
+              //                       Text(
+              //                         "Vendor, Plant",
+              //                         style: TextStyle(
+              //                           fontSize: 18,
+              //                           color: Colors.black54,
+              //                           fontWeight: FontWeight.w500,
+              //                         ),
+              //                       ),
+              //                       Spacer(),
+              //                     ],
+              //                   ),
+              //                   SizedBox(height: 8,),
+              //                 ],
+              //               ),
+              //             ),
+              //           ),
+              //         ),
+              //         SizedBox(height: 8,),
+              //       ],
+              //     ),
+              //   ),
+              // ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextField(
@@ -305,59 +305,6 @@ class saleOrderListState extends State<saleOrderList> {
                       text: TextSpan(
                         children: [
                           TextSpan(
-                            text: "Order ID :  ",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                          TextSpan(
-                            text: index['sale_order_code'] ?? "N/A",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.indigo[800]!,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // SingleChildScrollView(
-                    //   scrollDirection: Axis.horizontal,
-                    //   child: RichText(
-                    //     text: TextSpan(
-                    //       children: [
-                    //         TextSpan(
-                    //           text: "Material : ",
-                    //           style: TextStyle(
-                    //             color: Colors.black87,
-                    //             fontWeight: FontWeight.bold,
-                    //             fontSize: 18,
-                    //           ),
-                    //         ),
-                    //         TextSpan(
-                    //           text: "${index['description'] ?? 'N/A'}",
-                    //           style: TextStyle(
-                    //             color: Colors.black54,
-                    //             fontWeight: FontWeight.normal,
-                    //             fontSize: 18,
-                    //           ),
-                    //         ),
-                    //       ],
-                    //     ),
-                    //   ),
-                    // ),
-                  ],
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Divider(thickness: 1, color: Colors.black87),
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
                             text: "Vendor Name : ",
                             style: TextStyle(
                               color: Colors.black87,
@@ -376,6 +323,12 @@ class saleOrderListState extends State<saleOrderList> {
                         ],
                       ),
                     ),
+                  ],
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Divider(thickness: 1, color: Colors.black87),
                     RichText(
                       text: TextSpan(
                         children: [
