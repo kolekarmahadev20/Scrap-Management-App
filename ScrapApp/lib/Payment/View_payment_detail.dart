@@ -145,7 +145,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     unselectedLabelColor: Colors.black54,
                     indicatorColor: Colors.indigo[800],
                     tabs: const [
-                      Tab(text: "Material\nList",),
+                      Tab(text: "Material\nDetails",),
                       Tab(text: "Payment\nDetails"),
                       Tab(text: "EMD\nDetails"),
                       Tab(text: "CMD\nDetails"),
@@ -302,39 +302,23 @@ class _View_payment_detailState extends State<View_payment_detail> {
   Widget buildExpansionTile() {
     return Material(
       elevation: 5,
-      child: ExpansionTile(
-        title: Text(
-          "Material Detail",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            buildListTile("Material Name :${ViewPaymentData['sale_order_details'][0]['material_name'] ?? 'No data'}"),
+            buildListTile("Total Qty :${ViewPaymentData['sale_order_details'][0]['totalqty'] ?? 'No data'}"),
+            if(ViewPaymentData['lifted_quantity'] != null &&
+                ViewPaymentData['lifted_quantity'] is List &&
+                ViewPaymentData['lifted_quantity'].isNotEmpty)
+            buildListTile("Lifted Qty :${ViewPaymentData['lifted_quantity'][0]['quantity'] ?? 'No data'}"),
+            buildListTile("Rate :${ViewPaymentData['sale_order_details'][0]['rate'] ?? 'No data'}"),
+            buildListTile("SO Date :${ViewPaymentData['sale_order_details'][0]['sod'] ?? 'No data'}"),
+            buildListTile("SO Validity :${ViewPaymentData['sale_order_details'][0]['sovu'] ?? 'No data'}"),
+            buildTable(),
+          ],
         ),
-        leading: Icon(
-          Icons.menu,
-          color: Colors.indigo[800],
-        ),
-        trailing: Icon(
-          Icons.arrow_drop_down_sharp,
-          color: Colors.indigo[800],
-        ),
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                buildListTile("Material Name :${ViewPaymentData['sale_order_details'][0]['material_name'] ?? 'No data'}"),
-                buildListTile("Total Qty :${ViewPaymentData['sale_order_details'][0]['totalqty'] ?? 'No data'}"),
-                if(ViewPaymentData['lifted_quantity'] != null &&
-                    ViewPaymentData['lifted_quantity'] is List &&
-                    ViewPaymentData['lifted_quantity'].isNotEmpty)
-                buildListTile("Lifted Qty :${ViewPaymentData['lifted_quantity'][0]['quantity'] ?? 'No data'}"),
-                buildListTile("Rate :${ViewPaymentData['sale_order_details'][0]['rate'] ?? 'No data'}"),
-                buildListTile("SO Date :${ViewPaymentData['sale_order_details'][0]['sod'] ?? 'No data'}"),
-                buildListTile("SO Validity :${ViewPaymentData['sale_order_details'][0]['sovu'] ?? 'No data'}"),
-                buildTable(),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -100,7 +100,10 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
   void initState(){
     super.initState();
     checkLogin();
-    print(widget.refundId);
+    getData();
+  }
+
+  getData(){
     if (refundMap.containsKey(widget.paymentType)) {
       selectedPaymentType =refundMap['${widget.paymentType}'];
     } else {
@@ -129,14 +132,7 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
       setState(() {
         isLoading = true;
       });
-      print(username);
-      print(password);
-      print(widget.sale_order_id);
-      print(widget.refundId);
-      print(selectedPaymentType);
-      print(dateController1.text);
-      print(amountController.text);
-      print(totalPaymentController.text);
+      await checkLogin();
       final url = Uri.parse("${URL}add_refund_toSaleOrdder");
       var response = await http.post(
         url,
@@ -266,48 +262,46 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
                 Expanded(
                   child: ListView(
                     children: [
+                      buildTextField("Total Payment", totalPaymentController, true,false ,Colors.grey[400]!, context),
+                      buildTextField("Total EMD", totalEmdController, true,false , Colors.grey[400]!,context),
+                      buildTextField("Total Amount Including EMD", totalAmountEmdController, true,false ,Colors.grey[400]!, context),
+                      Divider(),
                       buildDropdownPayment("Payment Type", refundMap, (value) {
                         setState(() {
                           selectedPaymentType = value;
                         });
                       }),
                       if (selectedPaymentType == "R") ...[
-                        buildTextField("Date", dateController1, false, true , context),
-                        buildTextField("Amount", amountController, false ,false , context),
-                        buildTextField(
-                            "Total Payment", totalPaymentController, true, false , context),
-                        buildTextField("NFA No.", nfaController, false,false , context),
-                        buildTextField("RV Date", dateController2, false,true , context),
+                        buildTextField("Date", dateController1, false, true ,Colors.white, context),
+                        buildTextField("Amount", amountController, false ,false , Colors.white,context),
+                        // buildTextField("Total Payment", totalPaymentController, true, false , Colors.white,context),
+                        buildTextField("NFA No.", nfaController, false,false ,Colors.white, context),
+                        buildTextField("RV Date", dateController2, false,true ,Colors.white, context),
                       ] else if (selectedPaymentType == "RE" ||
                           selectedPaymentType == "Rc") ...[
-                        buildTextField("Date", dateController1, false,true , context),
-                        buildTextField("Amount", amountController, false,false , context),
-                        buildTextField("Total EMD", totalEmdController, true,false , context),
-                        buildTextField("Total Amount Including EMD",
-                            totalAmountEmdController, true,false , context),
-                        buildTextField("NFA No.", nfaController, false,false , context),
-                        buildTextField("RV Date", dateController2, false,true , context),
+                        buildTextField("Date", dateController1, false,true , Colors.white,context),
+                        buildTextField("Amount", amountController, false,false ,Colors.white, context),
+                        // buildTextField("Total EMD", totalEmdController, true,false ,Colors.white, context),
+                        // buildTextField("Total Amount Including EMD", totalAmountEmdController, true,false , Colors.white,context),
+                        buildTextField("NFA No.", nfaController, false,false ,Colors.white, context),
+                        buildTextField("RV Date", dateController2, false,true ,Colors.white, context),
                       ] else if (selectedPaymentType == "P") ...[
-                        buildTextField("Date", dateController1, false,true , context),
-                        buildTextField("Amount", amountController, false,false , context),
-                        buildTextField(
-                            "Total Payment", totalPaymentController, true,false , context),
-                        buildTextField("Total EMD", totalEmdController, true,false , context),
-                        buildTextField("Total Amount Including EMD",
-                            totalAmountEmdController, true,false , context),
-                        buildTextField("RV Date", dateController2, false,true , context),
+                        buildTextField("Date", dateController1, false,true ,Colors.white, context),
+                        buildTextField("Amount", amountController, false,false ,Colors.white, context),
+                        // buildTextField("Total Payment", totalPaymentController, true,false ,Colors.white, context),
+                        // buildTextField("Total EMD", totalEmdController, true,false ,Colors.white, context),
+                        // buildTextField("Total Amount Including EMD", totalAmountEmdController, true,false ,Colors.white, context),
+                        buildTextField("RV Date", dateController2, false,true , Colors.white,context),
                       ] else ...[
-                        buildTextField("Date", dateController1, false,true , context),
-                        buildTextField("Amount", amountController, false,false , context),
-                        buildTextField(
-                            "Total Payment", totalPaymentController, true,false , context),
-                        buildTextField("Total EMD", totalEmdController, true,false , context),
-                        buildTextField("Total Amount Including EMD",
-                            totalAmountEmdController, true,false , context),
-                        buildTextField("Note", noteController, false,false , context),
-                        buildTextField("Reference No.", refNoController, false,false , context),
-                        buildTextField("RV No.", rvNoController, false,false , context),
-                        buildTextField("RV Date", dateController2, false,true , context),
+                        buildTextField("Date", dateController1, false,true , Colors.white,context),
+                        buildTextField("Amount", amountController, false,false ,Colors.white, context),
+                        // buildTextField("Total Payment", totalPaymentController, true,false , Colors.white,context),
+                        // buildTextField("Total EMD", totalEmdController, true,false , Colors.white,context),
+                        // buildTextField("Total Amount Including EMD", totalAmountEmdController, true,false ,Colors.white, context),
+                        buildTextField("Note", noteController, false,false , Colors.white,context),
+                        buildTextField("Ref/RV No.", refNoController, false,false , Colors.white,context),
+                        // buildTextField("RV No.", rvNoController, false,false , Colors.white,context),
+                        buildTextField("RV Date", dateController2, false,true ,Colors.white, context),
                       ],
                       SizedBox(height: 40,),
                       Padding(
@@ -416,7 +410,7 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
 
 
   Widget buildTextField(
-      String label, TextEditingController controller, bool isReadOnly ,bool isDateField ,context) {
+      String label, TextEditingController controller, bool isReadOnly ,bool isDateField ,Color color,context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
@@ -436,37 +430,43 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
             child: Material(
               elevation: 2,
               borderRadius: BorderRadius.circular(12),
-              child: TextField(
-                onTap: isDateField ? () => _selectDate(context, controller) : null,
-                controller: controller,
-                decoration: InputDecoration(
-                  suffixIcon: isDateField
-                      ? IconButton(
-                    icon: Icon(Icons.calendar_today),
-                    onPressed: () => _selectDate(context, controller),
-                  )
-                      :null,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: Colors.indigo[800]!,
-                      width: 2.0,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: Colors.grey[400]!,
-                      width: 1.5,
-                    ),
-                  ),
-                  contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: color,
                 ),
-                readOnly: isReadOnly,
+                child: TextField(
+                  onTap: isDateField ? () => _selectDate(context, controller) : null,
+                  controller: controller,
+                  decoration: InputDecoration(
+                    suffixIcon: isDateField
+                        ? IconButton(
+                      icon: Icon(Icons.calendar_today),
+                      onPressed: () => _selectDate(context, controller),
+                    )
+                        :null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.indigo[800]!,
+                        width: 2.0,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.grey[400]!,
+                        width: 1.5,
+                      ),
+                    ),
+                    contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                  readOnly: isReadOnly,
+                ),
               ),
             ),
           ),

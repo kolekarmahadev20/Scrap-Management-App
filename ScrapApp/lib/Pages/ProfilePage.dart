@@ -1,8 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Pages/StartPage.dart';
+import 'package:scrapapp/URL_CONSTANT.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -18,12 +25,34 @@ class _ProfilePageState extends State<ProfilePage> {
   String address = '';
   String empCode = '';
   bool isLoggedIn = false;
+  bool isPunched = false;
+  DateTime? punchTime;
+
+  final Icon nameIcon =
+  Icon(Icons.person, color: Colors.blue.shade900, size: 40);
+  final Icon contactIcon =
+  Icon(Icons.contacts, color: Colors.blue.shade900, size: 40);
+  final Icon emailIcon =
+  Icon(Icons.email_outlined, color: Colors.blue.shade900, size: 40);
+  final Icon empCodeIcon =
+  Icon(Icons.person, color: Colors.blue.shade900, size: 40);
+  final Icon addressIcon =
+  Icon(Icons.location_pin, color: Colors.blue.shade900, size: 40);
+
+
+  @override
+  void initState() {
+    super.initState();
+    getCredentialDetails();
+    checkLogin();
+    fetchPunchTimeFromDatabase();
+
+  }
 
   checkLogin() async {
     final login = await SharedPreferences.getInstance();
-    username = await login.getString("username");
-    password = await login.getString("password");
-    print(username);
+    username = login.getString("username");
+    password = login.getString("password");
   }
 
   getCredentialDetails() async {
@@ -44,23 +73,94 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    getCredentialDetails();
-    checkLogin();
+
+  void sendPunchTimeToDatabase(String status) async{
+    try {
+      await checkLogin();
+      final url = Uri.parse('${URL}set_user_attendance');
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id':username,
+          'user_pass':password,
+          'status' : status,
+        },
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          var data = jsonDecode(response.body);
+          Fluttertoast.showToast(msg: data['msg']);
+        });
+      } else {
+        Fluttertoast.showToast(msg: 'Unable to mark punch time');
+      }
+    }catch(e){
+      print('Server Exception : $e');
+    }finally{
+
+    }
   }
 
-  final Icon nameIcon =
-      Icon(Icons.person, color: Colors.blue.shade900, size: 40);
-  final Icon contactIcon =
-      Icon(Icons.contacts, color: Colors.blue.shade900, size: 40);
-  final Icon emailIcon =
-      Icon(Icons.email_outlined, color: Colors.blue.shade900, size: 40);
-  final Icon empCodeIcon =
-      Icon(Icons.person, color: Colors.blue.shade900, size: 40);
-  final Icon addressIcon =
-      Icon(Icons.location_pin, color: Colors.blue.shade900, size: 40);
+  void fetchPunchTimeFromDatabase() async{
+    try {
+      await checkLogin();
+      final url = Uri.parse('${URL}fetch_attendance_time');
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id':username,
+          'user_pass':password,
+        },
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          var data = jsonDecode(response.body);
+          punchTime = DateTime.parse(data['login_time']);
+          enablePunching();
+        });
+      } else {
+        Fluttertoast.showToast(msg: 'Unable to fetch punch time');
+      }
+    }catch(e){
+      print('Server Exception : $e');
+    }finally{
+
+    }
+  }
+
+  enablePunching(){
+    // DateTime currentDateTime = DateTime.now();
+    //
+    // int currentTimeStamp = currentDateTime.millisecondsSinceEpoch;
+    //
+    // int punchTimeStamp = punchTime!.millisecondsSinceEpoch;
+    //
+    // int timeDifference = currentTimeStamp - punchTimeStamp;
+
+
+    DateTime currentDateTime = DateTime.now();
+    String currentformattedDate = DateFormat('yyyy-MM-dd').format(currentDateTime);
+    print(currentformattedDate);
+    String punchFormattedDate = DateFormat('yyyy-MM-dd').format(punchTime!);
+    print(punchFormattedDate);
+
+    print(currentformattedDate == punchFormattedDate);
+    if(currentformattedDate != punchFormattedDate){
+      setState(() {
+        isPunched = false;
+        print('$isPunched');
+      });
+    }else{
+      setState(() {
+        isPunched = true;
+        print('$isPunched');
+      });
+    }
+  }
+
+
 
   Widget buildCard(String text, Icon icon, String path) {
     return Padding(
@@ -112,147 +212,145 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: AppDrawer(),
-      appBar: CustomAppBar(),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Profile Picture Section
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                height: 250,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: Colors.blueGrey.shade400,
-                ),
-                child: Stack(children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(21),
-                      border: Border.all(color: Colors.black, width: 1),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(
-                          21), // Ensure the image also respects the border radius
-                      child: Image.asset(
-                        'assets/images/themeimg1.jpeg',
-                        fit: BoxFit
-                            .cover, // Use BoxFit.cover to ensure the image covers the entire area
-                        width: double
-                            .infinity, // Ensure the image takes the full width of the container
-                        height: 250, // Set a fixed height or adjust as needed
-                        colorBlendMode: BlendMode.darken,
+    return StatefulBuilder(builder: (BuildContext context , StateSetter setState) {
+      return Scaffold(
+        drawer: AppDrawer(),
+        appBar: CustomAppBar(),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Profile Picture Section
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  height: 250,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.blueGrey.shade400,
+                  ),
+                  child: Stack(children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(21),
+                        border: Border.all(color: Colors.black, width: 1),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(
+                            21),
+                        // Ensure the image also respects the border radius
+                        child: Image.asset(
+                          'assets/images/themeimg1.jpeg',
+                          fit: BoxFit
+                              .cover,
+                          // Use BoxFit.cover to ensure the image covers the entire area
+                          width: double
+                              .infinity,
+                          // Ensure the image takes the full width of the container
+                          height: 250,
+                          // Set a fixed height or adjust as needed
+                          colorBlendMode: BlendMode.darken,
+                        ),
                       ),
                     ),
-                  ),
-                  Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundImage: AssetImage(
-                              'assets/images/hello.gif'), // Replace with user's image
-                          backgroundColor: Colors.blueGrey.shade100,
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          name,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          CircleAvatar(
+                            radius: 50,
+                            backgroundImage: AssetImage(
+                                'assets/images/hello.gif'),
+                            // Replace with user's image
+                            backgroundColor: Colors.blueGrey.shade100,
                           ),
-                        ),
-                        Text(
-                          email,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
+                          SizedBox(height: 10),
+                          Text(
+                            name,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                      ],
+                          Text(
+                            email,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ]),
+                  ]),
+                ),
               ),
-            ),
-            // User Details Section (Cards)
-            Row(
-              children: [
-                Expanded(
-                    child:
-                        buildCard(name, nameIcon, 'assets/images/user2.jpg')),
-                SizedBox(width: 8),
-                Expanded(
-                    child: buildCard(
-                        contact, contactIcon, 'assets/images/contact3.jpeg')),
-              ],
-            ),
-            //Additional Info
-            buildListTile('Email', email, 'assets/images/email2.jpeg'),
-            buildListTile('Address', address, 'assets/images/location.jpeg'),
-            SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      child: Text("Punch In", style: TextStyle(color: Colors.white)),
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.greenAccent[200],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 5,
-                        shadowColor: Colors.greenAccent[700],
-                      ).copyWith(
-                        backgroundColor: MaterialStateProperty.resolveWith((states) {
-                          if (states.contains(MaterialState.pressed)) {
-                            return Colors.greenAccent[400];
-                          }
-                          return Colors.greenAccent[200];
-                        }),
+              // User Details Section (Cards)
+              Row(
+                children: [
+                  Expanded(
+                      child: buildCard(
+                          name, nameIcon, 'assets/images/user2.jpg')),
+                  SizedBox(width: 8),
+                  Expanded(
+                      child: buildCard(
+                          contact, contactIcon, 'assets/images/contact3.jpeg')),
+                ],
+              ),
+              //Additional Info
+              buildListTile('Email', email, 'assets/images/email2.jpeg'),
+              buildListTile('Address', address, 'assets/images/location.jpeg'),
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        child: Text("Punch In", style: TextStyle(color: Colors
+                            .white)),
+                        onPressed:isPunched
+                            ? () {
+                          Fluttertoast.showToast(msg: 'Your attendance marked for today');
+                        }: (){
+                          sendPunchTimeToDatabase("logged in");}, // Disable the button if isPunched is true
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isPunched ? Colors.grey[400] : Colors.greenAccent[200],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 5,
+                        )
                       ),
                     ),
                   ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      child: Text("Punch Out", style: TextStyle(color: Colors.white)),
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent[200],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 5,
-                        shadowColor: Colors.redAccent[700],
-                      ).copyWith(
-                        backgroundColor: MaterialStateProperty.resolveWith((states) {
-                          if (states.contains(MaterialState.pressed)) {
-                            return Colors.redAccent[400];
-                          }
-                          return Colors.redAccent[200];
-                        }),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        child: Text("Punch Out", style: TextStyle(color: Colors.white)),
+                        onPressed: () {
+                          sendPunchTimeToDatabase("logged out");
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent[200],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 5,
+                        )
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget buildListTile(String text, String value, String path) {
