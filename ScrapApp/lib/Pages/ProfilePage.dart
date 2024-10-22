@@ -346,6 +346,16 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ],
               ),
+              Row(
+                children: [
+                  isPunched
+                  ?Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text('$punchTime'),
+                  )
+                  :Container(),
+                ],
+              )
             ],
           ),
         ),

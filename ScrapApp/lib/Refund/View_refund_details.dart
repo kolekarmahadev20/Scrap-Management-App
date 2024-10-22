@@ -262,8 +262,6 @@ class _View_refund_detailsState extends State<View_refund_details> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         buildVendorInfoText(
-            "Material Name : ", ViewRefundData ['sale_order_details'][0]['material_name'] ?? 'N/A',true),
-        buildVendorInfoText(
             "Vendor Name: ", ViewRefundData['vendor_buyer_details']['vendor_name'] ?? 'N/A' ,false),
         buildVendorInfoText(
             "Branch: ", ViewRefundData['vendor_buyer_details']['branch_name'] ?? 'N/A',false),
