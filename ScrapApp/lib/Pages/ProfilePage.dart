@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
@@ -9,6 +8,8 @@ import 'package:scrapapp/Pages/StartPage.dart';
 import 'package:scrapapp/URL_CONSTANT.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+
+import 'attendance.dart';
 
 
 class ProfilePage extends StatefulWidget {
@@ -25,8 +26,14 @@ class _ProfilePageState extends State<ProfilePage> {
   String address = '';
   String empCode = '';
   bool isLoggedIn = false;
-  bool isPunched = false;
+  bool isPunchedIn = false;
+  bool isPunchedOut = false;
   DateTime? punchTime;
+  DateTime? punchOutTime;
+  String? attendanceType ;
+  int _currentIndex = 0; // Current tab index
+
+
 
   final Icon nameIcon =
   Icon(Icons.person, color: Colors.blue.shade900, size: 40);
@@ -46,7 +53,7 @@ class _ProfilePageState extends State<ProfilePage> {
     getCredentialDetails();
     checkLogin();
     fetchPunchTimeFromDatabase();
-
+    fetchLogoutPunchTimeFromDatabase();
   }
 
   checkLogin() async {
@@ -73,7 +80,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-
   void sendPunchTimeToDatabase(String status) async{
     try {
       await checkLogin();
@@ -91,6 +97,12 @@ class _ProfilePageState extends State<ProfilePage> {
         setState(() {
           var data = jsonDecode(response.body);
           Fluttertoast.showToast(msg: data['msg']);
+          print("status : $status");
+          if(status == 'logged in') {
+            fetchPunchTimeFromDatabase();
+          }else{
+            fetchLogoutPunchTimeFromDatabase();
+          }
         });
       } else {
         Fluttertoast.showToast(msg: 'Unable to mark punch time');
@@ -118,7 +130,8 @@ class _ProfilePageState extends State<ProfilePage> {
         setState(() {
           var data = jsonDecode(response.body);
           punchTime = DateTime.parse(data['login_time']);
-          enablePunching();
+          print("PunchIn Time : $punchTime");
+          enablePunching("logged in");
         });
       } else {
         Fluttertoast.showToast(msg: 'Unable to fetch punch time');
@@ -130,35 +143,119 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  enablePunching(){
-    // DateTime currentDateTime = DateTime.now();
-    //
-    // int currentTimeStamp = currentDateTime.millisecondsSinceEpoch;
-    //
-    // int punchTimeStamp = punchTime!.millisecondsSinceEpoch;
-    //
-    // int timeDifference = currentTimeStamp - punchTimeStamp;
+  void fetchLogoutPunchTimeFromDatabase() async{
+    try {
+      await checkLogin();
+      final url = Uri.parse('${URL}fetch_attendance_Outime');
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id':username,
+          'user_pass':password,
+        },
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          var data = jsonDecode(response.body);
+          punchOutTime = DateTime.parse(data['logout_time']);
+          enablePunching("logged out");
+        });
+      } else {
+        Fluttertoast.showToast(msg: 'Unable to fetch punch time');
+      }
+    }catch(e){
+      print('Server Exception : $e');
+    }finally{
 
-
-    DateTime currentDateTime = DateTime.now();
-    String currentformattedDate = DateFormat('yyyy-MM-dd').format(currentDateTime);
-    print(currentformattedDate);
-    String punchFormattedDate = DateFormat('yyyy-MM-dd').format(punchTime!);
-    print(punchFormattedDate);
-
-    print(currentformattedDate == punchFormattedDate);
-    if(currentformattedDate != punchFormattedDate){
-      setState(() {
-        isPunched = false;
-        print('$isPunched');
-      });
-    }else{
-      setState(() {
-        isPunched = true;
-        print('$isPunched');
-      });
     }
   }
+
+  enablePunching(String status) {
+    DateTime currentDateTime = DateTime.now();
+    String currentformattedDate = DateFormat('yyyy-MM-dd').format(currentDateTime);
+    print('Current Time : $currentformattedDate');
+    if (status == 'logged in'){
+      String punchFormattedDate = DateFormat('yyyy-MM-dd').format(punchTime!);
+      print('punchIn Time : $punchFormattedDate');
+      if (currentformattedDate != punchFormattedDate) {
+        setState(() {
+          isPunchedIn = false;
+        });
+      }
+      else {
+        setState(() {
+          isPunchedIn = true;
+        });
+      }
+  }
+    if(status == 'logged out') {
+      String punchOutFormattedDate = DateFormat('yyyy-MM-dd').format(punchOutTime!);
+      print('punchOut Time : $punchOutFormattedDate');
+      if(currentformattedDate != punchOutFormattedDate){
+        setState(() {
+          isPunchedOut = false;
+        });
+      }
+      else{
+        setState(() {
+          isPunchedOut = true;
+        });
+      }
+    }
+
+
+
+
+
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      if(isPunchedIn){
+        _currentIndex = index; // Update current index
+      }else{
+        Fluttertoast.showToast(msg: 'Please mark attendance first.');
+      }
+
+      if(_currentIndex == 1){
+        if (punchTime != null && punchOutTime != null) {
+          Navigator.push(
+            context,
+            SlidePageRoute(
+              page: AttendanceMarkedPage(punchTime: punchTime!, punchOutTime: punchOutTime!),
+            ),
+          ).then((value) {
+            _currentIndex = 0;
+            _onItemTapped(_currentIndex);
+          });
+        } else if (punchTime != null) {
+          Navigator.push(
+            context,
+            SlidePageRoute(
+              page: AttendanceMarkedPage(punchTime: punchTime!, punchOutTime: null),
+            ),
+          ).then((value) {
+            _currentIndex = 0;
+            _onItemTapped(_currentIndex);
+          });
+        } else if (punchOutTime != null) {
+          Navigator.push(
+            context,
+            SlidePageRoute(
+              page: AttendanceMarkedPage(punchTime: null, punchOutTime: punchOutTime!),
+            ),
+          ).then((value) {
+            _currentIndex = 0;
+            _onItemTapped(_currentIndex);
+          });
+        } else {
+          Fluttertoast.showToast(msg: 'Please mark attendance first.');
+        }
+      }
+    });
+  }
+
 
 
 
@@ -209,6 +306,7 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -302,62 +400,117 @@ class _ProfilePageState extends State<ProfilePage> {
               //Additional Info
               buildListTile('Email', email, 'assets/images/email2.jpeg'),
               buildListTile('Address', address, 'assets/images/location.jpeg'),
-              SizedBox(height: 20),
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                        child: Text("Punch In", style: TextStyle(color: Colors
-                            .white)),
-                        onPressed:isPunched
+                    child: Container(
+                      margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                      child: ElevatedButton.icon(
+                        icon: Icon(Icons.login_rounded, color: Colors.white),
+                        label: Text("Punch In", style: TextStyle(color: Colors.white)),
+                        onPressed: isPunchedIn
                             ? () {
                           Fluttertoast.showToast(msg: 'Your attendance marked for today');
-                        }: (){
-                          sendPunchTimeToDatabase("logged in");}, // Disable the button if isPunched is true
+                        }
+                            : () {
+                          sendPunchTimeToDatabase("logged in");
+                          print('isPunchedIn :$isPunchedIn');
+                        },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isPunched ? Colors.grey[400] : Colors.greenAccent[200],
+                          backgroundColor: isPunchedIn
+                              ? Colors.grey[400]
+                              : Colors.greenAccent[200],
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(30),
                           ),
                           elevation: 5,
-                        )
+                          padding: EdgeInsets.symmetric(vertical: 14.0),
+                        ),
                       ),
                     ),
                   ),
                   Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                        child: Text("Punch Out", style: TextStyle(color: Colors.white)),
-                        onPressed: () {
-                          sendPunchTimeToDatabase("logged out");
-                        },
+                    child: Container(
+                      margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                      child: ElevatedButton.icon(
+                        icon: Icon(Icons.logout_rounded, color: Colors.white),
+                        label: Text("Punch Out", style: TextStyle(color: Colors.white)),
+                        onPressed: isPunchedOut
+                          ? () {
+                          Fluttertoast.showToast(msg: 'Your attendance marked for today');
+                          }
+                          : () {
+                            if(isPunchedIn) {
+                              sendPunchTimeToDatabase("logged out");
+                            }else{
+                              Fluttertoast.showToast(msg: 'Please punch in first');
+                            }
+                          },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent[200],
+                          backgroundColor: isPunchedOut
+                              ? Colors.grey[400]
+                              :Colors.redAccent[200],
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(30),
                           ),
                           elevation: 5,
-                        )
+                          padding: EdgeInsets.symmetric(vertical: 14.0),
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
-              Row(
-                children: [
-                  isPunched
-                  ?Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text('$punchTime'),
-                  )
-                  :Container(),
-                ],
-              )
             ],
           ),
+        ),
+        //   floatingActionButton: FloatingActionButton(
+        //     onPressed: () {
+        //       if (punchTime != null && punchOutTime != null) {
+        //         Navigator.push(
+        //           context,
+        //           SlidePageRoute(
+        //             page: AttendanceMarkedPage(punchTime: punchTime!, punchOutTime: punchOutTime!),
+        //           ),
+        //         );
+        //       } else if (punchTime != null) {
+        //         Navigator.push(
+        //           context,
+        //           SlidePageRoute(
+        //             page: AttendanceMarkedPage(punchTime: punchTime!, punchOutTime: null),
+        //           ),
+        //         );
+        //       } else if (punchOutTime != null) {
+        //         Navigator.push(
+        //           context,
+        //           SlidePageRoute(
+        //             page: AttendanceMarkedPage(punchTime: null, punchOutTime: punchOutTime!),
+        //           ),
+        //         );
+        //       } else {
+        //         ScaffoldMessenger.of(context).showSnackBar(
+        //           SnackBar(content: Text("Please mark attendance first.")),
+        //         );
+        //       }
+        //     },
+        //     child:  Icon(Icons.fingerprint,color: Colors.blueGrey[900]!,),
+        //     backgroundColor:Colors.blueGrey[200]!,
+        // )
+        bottomNavigationBar: BottomNavigationBar(
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Profile',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.check_circle),
+              label: 'Attendance',
+            ),
+          ],
+          currentIndex: _currentIndex, // Set the index for the current tab
+          selectedItemColor: Colors.blueGrey[900],
+          onTap: _onItemTapped
         ),
       );
     });
@@ -440,3 +593,25 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 }
+class SlidePageRoute extends PageRouteBuilder {
+  final Widget page;
+
+  SlidePageRoute({required this.page})
+      : super(
+    pageBuilder: (context, animation, secondaryAnimation) => page,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(
+        position: offsetAnimation,
+        child: child,
+      );
+    },
+  );
+}
+
