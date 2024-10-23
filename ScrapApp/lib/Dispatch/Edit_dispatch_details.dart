@@ -184,6 +184,21 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       setState(() {
         isLoading = true;
       });
+
+      print(username);
+      print(password);
+      print(widget.sale_order_id);
+      print(widget.lift_id);
+      print(materialId);
+      print(invoiceController.text);
+      print(dateController.text);
+      print(truckNoController.text);
+      print(firstWeightNoController.text);
+      print(fullWeightController.text);
+      print(moistureWeightController.text);
+      print(netWeightController.text);
+      print(quantityController.text);
+      print(noteController.text);
       await checkLogin();
       final url = Uri.parse("${URL}save_lifting");
 
@@ -507,16 +522,16 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
                 Expanded(
                   child: ListView(
                     children: [
-                      buildTextField("Material", materialController, true , false ,context),
-                      buildTextField("Invoice No", invoiceController,false , false ,context),
-                      buildTextField("Date", dateController,false , true ,context),
-                      buildTextField("Truck No", truckNoController,false , false ,context),
-                      buildTextField("First Weight", firstWeightNoController, false,false , context),
-                      buildTextField("Gross Weight", fullWeightController, false,false , context),
-                      buildTextField("Net", netWeightController, true,false , context),
-                      buildTextField("Moisture Weight", moistureWeightController, false,false , context),
-                      buildTextField("DMT/Quantity Weight", quantityController,false , false ,context),
-                      buildTextField("Note", noteController,false , false ,context),
+                      buildTextField("Material", materialController,true, false , Colors.white,context),
+                      buildTextField("Invoice No", invoiceController , false,false ,Colors.white, context),
+                      buildTextField("Date", dateController, false,true , Colors.white,context),
+                      buildTextField("Truck No", truckNoController, false,false ,Colors.white, context),
+                      buildTextField("First Weight", firstWeightNoController, false,false ,Colors.white, context),
+                      buildTextField("Gross Weight", fullWeightController, false,false , Colors.white,context),
+                      buildTextField("Net", netWeightController, true,false ,Colors.grey[400]!, context),
+                      buildTextField("Moisture Weight", moistureWeightController, false,false ,Colors.white, context),
+                      buildTextField("DMT/Quantity Weight", quantityController, false,false , Colors.white,context),
+                      buildTextField("Note", noteController, false,false , Colors.white,context),
                       SizedBox(height: 100,),
                       Container(
 
@@ -663,7 +678,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
 
 
   Widget buildTextField(
-      String label, TextEditingController controller, bool isReadOnly ,bool isDateField ,context) {
+      String label, TextEditingController controller, bool isReadOnly ,bool isDateField ,Color color,context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
@@ -680,37 +695,43 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
           ),
           Expanded(
             flex: 7, // Adjusts text field width
-              child: TextField(
-                onTap: isDateField ? () => _selectDate(context, controller) : null,
-                controller: controller,
-                decoration: InputDecoration(
-                  suffixIcon: isDateField
-                      ? IconButton(
-                    icon: Icon(Icons.calendar_today),
-                    onPressed: () => _selectDate(context, controller),
-                  )
-                      :null,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: Colors.indigo[800]!,
-                      width: 2.0,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: Colors.grey[400]!,
-                      width: 1.5,
-                    ),
-                  ),
-                  contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: color,
                 ),
-                readOnly: isReadOnly,
+                child: TextField(
+                  onTap: isDateField ? () => _selectDate(context, controller) : null,
+                  controller: controller,
+                  decoration: InputDecoration(
+                    suffixIcon: isDateField
+                        ? IconButton(
+                      icon: Icon(Icons.calendar_today),
+                      onPressed: () => _selectDate(context, controller),
+                    )
+                        :null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.indigo[800]!,
+                        width: 2.0,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.grey[400]!,
+                        width: 1.5,
+                      ),
+                    ),
+                    contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                  readOnly: isReadOnly,
+                ),
               ),
             ),
         ],
