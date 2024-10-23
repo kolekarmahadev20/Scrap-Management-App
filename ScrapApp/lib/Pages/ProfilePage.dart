@@ -256,9 +256,6 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
-
-
-
   Widget buildCard(String text, Icon icon, String path) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -306,7 +303,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -593,6 +589,8 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 }
+
+
 class SlidePageRoute extends PageRouteBuilder {
   final Widget page;
 
