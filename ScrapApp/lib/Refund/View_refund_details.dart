@@ -321,7 +321,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             buildListTile(
-                "Material Name : ${ViewRefundData['sale_order_details'][0]['material_name'] ?? "N/A"}"),
+                "Material Name : ${ViewRefundData['sale_order']['description'] ?? 'N/A'}"),
             buildListTile(
                 "Total Qty :${ViewRefundData['sale_order_details'][0]['totalqty'] ?? "N/A"}"),
             if(ViewRefundData['lifted_quantity'] != null &&

@@ -310,7 +310,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            buildListTile("Material Name :${ViewPaymentData['sale_order_details'][0]['material_name'] ?? 'No data'}"),
+            buildListTile("Material Name :${ViewPaymentData['sale_order']['description'] ?? 'No data'}"),
             buildListTile("Total Qty :${ViewPaymentData['sale_order_details'][0]['totalqty'] ?? 'No data'}"),
             if(ViewPaymentData['lifted_quantity'] != null &&
                 ViewPaymentData['lifted_quantity'] is List &&
