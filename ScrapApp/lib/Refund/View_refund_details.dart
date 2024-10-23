@@ -22,6 +22,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
 
   String? username = '';
   String? password = '';
+  String? loginType = '';
+  String? userType = '';
   bool isLoading = false;
   Map<String, dynamic> ViewRefundData = {};
   List<dynamic> refundId = [];
@@ -38,10 +40,12 @@ class _View_refund_detailsState extends State<View_refund_details> {
     fetchRefundDetails();
   }
 
-  checkLogin() async {
-    final login = await SharedPreferences.getInstance();
-    username = await login.getString("username") ?? '';
-    password = await login.getString("password") ?? '';
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
   Future<void> fetchRefundDetails() async {

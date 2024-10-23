@@ -20,6 +20,8 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   String? username;
   String? password;
+  String? loginType = '';
+  String? userType = '';
   String name = '';
   String contact = '';
   String email = '';
@@ -56,12 +58,13 @@ class _ProfilePageState extends State<ProfilePage> {
     fetchLogoutPunchTimeFromDatabase();
   }
 
-  checkLogin() async {
-    final login = await SharedPreferences.getInstance();
-    username = login.getString("username");
-    password = login.getString("password");
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
-
   getCredentialDetails() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {

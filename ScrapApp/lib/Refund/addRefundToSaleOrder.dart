@@ -29,7 +29,8 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
   final TextEditingController amountController = TextEditingController();
   final TextEditingController totalPaymentController = TextEditingController();
   final TextEditingController totalEmdController = TextEditingController();
-  final TextEditingController totalAmountEmdController = TextEditingController();
+  final TextEditingController totalCmdController = TextEditingController();
+  final TextEditingController totalEmdCmdController = TextEditingController();
   final TextEditingController noteController = TextEditingController();
   final TextEditingController refNoController = TextEditingController();
   final TextEditingController rvNoController = TextEditingController();
@@ -38,6 +39,8 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
 
   String? username = '';
   String? password = '';
+  String? loginType = '';
+  String? userType = '';
   String? selectedOrderId;
   String? selectedPaymentType;
   bool isLoading = false; // Add a loading flag
@@ -62,7 +65,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
     amountController.clear();
     totalPaymentController.clear();
     totalEmdController.clear();
-    totalAmountEmdController.clear();
+    totalEmdCmdController.clear();
     noteController.clear();
     refNoController.clear();
     rvNoController.clear();
@@ -73,21 +76,24 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
   void initState() {
     super.initState();
     checkLogin();
+    print(widget.sale_order_id);
     materialController.text = widget.material_name;
     fetchRefundPaymentDetails();
   }
 
-  checkLogin() async {
-    final login = await SharedPreferences.getInstance();
-    username = await login.getString("username") ?? '';
-    password = await login.getString("password") ?? '';
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
 
   Future<void> fetchRefundPaymentDetails() async {
     try {
       await checkLogin();
-      final url = Uri.parse("${URL}Addrefunddata");
+      final url = Uri.parse("${URL}EMD_CMD_details");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
@@ -100,9 +106,10 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         setState(() {
-          totalPaymentController.text = jsonData['totalPayment'].toString();
-          totalEmdController.text = jsonData['total_emd'].toString();
-          totalAmountEmdController.text = jsonData['totalAvailablebalIncludingEmd'].toString();
+          totalPaymentController.text = jsonData['t_amt'].toString()?? 'N/A';
+          totalEmdController.text = jsonData['total_EMD'].toString() ?? 'N/A';
+          totalCmdController.text = jsonData['total_CMD'].toString()  ?? 'N/A';
+          totalEmdCmdController.text = jsonData['total_amount_included_emdCmd'].toString() ?? 'N/A';
         });
       } else {
         print("unable to load order ids.");
@@ -128,9 +135,9 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
           'payment_type': selectedPaymentType ?? '',
           'pay_date': dateController1.text,
           'amt': amountController.text,
-          't_amt': totalAmountEmdController.text,
+          't_amt': totalPaymentController.text,
           'total_emd': totalEmdController.text,
-          'total_amount_including_emd': totalAmountEmdController.text,
+          'total_amount_including_emd': totalEmdCmdController.text,
           'narration': noteController.text,
           'pay_ref_no': refNoController.text,
           'receipt_voucher_no': rvNoController.text,
@@ -244,8 +251,9 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
                       child: ListView(
                         children: [
                           buildTextField("Total Payment", totalPaymentController, true,false ,Colors.grey[400]!, context),
-                          buildTextField("Total EMD", totalEmdController, true,false , Colors.grey[400]!,context),
-                          buildTextField("Total Amount Including EMD", totalAmountEmdController, true,false ,Colors.grey[400]!, context),
+                          buildTextField("Total EMD", totalCmdController, true,false , Colors.grey[400]!,context),
+                          buildTextField("Total CMD", totalEmdController, true,false , Colors.grey[400]!,context),
+                          buildTextField("Total Amount Including EMD/CMD", totalEmdCmdController, true,false ,Colors.grey[400]!, context),
                           Divider(),
                           buildTextField("Material Name", materialController, true, false , Colors.grey[400]!,context),
                           buildDropdownPayment("Payment Type", refundMap, (value) {
@@ -254,35 +262,44 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
                             });
                           }),
                           if (selectedPaymentType == "R") ...[
-                            buildTextField("Date", dateController1, false, true ,Colors.white, context),
+                            // buildTextField("Date", dateController1, false, true ,Colors.white, context),
                             buildTextField("Amount", amountController, false ,false , Colors.white,context),
                             // buildTextField("Total Payment", totalPaymentController, true, false , Colors.white,context),
                             buildTextField("NFA No.", nfaController, false,false ,Colors.white, context),
-                            buildTextField("RV Date", dateController2, false,true ,Colors.white, context),
+                            buildTextField("Date", dateController1, false,true ,Colors.white, context),
                           ] else if (selectedPaymentType == "RE" || selectedPaymentType == "Rc") ...[
-                            buildTextField("Date", dateController1, false,true , Colors.white,context),
+                            // buildTextField("Date", dateController1, false,true , Colors.white,context),
                             buildTextField("Amount", amountController, false,false ,Colors.white, context),
                             // buildTextField("Total EMD", totalEmdController, true,false ,Colors.white, context),
                             // buildTextField("Total Amount Including EMD", totalAmountEmdController, true,false , Colors.white,context),
                             buildTextField("NFA No.", nfaController, false,false ,Colors.white, context),
-                            buildTextField("RV Date", dateController2, false,true ,Colors.white, context),
+                            buildTextField("Date", dateController1, false,true , Colors.white,context),
                           ] else if (selectedPaymentType == "P") ...[
-                            buildTextField("Date", dateController1, false,true ,Colors.white, context),
+                            // buildTextField("Date", dateController1, false,true ,Colors.white, context),
                             buildTextField("Amount", amountController, false,false ,Colors.white, context),
                             // buildTextField("Total Payment", totalPaymentController, true,false ,Colors.white, context),
                             // buildTextField("Total EMD", totalEmdController, true,false ,Colors.white, context),
                             // buildTextField("Total Amount Including EMD", totalAmountEmdController, true,false ,Colors.white, context),
-                            buildTextField("RV Date", dateController2, false,true , Colors.white,context),
-                          ] else ...[
-                            buildTextField("Date", dateController1, false,true , Colors.white,context),
+                            buildTextField("Date", dateController1, false,true ,Colors.white, context),
+                          ]  else if (selectedPaymentType == "RA") ...[
+                            // buildTextField("Date", dateController1, false,true ,Colors.white, context),
+                            buildTextField("Amount", amountController, false,false ,Colors.white, context),
+                            // buildTextField("Total Payment", totalPaymentController, true,false ,Colors.white, context),
+                            // buildTextField("Total EMD", totalEmdController, true,false ,Colors.white, context),
+                            // buildTextField("Total Amount Including EMD", totalAmountEmdController, true,false ,Colors.white, context),
+                            buildTextField("NFA No.", nfaController, false,false ,Colors.white, context),
+                            buildTextField("Date", dateController1, false,true ,Colors.white, context),
+                          ]else ...[
+                            // buildTextField("Date", dateController1, false,true , Colors.white,context),
                             buildTextField("Amount", amountController, false,false ,Colors.white, context),
                             // buildTextField("Total Payment", totalPaymentController, true,false , Colors.white,context),
                             // buildTextField("Total EMD", totalEmdController, true,false , Colors.white,context),
                             // buildTextField("Total Amount Including EMD", totalAmountEmdController, true,false ,Colors.white, context),
-                            buildTextField("Note", noteController, false,false , Colors.white,context),
                             buildTextField("Ref/RV No.", refNoController, false,false , Colors.white,context),
                             // buildTextField("RV No.", rvNoController, false,false , Colors.white,context),
-                            buildTextField("RV Date", dateController2, false,true ,Colors.white, context),
+                            buildTextField("Date", dateController1, false,true , Colors.white,context),
+                            buildTextField("Remark", noteController, false,false , Colors.white,context),
+
                           ],
                           SizedBox(
                             height: 40,

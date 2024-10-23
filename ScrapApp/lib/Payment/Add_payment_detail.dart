@@ -23,6 +23,8 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
 
   String? username = '';
   String? password = '';
+  String? loginType = '';
+  String? userType = '';
   String? selectedOrderId;
   String? selectedPaymentType;
   bool isLoading = false;
@@ -52,10 +54,12 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
     fetchDropDwonKeyValuePair();
   }
 
-  checkLogin()async{
-    final login = await SharedPreferences.getInstance();
-    username = await login.getString("username") ?? '';
-    password = await login.getString("password") ?? '';
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
   Future<void> addPaymentDetails() async {

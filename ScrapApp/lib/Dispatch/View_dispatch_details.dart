@@ -23,6 +23,8 @@ class View_dispatch_details extends StatefulWidget {
 class _View_dispatch_detailsState extends State<View_dispatch_details> {
   String? username = '';
   String? password = '';
+  String? loginType = '';
+  String? userType = '';
   bool isLoading = false;
   Map<String, dynamic> ViewDispatchData = {};
   List<dynamic> liftingDetails = [];
@@ -35,10 +37,12 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
     fetchDispatchDetails();
   }
 
-  checkLogin() async {
-    final login = await SharedPreferences.getInstance();
-    username = await login.getString("username") ?? '';
-    password = await login.getString("password") ?? '';
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
   Future<void> fetchDispatchDetails() async {

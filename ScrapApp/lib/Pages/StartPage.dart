@@ -36,10 +36,12 @@ class _StartDashBoardPageState extends State<StartPage> {
     }
 
 /*---------------------------------------------------------------------------------------------------------------*/
-  checkLogin(String username , String password)async{
+  checkLogin(String username , String password , String loginType,String userType)async{
     final login = await SharedPreferences.getInstance();
     await login.setString("username", username);
     await login.setString("password", password);
+    await login.setString("loginType", loginType);
+    await login.setString("userType", userType);
   }
 /*---------------------------------------------------------------------------------------------------------------*/
 
@@ -68,18 +70,21 @@ class _StartDashBoardPageState extends State<StartPage> {
           var emp_code = user_data['emp_code']?? "N?A";
           var emp_address = user_data['emp_address']?? "N?A";
           var contact = user_data['Mobile']?? "N?A";
+          var loginType = user_data['login_type']?? "N?A";
+          var userType = user_data['user_type']?? "N?A";
           await saveUserData(true ,person_name, contact, person_email, emp_code, emp_address);
-          await checkLogin(username, password);
+          await checkLogin(username, password ,loginType ,userType);
         }else{
-          var user_data = "N/A";
           // Access fields using keys
           var person_name = "N/A";
           var person_email ="N/A";
           var emp_code ="N/A";
           var emp_address = "N/A";
           var contact ="N/A";
+          var loginType = "N/A";
+          var userType ="N/A";
           await saveUserData(true ,person_name, contact, person_email, emp_code, emp_address);
-          await checkLogin(username, password);
+          await checkLogin(username, password ,loginType,userType);
         }
 
         Navigator.pushReplacement(

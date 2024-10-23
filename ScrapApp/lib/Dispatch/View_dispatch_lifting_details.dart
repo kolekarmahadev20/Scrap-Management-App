@@ -52,6 +52,9 @@ class _View_dispatch_lifting_detailsState
   String? username = '';
 
   String? password = '';
+  String? loginType = '';
+  String? userType = '';
+
 
   String selectedOrderId = '';
 
@@ -102,10 +105,12 @@ class _View_dispatch_lifting_detailsState
     note = widget.note ?? 'N/A';
   }
 
-  checkLogin() async {
-    final login = await SharedPreferences.getInstance();
-    username = await login.getString("username") ?? '';
-    password = await login.getString("password") ?? '';
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
   showLoading() {

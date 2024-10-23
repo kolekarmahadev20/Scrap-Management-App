@@ -44,6 +44,8 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
 
   String? username = '';
   String? password = '';
+  String? loginType = '';
+  String? userType = '';
   String? selectedOrderId;
   bool isLoading = false;
   List<String> orderIDs = ['Select',];
@@ -78,21 +80,25 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     moistureWeightController.addListener(calculateNetWeight);
   }
 
-  checkLogin()async{
-    final login = await SharedPreferences.getInstance();
-    username = await login.getString("username") ?? '';
-    password = await login.getString("password") ?? '';
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
-
   void calculateNetWeight() {
     double firstWeight = double.tryParse(firstWeightNoController.text) ?? 0.0;
     double fullWeight = double.tryParse(fullWeightController.text) ?? 0.0;
     double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
 
-    double netWeight = ((fullWeight - firstWeight) * moistureWeight)/100;
+    double netWeight = (fullWeight - firstWeight);
 
+    double DMTWeight = ((fullWeight - firstWeight) * moistureWeight)/100;
+    DMTWeight = netWeight-DMTWeight;
     // Update the net weight controller with the result
     netWeightController.text = netWeight.toStringAsFixed(2);
+    quantityController.text = DMTWeight.toStringAsFixed(2);
   }
 
 
@@ -362,9 +368,9 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
                           buildTextField("Truck No", truckNoController, false,false ,Colors.white, context),
                           buildTextField("First Weight", firstWeightNoController, false,false ,Colors.white, context),
                           buildTextField("Gross Weight", fullWeightController, false,false , Colors.white,context),
-                          buildTextField("Net/DMT Weight", netWeightController, true,false ,Colors.grey[400]!, context),
+                          buildTextField("Net", netWeightController, true,false ,Colors.grey[400]!, context),
                           buildTextField("Moisture Weight", moistureWeightController, false,false ,Colors.white, context),
-                          buildTextField("Quantity", quantityController, false,false , Colors.white,context),
+                          buildTextField("DMT/Quantity Weight", quantityController, false,false , Colors.white,context),
                           buildTextField("Note", noteController, false,false , Colors.white,context),
                           SizedBox(height: 40,),
                           Container(

@@ -48,6 +48,8 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
 
   String? username = '';
   String? password = '';
+  String? loginType = '';
+  String? userType = '';
   bool isLoading = false;
   String? selectedPaymentType;
 
@@ -83,10 +85,12 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
 
   }
 
-  checkLogin()async{
-    final login = await SharedPreferences.getInstance();
-    username = await login.getString("username") ?? '';
-    password = await login.getString("password") ?? '';
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
   Future<void> editPaymentDetails() async {

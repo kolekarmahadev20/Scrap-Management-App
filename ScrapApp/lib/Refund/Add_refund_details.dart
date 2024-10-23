@@ -30,6 +30,8 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
 
   String? username = '';
   String? password = '';
+  String? loginType = '';
+  String? userType = '';
   String? selectedOrderId;
   String? selectedPaymentType;
   bool isLoading = false; // Add a loading flag
@@ -68,10 +70,12 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
     fetchDropDwonKeyValuePair();
   }
 
-  checkLogin() async {
-    final login = await SharedPreferences.getInstance();
-    username = await login.getString("username") ?? '';
-    password = await login.getString("password") ?? '';
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
   Future<void> fetchDropDwonKeyValuePair() async {

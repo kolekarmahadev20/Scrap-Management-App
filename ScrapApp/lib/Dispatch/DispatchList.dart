@@ -21,6 +21,8 @@ class _DispatchListState extends State<DispatchList> {
 
   String? username = '';
   String? password = '';
+  String? loginType = '';
+  String? userType = '';
   bool isLoading = false; // Add a loading flag
   List<Map<String, dynamic>> dispatchList = [];
 
@@ -32,12 +34,13 @@ class _DispatchListState extends State<DispatchList> {
     fetchDispatchList();
   }
 
-  checkLogin()async{
-    final login = await SharedPreferences.getInstance();
-    username = await login.getString("username") ?? '';
-    password = await login.getString("password") ?? '';
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
-
   Future<void> fetchDispatchList() async {
     try {
       setState(() {

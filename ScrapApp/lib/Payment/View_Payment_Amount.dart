@@ -40,8 +40,10 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
   String? username = '';
 
   String? password = '';
+  String? loginType = '';
+  String? userType = '';
 
-   String totalPayment='';
+  String totalPayment='';
    String totalEmd='';
    String totalCmd='';
    String totalEmdCmd='';
@@ -67,11 +69,13 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
     typeOfTransfer = widget.typeOfTransfer ?? '';
   }
 
-   checkLogin()async{
-     final login = await SharedPreferences.getInstance();
-     username = await login.getString("username") ?? '';
-     password = await login.getString("password") ?? '';
-   }
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
+  }
 
   Future<void> fetchPaymentDetails() async {
     try {

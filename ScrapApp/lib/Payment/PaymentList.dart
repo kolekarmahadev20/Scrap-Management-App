@@ -21,6 +21,8 @@ class _PaymentListState extends State<PaymentList> {
   String? username = '';
 
   String? password = '';
+  String? loginType = '';
+  String? userType = '';
 
   List<Map<String, dynamic>> paymentList = [];
   List<dynamic> filteredPaymentList = []; // For filtered search results
@@ -35,10 +37,12 @@ class _PaymentListState extends State<PaymentList> {
     fetchPaymentList();
   }
 
-  checkLogin()async{
-    final login = await SharedPreferences.getInstance();
-    username = await login.getString("username") ?? '';
-    password = await login.getString("password") ?? '';
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
   Future<void> fetchPaymentList() async {

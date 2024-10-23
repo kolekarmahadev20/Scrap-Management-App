@@ -66,6 +66,8 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
 
   String? username = '';
   String? password = '';
+  String? loginType = '';
+  String? userType = '';
   String firstWeight= '';
   String fullWeight = '';
   String moistureWeight = '';
@@ -110,10 +112,12 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     }
 
 
-  checkLogin()async{
-    final login = await SharedPreferences.getInstance();
-    username = await login.getString("username") ?? '';
-    password = await login.getString("password") ?? '';
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
   void calculateNetWeight() {
@@ -121,10 +125,13 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     double fullWeight = double.tryParse(fullWeightController.text) ?? 0.0;
     double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
 
-    double netWeight = ((fullWeight - firstWeight) * moistureWeight)/100;
+    double netWeight = (fullWeight - firstWeight);
 
+    double DMTWeight = ((fullWeight - firstWeight) * moistureWeight)/100;
+    DMTWeight = netWeight-DMTWeight;
     // Update the net weight controller with the result
     netWeightController.text = netWeight.toStringAsFixed(2);
+    quantityController.text = DMTWeight.toStringAsFixed(2);
   }
 
   void clearFields(){
@@ -500,16 +507,15 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
                 Expanded(
                   child: ListView(
                     children: [
-
-                      buildTextField("Material", materialController, false , false ,context),
+                      buildTextField("Material", materialController, true , false ,context),
                       buildTextField("Invoice No", invoiceController,false , false ,context),
                       buildTextField("Date", dateController,false , true ,context),
                       buildTextField("Truck No", truckNoController,false , false ,context),
                       buildTextField("First Weight", firstWeightNoController, false,false , context),
                       buildTextField("Gross Weight", fullWeightController, false,false , context),
-                      buildTextField("Net/DMT Weight", netWeightController, true,false , context),
+                      buildTextField("Net", netWeightController, true,false , context),
                       buildTextField("Moisture Weight", moistureWeightController, false,false , context),
-                      buildTextField("Quantity", quantityController,false , false ,context),
+                      buildTextField("DMT/Quantity Weight", quantityController,false , false ,context),
                       buildTextField("Note", noteController,false , false ,context),
                       SizedBox(height: 100,),
                       Container(

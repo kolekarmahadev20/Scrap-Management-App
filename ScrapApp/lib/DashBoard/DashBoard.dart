@@ -17,6 +17,8 @@ class DashBoard extends StatefulWidget {
 class _DashBoardState extends State<DashBoard> {
   String? username;
   String? password;
+  String? loginType;
+  String? userType;
   String? saleOrders;
   String? buyerCount;
   String? auctionCmp;
@@ -40,6 +42,8 @@ class _DashBoardState extends State<DashBoard> {
     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
   // Fetch dashboard data from the server

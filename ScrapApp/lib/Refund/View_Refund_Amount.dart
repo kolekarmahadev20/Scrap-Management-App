@@ -47,6 +47,8 @@ class _View_Refund_AmountState extends State<View_Refund_Amount> {
   String? username = '';
 
   String? password = '';
+  String? loginType = '';
+  String? userType = '';
 
   String paymentType='';
 
@@ -91,10 +93,12 @@ class _View_Refund_AmountState extends State<View_Refund_Amount> {
 
   }
 
-  checkLogin()async{
-    final login = await SharedPreferences.getInstance();
-    username = await login.getString("username") ?? '';
-    password = await login.getString("password") ?? '';
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
   @override
@@ -188,40 +192,49 @@ class _View_Refund_AmountState extends State<View_Refund_Amount> {
             Expanded(
               child: ListView(
                 children: [
-                  if( paymentType== "Refund(Other than EMD/CMD)") ...[
+                  if( paymentType== "Refund Amount") ...[
                     buildDisplay("Payment Type", paymentType),
-                    buildDisplay("Date", date1 ),
                     buildDisplay("Amount", amount),
-                    buildDisplay("Total Payment", totalPayment),
+                    // buildDisplay("Total Payment", totalPayment),
                     buildDisplay("NFA No.", nfa),
-                    buildDisplay("RV Date", date2),
+                    buildDisplay("Date", date1 ),
+                    // buildDisplay("RV Date", date2),
                   ]else if (paymentType == "Refund EMD" || paymentType =="Refund CMD") ...[
                     buildDisplay("Payment Type", paymentType),
-                    buildDisplay("Date", date1),
                     buildDisplay("Amount", amount),
-                    buildDisplay("Total EMD", totalEmd),
-                    buildDisplay("Total Amount Including EMD",totalAmountIncludingEmd),
+                    // buildDisplay("Total EMD", totalEmd),
+                    // buildDisplay("Total Amount Including EMD",totalAmountIncludingEmd),
                     buildDisplay("NFA No.", nfa),
-                    buildDisplay("RV Date", date2),
+                    buildDisplay("Date", date1),
+                    // buildDisplay("RV Date", date2),
                   ]else if(paymentType == "Penalty") ...[
                     buildDisplay("Payment Type", paymentType),
-                    buildDisplay("Date", date1),
                     buildDisplay("Amount", amount),
-                    buildDisplay("Total EMD", totalEmd),
-                    buildDisplay("Total Amount Including EMD",totalAmountIncludingEmd),
-                    buildDisplay("RV Date", date2),
+                    buildDisplay("Date", date1),
+                    // buildDisplay("Total EMD", totalEmd),
+                    // buildDisplay("Total Amount Including EMD",totalAmountIncludingEmd),
+                    // buildDisplay("RV Date", date2),
+                  ] else if(paymentType == "Refund All") ...[
+                    buildDisplay("Payment Type", paymentType),
+                    buildDisplay("Amount", amount),
+                    buildDisplay("NFA No.", nfa),
+                    buildDisplay("Date", date1),
+                    // buildDisplay("Total EMD", totalEmd),
+                    // buildDisplay("Total Amount Including EMD",totalAmountIncludingEmd),
+                    // buildDisplay("RV Date", date2),
                   ] else ...[
                     buildDisplay("Payment Type", paymentType),
-                    buildDisplay("Date", date1),
                     buildDisplay("Amount", amount),
-                    buildDisplay("Total Payment", totalPayment),
-                    buildDisplay("Total EMD", totalEmd),
-                    buildDisplay("Total Amount Including EMD",totalAmountIncludingEmd),
-                    buildDisplay("Note", note),
-                    buildDisplay("Reference No.", referenceNo),
-                    buildDisplay("RV No.", rvNo),
-                    buildDisplay("RV Date", date2),
-                    buildDisplay("Type Of Transfer", typeOfTransfer),
+                    // buildDisplay("Total Payment", totalPayment),
+                    // buildDisplay("Total EMD", totalEmd),
+                    // buildDisplay("Total Amount Including EMD",totalAmountIncludingEmd),
+                    buildDisplay("Ref/RV No.", referenceNo),
+                    // buildDisplay("RV No.", rvNo),
+                    buildDisplay("Date", date1),
+                    // buildDisplay("RV Date", date2),
+                    // buildDisplay("Type Of Transfer", typeOfTransfer),
+                    buildDisplay("Remark", note),
+
                   ],
                   SizedBox(height: 40,),
                   Padding(

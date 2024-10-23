@@ -15,6 +15,8 @@ class saleOrderList extends StatefulWidget {
 class saleOrderListState extends State<saleOrderList> {
   String? username = '';
   String? password = '';
+  String? loginType = '';
+  String? userType = '';
 
   List<dynamic> saleOrderList = [];
   List<dynamic> filteredSaleOrderList = []; // For filtered search results
@@ -28,12 +30,13 @@ class saleOrderListState extends State<saleOrderList> {
     fetchSaleOrderList();
   }
 
-  checkLogin() async {
-    final login = await SharedPreferences.getInstance();
-    username = await login.getString("username") ?? '';
-    password = await login.getString("password") ?? '';
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
-
   Future<void> fetchSaleOrderList() async {
     try {
       setState(() {

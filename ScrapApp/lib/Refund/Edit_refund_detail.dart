@@ -61,6 +61,8 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
 
   String? username = '';
   String? password = '';
+  String? loginType = '';
+  String? userType = '';
   String date1='';
   String amount='';
   String totalPayment='';
@@ -121,10 +123,12 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
     nfaController.text = widget.nfa ?? 'N/A';
   }
 
-  checkLogin()async{
-    final login = await SharedPreferences.getInstance();
-    username = await login.getString("username") ?? '';
-    password = await login.getString("password") ?? '';
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
   Future<void> editRefundDetails() async {
