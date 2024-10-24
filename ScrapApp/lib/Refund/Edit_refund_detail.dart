@@ -101,7 +101,9 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
 
   void initState(){
     super.initState();
-    checkLogin();
+    checkLogin().then((_){
+      setState(() {});
+    });
     getData();
   }
 

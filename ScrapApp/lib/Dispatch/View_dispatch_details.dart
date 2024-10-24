@@ -32,7 +32,9 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
   @override
   void initState() {
     super.initState();
-    checkLogin();
+    checkLogin().then((_){
+      setState(() {});
+    });
     print(widget.sale_order_id);
     fetchDispatchDetails();
   }

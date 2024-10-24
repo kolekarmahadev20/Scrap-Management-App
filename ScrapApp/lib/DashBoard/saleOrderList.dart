@@ -26,7 +26,9 @@ class saleOrderListState extends State<saleOrderList> {
   @override
   void initState() {
     super.initState();
-    checkLogin();
+    checkLogin().then((_) {
+      setState(() {});  // Rebuilds the widget after `userType` is updated.
+    });
     fetchSaleOrderList();
   }
 

@@ -60,8 +60,14 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
    @override
   void initState() {
     super.initState();
-    checkLogin();
+    checkLogin().then((_) {
+      setState(() {});
+    });
     fetchPaymentDetails();
+    getData();
+  }
+
+  getData(){
     paymentType = widget.paymentType ?? '';
     date1 = widget.date1 ?? '';
     amount = widget.amount ?? '';
@@ -153,13 +159,12 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
                 elevation: 2,
                 color: Colors.white,
                 shape: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blueGrey[400]!)
+                  borderSide: BorderSide(color: Colors.blueGrey[400]!),
                 ),
                 child: Container(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Spacer(),
                       Spacer(),
                       Center(
                         child: Text(
@@ -173,28 +178,33 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
                         ),
                       ),
                       Spacer(),
-                      IconButton(
-                        icon: Icon(
-                          Icons.edit,
-                          size: 30,
-                          color: Colors.indigo[800],
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => Edit_payment_detail(
+                      Opacity(
+                        opacity: (userType == 'S' || userType == 'A') ? 1.0 : 0.0,
+                        child: IconButton(
+                          icon: Icon(
+                            Icons.edit,
+                            size: 30,
+                            color: Colors.indigo[800],
+                          ),
+                          onPressed: (userType == 'S' || userType == 'A')
+                              ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Edit_payment_detail(
                                   sale_order_id: widget.sale_order_id,
-                                  paymentId:widget.paymentId,
+                                  paymentId: widget.paymentId,
                                   paymentType: paymentType,
                                   date1: date1,
                                   amount: amount,
                                   referenceNo: referenceNo,
                                   typeOfTransfer: typeOfTransfer,
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          }
+                              : null, // Disable the onPressed when opacity is 0
+                        ),
                       ),
                     ],
                   ),

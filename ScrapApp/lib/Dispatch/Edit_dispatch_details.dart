@@ -92,7 +92,9 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   @override
   void initState() {
     super.initState();
-    checkLogin();
+    checkLogin().then((_){
+      setState(() {});
+    });
     materialNameId();
      // = widget.selectedOrderId ?? "N/A";
     materialController.text=widget.material ?? 'N/A';
@@ -185,20 +187,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
         isLoading = true;
       });
 
-      print(username);
-      print(password);
-      print(widget.sale_order_id);
-      print(widget.lift_id);
-      print(materialId);
-      print(invoiceController.text);
-      print(dateController.text);
-      print(truckNoController.text);
-      print(firstWeightNoController.text);
-      print(fullWeightController.text);
-      print(moistureWeightController.text);
-      print(netWeightController.text);
-      print(quantityController.text);
-      print(noteController.text);
       await checkLogin();
       final url = Uri.parse("${URL}save_lifting");
 

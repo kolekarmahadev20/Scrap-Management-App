@@ -36,7 +36,9 @@ class _View_refund_detailsState extends State<View_refund_details> {
   @override
   void initState() {
     super.initState();
-    checkLogin();
+    checkLogin().then((_){
+      setState(() {});
+    });
     fetchRefundDetails();
   }
 

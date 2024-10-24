@@ -77,7 +77,13 @@ class _View_Refund_AmountState extends State<View_Refund_Amount> {
   @override
   void initState() {
     super.initState();
-    checkLogin();
+    checkLogin().then((_){
+      setState(() {});
+    });
+    getData();
+  }
+
+  getData(){
     paymentType = widget.paymentType ?? 'Unknown';
     date1 = widget.date1 ?? 'N/A';
     amount = widget.amount ?? '0.00';
@@ -90,8 +96,9 @@ class _View_Refund_AmountState extends State<View_Refund_Amount> {
     date2 = widget.date2 ?? 'N/A';
     typeOfTransfer = widget.typeOfTransfer ?? 'Unknown';
     nfa = widget.nfa ?? 'N/A';
-
   }
+
+
 
   Future<void> checkLogin() async {
     final prefs = await SharedPreferences.getInstance();

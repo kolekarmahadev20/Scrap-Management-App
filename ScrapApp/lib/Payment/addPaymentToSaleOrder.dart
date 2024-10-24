@@ -65,10 +65,11 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
   @override
   void initState(){
     super.initState();
-    checkLogin();
+    checkLogin().then((_){
+      setState(() {});
+    });
     fetchPaymentDetails();
     materialNameController.text = widget.material_name;
-    print(widget.material_name);
   }
 
   Future<void> checkLogin() async {

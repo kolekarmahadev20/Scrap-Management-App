@@ -10,9 +10,39 @@ import 'package:scrapapp/Refund/RefundList.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends StatefulWidget {
 
 
+
+  @override
+  State<AppDrawer> createState() => _AppDrawerState();
+}
+
+class _AppDrawerState extends State<AppDrawer> {
+  String? username = '';
+
+  String? password = '';
+
+  String? loginType = '';
+
+  String? userType = '';
+
+  @override
+  initState(){
+    super.initState();
+    checkLogin().then((_) {
+      setState(() {});  // Rebuilds the widget after `userType` is updated.
+    });
+  }
+
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
+    print(userType);
+  }
 
   Future<void> _logout(BuildContext context) async {
     SharedPreferences login = await SharedPreferences.getInstance();
@@ -23,7 +53,6 @@ class AppDrawer extends StatelessWidget {
           (Route<dynamic> route) => false,
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +133,7 @@ class AppDrawer extends StatelessWidget {
 
                     },
                   ),
+                  if(userType == 'S' || userType == 'A')
                   _buildDrawerItem(
                     context,
                     icon: Icons.border_outer,

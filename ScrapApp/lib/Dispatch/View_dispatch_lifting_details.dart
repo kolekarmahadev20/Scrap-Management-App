@@ -90,8 +90,15 @@ class _View_dispatch_lifting_detailsState
   @override
   void initState() {
     super.initState();
-    checkLogin();
+    checkLogin().then((_){
+      setState(() {});
+    });
     fetchImageList();
+    getData();
+  }
+
+
+  getData(){
     selectedOrderId = widget.selectedOrderId ?? "N/A";
     material = widget.material ?? 'N/A';
     invoiceNo = widget.invoiceNo ?? 'N/A';
@@ -103,6 +110,7 @@ class _View_dispatch_lifting_detailsState
     netWeight = widget.netWeight ?? "N/A";
     quantity = widget.quantity ?? 'N/A';
     note = widget.note ?? 'N/A';
+
   }
 
   Future<void> checkLogin() async {
@@ -252,7 +260,7 @@ class _View_dispatch_lifting_detailsState
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.white, // Background color
-                        border:Border.all(color: Colors.blueGrey[400]!),
+                        border: Border.all(color: Colors.blueGrey[400]!),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black26, // Shadow color
@@ -274,32 +282,39 @@ class _View_dispatch_lifting_detailsState
                             ),
                           ),
                           Spacer(),
-                          IconButton(
-                            icon: Icon(
-                              Icons.edit,
-                              size: 30, // Keep previous icon size
-                              color: Colors.indigo[800],
-                            ),
-                            onPressed: () {
-                              Navigator.push(
+                          Opacity(
+                            opacity: (userType == 'S' || userType == 'A') ? 1.0 : 0.0,
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.edit,
+                                size: 30, // Keep previous icon size
+                                color: Colors.indigo[800],
+                              ),
+                              onPressed: (userType == 'S' || userType == 'A')
+                                  ? () {
+                                Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => Edit_dispatch_details(
-                                            sale_order_id: widget.sale_order_id,
-                                            lift_id: widget.lift_id,
-                                            material: material,
-                                            invoiceNo: invoiceNo,
-                                            truckNo: truckNo,
-                                            firstWeight:firstWeight ,
-                                            fullWeight: fullWeight,
-                                            moistureWeight: moistureWeight,
-                                            netWeight:netWeight,
-                                            note: note,
-                                            quantity: quantity,
-                                            selectedOrderId: selectedOrderId,
-                                            date: date,
-                                          )));
-                            },
+                                    builder: (context) => Edit_dispatch_details(
+                                      sale_order_id: widget.sale_order_id,
+                                      lift_id: widget.lift_id,
+                                      material: material,
+                                      invoiceNo: invoiceNo,
+                                      truckNo: truckNo,
+                                      firstWeight: firstWeight,
+                                      fullWeight: fullWeight,
+                                      moistureWeight: moistureWeight,
+                                      netWeight: netWeight,
+                                      note: note,
+                                      quantity: quantity,
+                                      selectedOrderId: selectedOrderId,
+                                      date: date,
+                                    ),
+                                  ),
+                                );
+                              }
+                                  : null, // Disable the onPressed when opacity is 0
+                            ),
                           ),
                         ],
                       ),

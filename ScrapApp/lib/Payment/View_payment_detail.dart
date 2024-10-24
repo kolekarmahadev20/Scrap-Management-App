@@ -39,7 +39,9 @@ class _View_payment_detailState extends State<View_payment_detail> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    checkLogin();
+    checkLogin().then((_) {
+      setState(() {});
+    });
     fetchPaymentDetails();
   }
 
@@ -56,6 +58,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
       isLoading = true;
     });
     await checkLogin();
+    print(userType);
     final url = Uri.parse("${URL}payment_details");
     var response = await http.post(
       url,

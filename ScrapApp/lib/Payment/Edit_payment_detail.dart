@@ -71,8 +71,14 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
   @override
   initState(){
     super.initState();
-    checkLogin();
+    checkLogin().then((_){
+      setState(() {});
+    });
     fetchPaymentDetails();
+    getData();
+  }
+
+  getData(){
     if (PaymentType.containsKey(widget.paymentType)) {
       selectedPaymentType =PaymentType['${widget.paymentType}'];
     } else {
@@ -82,7 +88,6 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
     amountController.text = widget.amount!;
     refNoController.text = widget.referenceNo!;
     typeTransController.text = widget.typeOfTransfer!;
-
   }
 
   Future<void> checkLogin() async {

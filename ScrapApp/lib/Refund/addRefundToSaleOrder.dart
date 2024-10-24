@@ -58,6 +58,17 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
     "Refund All": "RA"
   };
 
+  @override
+  void initState() {
+    super.initState();
+    checkLogin().then((_) {
+      setState(() {});
+    });
+    materialController.text = widget.material_name;
+    fetchRefundPaymentDetails();
+  }
+
+
   void clearFields() {
     selectedOrderId = null;
     selectedPaymentType = null;
@@ -72,14 +83,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
     dateController2.clear();
   }
 
-  @override
-  void initState() {
-    super.initState();
-    checkLogin();
-    print(widget.sale_order_id);
-    materialController.text = widget.material_name;
-    fetchRefundPaymentDetails();
-  }
+
 
   Future<void> checkLogin() async {
     final prefs = await SharedPreferences.getInstance();

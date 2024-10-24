@@ -50,7 +50,9 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
   @override
   void initState(){
     super.initState();
-    checkLogin();
+    checkLogin().then((_){
+      setState(() {});
+    });
     fetchDropDwonKeyValuePair();
   }
 

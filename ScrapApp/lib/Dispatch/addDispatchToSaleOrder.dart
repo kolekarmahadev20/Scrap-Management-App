@@ -72,7 +72,9 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   @override
   void initState(){
     super.initState();
-    checkLogin();
+    checkLogin().then((_) {
+      setState(() {});  // Rebuilds the widget after `userType` is updated.
+    });
     materialController.text = widget.material_name;
     materialNameId();
     firstWeightNoController.addListener(calculateNetWeight);

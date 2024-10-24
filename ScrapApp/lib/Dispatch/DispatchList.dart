@@ -30,7 +30,9 @@ class _DispatchListState extends State<DispatchList> {
   @override
   void initState() {
     super.initState();
-    checkLogin();
+    checkLogin().then((_) {
+      setState(() {});  // Rebuilds the widget after `userType` is updated.
+    });
     fetchDispatchList();
   }
 

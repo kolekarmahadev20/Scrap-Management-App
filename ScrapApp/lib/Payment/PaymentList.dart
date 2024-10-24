@@ -33,7 +33,9 @@ class _PaymentListState extends State<PaymentList> {
   @override
   void initState() {
     super.initState();
-    checkLogin();
+    checkLogin().then((_) {
+      setState(() {});
+    });
     fetchPaymentList();
   }
 

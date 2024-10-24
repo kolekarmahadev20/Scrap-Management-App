@@ -33,7 +33,9 @@ class _RefundListState extends State<RefundList> {
   @override
   void initState() {
     super.initState();
-    checkLogin();
+    checkLogin().then((_){
+      setState(() {});
+    });
     fetchRefundList();
   }
 

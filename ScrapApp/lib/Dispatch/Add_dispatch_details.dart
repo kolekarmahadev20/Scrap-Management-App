@@ -64,7 +64,9 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
   @override
   void initState(){
     super.initState();
-    checkLogin();
+    checkLogin().then((_) {
+      setState(() {});  // Rebuilds the widget after `userType` is updated.
+    });
     fetchDropDwonKeyValuePair();
     firstWeightNoController.addListener(calculateNetWeight);
     fullWeightController.addListener(calculateNetWeight);

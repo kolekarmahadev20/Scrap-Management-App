@@ -53,7 +53,9 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     getCredentialDetails();
-    checkLogin();
+    checkLogin().then((_){
+      setState(() {});
+    });
     fetchPunchTimeFromDatabase();
     fetchLogoutPunchTimeFromDatabase();
   }
