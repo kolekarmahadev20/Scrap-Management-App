@@ -232,7 +232,7 @@ class _AppDrawerState extends State<AppDrawer> {
         splashColor: Colors.indigo[100],
         highlightColor: Colors.indigo[50],
         child: ListTile(
-          leading: Icon(icon, color: Colors.blueGrey[700], size: 30),
+          leading: Icon(icon, color: widget.currentPage == index ?Colors.blue : Colors.blueGrey[700], size: 30),
           title: Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500 , color: widget.currentPage == index ?Colors.blue : Colors.black )),
 
         ),

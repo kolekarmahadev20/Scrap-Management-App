@@ -160,16 +160,14 @@ class _StartDashBoardPageState extends State<StartPage> {
   }
 
   Widget _buildTop() {
-    return Positioned.fill(
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(21),
-          border: Border.all(color: Colors.black, width: 1),
-        ),
-        child: Image.asset(
-          'assets/images/log.png',
-          fit: BoxFit.fill, // Use BoxFit.cover to ensure the image covers the entire area
-        ),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(21),
+        border: Border.all(color: Colors.black, width: 1),
+      ),
+      child: Image.asset(
+        'assets/images/log.png',
+        fit: BoxFit.fill, // Use BoxFit.cover to ensure the image covers the entire area
       ),
     );
   }
