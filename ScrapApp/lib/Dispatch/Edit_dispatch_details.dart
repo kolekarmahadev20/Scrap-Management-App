@@ -88,31 +88,34 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   String? otherImg;
   Uint8List? imageBytes;
 
-
   @override
   void initState() {
     super.initState();
-    checkLogin().then((_){
-      setState(() {});
-    });
-    materialNameId();
-     // = widget.selectedOrderId ?? "N/A";
-    materialController.text=widget.material ?? 'N/A';
-    invoiceController.text=widget.invoiceNo ?? 'N/A';
-    dateController.text=widget.date ?? 'N/A';
-    truckNoController.text=widget.truckNo ?? 'N/A';
-    firstWeightNoController.text = widget.firstWeight ?? "N/A";
-    fullWeightController.text = widget.fullWeight ?? "N/A";
-    moistureWeightController.text = widget.moistureWeight ?? "N/A";
-    netWeightController.text = widget.netWeight ?? "N/A";
-    quantityController.text=widget.quantity ?? 'N/A';
-    noteController.text=widget.note ?? 'N/A';
+    _initializeData();
     fetchImageList();
+  }
+
+  Future<void> _initializeData() async{
+    await checkLogin().then((_){setState(() {});});
+    await materialNameId();
+    await getData();
     firstWeightNoController.addListener(calculateNetWeight);
     fullWeightController.addListener(calculateNetWeight);
     moistureWeightController.addListener(calculateNetWeight);
-    }
+  }
 
+  getData(){
+      materialController.text=widget.material ?? 'N/A';
+      invoiceController.text=widget.invoiceNo ?? 'N/A';
+      dateController.text=widget.date ?? 'N/A';
+      truckNoController.text=widget.truckNo ?? 'N/A';
+      firstWeightNoController.text = widget.firstWeight ?? "N/A";
+      fullWeightController.text = widget.fullWeight ?? "N/A";
+      moistureWeightController.text = widget.moistureWeight ?? "N/A";
+      netWeightController.text = widget.netWeight ?? "N/A";
+      quantityController.text=widget.quantity ?? 'N/A';
+      noteController.text=widget.note ?? 'N/A';
+    }
 
   Future<void> checkLogin() async {
     final prefs = await SharedPreferences.getInstance();
@@ -407,7 +410,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     }
   }
 
-
   Future<void> _fetchFileBytesFromServer(String fileUrl) async {
     try {
       var response = await http.get(Uri.parse(fileUrl));
@@ -427,9 +429,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     }
   }
 
-
-
-
   showLoading() {
     return Container(
       height: double.infinity,
@@ -440,7 +439,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -664,9 +662,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     }
   }
 
-
-  Widget buildTextField(
-      String label, TextEditingController controller, bool isReadOnly ,bool isDateField ,Color color,context) {
+  Widget buildTextField(String label, TextEditingController controller, bool isReadOnly ,bool isDateField ,Color color,context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
@@ -727,8 +723,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     );
   }
 }
-
-
 
 class ImageWidget extends StatefulWidget {
   final String value;

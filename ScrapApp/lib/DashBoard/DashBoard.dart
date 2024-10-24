@@ -326,12 +326,14 @@ class _DashBoardState extends State<DashBoard> {
   Widget _buildCardActions(VoidCallback onPressed) {
     return Row(
       children: [
+        if(userType == 'S' || userType == 'A')
         TextButton(
             onPressed: (){
               Navigator.push(context, MaterialPageRoute(builder: (context) => saleOrderList()));
             },
             child: Text("View More" , style: TextStyle(color: Colors.blue),)),
-        Expanded(
+        if(userType == 'S' || userType == 'A')
+          Expanded(
           child: IconButton(
             onPressed: () {},
             icon: Icon(Icons.arrow_forward_ios_outlined, color: Colors.blue, size: 20),

@@ -41,7 +41,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   final TextEditingController noteController = TextEditingController();
 
 
-
   String? username = '';
   String? password = '';
   String? loginType = '';
@@ -58,7 +57,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   List<File> MaterialFullLoad = [];
   List<File> other = [];
 
-
   void clearFields(){
     selectedOrderId = null;
     materialController.clear();
@@ -72,11 +70,15 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   @override
   void initState(){
     super.initState();
-    checkLogin().then((_) {
-      setState(() {});  // Rebuilds the widget after `userType` is updated.
-    });
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    await checkLogin().then((_) {setState(() {});}); // Rebuilds the widget after `userType` is updated.
+    await materialNameId();
     materialController.text = widget.material_name;
-    materialNameId();
+
+    // Add listeners for weight calculations
     firstWeightNoController.addListener(calculateNetWeight);
     fullWeightController.addListener(calculateNetWeight);
     moistureWeightController.addListener(calculateNetWeight);
@@ -89,6 +91,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
   }
+
   void calculateNetWeight() {
     double firstWeight = double.tryParse(firstWeightNoController.text) ?? 0.0;
     double fullWeight = double.tryParse(fullWeightController.text) ?? 0.0;
@@ -102,37 +105,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     netWeightController.text = netWeight.toStringAsFixed(2);
     quantityController.text = DMTWeight.toStringAsFixed(2);
   }
-
-
-
-  //fetching the material of selected sale_order_id
-  // Future<void> orderIdMaterial() async {
-  //   try {
-  //     await checkLogin();
-  //     final url = Uri.parse("${URL}fetch_material_lifting");
-  //     var response = await http.post(
-  //       url,
-  //       headers: {"Accept": "application/json"},
-  //       body: {
-  //         'user_id':username,
-  //         'user_pass':password,
-  //         'sale_order_id': widget.sale_order_id ?? 'N/A',
-  //       },
-  //     );
-  //     if (response.statusCode == 200) {
-  //       final jsonData = json.decode(response.body);
-  //       setState(() {
-  //         materialController.text = jsonData['sale_order_details'][0]['material_name'];
-  //         materialNameId();
-  //       });
-  //     } else {
-  //       print("unable to load order ids.");
-  //     }
-  //   } catch (e) {
-  //     print("Server Exception : $e");
-  //
-  //   }
-  // }
 
   Future<void> materialNameId() async {
     try {
@@ -162,7 +134,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     }
   }
 
-
   // Function to compress the image
   Future<File?> compressImage(File file) async {
     final dir = await getTemporaryDirectory();
@@ -180,8 +151,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
 
       // Create a Multipart Request
       var request = http.MultipartRequest('POST', url);
-
-
 
       // Add form data
       request.fields['user_id'] = username!;
@@ -219,24 +188,12 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       }
 
       // Add images from different sources
-      if (vehicleFront.isNotEmpty) {
-        await addImages(vehicleFront, "Fr", request);
-      }
-      if (vehicleBack.isNotEmpty) {
-        await addImages(vehicleBack, "Ba", request);
-      }
-      if (Material.isNotEmpty) {
-        await addImages(Material, "Ma", request);
-      }
-      if (MaterialHalfLoad.isNotEmpty) {
-        await addImages(MaterialHalfLoad, "Ha", request);
-      }
-      if (MaterialFullLoad.isNotEmpty) {
-        await addImages(MaterialFullLoad, "Fu", request);
-      }
-      if (other.isNotEmpty) {
-        await addImages(other, "ot", request);
-      }
+      if (vehicleFront.isNotEmpty) await addImages(vehicleFront, "Fr", request);
+      if (vehicleBack.isNotEmpty) await addImages(vehicleBack, "Ba", request);
+      if (Material.isNotEmpty) await addImages(Material, "Ma", request);
+      if (MaterialHalfLoad.isNotEmpty) await addImages(MaterialHalfLoad, "Ha", request);
+      if (MaterialFullLoad.isNotEmpty) await addImages(MaterialFullLoad, "Fu", request);
+      if (other.isNotEmpty) await addImages(other, "ot", request);
 
       // print('Fields sent:');
       // request.fields.forEach((key, value) {
@@ -244,7 +201,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       // });
       //
       // print("**************************************************************");
-
 
       // print('Files sent:');
       // request.files.forEach((file) {
@@ -499,51 +455,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     );
   }
 
-  Widget buildDropdown(String label, List<String> options, ValueChanged<String?> onChanged) {
-    return StatefulBuilder(builder: (BuildContext context , StateSetter setState)
-    {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 3, // Adjusts label width
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: Colors.black54,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            Expanded(
-              flex: 7, // Adjusts dropdown width
-              child: DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                value: selectedOrderId ?? options.first,
-                items: options.map((String option) {
-                  return DropdownMenuItem<String>(
-                    value: option,
-                    child: Text(option),
-                    enabled: option != 'Select',
-                  );
-                }).toList(),
-                onChanged: onChanged,
-              ),
-            ),
-          ],
-        ),
-      );
-    });
-  }
-
-
   Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
     DateTime? picked = await showDatePicker(
       context: context,
@@ -557,9 +468,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     }
   }
 
-
-  Widget buildTextField(
-      String label, TextEditingController controller, bool isReadOnly ,bool isDateField , Color color ,context) {
+  Widget buildTextField(String label, TextEditingController controller, bool isReadOnly ,bool isDateField , Color color ,context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
