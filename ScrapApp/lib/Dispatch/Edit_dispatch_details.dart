@@ -445,7 +445,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     return AbsorbPointer(
       absorbing: isLoading,
       child: Scaffold(
-        drawer: AppDrawer(),
+        drawer: AppDrawer(currentPage: 5),
         appBar: CustomAppBar(),
         body: Stack(
           children:[

@@ -257,7 +257,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     return AbsorbPointer(
       absorbing: isLoading,
       child: Scaffold(
-        drawer: AppDrawer(),
+        drawer: AppDrawer(currentPage: 5),
         appBar: CustomAppBar(),
         body: Stack(
             children: [

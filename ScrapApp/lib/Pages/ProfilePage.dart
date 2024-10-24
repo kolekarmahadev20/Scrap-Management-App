@@ -13,6 +13,10 @@ import 'attendance.dart';
 
 
 class ProfilePage extends StatefulWidget {
+
+  final int currentPage;
+  ProfilePage({required this.currentPage});
+
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
@@ -313,7 +317,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return StatefulBuilder(builder: (BuildContext context , StateSetter setState) {
       return Scaffold(
-        drawer: AppDrawer(),
+        drawer: AppDrawer(currentPage: widget.currentPage),
         appBar: CustomAppBar(),
         body: SingleChildScrollView(
           child: Column(

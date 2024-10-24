@@ -11,6 +11,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
 
 class DispatchList extends StatefulWidget {
+
+  final int currentPage;
+  DispatchList({required this.currentPage});
+
   @override
   State<DispatchList> createState() => _DispatchListState();
 }
@@ -205,7 +209,7 @@ class _DispatchListState extends State<DispatchList> {
     return AbsorbPointer(
       absorbing: isLoading,
       child: Scaffold(
-        drawer: AppDrawer(),
+        drawer: AppDrawer(currentPage:widget.currentPage),
         appBar: CustomAppBar(),
         body: Stack(
           children: [

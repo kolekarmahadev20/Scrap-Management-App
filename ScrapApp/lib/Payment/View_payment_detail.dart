@@ -109,7 +109,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
     child: AbsorbPointer(
       absorbing: isLoading,
       child: Scaffold(
-        drawer: AppDrawer(),
+        drawer: AppDrawer(currentPage: 4),
         appBar: CustomAppBar(),
         body:
         Stack(

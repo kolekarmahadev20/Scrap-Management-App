@@ -219,7 +219,7 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
       absorbing: isLoading,
       child: StatefulBuilder(builder: (BuildContext context , StateSetter SetState) {
         return Scaffold(
-          drawer: AppDrawer(),
+          drawer: AppDrawer(currentPage: 4),
           appBar: CustomAppBar(),
           body:
           Stack(

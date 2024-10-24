@@ -8,6 +8,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
 
 class saleOrderList extends StatefulWidget {
+
+  final int currentPage;
+  saleOrderList({required this.currentPage});
+
   @override
   State<saleOrderList> createState() => saleOrderListState();
 }
@@ -107,7 +111,7 @@ class saleOrderListState extends State<saleOrderList> {
     return AbsorbPointer(
       absorbing: isLoading,
       child: Scaffold(
-        drawer: AppDrawer(),
+        drawer: AppDrawer(currentPage: widget.currentPage),
         appBar: CustomAppBar(),
         body: isLoading
             ? showLoading()

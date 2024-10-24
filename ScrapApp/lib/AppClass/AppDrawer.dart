@@ -12,7 +12,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AppDrawer extends StatefulWidget {
 
-
+  final int currentPage ;
+  AppDrawer({super.key, required this.currentPage});
 
   @override
   State<AppDrawer> createState() => _AppDrawerState();
@@ -26,6 +27,7 @@ class _AppDrawerState extends State<AppDrawer> {
   String? loginType = '';
 
   String? userType = '';
+
 
   @override
   initState(){
@@ -41,7 +43,6 @@ class _AppDrawerState extends State<AppDrawer> {
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
-    print(userType);
   }
 
   Future<void> _logout(BuildContext context) async {
@@ -113,22 +114,26 @@ class _AppDrawerState extends State<AppDrawer> {
                 children: [
                   _buildDrawerItem(
                     context,
+                    1,
                     icon: Icons.person_rounded,
                     text: "Profile",
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage()));
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage(currentPage: 1,)));
                       });
 
                     },
                   ),
                   _buildDrawerItem(
                     context,
+                    2,
                     icon: Icons.dashboard_rounded,
                     text: "Dashboard",
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => DashBoard()));
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => DashBoard(currentPage: 2,)));
                       });
 
                     },
@@ -136,22 +141,26 @@ class _AppDrawerState extends State<AppDrawer> {
                   if(userType == 'S' || userType == 'A')
                   _buildDrawerItem(
                     context,
+                    3,
                     icon: Icons.border_outer,
                     text: "Sale Order",
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => saleOrderList()));
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => saleOrderList(currentPage: 3,)));
                       });
 
                     },
                   ),
                   _buildDrawerItem(
                     context,
+                    4,
                     icon: Icons.payment_rounded,
                     text: "Payment",
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentList()));
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentList(currentPage: 4,)));
                       });
 
                     },
@@ -159,21 +168,25 @@ class _AppDrawerState extends State<AppDrawer> {
 
                   _buildDrawerItem(
                     context,
+                    5,
                     icon: Icons.local_shipping_rounded,
                     text: "Dispatch",
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => DispatchList()));
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => DispatchList(currentPage: 5,)));
                       });
                     },
                   ),
                   _buildDrawerItem(
                     context,
+                    6,
                     icon: Icons.money_off_sharp,
                     text: "Refund",
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => RefundList()));
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => RefundList(currentPage: 6,)));
                       });
                     },
                   ),
@@ -210,7 +223,7 @@ class _AppDrawerState extends State<AppDrawer> {
     );
   }
 
-  Widget _buildDrawerItem(BuildContext context, {required IconData icon, required String text, required VoidCallback onTap}) {
+  Widget _buildDrawerItem(BuildContext context, int index,{required IconData icon, required String text, required VoidCallback onTap}) {
     return Material(
       color: Colors.transparent,
 
@@ -220,7 +233,7 @@ class _AppDrawerState extends State<AppDrawer> {
         highlightColor: Colors.indigo[50],
         child: ListTile(
           leading: Icon(icon, color: Colors.blueGrey[700], size: 30),
-          title: Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          title: Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500 , color: widget.currentPage == index ?Colors.blue : Colors.black )),
 
         ),
       ),

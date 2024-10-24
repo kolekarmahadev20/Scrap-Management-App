@@ -10,6 +10,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
 
 class PaymentList extends StatefulWidget {
+
+  final int currentPage;
+  PaymentList({required this.currentPage});
+
   @override
   State<PaymentList> createState() => _PaymentListState();
 }
@@ -209,7 +213,7 @@ class _PaymentListState extends State<PaymentList> {
     return AbsorbPointer(
       absorbing: isLoading,
       child: Scaffold(
-        drawer: AppDrawer(),
+        drawer: AppDrawer(currentPage: widget.currentPage),
         appBar: CustomAppBar(),
         body:
         isLoading

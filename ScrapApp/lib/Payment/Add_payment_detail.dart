@@ -190,7 +190,7 @@ class _Add_payment_detailState extends State<Add_payment_detail> {
       absorbing: isLoading,
       child: StatefulBuilder(builder: (BuildContext context , StateSetter SetState) {
         return Scaffold(
-          drawer: AppDrawer(),
+          drawer: AppDrawer(currentPage: 4),
           appBar: CustomAppBar(),
           body:
           Stack(

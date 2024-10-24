@@ -22,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (username != null && password !=null) {
       // Token exists, auto-login
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) =>DashBoard()));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) =>DashBoard(currentPage: 2,)));
     } else {
       // No token found, navigate to login screen
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) =>StartPage()));

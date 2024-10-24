@@ -225,7 +225,7 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
     return AbsorbPointer(
       absorbing: isLoading,
       child: Scaffold(
-        drawer: AppDrawer(),
+        drawer: AppDrawer(currentPage: 4),
         appBar: CustomAppBar(),
         body: Stack(
           children: [

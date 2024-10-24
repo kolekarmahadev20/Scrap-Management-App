@@ -10,6 +10,10 @@ import 'package:http/http.dart' as http;
 import '../URL_CONSTANT.dart';
 
 class DashBoard extends StatefulWidget {
+
+  final int currentPage;
+  DashBoard({required this.currentPage});
+
   @override
   State<DashBoard> createState() => _DashBoardState();
 }
@@ -90,7 +94,7 @@ class _DashBoardState extends State<DashBoard> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      drawer: AppDrawer(),
+      drawer: AppDrawer(currentPage: widget.currentPage),
       appBar: CustomAppBar(),
       body: SingleChildScrollView(
         child: Padding(
@@ -329,7 +333,7 @@ class _DashBoardState extends State<DashBoard> {
         if(userType == 'S' || userType == 'A')
         TextButton(
             onPressed: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context) => saleOrderList()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => saleOrderList(currentPage: 3,)));
             },
             child: Text("View More" , style: TextStyle(color: Colors.blue),)),
         if(userType == 'S' || userType == 'A')

@@ -12,6 +12,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
 
 class RefundList extends StatefulWidget {
+
+
+  final int currentPage;
+  RefundList({required this.currentPage});
+
   @override
   State<RefundList> createState() => _RefundListState();
 }
@@ -212,7 +217,7 @@ class _RefundListState extends State<RefundList> {
     return AbsorbPointer(
       absorbing: isLoading,
       child: Scaffold(
-        drawer: AppDrawer(),
+        drawer: AppDrawer(currentPage: widget.currentPage),
         appBar: CustomAppBar(),
         body: Stack(
           children:[

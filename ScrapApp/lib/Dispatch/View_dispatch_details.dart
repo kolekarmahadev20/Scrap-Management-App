@@ -102,7 +102,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: AppDrawer(),
+      drawer: AppDrawer(currentPage: 5),
       appBar: CustomAppBar(),
       body: Stack(children: [
         isLoading

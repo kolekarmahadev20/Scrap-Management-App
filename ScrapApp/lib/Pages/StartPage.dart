@@ -89,7 +89,7 @@ class _StartDashBoardPageState extends State<StartPage> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => DashBoard()),
+          MaterialPageRoute(builder: (context) => DashBoard(currentPage: 2,)),
         );
       } else {
         showErrorDialog("${jsonData['msg']}");

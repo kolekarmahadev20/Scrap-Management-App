@@ -233,7 +233,7 @@ class _View_dispatch_lifting_detailsState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: AppDrawer(),
+      drawer: AppDrawer(currentPage: 5),
       appBar: CustomAppBar(),
       body: isLoading
           ? showLoading()

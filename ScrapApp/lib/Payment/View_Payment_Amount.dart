@@ -133,7 +133,7 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: AppDrawer(),
+      drawer: AppDrawer(currentPage: 4),
       appBar: CustomAppBar(),
       body: Container(
         padding: const EdgeInsets.symmetric(vertical: 4.0),

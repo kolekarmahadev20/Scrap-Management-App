@@ -107,7 +107,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
       child: AbsorbPointer(
       absorbing: isLoading,
       child: Scaffold(
-        drawer: AppDrawer(),
+        drawer: AppDrawer(currentPage: 6),
         appBar: CustomAppBar(),
         body: isLoading
         ?showLoading()

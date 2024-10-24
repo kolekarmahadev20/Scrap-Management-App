@@ -329,7 +329,7 @@ class _Add_dispatch_detailState extends State<Add_dispatch_details> {
     return AbsorbPointer(
       absorbing: isLoading,
       child: Scaffold(
-        drawer: AppDrawer(),
+        drawer: AppDrawer(currentPage: 5),
         appBar: CustomAppBar(),
         body: Stack(
           children: [

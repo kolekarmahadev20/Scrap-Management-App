@@ -227,7 +227,7 @@ class _Add_refund_detailsState extends State<Add_refund_details> {
     return AbsorbPointer(
       absorbing:isLoading,
       child: Scaffold(
-        drawer: AppDrawer(),
+        drawer: AppDrawer(currentPage: 6),
         appBar: CustomAppBar(),
         body: Stack(
           children: [

@@ -195,7 +195,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
     return AbsorbPointer(
       absorbing:isLoading,
       child: Scaffold(
-        drawer: AppDrawer(),
+        drawer: AppDrawer(currentPage: 6),
         appBar: CustomAppBar(),
         body: Stack(
             children: [

@@ -111,7 +111,7 @@ class _View_Refund_AmountState extends State<View_Refund_Amount> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: AppDrawer(),
+      drawer: AppDrawer(currentPage: 6),
       appBar: CustomAppBar(),
       body: Container(
         padding: const EdgeInsets.symmetric(vertical: 4.0),
