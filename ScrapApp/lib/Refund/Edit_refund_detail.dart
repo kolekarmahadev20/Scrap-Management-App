@@ -13,6 +13,7 @@ import '../URL_CONSTANT.dart';
 class Edit_refund_detail extends StatefulWidget {
 
   final String? sale_order_id;
+  final String? bidder_id;
   final String? refundId;
   final String? paymentType;
   final String? date1;
@@ -28,6 +29,7 @@ class Edit_refund_detail extends StatefulWidget {
   final String? nfa;
   Edit_refund_detail({
     required this.sale_order_id,
+    required this.bidder_id,
     required this.refundId,
     required this.paymentType,
     required this.date1,
@@ -167,7 +169,7 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
           ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("${jsonData['msg']}")));
           Navigator.pop(context);
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => View_refund_details(sale_order_id: widget.sale_order_id)));
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => View_refund_details(sale_order_id: widget.sale_order_id , bidder_id: widget.bidder_id!,)));
         });
       }else {
         Fluttertoast.showToast(

@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class View_Refund_Amount extends StatefulWidget {
   final String? sale_order_id;
+  final String? bidder_id;
   final String? refundId;
   final String? paymentType;
   final String? date1;
@@ -23,6 +24,7 @@ class View_Refund_Amount extends StatefulWidget {
   final String? nfa;
   View_Refund_Amount({
     required this.sale_order_id,
+    required this.bidder_id,
     required this.refundId,
     required this.paymentType,
     required this.date1,

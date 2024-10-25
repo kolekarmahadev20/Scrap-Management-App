@@ -132,6 +132,7 @@ class _RefundListState extends State<RefundList> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return Dialog(
+              backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -360,19 +361,16 @@ class _RefundListState extends State<RefundList> {
                             ),
                           ),
                           Spacer(),
-                          IconButton(
-                            icon: Icon(
-                              Icons.add_box_outlined,
-                              size: 28, // Slightly smaller but prominent icon
-                              color: Colors.indigo[800],
+                          Opacity(
+                            opacity:0.0, // Change opacity based on userType
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.add_box_outlined,
+                                size: 28, // Slightly smaller but prominent icon
+                                color: Colors.indigo[800],
+                              ),
+                              onPressed: null, // Disable the button when userType doesn't match
                             ),
-                            onPressed: () {
-                              Navigator.push(context,
-                                  MaterialPageRoute(
-                                      builder: (context) => Add_refund_details())).then((value) => setState((){
-                                fetchRefundList();
-                              }));
-                            },
                           ),
                         ],
                       ),
@@ -572,6 +570,7 @@ class _RefundListState extends State<RefundList> {
                       context,
                       MaterialPageRoute(builder: (context) => View_refund_details(
                         sale_order_id: index['sale_order_id'],
+                        bidder_id: index['bidder_id'],
                       )),
                     ).then((value) => setState((){
                       fetchRefundList();
@@ -583,6 +582,7 @@ class _RefundListState extends State<RefundList> {
                     context,
                     MaterialPageRoute(builder: (context) => View_refund_details(
                       sale_order_id: index['sale_order_id'],
+                      bidder_id: index['bidder_id'],
                     )),
                   ).then((value) => setState((){
                     fetchRefundList();

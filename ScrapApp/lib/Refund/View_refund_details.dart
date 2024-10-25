@@ -10,8 +10,11 @@ import 'addRefundToSaleOrder.dart';
 
 class View_refund_details extends StatefulWidget {
   final String? sale_order_id;
+  final String bidder_id;
+
   View_refund_details({
     required this.sale_order_id,
+    required this.bidder_id,
   });
 
   @override
@@ -36,6 +39,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
   @override
   void initState() {
     super.initState();
+    print(widget.bidder_id);
     checkLogin().then((_){
       setState(() {});
     });
@@ -64,6 +68,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
           'user_id': username,
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
+          'bidder_id': widget.bidder_id,
         },
       );
       if (response.statusCode == 200) {
@@ -240,7 +245,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Text(
-                        "${ViewRefundData['sale_order']['description'] ?? 'N/A'}",
+                        "${ViewRefundData['auction_id_only']?['description']?? 'N/A'}",
                         style: TextStyle(
                           color: Colors.red,
                           fontWeight: FontWeight.normal,
@@ -402,8 +407,6 @@ class _View_refund_detailsState extends State<View_refund_details> {
   Widget buildPaymentListView() {
     // Filter the list based on the allowed payment types
     final filteredPayments = refundId.where((payment) =>
-    payment['payment_type'] == "Refund EMD" ||
-        payment['payment_type'] == "Refund CMD" ||
         payment['payment_type'] == "Penalty" ||
         payment['payment_type'] == "Refund All" ||
         payment['payment_type'] == "Refund Amount").toList();
@@ -588,6 +591,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                     MaterialPageRoute(
                       builder: (context) => View_Refund_Amount(
                         sale_order_id: widget.sale_order_id,
+                        bidder_id: widget.bidder_id,
                         refundId: index['payment_id'],
                         paymentType: index['payment_type'],
                         date1: index['pay_date'],
@@ -615,6 +619,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                   MaterialPageRoute(
                     builder: (context) => View_Refund_Amount(
                       sale_order_id: widget.sale_order_id,
+                      bidder_id: widget.bidder_id,
                       refundId: index['payment_id'],
                       paymentType: index['payment_type'],
                       date1: index['pay_date'],
@@ -755,6 +760,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                     MaterialPageRoute(
                       builder: (context) => View_Refund_Amount(
                         sale_order_id: widget.sale_order_id,
+                        bidder_id: widget.bidder_id,
                         refundId: index['payment_id'],
                         paymentType: index['payment_type'],
                         date1: index['date'],
@@ -782,6 +788,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                   MaterialPageRoute(
                     builder: (context) => View_Refund_Amount(
                       sale_order_id: widget.sale_order_id,
+                      bidder_id: widget.bidder_id,
                       refundId: index['payment_id'],
                       paymentType: index['payment_type'],
                       date1: index['date'],

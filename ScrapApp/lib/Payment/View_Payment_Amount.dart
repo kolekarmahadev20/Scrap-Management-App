@@ -14,6 +14,7 @@ import '../URL_CONSTANT.dart';
 
 class View_Payment_Amount extends StatefulWidget {
   final String? sale_order_id;
+  final String? bidder_id;
   final String? paymentId;
   final String? paymentType;
   final String? date1;
@@ -22,13 +23,13 @@ class View_Payment_Amount extends StatefulWidget {
   final String? typeOfTransfer;
   View_Payment_Amount({
     required this.sale_order_id,
+    required this.bidder_id,
     required this.paymentId,
     required this.paymentType,
     required this.date1,
     required this.amount,
     required this.referenceNo,
     required this.typeOfTransfer,
-
   });
 
   @override
@@ -193,6 +194,7 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
                               MaterialPageRoute(
                                 builder: (context) => Edit_payment_detail(
                                   sale_order_id: widget.sale_order_id,
+                                  bidder_id: widget.bidder_id,
                                   paymentId: widget.paymentId,
                                   paymentType: paymentType,
                                   date1: date1,

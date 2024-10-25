@@ -14,6 +14,7 @@ import '../URL_CONSTANT.dart'; // Import for File
 
 class View_dispatch_lifting_details extends StatefulWidget {
   final String sale_order_id;
+  final String bidder_id;
   final String lift_id;
   final String? selectedOrderId;
   final String? material;
@@ -29,6 +30,7 @@ class View_dispatch_lifting_details extends StatefulWidget {
 
   View_dispatch_lifting_details({
     required this.sale_order_id,
+    required this.bidder_id,
     required this.lift_id,
     required this.selectedOrderId,
     required this.material,
@@ -297,6 +299,7 @@ class _View_dispatch_lifting_detailsState
                                   MaterialPageRoute(
                                     builder: (context) => Edit_dispatch_details(
                                       sale_order_id: widget.sale_order_id,
+                                      bidder_id: widget.bidder_id,
                                       lift_id: widget.lift_id,
                                       material: material,
                                       invoiceNo: invoiceNo,

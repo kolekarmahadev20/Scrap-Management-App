@@ -12,6 +12,7 @@ import '../URL_CONSTANT.dart';
 
 class Edit_payment_detail extends StatefulWidget {
   final String? sale_order_id;
+  final String? bidder_id;
   final String? paymentId;
   final String? paymentType;
   final String? date1;
@@ -21,6 +22,7 @@ class Edit_payment_detail extends StatefulWidget {
 
   Edit_payment_detail({
     required this.sale_order_id,
+    required this.bidder_id,
     required this.paymentId,
     required this.paymentType,
     required this.date1,
@@ -130,7 +132,7 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
           Navigator.pop(context);
           Navigator.pop(context);
           Navigator.pushReplacement(context, MaterialPageRoute(
-              builder: (context) => View_payment_detail(sale_order_id: widget.sale_order_id!)));
+              builder: (context) => View_payment_detail(sale_order_id: widget.sale_order_id! ,bidder_id: widget.bidder_id!,)));
         });
       } else {
         Fluttertoast.showToast(

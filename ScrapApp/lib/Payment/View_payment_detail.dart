@@ -10,8 +10,10 @@ import 'addPaymentToSaleOrder.dart';
 
 class View_payment_detail extends StatefulWidget {
   final String sale_order_id;
+  final String bidder_id;
   View_payment_detail({
     required this.sale_order_id,
+    required this.bidder_id,
   });
 
 
@@ -39,10 +41,12 @@ class _View_payment_detailState extends State<View_payment_detail> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    print(widget.bidder_id);
     checkLogin().then((_) {
       setState(() {});
     });
     fetchPaymentDetails();
+
   }
 
   Future<void> checkLogin() async {
@@ -67,6 +71,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
         'user_id': username,
         'user_pass': password,
         'sale_order_id':widget.sale_order_id,
+        'bidder_id':widget.bidder_id,
       },
     );
 
@@ -74,11 +79,13 @@ class _View_payment_detailState extends State<View_payment_detail> {
       setState(() {
         var jsonData = json.decode(response.body);
         ViewPaymentData = jsonData;
+        print(ViewPaymentData);
         paymentId = ViewPaymentData['sale_order_payments'] ?? '';
         emdStatus =  ViewPaymentData['emd_status'] ?? '';
         cmdStatus =  ViewPaymentData['cmd_status'] ?? '';
         checkLiftedQty = ViewPaymentData['lifted_quantity'];
         taxes = ViewPaymentData['tax_and_rate'][0]['taxes'];
+
         print(taxes);
       });
     } else {
@@ -173,7 +180,6 @@ class _View_payment_detailState extends State<View_payment_detail> {
         ]),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
-              print(ViewPaymentData['sale_order']['description']?? "N/A");
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -231,7 +237,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Text(
-                        "${ViewPaymentData['sale_order']['description'] ?? 'N/A'}",
+                        "${ViewPaymentData['auction_id_only']?['description']?? 'N/A'}",
                         style: TextStyle(
                           color: Colors.red,
                           fontWeight: FontWeight.normal,
@@ -439,9 +445,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
   }
 
   Widget buildPaymentDetailListTile(BuildContext context , index) {
-    if (index['payment_type'] == "Received EMD"
-        || index['payment_type'] == "Received CMD"
-        || index['payment_type'] == "Received Payment") {
+    if (index['payment_type'] == "Received Payment") {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Container(
@@ -555,6 +559,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                       builder: (context) =>
                           View_Payment_Amount(
                             sale_order_id: widget.sale_order_id,
+                            bidder_id: widget.bidder_id,
                             paymentId: index['payment_id'] ?? 'N/A',
                             paymentType: index['payment_type']?? 'N/A',
                             date1: index['pay_date']?? 'N/A',
@@ -575,6 +580,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     builder: (context) =>
                         View_Payment_Amount(
                           sale_order_id: widget.sale_order_id,
+                          bidder_id: widget.bidder_id,
                           paymentId: index['payment_id'] ?? 'N/A',
                           paymentType: index['payment_type']?? 'N/A',
                           date1: index['pay_date']?? 'N/A',
@@ -712,6 +718,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                       builder: (context) =>
                           View_Payment_Amount(
                             sale_order_id: widget.sale_order_id,
+                            bidder_id: widget.bidder_id,
                             paymentId: index['payment_id'] ?? "N/A",
                             paymentType: index['payment_type'] ?? "N/A",
                             date1: index['date'] ?? "N/A",
@@ -733,6 +740,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     builder: (context) =>
                         View_Payment_Amount(
                           sale_order_id: widget.sale_order_id,
+                          bidder_id: widget.bidder_id,
                           paymentId: index['payment_id'] ?? "N/A",
                           paymentType: index['payment_type'] ?? "N/A",
                           date1: index['date'] ?? "N/A",
@@ -866,6 +874,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                   MaterialPageRoute(
                     builder: (context) => View_Payment_Amount(
                       sale_order_id: widget.sale_order_id,
+                      bidder_id: widget.bidder_id,
                       paymentId: index['payment_id'] ?? "N/A",
                       paymentType: index['payment_type'] ?? "N/A",
                       date1: index['date'] ?? "N/A",
@@ -885,6 +894,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                 MaterialPageRoute(
                   builder: (context) => View_Payment_Amount(
                     sale_order_id: widget.sale_order_id,
+                    bidder_id: widget.bidder_id,
                     paymentId: index['payment_id'] ?? "N/A",
                     paymentType: index['payment_type'] ?? "N/A",
                     date1: index['date'] ?? "N/A",

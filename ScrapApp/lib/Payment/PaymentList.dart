@@ -134,6 +134,7 @@ class _PaymentListState extends State<PaymentList> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return Dialog(
+              backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -350,38 +351,30 @@ class _PaymentListState extends State<PaymentList> {
                   ),
                   child: Container(
                     width:double.infinity,
-                    child: Column(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        SizedBox(height: 8,),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Spacer(),
-                            Text(
-                              "Vendor, Plant",
-                              style: TextStyle(
-                                fontSize: 18, // Slightly larger font size
-                                color: Colors.black54,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Spacer(),
-                            // IconButton(
-                            //   icon: Icon(
-                            //     Icons.add_box_outlined,
-                            //     size: 28, // Slightly smaller but prominent icon
-                            //     color: Colors.indigo[800],
-                            //   ),
-                            //   onPressed: () {
-                            //     Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                            //         Add_payment_detail())).then((value) => setState((){
-                            //           fetchPaymentList();
-                            //     }));
-                            //   },
-                            // ),
-                          ],
+                        Spacer(),
+                        Text(
+                          "Vendor, Plant",
+                          style: TextStyle(
+                            fontSize: 18, // Slightly larger font size
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                        SizedBox(height: 8,),
+                        Spacer(),
+                        Opacity(
+                          opacity:0.0, // Change opacity based on userType
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.add_box_outlined,
+                              size: 28, // Slightly smaller but prominent icon
+                              color: Colors.indigo[800],
+                            ),
+                            onPressed: null, // Disable the button when userType doesn't match
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -597,6 +590,7 @@ class _PaymentListState extends State<PaymentList> {
                       MaterialPageRoute(
                         builder: (context) => View_payment_detail(
                           sale_order_id: index['sale_order_id'],
+                          bidder_id: index['bidder_id'],
                         ),
                       ),
                     ).then((value) => setState(() {
@@ -610,6 +604,7 @@ class _PaymentListState extends State<PaymentList> {
                     MaterialPageRoute(
                       builder: (context) => View_payment_detail(
                         sale_order_id: index['sale_order_id'],
+                        bidder_id: index['bidder_id'],
                       ),
                     ),
                   ).then((value) => setState(() {

@@ -11,9 +11,11 @@ import 'addDispatchToSaleOrder.dart';
 
 class View_dispatch_details extends StatefulWidget {
   final String sale_order_id;
+  final String bidder_id;
 
   View_dispatch_details({
     required this.sale_order_id,
+    required this.bidder_id,
   });
 
   @override
@@ -61,6 +63,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
           'user_id': username,
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
+          'bidder_id':widget.bidder_id,
         },
       );
       if (response.statusCode == 200) {
@@ -431,6 +434,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                   MaterialPageRoute(
                       builder: (context) => View_dispatch_lifting_details(
                             sale_order_id: widget.sale_order_id,
+                            bidder_id: widget.bidder_id,
                             lift_id: index['lift_id'],
                             selectedOrderId: ViewDispatchData['sale_order']
                                 ['sale_order_code'],

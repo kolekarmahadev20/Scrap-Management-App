@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
-import 'package:scrapapp/Dispatch/Add_dispatch_details.dart';
 import 'package:scrapapp/Dispatch/View_dispatch_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -128,6 +127,7 @@ class _DispatchListState extends State<DispatchList> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return Dialog(
+              backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -347,40 +347,29 @@ class _DispatchListState extends State<DispatchList> {
                           ),
                           child: Container(
                             width:double.infinity,
-                            child: Column(
+                            child: Row(
                               children: [
-                                SizedBox(height: 8,),
-                                Row(
-                                  children: [
-                                    Spacer(),
-                                    Text(
-                                      "Vendor, Plant",
-                                      style: TextStyle(
-                                        fontSize: 18, // Slightly larger font size
-                                        color: Colors.black54,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    Spacer(),
-                                    // IconButton(
-                                    //   icon: Icon(
-                                    //     Icons.add_box_outlined,
-                                    //     size: 28, // Slightly smaller but prominent icon
-                                    //     color: Colors.indigo[800],
-                                    //   ),
-                                    //   onPressed: () {
-                                    //     Navigator.push(
-                                    //         context,
-                                    //         MaterialPageRoute(
-                                    //             builder: (context) =>
-                                    //                 Add_dispatch_details())).then((value) => setState((){
-                                    //       fetchDispatchList();
-                                    //     }));
-                                    //   },
-                                    // ),
-                                  ],
+                                Spacer(),
+                                Text(
+                                  "Vendor, Plant",
+                                  style: TextStyle(
+                                    fontSize: 18, // Slightly larger font size
+                                    color: Colors.black54,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                                SizedBox(height: 8,),
+                                Spacer(),
+                                Opacity(
+                                  opacity:0.0, // Change opacity based on userType
+                                  child: IconButton(
+                                    icon: Icon(
+                                      Icons.add_box_outlined,
+                                      size: 28, // Slightly smaller but prominent icon
+                                      color: Colors.indigo[800],
+                                    ),
+                                    onPressed: null, // Disable the button when userType doesn't match
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -578,7 +567,9 @@ class _DispatchListState extends State<DispatchList> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => View_dispatch_details(
-                        sale_order_id: index['sale_order_id'],)),
+                        sale_order_id: index['sale_order_id'],
+                        bidder_id: index['bidder_id'],
+                      )),
                     ).then((value) => setState((){
                       fetchDispatchList();
                     }));
@@ -588,7 +579,9 @@ class _DispatchListState extends State<DispatchList> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => View_dispatch_details(
-                      sale_order_id: index['sale_order_id'],)),
+                      sale_order_id: index['sale_order_id'],
+                      bidder_id: index['bidder_id'],
+                    )),
                   ).then((value) => setState((){
                     fetchDispatchList();
                   }));

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
@@ -90,7 +89,7 @@ class saleOrderListState extends State<saleOrderList> {
     List<dynamic> searchResults = [];
     if (query.isNotEmpty) {
       saleOrderList.forEach((order) {
-        if (order['sale_order_code'].toString().toLowerCase().contains(query.toLowerCase()) ||
+        if (order['description'].toString().toLowerCase().contains(query.toLowerCase()) ||
             order['vendor_name'].toString().toLowerCase().contains(query.toLowerCase()) ||
             order['bidder_name'].toString().toLowerCase().contains(query.toLowerCase())) {
           searchResults.add(order);

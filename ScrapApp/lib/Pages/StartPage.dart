@@ -130,24 +130,13 @@ class _StartDashBoardPageState extends State<StartPage> {
 
 
 
-
-
-
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            child: _buildTop(),
-          ),
+          _buildTop(),
           Positioned(
             left: 0,
             right: 0,
@@ -160,107 +149,88 @@ class _StartDashBoardPageState extends State<StartPage> {
   }
 
   Widget _buildTop() {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(21),
-        border: Border.all(color: Colors.black, width: 1),
-      ),
-      child: Image.asset(
-        'assets/images/log.png',
-        fit: BoxFit.fill, // Use BoxFit.cover to ensure the image covers the entire area
+    return Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(21),
+          border: Border.all(color: Colors.black, width: 1),
+        ),
+        child: Image.asset(
+          'assets/images/pic.png',
+          fit: BoxFit.fill, // Use BoxFit.cover to ensure the image covers the entire area
+        ),
       ),
     );
   }
 
   Widget _buildBottom() {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
+    return ClipPath(
+      clipper: BottomCurveClipper(), // Apply custom clipper for the bottom widget
+      child: Container(
+        height: 600, // Explicit height for the bottom container
+        decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topRight: Radius.circular(21),
-            topLeft: Radius.circular(21),
-          ),
-          border:Border.all(width: 1 , color:Colors.black12)
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text("Welcome Back",style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: Colors.blueGrey[700],)),
+          border: Border.all(width: 1, color: Colors.black12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 16.0), // Add top padding for space
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              // Uncomment the welcome message and gif to see the changes
+              // Padding(
+              //   padding: const EdgeInsets.all(20.0),
+              //   child: Text(
+              //     "Welcome Back",
+              //     style: TextStyle(
+              //         fontSize: 30,
+              //         fontWeight: FontWeight.bold,
+              //         color: Colors.blueGrey[700]),
+              //   ),
+              // ),
+
+              Expanded(
+                child: Center(
+                  child: _buildLoginForm(),
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: _welcomeGif(),
-              ),
-            ],),
-          ),
-          Center(child: _buildLoginForm(),),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween, // Align items with space between
-              children: [
-                // Expanded(
-                //   child: Row(
-                //     children: [
-                //       Radio(
-                //         value: 1,
-                //         groupValue: _selectedValue, // The selected value for the radio group
-                //         onChanged: (int? value) {
-                //           setState(() {
-                //             _selectedValue = value!;
-                //           });
-                //         },
-                //       ),
-                //       Text(
-                //         "Remember Me", // Text next to the radio button
-                //         style: TextStyle(fontSize: 16),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-                Expanded(
+                child: Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              getCredentials();
-                            });
-                          },
-                          child: Text(
-                            "Log In",
-                            style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
+                        onPressed: () {
+                          setState(() {
+                            getCredentials();
+                          });
+                        },
+                        child: Text(
+                          "Log In",
+                          style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueGrey[700],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
                           ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:Colors.blueGrey[700],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5), // Box-shaped with no rounded corners
-                            ),
-                          )
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
-          )
-        ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
-
   Widget _buildLoginForm() {
     return Padding(
       padding: const EdgeInsets.all(20.0),
@@ -306,21 +276,19 @@ class _StartDashBoardPageState extends State<StartPage> {
                       labelText: 'Username',
                       fillColor: Colors.white12,
                       filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30), // Circular borders
-                        borderSide: BorderSide.none, // No border initially
+                      border: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey), // Color for normal state
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30), // Circular focus border
-                        borderSide: BorderSide(color: Colors.blue, width: 2), // Blue focus border
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.blue), // Color when focused
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30), // Circular enabled border
-                        borderSide: BorderSide(color: Colors.grey.shade300, width: 1), // Light grey enabled border
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey), // Color when enabled
                       ),
                     ),
                   ),
                 ),
+
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: TextField(
@@ -338,17 +306,14 @@ class _StartDashBoardPageState extends State<StartPage> {
                       labelText: 'Password',
                       fillColor: Colors.white12,
                       filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30), // Circular borders
-                        borderSide: BorderSide.none, // No border initially
+                      border: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey), // Color for normal state
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30), // Circular focus border
-                        borderSide: BorderSide(color: Colors.blue, width: 2), // Blue focus border
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.blue), // Color when focused
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30), // Circular enabled border
-                        borderSide: BorderSide(color: Colors.grey.shade300, width: 1), // Light grey enabled border
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey), // Color when enabled
                       ),
                     ),
                   ),
@@ -371,4 +336,38 @@ class _StartDashBoardPageState extends State<StartPage> {
       ),
     );
   }
+}
+class BottomCurveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    var path = Path();
+
+    // Start from the top left
+    path.moveTo(0.0, 0.0);
+
+    // Create the curve from the left to the right side
+    var firstControlPoint = Offset(size.width / 2, 80);
+    var firstEndPoint = Offset(size.width, 0.0);
+
+    path.quadraticBezierTo(
+      firstControlPoint.dx,
+      firstControlPoint.dy,
+      firstEndPoint.dx,
+      firstEndPoint.dy,
+    );
+
+    // Draw a line down the right side
+    path.lineTo(size.width, size.height);
+
+    // Draw a line across the bottom
+    path.lineTo(0.0, size.height);
+
+    // Close the path
+    path.close();
+
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
