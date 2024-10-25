@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
-import 'package:scrapapp/Payment/Add_payment_detail.dart';
 import 'package:scrapapp/Payment/View_payment_detail.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,7 +19,9 @@ class PaymentList extends StatefulWidget {
 
 class _PaymentListState extends State<PaymentList> {
 
-  TextEditingController searchController = TextEditingController(); // Controller for search input
+  TextEditingController searchMaterialController = TextEditingController(); // Controller for search input
+  TextEditingController searchVendorController = TextEditingController(); // Controller for search input
+  TextEditingController searchBidderController = TextEditingController(); // Controller for search input
 
   String? username = '';
 
@@ -30,6 +31,7 @@ class _PaymentListState extends State<PaymentList> {
 
   List<Map<String, dynamic>> paymentList = [];
   List<dynamic> filteredPaymentList = []; // For filtered search results
+
 
 
   bool isLoading = false; // Add a loading flag
@@ -64,7 +66,6 @@ class _PaymentListState extends State<PaymentList> {
         body: {
           'user_id': username,
           'user_pass': password,
-          'sale_order':searchController.text,
         },
       );
       if (response.statusCode == 200) {
@@ -72,6 +73,8 @@ class _PaymentListState extends State<PaymentList> {
           var jsonData = json.decode(response.body);
           // Extract the relevant data
           paymentList = List<Map<String, dynamic>>.from(jsonData['saleOrder_paymentList']);
+          filteredPaymentList = paymentList; // Initialize filtered list
+
         });
       } else {
         print("Unable to fetch data.");
@@ -85,119 +88,188 @@ class _PaymentListState extends State<PaymentList> {
     }
   }
 
-  showFilterDialog() {
+
+  void filterResults() {
+    List<dynamic> searchResults = paymentList;
+
+    // Apply Material filter
+    if (searchMaterialController.text.isNotEmpty) {
+      searchResults = searchResults.where((order) {
+        return order['description']
+            .toString()
+            .toLowerCase()
+            .contains(searchMaterialController.text.toLowerCase());
+      }).toList();
+    }
+
+    // Apply Vendor filter
+    if (searchVendorController.text.isNotEmpty) {
+      searchResults = searchResults.where((order) {
+        return order['vendor_name']
+            .toString()
+            .toLowerCase()
+            .contains(searchVendorController.text.toLowerCase());
+      }).toList();
+    }
+
+    // Apply Bidder filter
+    if (searchBidderController.text.isNotEmpty) {
+      searchResults = searchResults.where((order) {
+        return order['bidder_name']
+            .toString()
+            .toLowerCase()
+            .contains(searchBidderController.text.toLowerCase());
+      }).toList();
+    }
+
+    setState(() {
+      filteredPaymentList = searchResults;
+    });
+  }
+
+  Future showFilterDialog() {
     return showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.blueGrey[200],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Search Sale Orders",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Search Sale Orders",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.close, color: Colors.black54),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        )
+                      ],
                     ),
-                    IconButton(
-                      icon: Icon(Icons.close, color: Colors.black54),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
+                    SizedBox(height: 10),
+                    _buildSearchField(
+                      controller: searchMaterialController,
+                      hintText: "Enter Material Name",
+                    ),
+                    SizedBox(height: 10),
+                    _buildSearchField(
+                      controller: searchVendorController,
+                      hintText: "Enter Vendor Name",
+                    ),
+                    SizedBox(height: 10),
+                    _buildSearchField(
+                      controller: searchBidderController,
+                      hintText: "Enter Bidder Name",
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  searchMaterialController.clear();
+                                  searchVendorController.clear();
+                                  searchBidderController.clear();
+                                  fetchPaymentList();
+                                });
+                                Navigator.pop(context); // Close dialog
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red[400],
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 25, vertical: 15),
+                                elevation: 5,
+                              ),
+                              child: Text(
+                                "Reset",
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  filterResults();
+                                });
+                                Navigator.pop(context); // Close dialog
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green[400],
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 25, vertical: 15),
+                                elevation: 5,
+                              ),
+                              child: Text(
+                                "Apply",
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     )
                   ],
                 ),
-                SizedBox(height: 10),
-                TextField(
-                  controller: searchController,
-                  onChanged: (value) {},
-                  style: TextStyle(fontSize: 18),
-                  decoration: InputDecoration(
-                    hintText: "Enter Order ID",
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide(color:Colors.indigo)// No border for cleaner look
-                    ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                  ),
-                ),
-                SizedBox(height: 20),
-               Row(
-                 children: [
-                 Expanded(
-                   child: Padding(
-                     padding: const EdgeInsets.all(8.0),
-                     child: ElevatedButton(
-                       onPressed: () {
-                         setState(() {
-                           searchController.clear();
-                           fetchPaymentList();
-                         });
-                         Navigator.pop(context); // Close dialog
-                       },
-                       style: ElevatedButton.styleFrom(
-                         backgroundColor: Colors.red[400], // Primary color
-                         shape: RoundedRectangleBorder(
-                           borderRadius: BorderRadius.circular(15),
-                         ),
-                         padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
-                         elevation: 5,
-                       ),
-                       child: Text(
-                         "Reset",
-                         style: TextStyle(fontSize: 18, color: Colors.white),
-                       ),
-                     ),
-                   ),
-                 ),
-                 Expanded(
-                     child: Padding(
-                       padding: const EdgeInsets.all(8.0),
-                       child: ElevatedButton(
-                         onPressed: () {
-                           setState(() {
-                             fetchPaymentList();
-                           });
-                           Navigator.pop(context); // Close dialog
-                         },
-                         style: ElevatedButton.styleFrom(
-                           backgroundColor: Colors.green[400], // Primary color
-                           shape: RoundedRectangleBorder(
-                             borderRadius: BorderRadius.circular(15),
-                           ),
-                           padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
-                           elevation: 5,
-                         ),
-                         child: Text(
-                           "Apply",
-                           style: TextStyle(fontSize: 18, color: Colors.white),
-                         ),
-                       ),
-                     ),
-                   ),
-               ],)
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
   }
+
+  Widget _buildSearchField({
+    required TextEditingController controller,
+    required String hintText,
+  }) {
+    return TextField(
+      controller: controller,
+      style: TextStyle(fontSize: 18),
+      decoration: InputDecoration(
+        hintText: hintText,
+        prefixIcon: Icon(Icons.search, color: Colors.grey),
+        filled: true,
+        fillColor: Colors.grey[100],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Colors.indigo),
+        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      ),
+    );
+  }
+
 
   showLoading(){
     return Container(
@@ -315,15 +387,33 @@ class _PaymentListState extends State<PaymentList> {
                   ),
                 ),
               ),
+              // Padding(
+              //   padding: const EdgeInsets.all(8.0),
+              //   child: TextField(
+              //     controller: searchController,
+              //     onChanged: (value) {
+              //       filterSearchResults(value); // Call function to filter results
+              //     },
+              //     decoration: InputDecoration(
+              //       labelText: "Search Order ID ",
+              //       prefixIcon: Icon(Icons.search),
+              //       border: OutlineInputBorder(
+              //         borderRadius: BorderRadius.circular(12),
+              //       ),
+              //       filled: true,
+              //       fillColor: Colors.white,
+              //     ),
+              //   ),
+              // ),
               SizedBox(height:20),
               Expanded(
                 child:
-                (paymentList.length !=0)
+                (filteredPaymentList.length !=0)
                 ?ListView.separated(
-                  itemCount: paymentList.length, // Number of items in the list
+                  itemCount: filteredPaymentList.length, // Number of items in the list
                   itemBuilder: (context, index) {
-                    final paymentIndex = paymentList[index];
-                    if(paymentList.length !=0) {
+                    final paymentIndex = filteredPaymentList[index];
+                    if(filteredPaymentList.length !=0) {
                       return buildCustomListTile(context, paymentIndex);
                     }else{
                       return Text("No data");
