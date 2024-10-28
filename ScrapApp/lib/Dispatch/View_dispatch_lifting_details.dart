@@ -97,6 +97,10 @@ class _View_dispatch_lifting_detailsState
     });
     fetchImageList();
     getData();
+    print("Hello");
+    print(widget.bidder_id);
+    print("Hello");
+
   }
 
 

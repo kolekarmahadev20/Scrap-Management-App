@@ -195,36 +195,31 @@ class _StartDashBoardPageState extends State<StartPage> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            getCredentials();
-                          });
-                        },
-                        child: Text(
-                          "Log In",
-                          style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueGrey[700],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                        ),
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 50, // Adjust the height of the button as needed
+                  child: ElevatedButton(
+                    onPressed: () {
+                      getCredentials();
+                    },
+                    child: Text(
+                      "Log In",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueGrey[700],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
                       ),
                     ),
                   ),
                 ),
-              ),
+              )
             ],
           ),
         ),

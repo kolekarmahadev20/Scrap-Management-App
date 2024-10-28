@@ -41,6 +41,7 @@ dependencies:
   path_provider: ^2.0.11
   flutter_image_compress: ^1.1.0
   dropdown_search: ^6.0.1
+  http: ^1.2.0
 
 
 

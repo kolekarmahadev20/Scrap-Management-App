@@ -84,7 +84,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
         emdStatus =  ViewPaymentData['emd_status'] ?? '';
         cmdStatus =  ViewPaymentData['cmd_status'] ?? '';
         checkLiftedQty = ViewPaymentData['lifted_quantity'];
-        taxes = ViewPaymentData['tax_and_rate'][0]['taxes'];
+        taxes = ViewPaymentData['tax_and_rate']['taxes'] ?? "N/A";
 
         print(taxes);
       });
@@ -319,12 +319,12 @@ class _View_payment_detailState extends State<View_payment_detail> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            buildListTile("Material Name :${ViewPaymentData['sale_order']['description'] ?? 'No data'}"),
-            buildListTile("Total Qty :${ViewPaymentData['sale_order_details'][0]['totalqty'] ?? 'No data'}"),
+            buildListTile("Material Name :${ViewPaymentData['auction_id_only']?['description']?? 'N/A'}"),
+            buildListTile("Total Qty :${ViewPaymentData['sale_order_details'][0]['totalqty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
             if(ViewPaymentData['lifted_quantity'] != null &&
                 ViewPaymentData['lifted_quantity'] is List &&
                 ViewPaymentData['lifted_quantity'].isNotEmpty)
-            buildListTile("Lifted Qty :${ViewPaymentData['lifted_quantity'][0]['quantity'] ?? 'No data'}"),
+            buildListTile("Lifted Qty :${ViewPaymentData['lifted_quantity'][0]['quantity'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
             buildListTile("Rate :${ViewPaymentData['sale_order_details'][0]['rate'] ?? 'No data'}"),
             buildListTile("SO Date :${ViewPaymentData['sale_order_details'][0]['sod'] ?? 'No data'}"),
             buildListTile("SO Validity :${ViewPaymentData['sale_order_details'][0]['sovu'] ?? 'No data'}"),

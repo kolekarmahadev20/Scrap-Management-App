@@ -39,7 +39,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
   @override
   void initState() {
     super.initState();
-    print(widget.bidder_id);
+    print(widget.sale_order_id);
     checkLogin().then((_){
       setState(() {});
     });
@@ -80,7 +80,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
           print(emdStatus);
           cmdStatus = ViewRefundData['cmd_status'] ?? '';
           print(cmdStatus);
-          taxes = ViewRefundData['tax_and_rate'][0]['taxes'] ?? 'N/A';
+          taxes = ViewRefundData['tax_and_rate']['taxes'] ?? "N/A";
 ;        });
       } else {
         print("Unable to fetch data.");
@@ -328,14 +328,14 @@ class _View_refund_detailsState extends State<View_refund_details> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             buildListTile(
-                "Material Name : ${ViewRefundData['sale_order']['description'] ?? 'N/A'}"),
+                "Material Name : ${ViewRefundData['auction_id_only']?['description'] ?? 'N/A'}"),
             buildListTile(
-                "Total Qty :${ViewRefundData['sale_order_details'][0]['totalqty'] ?? "N/A"}"),
+                "Total Qty :${ViewRefundData['sale_order_details'][0]['totalqty'] ?? "N/A"} ${ViewRefundData['sale_order_details'][0]['totunit'] ?? ""}"),
             if(ViewRefundData['lifted_quantity'] != null &&
                 ViewRefundData['lifted_quantity'] is List &&
                 ViewRefundData['lifted_quantity'].isNotEmpty)
             buildListTile(
-                "Lifted Qty :${ViewRefundData['lifted_quantity'][0]['quantity'] ?? "N/A"}"),
+                "Lifted Qty :${ViewRefundData['lifted_quantity'][0]['quantity'] ?? "N/A"} ${ViewRefundData['sale_order_details'][0]['totunit'] ?? ""}"),
             buildListTile(
                 "Rate :${ViewRefundData['sale_order_details'][0]['rate'] ?? "N/A"}"),
             buildListTile(
@@ -354,6 +354,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
       title: Text(text),
     );
   }
+
+
 
   Widget buildTable() {
     int total_tax_amount = 0;

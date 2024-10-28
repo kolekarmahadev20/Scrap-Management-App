@@ -38,6 +38,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
       setState(() {});
     });
     print(widget.sale_order_id);
+    print(widget.sale_order_id);
+    print(widget.sale_order_id);
     fetchDispatchDetails();
   }
 
@@ -202,7 +204,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Text(
-                        "${ViewDispatchData['sale_order']['description'] ?? 'N/A'}",
+                        "${ViewDispatchData['auction_id_only']?['description'] ?? 'N/A'}",
                         style: TextStyle(
                           color: Colors.red,
                           fontWeight: FontWeight.normal,
