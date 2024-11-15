@@ -100,7 +100,7 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
           'amt':amountController.text,
           'pay_ref_no':refNoController.text,
           'typeoftransfer':typeTransController.text,
-          'narration':remarkController.text,
+          'remark':remarkController.text,
         },
       );
       if (response.statusCode == 200) {

@@ -159,7 +159,7 @@ class _DashBoardState extends State<DashBoard> {
                         if (value >= 0 && value < lastSixMonths.length) {
                           return SideTitleWidget(
                             axisSide: meta.axisSide,
-                            child: Text(lastSixMonths[value.toInt()]), // Get the month name from the list
+                            child: Text(lastSixMonths[value.toInt()] , style:TextStyle(fontSize:12),), // Get the month name from the list
                           );
                         }
                         return SideTitleWidget(
@@ -217,16 +217,27 @@ class _DashBoardState extends State<DashBoard> {
   //To dynamically get the Last six months on the chart
   List<String> getLastSixMonths() {
     DateTime now = DateTime.now();
-    List<String> months = [];
+    List<String> reverseMonths = [];
 
     for (int i = 0; i < graph.length; i++) {
       DateTime date = DateTime(now.year, now.month - i, 1);
       String month = "${_getMonthName(date.month)}";
-      months.add(month);
-      curr_year ='${date.year}';
+      reverseMonths.add("$month");
     }
 
-    return months.reversed.toList();
+    List<String> months = reverseMonths.reversed.toList();
+
+
+
+    if (months.contains("Dec") && months.contains("Jan")) {
+      curr_year = "${now.year - 1}-${now.year}";
+    } else {
+      curr_year = "${now.year}";
+    }
+
+
+    return months;
+
   }
   String _getMonthName(int month) {
     const monthNames = [
@@ -243,7 +254,7 @@ class _DashBoardState extends State<DashBoard> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildLegendItem(Colors.green, "Active SO (${curr_year})"),
+        _buildLegendItem(Colors.green, "Active SO ($curr_year)"),
       ],
     );
   }

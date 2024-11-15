@@ -71,6 +71,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   void initState(){
     super.initState();
     _initializeData();
+    print(widget.sale_order_id);
   }
 
   Future<void> _initializeData() async {
@@ -156,7 +157,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       request.fields['user_id'] = username!;
       request.fields['user_pass'] = password!;
       request.fields['sale_order_id_lift'] = widget.sale_order_id ?? '';
-      request.fields['material_id_lifting'] = materialId ?? '';
+      request.fields['lotno'] = materialId ?? '';
       request.fields['invoice_no'] = invoiceController.text;
       request.fields['date_time'] = "2024-10-10";
       request.fields['truck_no'] = truckNoController.text;
@@ -199,7 +200,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       // request.fields.forEach((key, value) {
       //   print('$key: $value');
       // });
-      //
+
       // print("**************************************************************");
 
       // print('Files sent:');
@@ -209,6 +210,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
 
       // Send the request
       var response = await request.send();
+
 
       // Handle response
       if (response.statusCode == 200) {

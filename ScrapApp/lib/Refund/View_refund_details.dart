@@ -30,6 +30,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
   bool isLoading = false;
   Map<String, dynamic> ViewRefundData = {};
   List<dynamic> refundId = [];
+  List<dynamic> refundStatus =[];
   List<dynamic> emdStatus = [];
   List<dynamic> cmdStatus = [];
   List<dynamic> taxes =[];
@@ -75,12 +76,13 @@ class _View_refund_detailsState extends State<View_refund_details> {
         setState(() {
           var jsonData = json.decode(response.body);
           ViewRefundData = jsonData;
-          refundId = ViewRefundData['sale_order_payments'] ?? '';
-          emdStatus = ViewRefundData['emd_status'] ?? '';
+          refundId = ViewRefundData['sale_order_payments'] ?? [];
+          refundStatus =  ViewRefundData['recieved_payment'] ?? [];
+          emdStatus = ViewRefundData['emd_status'] ?? [];
           print(emdStatus);
-          cmdStatus = ViewRefundData['cmd_status'] ?? '';
+          cmdStatus = ViewRefundData['cmd_status'] ?? [];
           print(cmdStatus);
-          taxes = ViewRefundData['tax_and_rate']['taxes'] ?? "N/A";
+          taxes = ViewRefundData['tax_and_rate']['taxes'] ?? [];
 ;        });
       } else {
         print("Unable to fetch data.");
@@ -180,7 +182,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => addRefundToSaleOrder(sale_order_id: widget.sale_order_id! , material_name: ViewRefundData['sale_order']['description']),
+                builder: (context) => addRefundToSaleOrder(sale_order_id: widget.sale_order_id! , material_name: ViewRefundData['auction_id_only']?['description']?? 'N/A'),
               ),
             ).then((value) => setState((){
               fetchRefundDetails();
@@ -408,7 +410,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
 
   Widget buildPaymentListView() {
     // Filter the list based on the allowed payment types
-    final filteredPayments = refundId.where((payment) =>
+    final filteredPayments = refundStatus.where((payment) =>
         payment['payment_type'] == "Penalty" ||
         payment['payment_type'] == "Refund All" ||
         payment['payment_type'] == "Refund Amount").toList();

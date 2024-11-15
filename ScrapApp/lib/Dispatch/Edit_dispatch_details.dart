@@ -201,7 +201,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       request.fields['user_pass'] = password!;
       request.fields['sale_order_id_lift'] = widget.sale_order_id;
       request.fields['lift_id'] = widget.lift_id;
-      request.fields['material_id_lifting'] = materialId ?? '';
+      request.fields['lotno'] = materialId ?? '';
       request.fields['invoice_no'] = invoiceController.text;
       request.fields['date_time'] = dateController.text;
       request.fields['truck_no'] = truckNoController.text;

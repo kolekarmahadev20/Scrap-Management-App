@@ -159,8 +159,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
             MaterialPageRoute(
               builder: (context) => addDispatchToSaleOrder(
                   sale_order_id: widget.sale_order_id,
-                  material_name: ViewDispatchData['sale_order']
-                      ['description']),
+                  material_name: ViewDispatchData['auction_id_only']?['description']?? 'N/A'),
             ),
           ).then((value) => setState(() {
                 fetchDispatchDetails();

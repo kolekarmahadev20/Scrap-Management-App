@@ -30,6 +30,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
   bool isLoading = false;
   Map<String , dynamic> ViewPaymentData = {};
   List<dynamic> paymentId =[];
+  List<dynamic> paymentStatus =[];
   List<dynamic> emdStatus =[];
   List<dynamic> cmdStatus =[];
   List<dynamic> taxes =[];
@@ -80,11 +81,12 @@ class _View_payment_detailState extends State<View_payment_detail> {
         var jsonData = json.decode(response.body);
         ViewPaymentData = jsonData;
         print(ViewPaymentData);
-        paymentId = ViewPaymentData['sale_order_payments'] ?? '';
-        emdStatus =  ViewPaymentData['emd_status'] ?? '';
-        cmdStatus =  ViewPaymentData['cmd_status'] ?? '';
+        paymentId = ViewPaymentData['sale_order_payments'] ?? [];
+        emdStatus =  ViewPaymentData['emd_status'] ?? [];
+        cmdStatus =  ViewPaymentData['cmd_status'] ?? [];
+        paymentStatus =  ViewPaymentData['recieved_payment'] ?? [];
         checkLiftedQty = ViewPaymentData['lifted_quantity'];
-        taxes = ViewPaymentData['tax_and_rate']['taxes'] ?? "N/A";
+        taxes = ViewPaymentData['tax_and_rate']['taxes'] ??[];
 
         print(taxes);
       });
@@ -183,7 +185,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => addPaymentToSaleOrder(sale_order_id: widget.sale_order_id,material_name: ViewPaymentData['sale_order']['description'] ?? "N/A",)
+                    builder: (context) => addPaymentToSaleOrder(sale_order_id: widget.sale_order_id,material_name: ViewPaymentData['auction_id_only']?['description']?? 'N/A',)
                 ),
               ).then((value) => setState((){
                 fetchPaymentDetails();
@@ -402,11 +404,11 @@ class _View_payment_detailState extends State<View_payment_detail> {
   }
 
   Widget buildPaymentDetailListView() {
-    if(paymentId.length != 0){
+    if(paymentStatus.length != 0){
     return ListView.builder(
-      itemCount:paymentId.length,
+      itemCount:paymentStatus.length,
       itemBuilder: (context, index) {
-        final paymentIdIndex =paymentId[index];
+        final paymentIdIndex =paymentStatus[index];
         return buildPaymentDetailListTile(context,paymentIdIndex);
       },
     );
