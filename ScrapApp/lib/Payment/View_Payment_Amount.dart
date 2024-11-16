@@ -189,21 +189,21 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
                           ),
                           onPressed: (userType == 'S' || userType == 'A')
                               ? () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Edit_payment_detail(
-                                  sale_order_id: widget.sale_order_id,
-                                  bidder_id: widget.bidder_id,
-                                  paymentId: widget.paymentId,
-                                  paymentType: paymentType,
-                                  date1: date1,
-                                  amount: amount,
-                                  referenceNo: referenceNo,
-                                  typeOfTransfer: typeOfTransfer,
-                                ),
-                              ),
-                            );
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder: (context) => Edit_payment_detail(
+                            //       sale_order_id: widget.sale_order_id,
+                            //       bidder_id: widget.bidder_id,
+                            //       paymentId: widget.paymentId,
+                            //       paymentType: paymentType,
+                            //       date1: date1,
+                            //       amount: amount,
+                            //       referenceNo: referenceNo,
+                            //       typeOfTransfer: typeOfTransfer,
+                            //     ),
+                            //   ),
+                            // );
                           }
                               : null, // Disable the onPressed when opacity is 0
                         ),

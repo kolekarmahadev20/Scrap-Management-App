@@ -33,8 +33,6 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
   final TextEditingController totalEmdCmdController = TextEditingController();
   final TextEditingController noteController = TextEditingController();
   final TextEditingController refNoController = TextEditingController();
-  final TextEditingController rvNoController = TextEditingController();
-  final TextEditingController dateController2 = TextEditingController();
   final TextEditingController nfaController = TextEditingController();
 
   String? username = '';
@@ -79,8 +77,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
     totalEmdCmdController.clear();
     noteController.clear();
     refNoController.clear();
-    rvNoController.clear();
-    dateController2.clear();
+    // rvNoController.clear();
   }
 
 
@@ -110,7 +107,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         setState(() {
-          totalPaymentController.text = jsonData['t_amt'].toString()?? 'N/A';
+          totalPaymentController.text = jsonData['t_amt'].toString() ?? 'N/A';
           totalEmdController.text = jsonData['total_EMD'].toString() ?? 'N/A';
           totalCmdController.text = jsonData['total_CMD'].toString()  ?? 'N/A';
           totalEmdCmdController.text = jsonData['total_amount_included_emdCmd'].toString() ?? 'N/A';
@@ -124,6 +121,17 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
   }
 
   Future<void> addRefundDetails() async {
+    print("User ID : $username");
+    print("password : $password");
+    print("sale_order_id : ${widget.sale_order_id}");
+    print("selectedPaymentType: $selectedPaymentType");
+    print("Date : ${dateController1.text}");
+    print("Amount : ${amountController.text}");
+    print("Total Emd : ${totalEmdController.text}");
+    print("Total emd cmd : ${totalEmdCmdController.text}");
+    print("Remark : ${noteController.text}");
+    print("Ref No : ${refNoController.text}");
+    print("Nfa No : ${nfaController.text}");
     try {
       setState(() {
         isLoading = true;
@@ -143,12 +151,11 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
           'total_emd': totalEmdController.text,
           'total_amount_including_emd': totalEmdCmdController.text,
           'narration': noteController.text,
-          'pay_ref_no': refNoController.text,
-          'receipt_voucher_no': rvNoController.text,
-          'receipt_voucher_date': dateController2.text,
+          'receipt_voucher_no':refNoController.text ,
           'nfa_no': nfaController.text,
         },
       );
+
       if (response.statusCode == 200) {
         // print('test');
         final jsonData = json.decode(response.body);
@@ -255,8 +262,8 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
                       child: ListView(
                         children: [
                           buildTextField("Total Payment", totalPaymentController, true,false ,Colors.grey[400]!, context),
-                          buildTextField("Total EMD", totalCmdController, true,false , Colors.grey[400]!,context),
-                          buildTextField("Total CMD", totalEmdController, true,false , Colors.grey[400]!,context),
+                          buildTextField("Total EMD", totalEmdController, true,false , Colors.grey[400]!,context),
+                          buildTextField("Total CMD", totalCmdController, true,false , Colors.grey[400]!,context),
                           buildTextField("Total Amount Including EMD/CMD", totalEmdCmdController, true,false ,Colors.grey[400]!, context),
                           Divider(),
                           buildTextField("Material Name", materialController, true, false , Colors.grey[400]!,context),
@@ -266,41 +273,23 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
                             });
                           }),
                           if (selectedPaymentType == "R") ...[
-                            // buildTextField("Date", dateController1, false, true ,Colors.white, context),
                             buildTextField("Amount", amountController, false ,false , Colors.white,context),
-                            // buildTextField("Total Payment", totalPaymentController, true, false , Colors.white,context),
                             buildTextField("NFA No.", nfaController, false,false ,Colors.white, context),
                             buildTextField("Date", dateController1, false,true ,Colors.white, context),
                           ] else if (selectedPaymentType == "RE" || selectedPaymentType == "Rc") ...[
-                            // buildTextField("Date", dateController1, false,true , Colors.white,context),
                             buildTextField("Amount", amountController, false,false ,Colors.white, context),
-                            // buildTextField("Total EMD", totalEmdController, true,false ,Colors.white, context),
-                            // buildTextField("Total Amount Including EMD", totalAmountEmdController, true,false , Colors.white,context),
                             buildTextField("NFA No.", nfaController, false,false ,Colors.white, context),
                             buildTextField("Date", dateController1, false,true , Colors.white,context),
                           ] else if (selectedPaymentType == "P") ...[
-                            // buildTextField("Date", dateController1, false,true ,Colors.white, context),
                             buildTextField("Amount", amountController, false,false ,Colors.white, context),
-                            // buildTextField("Total Payment", totalPaymentController, true,false ,Colors.white, context),
-                            // buildTextField("Total EMD", totalEmdController, true,false ,Colors.white, context),
-                            // buildTextField("Total Amount Including EMD", totalAmountEmdController, true,false ,Colors.white, context),
                             buildTextField("Date", dateController1, false,true ,Colors.white, context),
                           ]  else if (selectedPaymentType == "RA") ...[
-                            // buildTextField("Date", dateController1, false,true ,Colors.white, context),
                             buildTextField("Amount", amountController, false,false ,Colors.white, context),
-                            // buildTextField("Total Payment", totalPaymentController, true,false ,Colors.white, context),
-                            // buildTextField("Total EMD", totalEmdController, true,false ,Colors.white, context),
-                            // buildTextField("Total Amount Including EMD", totalAmountEmdController, true,false ,Colors.white, context),
                             buildTextField("NFA No.", nfaController, false,false ,Colors.white, context),
                             buildTextField("Date", dateController1, false,true ,Colors.white, context),
                           ]else ...[
-                            // buildTextField("Date", dateController1, false,true , Colors.white,context),
                             buildTextField("Amount", amountController, false,false ,Colors.white, context),
-                            // buildTextField("Total Payment", totalPaymentController, true,false , Colors.white,context),
-                            // buildTextField("Total EMD", totalEmdController, true,false , Colors.white,context),
-                            // buildTextField("Total Amount Including EMD", totalAmountEmdController, true,false ,Colors.white, context),
                             buildTextField("Ref/RV No.", refNoController, false,false , Colors.white,context),
-                            // buildTextField("RV No.", rvNoController, false,false , Colors.white,context),
                             buildTextField("Date", dateController1, false,true , Colors.white,context),
                             buildTextField("Remark", noteController, false,false , Colors.white,context),
 

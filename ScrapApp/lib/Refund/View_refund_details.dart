@@ -78,11 +78,13 @@ class _View_refund_detailsState extends State<View_refund_details> {
           ViewRefundData = jsonData;
           refundId = ViewRefundData['sale_order_payments'] ?? [];
           refundStatus =  ViewRefundData['recieved_payment'] ?? [];
+          print("refundStatus $refundStatus");
           emdStatus = ViewRefundData['emd_status'] ?? [];
           print(emdStatus);
           cmdStatus = ViewRefundData['cmd_status'] ?? [];
           print(cmdStatus);
           taxes = ViewRefundData['tax_and_rate']['taxes'] ?? [];
+
 ;        });
       } else {
         print("Unable to fetch data.");
@@ -95,6 +97,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
       });
     }
   }
+
 
   showLoading() {
     return Container(
@@ -268,8 +271,6 @@ class _View_refund_detailsState extends State<View_refund_details> {
     );
   }
 
-
-
   Widget buildVendorInfo() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -414,6 +415,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
         payment['payment_type'] == "Penalty" ||
         payment['payment_type'] == "Refund All" ||
         payment['payment_type'] == "Refund Amount").toList();
+
+
 
     // If there are no matching items, display the "No Payment Details Found" message
     if (filteredPayments.isEmpty) {
@@ -572,7 +575,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                           ),
                         ),
                         TextSpan(
-                          text: "${index['pay_date'] ?? 'N/A'}",
+                          text: "${index['date'] ?? 'N/A'}",
                           style: TextStyle(
                             color: Colors.black54,
                             fontWeight: FontWeight.normal, // Normal value
@@ -589,6 +592,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                 icon: Icon(Icons.arrow_forward_ios, size: 16),
                 color: Colors.grey[600],
                 onPressed: () {
+                  print(index['nfa_no']);
                   // Action on tapping the arrow
                   Navigator.push(
                     context,
@@ -947,5 +951,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
       ),
     );
   }
+
+
 
 }

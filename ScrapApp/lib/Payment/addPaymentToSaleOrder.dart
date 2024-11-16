@@ -137,6 +137,7 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
       });
     }
   }
+
   Future<void> fetchPaymentDetails() async {
     try {
       setState(() {

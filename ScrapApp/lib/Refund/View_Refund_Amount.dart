@@ -97,6 +97,7 @@ class _View_Refund_AmountState extends State<View_Refund_Amount> {
     rvNo = widget.rvNo ?? 'N/A';
     date2 = widget.date2 ?? 'N/A';
     typeOfTransfer = widget.typeOfTransfer ?? 'Unknown';
+    print(widget.nfa);
     nfa = widget.nfa ?? 'N/A';
   }
 
