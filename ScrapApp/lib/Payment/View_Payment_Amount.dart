@@ -21,6 +21,7 @@ class View_Payment_Amount extends StatefulWidget {
   final String? amount;
   final String? referenceNo;
   final String? typeOfTransfer;
+  final String? remark;
   View_Payment_Amount({
     required this.sale_order_id,
     required this.bidder_id,
@@ -30,6 +31,7 @@ class View_Payment_Amount extends StatefulWidget {
     required this.amount,
     required this.referenceNo,
     required this.typeOfTransfer,
+    required this.remark,
   });
 
   @override
@@ -57,6 +59,7 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
    String referenceNo='';
 
    String typeOfTransfer='';
+   String remark='';
 
    @override
   void initState() {
@@ -74,6 +77,7 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
     amount = widget.amount ?? '';
     referenceNo = widget.referenceNo ?? '';
     typeOfTransfer = widget.typeOfTransfer ?? '';
+    remark  = widget.remark ?? '';
   }
 
   Future<void> checkLogin() async {
@@ -180,7 +184,8 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
                       ),
                       Spacer(),
                       Opacity(
-                        opacity: (userType == 'S' || userType == 'A') ? 1.0 : 0.0,
+                        // opacity: (userType == 'S' || userType == 'A') ? 1.0 : 0.0,
+                        opacity:0.0,
                         child: IconButton(
                           icon: Icon(
                             Icons.edit,
@@ -226,7 +231,7 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
                   buildDisplay("Amount", amount),
                   buildDisplay("Ref/RV No.", referenceNo),
                   buildDisplay("Type Of Transfer", typeOfTransfer),
-                  buildDisplay("Remark", ''),
+                  buildDisplay("Remark", remark),
                   SizedBox(height: 40,),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),

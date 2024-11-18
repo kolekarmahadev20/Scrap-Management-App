@@ -185,7 +185,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => addPaymentToSaleOrder(sale_order_id: widget.sale_order_id,material_name: ViewPaymentData['auction_id_only']?['description']?? 'N/A',)
+                    builder: (context) => addPaymentToSaleOrder(sale_order_id: widget.sale_order_id,material_name: ViewPaymentData['sale_order_details']?[0]['material_name']?? 'N/A',)
                 ),
               ).then((value) => setState((){
                 fetchPaymentDetails();
@@ -239,7 +239,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Text(
-                        "${ViewPaymentData['auction_id_only']?['description']?? 'N/A'}",
+                        "${ViewPaymentData['sale_order_details']?[0]['material_name']?? 'N/A'}",
                         style: TextStyle(
                           color: Colors.red,
                           fontWeight: FontWeight.normal,
@@ -321,7 +321,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            buildListTile("Material Name :${ViewPaymentData['auction_id_only']?['description']?? 'N/A'}"),
+            buildListTile("Material Name :${ViewPaymentData['sale_order_details']?[0]['material_name']?? 'N/A'}"),
             buildListTile("Total Qty :${ViewPaymentData['sale_order_details'][0]['totalqty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
             if(ViewPaymentData['lifted_quantity'] != null &&
                 ViewPaymentData['lifted_quantity'] is List &&
@@ -537,7 +537,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                           ),
                         ),
                         TextSpan(
-                          text: "${index['pay_date'] ?? 'N/A'}",
+                          text: "${index['date'] ?? 'N/A'}",
                           style: TextStyle(
                             color: Colors.black54,
                             fontWeight: FontWeight.normal, // Normal value
@@ -564,10 +564,11 @@ class _View_payment_detailState extends State<View_payment_detail> {
                             bidder_id: widget.bidder_id,
                             paymentId: index['payment_id'] ?? 'N/A',
                             paymentType: index['payment_type']?? 'N/A',
-                            date1: index['pay_date']?? 'N/A',
+                            date1: index['date']?? 'N/A',
                             amount: index['amt']?? 'N/A',
                             referenceNo: index['pay_ref_no']?? 'N/A',
                             typeOfTransfer: index['typeoftransfer']?? 'N/A',
+                            remark : index['narration'] ?? 'N/A'
                           ),
                     ),
                   ).then((value) => setState((){
@@ -585,10 +586,11 @@ class _View_payment_detailState extends State<View_payment_detail> {
                           bidder_id: widget.bidder_id,
                           paymentId: index['payment_id'] ?? 'N/A',
                           paymentType: index['payment_type']?? 'N/A',
-                          date1: index['pay_date']?? 'N/A',
+                          date1: index['date']?? 'N/A',
                           amount: index['amt']?? 'N/A',
                           referenceNo: index['pay_ref_no']?? 'N/A',
                           typeOfTransfer: index['typeoftransfer']?? 'N/A',
+                          remark : index['narration'] ?? 'N/A'
                         ),
                   ),
                 ).then((value) => setState((){
@@ -727,7 +729,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                             amount: index['amt'] ?? "N/A",
                             referenceNo: index['pay_ref_no'] ?? "N/A",
                             typeOfTransfer: index['typeoftransfer'] ?? "N/A",
-                            // remark : index['remark'] ?? "N/A";
+                            remark : index['narration'] ?? 'N/A'
                           ),
                     ),
                   ).then((value) => setState((){
@@ -749,6 +751,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                           amount: index['amt'] ?? "N/A",
                           referenceNo: index['pay_ref_no'] ?? "N/A",
                           typeOfTransfer: index['typeoftransfer'] ?? "N/A",
+                          remark : index['narration'] ?? 'N/A'
+
                         ),
                   ),
                 ).then((value) => setState((){
@@ -883,6 +887,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                       amount: index['amt'] ?? "N/A",
                       referenceNo: index['pay_ref_no'] ?? "N/A",
                       typeOfTransfer: index['typeoftransfer'] ?? "N/A",
+                      remark : index['narration'] ?? 'N/A'
                     ),
                   ),
                 ).then((value) => setState((){
@@ -903,6 +908,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     amount: index['amt'] ?? "N/A",
                     referenceNo: index['pay_ref_no'] ?? "N/A",
                     typeOfTransfer: index['typeoftransfer'] ?? "N/A",
+                    remark : index['narration'] ?? 'N/A'
                   ),
                 ),
               ).then((value) => setState((){

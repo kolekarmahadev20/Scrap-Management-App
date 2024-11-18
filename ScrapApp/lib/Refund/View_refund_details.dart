@@ -185,7 +185,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => addRefundToSaleOrder(sale_order_id: widget.sale_order_id! , material_name: ViewRefundData['auction_id_only']?['description']?? 'N/A'),
+                builder: (context) => addRefundToSaleOrder(sale_order_id: widget.sale_order_id! , material_name: ViewRefundData['sale_order_details']?[0]['material_name']?? 'N/A'),
               ),
             ).then((value) => setState((){
               fetchRefundDetails();
@@ -250,7 +250,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Text(
-                        "${ViewRefundData['auction_id_only']?['description']?? 'N/A'}",
+                        "${ViewRefundData['sale_order_details']?[0]['material_name']?? 'N/A'}",
                         style: TextStyle(
                           color: Colors.red,
                           fontWeight: FontWeight.normal,
@@ -331,7 +331,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             buildListTile(
-                "Material Name : ${ViewRefundData['auction_id_only']?['description'] ?? 'N/A'}"),
+                "Material Name : ${ViewRefundData['sale_order_details']?[0]['material_name']?? 'N/A'}"),
             buildListTile(
                 "Total Qty :${ViewRefundData['sale_order_details'][0]['totalqty'] ?? "N/A"} ${ViewRefundData['sale_order_details'][0]['totunit'] ?? ""}"),
             if(ViewRefundData['lifted_quantity'] != null &&
