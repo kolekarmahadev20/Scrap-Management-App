@@ -57,6 +57,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
   }
+
   Future<void> fetchPaymentDetails() async {
   try {
     setState(() {
@@ -372,11 +373,11 @@ class _View_payment_detailState extends State<View_payment_detail> {
           ],
           rows: [
             // Dynamically add rows based on the 'taxes' list
-            if (taxes != null && taxes.isNotEmpty)
+            if (taxes.isNotEmpty)
               ...taxes.map((tax) {
-                var total_taxes = int.tryParse(tax['tax_amount'].toString());
+                var total_taxes = int.tryParse(tax['tax_amount'].toString()) ?? 0;
                 print(total_taxes);
-                total_tax_amount = total_tax_amount + total_taxes!;
+                total_tax_amount = total_tax_amount + total_taxes ;
                 return DataRow(cells: [
                   DataCell(Text(tax['tax_name'] ?? 'No data')),
                   DataCell(Text('${tax['tax_amount'] ?? 'No data'}')),

@@ -391,8 +391,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
             // Dynamically add rows based on the 'taxes' list
             if (taxes.isNotEmpty)
               ...taxes.map((tax) {
-                var total_taxes = int.tryParse(tax['tax_amount'].toString());
-                total_tax_amount = total_tax_amount + total_taxes!;
+                var total_taxes = int.tryParse(tax['tax_amount'].toString()) ?? 0;
+                total_tax_amount = total_tax_amount + total_taxes;
                 return DataRow(cells: [
                   DataCell(Text(tax['tax_name'] ?? 'No data')),
                   DataCell(Text('${tax['tax_amount'] ?? 'No data'}')),

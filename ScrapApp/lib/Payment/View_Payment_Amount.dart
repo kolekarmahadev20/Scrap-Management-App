@@ -209,8 +209,7 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
                             //     ),
                             //   ),
                             // );
-                          }
-                              : null, // Disable the onPressed when opacity is 0
+                          }: null, // Disable the onPressed when opacity is 0
                         ),
                       ),
                     ],
