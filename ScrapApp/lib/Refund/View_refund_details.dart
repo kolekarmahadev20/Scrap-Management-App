@@ -115,87 +115,101 @@ class _View_refund_detailsState extends State<View_refund_details> {
     return DefaultTabController(
       length: 4,
       child: AbsorbPointer(
-      absorbing: isLoading,
-      child: Scaffold(
-        drawer: AppDrawer(currentPage: 6),
-        appBar: CustomAppBar(),
-        body: isLoading
-        ?showLoading()
-        :Stack(
-            children:[
-              isLoading ?
-              showLoading()
-                  :Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-                    color: Colors.grey[100],
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            "Refund",
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                              letterSpacing: 1.2,
+        absorbing: isLoading,
+        child: Scaffold(
+          drawer: AppDrawer(currentPage: 6),
+          appBar: CustomAppBar(),
+          body: Stack(
+            children: [
+              isLoading
+                  ? showLoading()
+                  : SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 4.0),
+                      color: Colors.grey[100],
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              "Refund",
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                                letterSpacing: 1.2,
+                              ),
                             ),
                           ),
-                        ),
-                        buildRowWithIcon(context),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: buildVendorInfo(),
-                        ),
-                      ],
+                          buildRowWithIcon(context),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: buildVendorInfo(),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Container(
-                    color: Colors.white,
-                    child: TabBar(
-                      labelColor: Colors.indigo[800],
-                      unselectedLabelColor: Colors.black54,
-                      indicatorColor: Colors.indigo[800],
-                      tabs: const [
-                        Tab(text: "Material\nDetails",),
-                        Tab(text: "Payment\nDetails"),
-                        Tab(text: "EMD\nDetails"),
-                        Tab(text: "CMD\nDetails"),
-                      ],
+                    Container(
+                      color: Colors.white,
+                      child: TabBar(
+                        labelColor: Colors.indigo[800],
+                        unselectedLabelColor: Colors.black54,
+                        indicatorColor: Colors.indigo[800],
+                        tabs: const [
+                          Tab(text: "Material\nDetails"),
+                          Tab(text: "Payment\nDetails"),
+                          Tab(text: "EMD\nDetails"),
+                          Tab(text: "CMD\nDetails"),
+                        ],
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: TabBarView(
-                      children: [
-                        buildMaterialListTab(),
-                        buildScrollableTabContent(context, buildPaymentListView),
-                        buildScrollableTabContent(context, buildEmdListView),
-                        buildScrollableTabContent(context, buildCMDDetailListView),
-                      ],
+                    // Constrained TabBarView for bounded height
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                          maxHeight:
+                          MediaQuery.of(context).size.height * 0.8),
+                      child: TabBarView(
+                        children: [
+                          buildMaterialListTab(),
+                          buildScrollableTabContent(
+                              context, buildPaymentListView),
+                          buildScrollableTabContent(
+                              context, buildEmdListView),
+                          buildScrollableTabContent(
+                              context, buildCMDDetailListView),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ]),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => addRefundToSaleOrder(sale_order_id: widget.sale_order_id! , material_name: ViewRefundData['sale_order_details']?[0]['material_name']?? 'N/A'),
-              ),
-            ).then((value) => setState((){
-              fetchRefundDetails();
-            }));
-          },          child: Icon(Icons.add), // FAB icon
-          backgroundColor: Colors.blueGrey[200],
+            ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => addRefundToSaleOrder(
+                    sale_order_id: widget.sale_order_id!,
+                    material_name: ViewRefundData['sale_order_details']?[0]
+                    ['material_name'] ??
+                        'N/A',
+                  ),
+                ),
+              ).then((value) => setState(() {
+                fetchRefundDetails();
+              }));
+            },
+            child: Icon(Icons.add), // FAB icon
+            backgroundColor: Colors.blueGrey[200],
+          ),
         ),
-
       ),
-      )
     );
   }
 
@@ -602,7 +616,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                         bidder_id: widget.bidder_id,
                         refundId: index['payment_id'],
                         paymentType: index['payment_type'],
-                        date1: index['pay_date'],
+                        date1: index['date'],
                         amount: index['amt'],
                         totalPayment: ViewRefundData['totalPayment'].toString(),
                         totalEmd: ViewRefundData['total_emd'].toString(),

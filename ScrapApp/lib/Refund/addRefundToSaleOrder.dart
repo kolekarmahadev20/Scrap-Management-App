@@ -52,7 +52,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
     "Refund Amount": "R",
     "Refund EMD": "RE",
     "Refund CMD": "Rc",
-    "Penalty": "P",
+    "Penalty": "PE",
     "Refund All": "RA"
   };
 
