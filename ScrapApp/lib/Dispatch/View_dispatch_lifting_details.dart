@@ -289,7 +289,8 @@ class _View_dispatch_lifting_detailsState
                           ),
                           Spacer(),
                           Opacity(
-                            opacity: (userType == 'S' || userType == 'A') ? 1.0 : 0.0,
+                            // opacity: (userType == 'S' || userType == 'A') ? 1.0 : 0.0,
+                            opacity: 0.0,
                             child: IconButton(
                               icon: Icon(
                                 Icons.edit,
@@ -298,6 +299,7 @@ class _View_dispatch_lifting_detailsState
                               ),
                               onPressed: (userType == 'S' || userType == 'A')
                                   ? () {
+/*
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -319,6 +321,7 @@ class _View_dispatch_lifting_detailsState
                                     ),
                                   ),
                                 );
+*/
                               }
                                   : null, // Disable the onPressed when opacity is 0
                             ),

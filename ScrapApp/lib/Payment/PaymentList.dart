@@ -73,7 +73,7 @@ class _PaymentListState extends State<PaymentList> {
           var jsonData = json.decode(response.body);
           // Extract the relevant data
           paymentList = List<Map<String, dynamic>>.from(jsonData['saleOrder_paymentList']);
-          filteredPaymentList = paymentList; // Initialize filtered list
+          filteredPaymentList = paymentList;
 
         });
       } else {

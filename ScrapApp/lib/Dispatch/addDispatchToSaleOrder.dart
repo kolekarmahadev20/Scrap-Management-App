@@ -57,6 +57,11 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   List<File> MaterialFullLoad = [];
   List<File> other = [];
 
+  String advancePayment = '';
+  String totalEmd = '';
+  String totalCmd = '';
+  String rate = '';
+
   void clearFields(){
     selectedOrderId = null;
     materialController.clear();
@@ -77,6 +82,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   Future<void> _initializeData() async {
     await checkLogin().then((_) {setState(() {});}); // Rebuilds the widget after `userType` is updated.
     await materialNameId();
+    fetchPaymentDetails();
     materialController.text = widget.material_name;
 
     // Add listeners for weight calculations
@@ -142,6 +148,59 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     return await FlutterImageCompress.compressAndGetFile(file.absolute.path, targetPath, quality: 20);
   }
 
+  Future<void> fetchPaymentDetails() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      await checkLogin();
+      final url = Uri.parse("${URL}EMD_CMD_details");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': username,
+          'user_pass': password,
+          'sale_order_id':widget.sale_order_id,
+        },
+      );
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        setState(() {
+          advancePayment = jsonData['Advance_payment'].toString()?? 'N/A';
+          totalEmd= jsonData['total_EMD'].toString() ?? 'N/A';
+          totalCmd= jsonData['total_CMD'].toString()  ?? 'N/A';
+          rate = jsonData['rate'].toString();
+
+          print(rate);
+        });
+      } else {
+        Fluttertoast.showToast(
+            msg: 'Unable to load data.',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.yellow
+        );
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+          msg: 'Server Exception : $e',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.yellow
+      );
+    }
+    finally{
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   Future<void> addDispatchDetails() async {
     try {
       setState(() {
@@ -157,9 +216,11 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       request.fields['user_id'] = username!;
       request.fields['user_pass'] = password!;
       request.fields['sale_order_id_lift'] = widget.sale_order_id ?? '';
+      request.fields['rate'] = rate ?? '';
+      request.fields['advance_payment'] = advancePayment ?? '';
       request.fields['lotno'] = materialId ?? '';
       request.fields['invoice_no'] = invoiceController.text;
-      request.fields['date_time'] = "2024-10-10";
+      request.fields['date_time'] = dateController.text;
       request.fields['truck_no'] = truckNoController.text;
       request.fields['truck_weight'] = firstWeightNoController.text;
       request.fields['full_weight'] = fullWeightController.text;
@@ -217,9 +278,15 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
         final res = await http.Response.fromStream(response);
         final jsonData = json.decode(res.body);
         setState(() {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${jsonData['msg']}")));
+          if(jsonData.containsKey('liftedTaxAmount')){
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${jsonData['msg']} ${jsonData['liftedTaxAmount']}")));
+          }else{
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${jsonData['msg']}")));
+          }
         });
-        Navigator.pop(context);
+        if(jsonData['status'] == 'success'){
+          Navigator.pop(context);
+        }
       } else {
         Fluttertoast.showToast(
           msg: 'Unable to insert data.',
@@ -230,7 +297,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
         );
       }
     } catch (e) {
-      print("Error: $e");
       Fluttertoast.showToast(
         msg: 'Server Exception: $e',
         toastLength: Toast.LENGTH_SHORT,

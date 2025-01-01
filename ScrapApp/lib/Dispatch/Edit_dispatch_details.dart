@@ -90,6 +90,11 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   String? otherImg;
   Uint8List? imageBytes;
 
+  String advancePayment = '';
+  String totalEmd = '';
+  String totalCmd = '';
+  String rate = '';
+
   @override
   void initState() {
     super.initState();
@@ -101,6 +106,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     await checkLogin().then((_){setState(() {});});
     await materialNameId();
     await getData();
+    await fetchPaymentDetails();
     firstWeightNoController.addListener(calculateNetWeight);
     fullWeightController.addListener(calculateNetWeight);
     moistureWeightController.addListener(calculateNetWeight);
@@ -185,6 +191,59 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     return await FlutterImageCompress.compressAndGetFile(file.absolute.path, targetPath, quality: 20);
   }
 
+  Future<void> fetchPaymentDetails() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      await checkLogin();
+      final url = Uri.parse("${URL}EMD_CMD_details");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': username,
+          'user_pass': password,
+          'sale_order_id':widget.sale_order_id,
+        },
+      );
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        setState(() {
+          advancePayment = jsonData['Advance_payment'].toString()?? 'N/A';
+          totalEmd= jsonData['total_EMD'].toString() ?? 'N/A';
+          totalCmd= jsonData['total_CMD'].toString()  ?? 'N/A';
+          rate = jsonData['rate'].toString();
+
+          print(rate);
+        });
+      } else {
+        Fluttertoast.showToast(
+            msg: 'Unable to load data.',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.yellow
+        );
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+          msg: 'Server Exception : $e',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.yellow
+      );
+    }
+    finally{
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
 
   Future<void> editDispatchDetails() async {
     try {
@@ -200,6 +259,8 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       request.fields['user_id'] = username!;
       request.fields['user_pass'] = password!;
       request.fields['sale_order_id_lift'] = widget.sale_order_id;
+      request.fields['rate'] = rate ?? '';
+      request.fields['advance_payment'] = advancePayment ?? '';
       request.fields['lift_id'] = widget.lift_id;
       request.fields['lotno'] = materialId ?? '';
       request.fields['invoice_no'] = invoiceController.text;
@@ -316,14 +377,21 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       if (response.statusCode == 200) {
         final res = await http.Response.fromStream(response);
         final jsonData = json.decode(res.body);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${jsonData['msg']}")));
-        Navigator.pop(context);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => View_dispatch_details(sale_order_id: widget.sale_order_id , bidder_id: widget.bidder_id!),
-          ),
-        );
+        if(jsonData.containsKey('liftedTaxAmount')){
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${jsonData['msg']} ${jsonData['liftedTaxAmount']}")));
+        }else{
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${jsonData['msg']}")));
+        }
+        if(jsonData['status'] == 'success'){
+          Navigator.pop(context);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => View_dispatch_details(sale_order_id: widget.sale_order_id , bidder_id: widget.bidder_id!),
+            ),
+          );
+        }
+
       } else {
         Fluttertoast.showToast(
           msg: 'Unable to insert data.',

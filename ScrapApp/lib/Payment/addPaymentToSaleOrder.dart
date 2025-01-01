@@ -44,6 +44,7 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
   String? userType = '';
   String? selectedOrderId;
   String? selectedPaymentType;
+  String rate = '';
   bool isLoading = false;
   Map<String , String> PaymentType = {
     'Select' : 'Select',
@@ -157,10 +158,11 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         setState(() {
-          totalPaymentController.text = jsonData['t_amt'].toString()?? 'N/A';
+          totalPaymentController.text = jsonData['Advance_payment'].toString()?? 'N/A';
           totalEmdController.text = jsonData['total_EMD'].toString() ?? 'N/A';
           totalCmdController.text = jsonData['total_CMD'].toString()  ?? 'N/A';
           totalEmdCmdController.text = jsonData['total_amount_included_emdCmd'].toString() ?? 'N/A';
+          rate = jsonData['rate'].toString();
         });
       } else {
         Fluttertoast.showToast(

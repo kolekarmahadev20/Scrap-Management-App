@@ -67,6 +67,7 @@ class _DashBoardState extends State<DashBoard> {
           buyerCount = jsonData['bidders']['bidder_cnt'];
           auctionCmp = jsonData['auction_company']['auc_cnt'];
           graph = jsonData['six_month_data'];
+          print(graph);
         });
       } else {
         _handleError("Unable to fetch data: ${response.statusCode}");

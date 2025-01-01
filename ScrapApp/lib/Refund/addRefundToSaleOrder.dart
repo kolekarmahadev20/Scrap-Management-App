@@ -42,11 +42,13 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
   String? selectedOrderId;
   String? selectedPaymentType;
   bool isLoading = false; // Add a loading flag
+  String rate = '';
+  String totalAmount = '';
+
   List<String> orderIDs = [
     'Select',
   ];
   List<String> materialId = [];
-  String? totalAmount;
   Map<String, String> refundMap = {
     "Select": "Select",
     "Refund Amount": "R",
@@ -107,10 +109,12 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         setState(() {
-          totalPaymentController.text = jsonData['t_amt'].toString() ?? 'N/A';
+          totalPaymentController.text = jsonData['Advance_payment'].toString()?? 'N/A';
           totalEmdController.text = jsonData['total_EMD'].toString() ?? 'N/A';
           totalCmdController.text = jsonData['total_CMD'].toString()  ?? 'N/A';
           totalEmdCmdController.text = jsonData['total_amount_included_emdCmd'].toString() ?? 'N/A';
+          totalAmount = jsonData['totalAmount'].toString() ?? 'N/A';
+          rate = jsonData['rate'].toString();
         });
       } else {
         print("unable to load order ids.");
@@ -147,6 +151,10 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
           'payment_type': selectedPaymentType ?? '',
           'pay_date': dateController1.text,
           'amt': amountController.text,
+          if(selectedPaymentType == "RA")
+            'E':"E",
+          if(selectedPaymentType == "RA")
+            'C':"C",
           't_amt': totalPaymentController.text,
           'total_emd': totalEmdController.text,
           'total_amount_including_emd': totalEmdCmdController.text,
@@ -270,6 +278,16 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
                           buildDropdownPayment("Payment Type", refundMap, (value) {
                             setState(() {
                               selectedPaymentType = value;
+                              amountController.clear();
+                              if(selectedPaymentType == "RA"){
+                                amountController.text = totalAmount;
+                              }else if(selectedPaymentType == "Rc"){
+                                amountController.text = totalCmdController.text;
+                              }else if(selectedPaymentType == "RE"){
+                                amountController.text = totalEmdController.text;
+                              }else if(selectedPaymentType == "R"){
+                                amountController.text = totalPaymentController.text;
+                              }
                             });
                           }),
                           if (selectedPaymentType == "R") ...[
@@ -320,8 +338,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
                                 ),
                                 ElevatedButton(
                                   onPressed: () {
-                                    addRefundDetails();
-                                    // clearFields();
+                                    validateAndAddRefundDetails();
                                   },
                                   child: Text("Add"),
                                   style: ElevatedButton.styleFrom(
@@ -348,6 +365,80 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
       ),
     );
   }
+
+  void validateAndAddRefundDetails() {
+    // Map selectedPaymentType to the corresponding total amount controller
+    int? enteramt = int.tryParse(amountController.text.toString());
+
+    print("Type of enteramt: ${enteramt.runtimeType}");
+
+    final paymentTypeMap = {
+      "RA": int.tryParse(totalAmount),
+      "Rc": totalCmdController.text,
+      "RE": totalEmdController.text,
+      "R": totalPaymentController.text,
+    };
+
+    // Get the total amount based on the selected payment type
+    // Retrieve the value from the map without casting
+    // Ensure we have a String representation of totalAmountValue
+    final dynamic totalAmountValue = paymentTypeMap[selectedPaymentType];
+    String totalAmountStr;
+
+    if (totalAmountValue is int) {
+      totalAmountStr = totalAmountValue.toString();
+      print("Converted int to String: $totalAmountStr");
+    } else if (totalAmountValue is String) {
+      totalAmountStr = totalAmountValue;
+      print("Value is already a String: $totalAmountStr");
+    } else {
+      totalAmountStr = '';
+      print("Unexpected type or null: $totalAmountValue");
+    }
+
+// Now use totalAmountStr safely throughout your code
+    print("Final Total Amount String: $totalAmountStr");
+
+
+    if (totalAmountStr == null) {
+      Fluttertoast.showToast(
+        msg: "Invalid payment type selected.",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      return;
+    }if(enteramt == null || enteramt <= 0){
+      Fluttertoast.showToast(
+        msg: "Invalid Amount",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      return;
+    }
+
+    int enteredAmount = int.tryParse(amountController.text) ?? 0;
+    int totalAmt = int.tryParse(totalAmountStr) ?? 0;
+
+    if (enteredAmount > totalAmt) {
+      Fluttertoast.showToast(
+        msg: "Amount: $enteredAmount should not be greater than available amount: $totalAmt",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.black,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    } else {
+      addRefundDetails();
+    }
+  }
+
 
   Widget buildDropdown(
       String label, List<String> options, ValueChanged<String?> onChanged) {
