@@ -46,6 +46,8 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
   String? selectedPaymentType;
   String rate = '';
   bool isLoading = false;
+  bool _isChecked = false;
+
   Map<String , String> PaymentType = {
     'Select' : 'Select',
     'Received Payment':'P',
@@ -98,6 +100,7 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
           'sale_order_id_pay':widget.sale_order_id ?? '',
           'payment_type': selectedPaymentType ?? '',
           'pay_date': dateController1.text,
+          'emd_type': (selectedPaymentType == 'E' && _isChecked) ? 'F' : 'C',
           'amt':amountController.text,
           'pay_ref_no':refNoController.text,
           'typeoftransfer':typeTransController.text,
@@ -293,6 +296,30 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
                                 selectedPaymentType = value;
                               });
                             }),
+                            if(selectedPaymentType == "E")
+                              Row(
+                                children: [
+                                  Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text("is Freezed" , style: TextStyle(
+                                            color: Colors.black54,
+                                            fontWeight: FontWeight.w500),),
+                                      )),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Checkbox(
+                                      value: _isChecked,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          _isChecked = value ?? false;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+
                             buildTextField("Date", dateController1,false, true, Colors.white,context), // Modified here for DatePicker
                             buildTextField("Amount", amountController,false, false,Colors.white, context),
                             buildTextField("Ref/Rv No", refNoController,false, false, Colors.white,context),

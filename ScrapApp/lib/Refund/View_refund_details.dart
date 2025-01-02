@@ -28,19 +28,18 @@ class _View_refund_detailsState extends State<View_refund_details> {
   String? loginType = '';
   String? userType = '';
   bool isLoading = false;
+
+  Map<String , dynamic> taxAmount = {};
   Map<String, dynamic> ViewRefundData = {};
   List<dynamic> refundId = [];
   List<dynamic> refundStatus =[];
   List<dynamic> emdStatus = [];
   List<dynamic> cmdStatus = [];
   List<dynamic> taxes =[];
-  bool? isData;
-
 
   @override
   void initState() {
     super.initState();
-    print(widget.sale_order_id);
     checkLogin().then((_){
       setState(() {});
     });
@@ -78,14 +77,11 @@ class _View_refund_detailsState extends State<View_refund_details> {
           ViewRefundData = jsonData;
           refundId = ViewRefundData['sale_order_payments'] ?? [];
           refundStatus =  ViewRefundData['recieved_payment'] ?? [];
-          print("refundStatus $refundStatus");
           emdStatus = ViewRefundData['emd_status'] ?? [];
-          print(emdStatus);
           cmdStatus = ViewRefundData['cmd_status'] ?? [];
-          print(cmdStatus);
           taxes = ViewRefundData['tax_and_rate']['taxes'] ?? [];
-
-;        });
+          taxAmount = ViewRefundData['tax_and_rate'] ?? {};
+        });
       } else {
         print("Unable to fetch data.");
       }
@@ -97,7 +93,6 @@ class _View_refund_detailsState extends State<View_refund_details> {
       });
     }
   }
-
 
   showLoading() {
     return Container(
@@ -212,7 +207,6 @@ class _View_refund_detailsState extends State<View_refund_details> {
       ),
     );
   }
-
 
   Widget buildMaterialListTab() {
     return SingleChildScrollView(
@@ -372,10 +366,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
     );
   }
 
-
-
   Widget buildTable() {
-    int total_tax_amount = 0;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Container(
@@ -405,8 +396,6 @@ class _View_refund_detailsState extends State<View_refund_details> {
             // Dynamically add rows based on the 'taxes' list
             if (taxes.isNotEmpty)
               ...taxes.map((tax) {
-                var total_taxes = int.tryParse(tax['tax_amount'].toString()) ?? 0;
-                total_tax_amount = total_tax_amount + total_taxes;
                 return DataRow(cells: [
                   DataCell(Text(tax['tax_name'] ?? 'No data')),
                   DataCell(Text('${tax['tax_amount'] ?? 'No data'}')),
@@ -414,9 +403,14 @@ class _View_refund_detailsState extends State<View_refund_details> {
               }).toList(),
             // Add a TOTAL row at the end
             DataRow(cells: [
-              DataCell(Text('TOTAL', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataCell(Text('₹$total_tax_amount', style: TextStyle(fontWeight: FontWeight.bold ,))),
+              DataCell(Text('Basic Amount', /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
+              DataCell(Text('₹${taxAmount['basicTaxAmount']}' , /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
             ]),
+            DataRow(cells: [
+              DataCell(Text('Final Amount', /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
+              DataCell(Text('₹${taxAmount['finalTaxAmount']}' , /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
+
+            ])
           ],
         ),
       ),
@@ -620,8 +614,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                         amount: index['amt'],
                         totalPayment: ViewRefundData['totalPayment'].toString(),
                         totalEmd: ViewRefundData['total_emd'].toString(),
-                        totalAmountIncludingEmd:
-                            ViewRefundData['totalAvailablebalIncludingEmd'],
+                        totalAmountIncludingEmd:ViewRefundData['totalAvailablebalIncludingEmd'],
                         note: index['narration'],
                         referenceNo: index['pay_ref_no'],
                         rvNo: index['receipt_voucher_no'],
@@ -648,8 +641,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                       amount: index['amt'],
                       totalPayment: ViewRefundData['totalPayment'].toString(),
                       totalEmd: ViewRefundData['total_emd'].toString(),
-                      totalAmountIncludingEmd:
-                          ViewRefundData['totalAvailablebalIncludingEmd'],
+                      totalAmountIncludingEmd: ViewRefundData['totalAvailablebalIncludingEmd'],
                       note: index['narration'],
                       referenceNo: index['pay_ref_no'],
                       rvNo: index['receipt_voucher_no'],
@@ -789,8 +781,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                         amount: index['amt'],
                         totalPayment: ViewRefundData['totalPayment'].toString(),
                         totalEmd: ViewRefundData['total_emd'].toString(),
-                        totalAmountIncludingEmd:
-                            ViewRefundData['totalAvailablebalIncludingEmd'],
+                        totalAmountIncludingEmd:ViewRefundData['totalAvailablebalIncludingEmd'],
                         note: index['narration'],
                         referenceNo: index['pay_ref_no'],
                         rvNo: index['receipt_voucher_no'],
@@ -817,8 +808,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                       amount: index['amt'],
                       totalPayment: ViewRefundData['totalPayment'].toString(),
                       totalEmd: ViewRefundData['total_emd'].toString(),
-                      totalAmountIncludingEmd:
-                          ViewRefundData['totalAvailablebalIncludingEmd'],
+                      totalAmountIncludingEmd:ViewRefundData['totalAvailablebalIncludingEmd'],
                       note: index['narration'],
                       referenceNo: index['pay_ref_no'],
                       rvNo: index['receipt_voucher_no'],
@@ -965,7 +955,4 @@ class _View_refund_detailsState extends State<View_refund_details> {
       ),
     );
   }
-
-
-
 }

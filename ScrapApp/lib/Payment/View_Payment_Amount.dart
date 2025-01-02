@@ -41,25 +41,19 @@ class View_Payment_Amount extends StatefulWidget {
 class _View_Payment_AmountState extends State<View_Payment_Amount> {
 
   String? username = '';
-
   String? password = '';
   String? loginType = '';
   String? userType = '';
-
   String totalPayment='';
-   String totalEmd='';
-   String totalCmd='';
-   String totalEmdCmd='';
-   String paymentType='';
-
-   String date1='';
-
-   String amount='';
-
-   String referenceNo='';
-
-   String typeOfTransfer='';
-   String remark='';
+  String totalEmd='';
+  String totalCmd='';
+  String totalEmdCmd='';
+  String paymentType='';
+  String date1='';
+  String amount='';
+  String referenceNo='';
+  String typeOfTransfer='';
+  String remark='';
 
    @override
   void initState() {
@@ -104,7 +98,7 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         setState(() {
-          totalPayment= jsonData['t_amt'].toString() ;
+          totalPayment= jsonData['Advance_payment'].toString() ;
           totalEmd= jsonData['total_EMD'].toString();
           totalCmd= jsonData['total_CMD'].toString();
           totalEmdCmd = jsonData['total_amount_included_emdCmd'].toString();
@@ -133,7 +127,6 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
     finally{
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -221,9 +214,9 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
             Expanded(
               child: ListView(
                 children: [
-                  buildDisplay("Total Payment", totalPayment),
-                  buildDisplay("Total EMD", totalEmd),
-                  buildDisplay("Total CMD", totalCmd),
+                  buildDisplay("Total Payment", (totalPayment.isNotEmpty) ? totalPayment  :'0'),
+                  buildDisplay("Total EMD", totalEmd ?? '0'),
+                  buildDisplay("Total CMD", totalCmd ?? '0'),
                   buildDisplay("Total Amount Including EMD/CMD", totalEmdCmd),
                   buildDisplay("Payment Type", paymentType),
                   buildDisplay("Date", date1),

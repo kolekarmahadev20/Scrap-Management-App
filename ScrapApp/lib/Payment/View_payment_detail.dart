@@ -11,6 +11,7 @@ import 'addPaymentToSaleOrder.dart';
 class View_payment_detail extends StatefulWidget {
   final String sale_order_id;
   final String bidder_id;
+
   View_payment_detail({
     required this.sale_order_id,
     required this.bidder_id,
@@ -27,14 +28,16 @@ class _View_payment_detailState extends State<View_payment_detail> {
   String? password = '';
   String? loginType = '';
   String? userType = '';
+  var checkLiftedQty ;
   bool isLoading = false;
+
+  Map<String , dynamic> taxAmount = {};
   Map<String , dynamic> ViewPaymentData = {};
   List<dynamic> paymentId =[];
   List<dynamic> paymentStatus =[];
   List<dynamic> emdStatus =[];
   List<dynamic> cmdStatus =[];
   List<dynamic> taxes =[];
-  var checkLiftedQty ;
 
 
 
@@ -64,7 +67,6 @@ class _View_payment_detailState extends State<View_payment_detail> {
       isLoading = true;
     });
     await checkLogin();
-    print(userType);
     final url = Uri.parse("${URL}payment_details");
     var response = await http.post(
       url,
@@ -81,15 +83,13 @@ class _View_payment_detailState extends State<View_payment_detail> {
       setState(() {
         var jsonData = json.decode(response.body);
         ViewPaymentData = jsonData;
-        print(ViewPaymentData);
         paymentId = ViewPaymentData['sale_order_payments'] ?? [];
         emdStatus =  ViewPaymentData['emd_status'] ?? [];
         cmdStatus =  ViewPaymentData['cmd_status'] ?? [];
         paymentStatus =  ViewPaymentData['recieved_payment'] ?? [];
         checkLiftedQty = ViewPaymentData['lifted_quantity'];
         taxes = ViewPaymentData['tax_and_rate']['taxes'] ??[];
-
-        print(taxes);
+        taxAmount = ViewPaymentData['tax_and_rate'] ?? {};
       });
     } else {
       print("Unable to fetch data.");
@@ -357,7 +357,6 @@ class _View_payment_detailState extends State<View_payment_detail> {
   }
 
   Widget buildTable() {
-    int total_tax_amount = 0;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Container(
@@ -387,9 +386,6 @@ class _View_payment_detailState extends State<View_payment_detail> {
             // Dynamically add rows based on the 'taxes' list
             if (taxes.isNotEmpty)
               ...taxes.map((tax) {
-                var total_taxes = int.tryParse(tax['tax_amount'].toString()) ?? 0;
-                print(total_taxes);
-                total_tax_amount = total_tax_amount + total_taxes ;
                 return DataRow(cells: [
                   DataCell(Text(tax['tax_name'] ?? 'No data')),
                   DataCell(Text('${tax['tax_amount'] ?? 'No data'}')),
@@ -397,9 +393,14 @@ class _View_payment_detailState extends State<View_payment_detail> {
               }).toList(),
             // Add a TOTAL row at the end
             DataRow(cells: [
-              DataCell(Text('TOTAL', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataCell(Text('₹$total_tax_amount' , style: TextStyle(fontWeight: FontWeight.bold))),
-            ]),
+              DataCell(Text('Basic Amount', /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
+              DataCell(Text('₹${taxAmount['basicTaxAmount']}' , /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
+             ]),
+            DataRow(cells: [
+              DataCell(Text('Final Amount', /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
+              DataCell(Text('₹${taxAmount['finalTaxAmount']}' , /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
+
+            ])
           ],
         ),
       ),

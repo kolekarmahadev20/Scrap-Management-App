@@ -152,9 +152,9 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
           'pay_date': dateController1.text,
           'amt': amountController.text,
           if(selectedPaymentType == "RA")
-            'E':"E",
+            'E': (totalCmdController.text.isNotEmpty) ? totalEmdController.text : '',
           if(selectedPaymentType == "RA")
-            'C':"C",
+            'C':(totalCmdController.text.isNotEmpty) ? totalCmdController.text : '',
           't_amt': totalPaymentController.text,
           'total_emd': totalEmdController.text,
           'total_amount_including_emd': totalEmdCmdController.text,

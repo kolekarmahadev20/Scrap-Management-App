@@ -28,6 +28,7 @@ class addDispatchToSaleOrder extends StatefulWidget {
 }
 
 class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
+
   final TextEditingController orderIdController = TextEditingController();
   final TextEditingController materialController = TextEditingController();
   final TextEditingController invoiceController = TextEditingController();
@@ -45,22 +46,23 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   String? password = '';
   String? loginType = '';
   String? userType = '';
-  String? selectedOrderId;
+  String advancePayment = '';
+  String totalEmd = '';
+  String totalCmd = '';
+  String rate = '';
   bool isLoading = false;
-  List<String> orderIDs = ['Select',];
+
+  String? selectedOrderId;
   String? MaterialSelected;
   String? materialId ;
+
+  List<String> orderIDs = ['Select',];
   List<File> vehicleFront = [];
   List<File> vehicleBack = [];
   List<File> Material = [];
   List<File> MaterialHalfLoad = [];
   List<File> MaterialFullLoad = [];
   List<File> other = [];
-
-  String advancePayment = '';
-  String totalEmd = '';
-  String totalCmd = '';
-  String rate = '';
 
   void clearFields(){
     selectedOrderId = null;
@@ -76,7 +78,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   void initState(){
     super.initState();
     _initializeData();
-    print(widget.sale_order_id);
   }
 
   Future<void> _initializeData() async {
@@ -271,7 +272,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
 
       // Send the request
       var response = await request.send();
-
 
       // Handle response
       if (response.statusCode == 200) {

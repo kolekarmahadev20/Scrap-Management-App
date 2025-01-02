@@ -437,8 +437,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                             sale_order_id: widget.sale_order_id,
                             bidder_id: widget.bidder_id,
                             lift_id: index['lift_id'],
-                            selectedOrderId: ViewDispatchData['sale_order']
-                                ['sale_order_code'],
+                            selectedOrderId: ViewDispatchData['sale_order']['sale_order_code'],
                             material: index['material_name'],
                             invoiceNo: index['invoice_no'],
                             firstWeight: index['truck_weight'],
