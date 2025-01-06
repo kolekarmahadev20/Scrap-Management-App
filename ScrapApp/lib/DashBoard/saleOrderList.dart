@@ -194,7 +194,7 @@ class saleOrderListState extends State<saleOrderList> {
                     filterSearchResults(value); // Call function to filter results
                   },
                   decoration: InputDecoration(
-                    labelText: "Search Order ID ",
+                    labelText: "Search",
                     prefixIcon: Icon(Icons.search),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
