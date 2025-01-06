@@ -149,6 +149,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
           'user_pass': password,
           'sale_order_id_pay': widget.sale_order_id ?? '',
           'payment_type': selectedPaymentType ?? '',
+          'receipt_voucher_date': dateController1.text,
           'pay_date': dateController1.text,
           'amt': amountController.text,
           if(selectedPaymentType == "RA")
@@ -165,7 +166,6 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
       );
 
       if (response.statusCode == 200) {
-        // print('test');
         final jsonData = json.decode(response.body);
         setState(() {
           ScaffoldMessenger.of(context)
