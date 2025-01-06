@@ -79,7 +79,6 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
     totalEmdCmdController.clear();
     noteController.clear();
     refNoController.clear();
-    // rvNoController.clear();
   }
 
 
@@ -125,7 +124,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
   }
 
   Future<void> addRefundDetails() async {
-    print("User ID : $username");
+    /*print("User ID : $username");
     print("password : $password");
     print("sale_order_id : ${widget.sale_order_id}");
     print("selectedPaymentType: $selectedPaymentType");
@@ -135,7 +134,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
     print("Total emd cmd : ${totalEmdCmdController.text}");
     print("Remark : ${noteController.text}");
     print("Ref No : ${refNoController.text}");
-    print("Nfa No : ${nfaController.text}");
+    print("Nfa No : ${nfaController.text}");*/
     try {
       setState(() {
         isLoading = true;
