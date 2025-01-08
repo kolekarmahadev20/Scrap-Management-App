@@ -22,6 +22,8 @@ class View_Payment_Amount extends StatefulWidget {
   final String? referenceNo;
   final String? typeOfTransfer;
   final String? remark;
+  final String? freezed;
+
   View_Payment_Amount({
     required this.sale_order_id,
     required this.bidder_id,
@@ -32,6 +34,7 @@ class View_Payment_Amount extends StatefulWidget {
     required this.referenceNo,
     required this.typeOfTransfer,
     required this.remark,
+    required this.freezed
   });
 
   @override
@@ -49,6 +52,7 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
   String totalCmd='';
   String totalEmdCmd='';
   String paymentType='';
+  String freezed='';
   String date1='';
   String amount='';
   String referenceNo='';
@@ -66,7 +70,10 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
   }
 
   getData(){
+
+
     paymentType = widget.paymentType ?? '';
+    freezed = widget.freezed ?? '';
     date1 = widget.date1 ?? '';
     amount = widget.amount ?? '';
     referenceNo = widget.referenceNo ?? '';
@@ -219,6 +226,7 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
                   buildDisplay("Total CMD", totalCmd ?? '0'),
                   buildDisplay("Total Amount Including EMD/CMD", totalEmdCmd),
                   buildDisplay("Payment Type", paymentType),
+                  buildDisplay("Freezed", freezed == 'Y' ? 'Yes' : 'No'),
                   buildDisplay("Date", date1),
                   buildDisplay("Amount", amount),
                   buildDisplay("Ref/RV No.", referenceNo),

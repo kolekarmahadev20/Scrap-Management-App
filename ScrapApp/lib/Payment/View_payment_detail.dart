@@ -582,7 +582,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                             amount: index['amt']?? 'N/A',
                             referenceNo: index['pay_ref_no']?? 'N/A',
                             typeOfTransfer: index['typeoftransfer']?? 'N/A',
-                            remark : index['narration'] ?? 'N/A'
+                            remark : index['narration'] ?? 'N/A',
+                            freezed : index['freezed'] ?? 'N/A'
                           ),
                     ),
                   ).then((value) => setState((){
@@ -604,7 +605,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                           amount: index['amt']?? 'N/A',
                           referenceNo: index['pay_ref_no']?? 'N/A',
                           typeOfTransfer: index['typeoftransfer']?? 'N/A',
-                          remark : index['narration'] ?? 'N/A'
+                          remark : index['narration'] ?? 'N/A',
+                            freezed : index['freezed'] ?? 'N/A'
                         ),
                   ),
                 ).then((value) => setState((){
@@ -743,7 +745,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                             amount: index['amt'] ?? "N/A",
                             referenceNo: index['pay_ref_no'] ?? "N/A",
                             typeOfTransfer: index['typeoftransfer'] ?? "N/A",
-                            remark : index['narration'] ?? 'N/A'
+                            remark : index['narration'] ?? 'N/A',
+                              freezed : index['freezed'] ?? 'N/A'
                           ),
                     ),
                   ).then((value) => setState((){
@@ -765,7 +768,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                           amount: index['amt'] ?? "N/A",
                           referenceNo: index['pay_ref_no'] ?? "N/A",
                           typeOfTransfer: index['typeoftransfer'] ?? "N/A",
-                          remark : index['narration'] ?? 'N/A'
+                          remark : index['narration'] ?? 'N/A',
+                          freezed : index['freezed'] ?? 'N/A'
 
                         ),
                   ),
@@ -901,7 +905,9 @@ class _View_payment_detailState extends State<View_payment_detail> {
                       amount: index['amt'] ?? "N/A",
                       referenceNo: index['pay_ref_no'] ?? "N/A",
                       typeOfTransfer: index['typeoftransfer'] ?? "N/A",
-                      remark : index['narration'] ?? 'N/A'
+                      remark : index['narration'] ?? 'N/A',
+                      freezed : index['freezed'] ?? 'N/A'
+
                     ),
                   ),
                 ).then((value) => setState((){
@@ -922,7 +928,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     amount: index['amt'] ?? "N/A",
                     referenceNo: index['pay_ref_no'] ?? "N/A",
                     typeOfTransfer: index['typeoftransfer'] ?? "N/A",
-                    remark : index['narration'] ?? 'N/A'
+                    remark : index['narration'] ?? 'N/A',
+                    freezed : index['freezed'] ?? 'N/A'
                   ),
                 ),
               ).then((value) => setState((){
