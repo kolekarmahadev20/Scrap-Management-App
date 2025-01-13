@@ -9,6 +9,8 @@ import 'package:scrapapp/Payment/PaymentList.dart';
 import 'package:scrapapp/Refund/RefundList.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../Pages/EmployeeTracker.dart';
+
 
 class AppDrawer extends StatefulWidget {
 
@@ -187,6 +189,18 @@ class _AppDrawerState extends State<AppDrawer> {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.pop(context); // Close the drawer
                         Navigator.push(context, MaterialPageRoute(builder: (context) => RefundList(currentPage: 6,)));
+                      });
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    6,
+                    icon: Icons.location_on_outlined,
+                    text: "Employee Tracker",
+                    onTap: () {
+                      Timer(Duration(milliseconds: 300), () {
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => EmployeeTrackers(currentPage: 7,)));
                       });
                     },
                   ),
