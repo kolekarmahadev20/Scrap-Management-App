@@ -34,15 +34,10 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
   List<Map<String, String>> employees = []; // List to store dropdown data
 
   //Variables for user details
-  bool _isloggedin = true;
-  String _id = '';
-  String _username = '';
-  String _full_name = '';
-  String _email = '';
-  String userImageUrl = '';
-  String _user_type = '';
-  String _password = '';
-  String _uuid = '';
+  String? username = '';
+  String? password = '';
+  String? loginType = '';
+  String? userType = '';
 
   @override
   void initState() {
@@ -52,59 +47,46 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
   }
 
   //Fetching user details from sharedpreferences
-  _getUserDetails() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isloggedin = prefs.getBool("loggedin")!;
-      _id = prefs.getString('id')!;
-      _username = prefs.getString('username')!;
-      _full_name = prefs.getString('full_name')!;
-      _email = prefs.getString('email')!;
-      _user_type = prefs.getString('user_type') ?? '';
-      _password = prefs.getString('password')??'';
-      _uuid= prefs.getString('uuid')??'';
-
-    });
-
-    if (_isloggedin == false) {
-      // ignore: use_build_context_synchronously
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => StartPage()));
-    }
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
   Future<void> _fetchDropdownData() async {
-    await _getUserDetails();
-    final url = '$URL/Mobile_flutter_api/get_dropdown_data';
+    await checkLogin();
+    final url = '${URL}get_dropdown_data';
     final response = await http.post(
       Uri.parse(url),
       body: {
-        'uuid': _uuid,
-        'user_id': _username,
-        'password': _password,
+        'user_id': username,
+        'user_pass': password,
       },
     );
 
     if (response.statusCode == 200) {
+      print('Response body: ${response.body}');
       final data = json.decode(response.body);
-      if (data['status'] == '1') {
+
+
         setState(() {
-          employees = List<Map<String, String>>.from(data['allusers'].map((x) => {
-            'id': x['id'] as String,
-            'full_name': x['full_name'] as String,
-            'username': x['username'] as String,
+          employees = List<Map<String, String>>.from(data['users'].map((x) => {
+            'id': x['person_id'] as String, // Correct key
+            'full_name': x['person_name'] as String,
+            'username': x['uname'] as String,
           }));
         });
-      } else {
-        throw Exception('Failed to load dropdown data');
-      }
+
     } else {
       throw Exception('Failed to load dropdown data');
     }
   }
 
+
   Future<void> _fetchUserData() async {
-    await _getUserDetails();
+    await checkLogin();
 
     if (selectedEmployeeId.isEmpty) {
       // If no employee is selected, show an error message
@@ -114,20 +96,23 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
       return;
     }
 
-    final url = '$URL/Mobile_flutter_api/get_user_lat_long';
+    final url = '${URL}get_user_lat_long';
     final response = await http.post(
       Uri.parse(url),
       body: {
-        'uuid': _uuid,
-        'user_id': _username,
-        'password': _password,
+        'user_id': username,
+        'user_pass': password,
         'date': selectedDate.toIso8601String().split('T')[0],
         'id': selectedEmployeeId,
+
       },
     );
 
     if (response.statusCode == 200) {
+
       final data = json.decode(response.body);
+
+
       if (data['status'] == '1') {
         final userData = data['user_data'];
         final List<LatLng> latLngList = [];
@@ -146,7 +131,7 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
               markerId: MarkerId(latLng.toString()),
               position: latLng,
               infoWindow: InfoWindow(
-                title: item['full_name'],
+                title: item['person_name'],
                 snippet: item['dt'],
               ),
               icon: BitmapDescriptor.defaultMarker,

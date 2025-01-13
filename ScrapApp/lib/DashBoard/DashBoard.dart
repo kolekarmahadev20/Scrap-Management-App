@@ -1,13 +1,16 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/DashBoard/saleOrderList.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../URL_CONSTANT.dart';
+import 'dart:math' as math;
 
 class DashBoard extends StatefulWidget {
   final int currentPage;
@@ -31,12 +34,29 @@ class _DashBoardState extends State<DashBoard> {
   String? curr_year;
   List<dynamic> graph = [];
 
+  late Timer _gpsCheckTimer;
+
+
+  final Location _location = Location();
+  LocationData? _previousLocation;
+
   @override
   void initState() {
     super.initState();
     checkLogin();
     fetchDashBoardData();
     getLastSixMonths();
+    _gpsCheckTimer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
+      getlocation();
+      _updateLocation();
+    });
+  }
+
+
+  @override
+  void dispose() {
+    _gpsCheckTimer.cancel();
+    super.dispose();
   }
 
   Future<void> checkLogin() async {
@@ -79,6 +99,118 @@ class _DashBoardState extends State<DashBoard> {
 
   void _handleError(String message) {
     print(message);
+  }
+
+  Location location = new Location();
+  bool _serviceEnabled = true;
+  late PermissionStatus _permissionGranted;
+  late LocationData _locationData;
+
+  Future<dynamic> getlocation() async {
+    _serviceEnabled = await location.serviceEnabled();
+
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      _serviceEnabled = await location.serviceEnabled();
+      if (!_serviceEnabled) {
+        _serviceEnabled = await location.requestService();
+        if (!_serviceEnabled) {
+          return;
+        }
+      }
+      _permissionGranted = await location.hasPermission();
+      if (_permissionGranted == PermissionStatus.denied) {
+        _permissionGranted = await location.requestPermission();
+        if (_permissionGranted != PermissionStatus.granted) {
+          return;
+        }
+      }
+    }
+    _locationData = await location.getLocation();
+  }
+
+  // Haversine formula to calculate distance between two coordinates
+  double degToRad(double deg) {
+    return deg * (math.pi / 180);
+  }
+
+  double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const int R = 6371000; // Earth radius in meters
+    double dLat = degToRad(lat2 - lat1);
+    double dLon = degToRad(lon2 - lon1);
+    double a = math.pow(math.sin(dLat / 2), 2) +
+        math.cos(degToRad(lat1)) * math.cos(degToRad(lat2)) * math.pow(math.sin(dLon / 2), 2);
+    double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    return R * c;
+  }
+
+
+
+  Future<void> updateLocation(double latitude, double longitude) async {
+    // Construct the API URL
+    String url = '${URL}update_location';
+
+    // Prepare the request body
+    var requestBody = {
+      'user_id': username,
+      'user_pass': password,
+      'locations[lat]':latitude.toString(),
+      'locations[long]':longitude.toString(),
+    };
+
+    try {
+      // Send the POST request
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {"Accept": "application/json"},
+        body: requestBody,
+      );
+
+      // Handle the response
+      if (response.statusCode == 200) {
+        // Request successful
+        print('Location updated successfully');
+      } else {
+        // Request failed
+        print('Failed to update location. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Handle exceptions
+      print('Error updating location: $e');
+    }
+  }
+
+  void _updateLocation() async {
+    try {
+      if (_locationData != null) {
+        double latitude = _locationData!.latitude!;
+        double longitude = _locationData!.longitude!;
+
+        // Calculate the distance from the previous location, if available
+        if (_previousLocation != null) {
+          double previousLat = _previousLocation!.latitude!;
+          double previousLong = _previousLocation!.longitude!;
+          double distance = calculateDistance(previousLat, previousLong, latitude, longitude);
+
+          // Check if the calculated distance is greater than or equal to the desired threshold
+          if (distance >= 5000) {
+            // Update the location only if the condition is satisfied
+            await updateLocation(latitude, longitude);
+
+            // Update the previous location
+            _previousLocation = _locationData;
+          }
+        } else {
+          // If previous location is not available, update the location
+          await updateLocation(latitude, longitude);
+
+          // Update the previous location
+          _previousLocation = _locationData;
+        }
+      }
+    } catch (e) {
+      print('Error updating location: $e');
+    }
   }
 
   @override
@@ -190,8 +322,8 @@ class _DashBoardState extends State<DashBoard> {
               SizedBox(height: 20,),
               Row(
                 children: [
-                  Expanded(child: _buildCard("$auctionCmp", "Auction Company", Colors.deepPurple)),
-                  Expanded(child: _buildCard("$buyerCount", "Buyer", Colors.pink)),
+                  Expanded(child: _buildCard("$auctionCmp", "Vendors", Colors.deepPurple)),
+                  Expanded(child: _buildCard("$buyerCount", "Buyers", Colors.pink)),
                 ],
               ),
 
