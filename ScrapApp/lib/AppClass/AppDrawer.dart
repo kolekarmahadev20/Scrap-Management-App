@@ -9,7 +9,9 @@ import 'package:scrapapp/Payment/PaymentList.dart';
 import 'package:scrapapp/Refund/RefundList.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../Buyer/Buyer_list.dart';
 import '../Pages/EmployeeTracker.dart';
+import '../Vendor/Vendor_list.dart';
 
 
 class AppDrawer extends StatefulWidget {
@@ -194,7 +196,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   ),
                   _buildDrawerItem(
                     context,
-                    6,
+                    7,
                     icon: Icons.location_on_outlined,
                     text: "Employee Tracker",
                     onTap: () {
@@ -202,6 +204,32 @@ class _AppDrawerState extends State<AppDrawer> {
                         Navigator.pop(context); // Close the drawer
                         Navigator.push(context, MaterialPageRoute(builder: (context) => EmployeeTrackers(currentPage: 7,)));
                       });
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    8,
+                    icon: Icons.business,
+                    text: "Vendor",
+                    onTap: () {
+                      Timer(Duration(milliseconds: 300), () {
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => Vendor_list(currentPage: 8,)));
+                      });
+
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    9,
+                    icon: Icons.people_alt,
+                    text: "Buyer",
+                    onTap: () {
+                      Timer(Duration(milliseconds: 300), () {
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => Buyer_list(currentPage: 9,)));
+                      });
+
                     },
                   ),
                 ],
