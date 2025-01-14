@@ -7,12 +7,11 @@ import 'package:flutter/services.dart';
 
 import '../AppClass/AppDrawer.dart';
 import '../AppClass/appBar.dart';
+import '../Model/VendorData.dart';
 import '../Pages/StartPage.dart';
 import '../URL_CONSTANT.dart';
 
-
 class Vendor_list extends StatefulWidget {
-
   final int currentPage;
   Vendor_list({required this.currentPage});
 
@@ -21,52 +20,33 @@ class Vendor_list extends StatefulWidget {
 }
 
 class _Vendor_listState extends State<Vendor_list> {
-  // List<SealData> sealsData = [];
-  //
-  // Future<List<SealData>> _sealDataFuture = Future<List<SealData>>.value([]);
+  List<VendorData> vendorsData = [];
+
+  Future<List<VendorData>> _vendorDataFuture =
+      Future<List<VendorData>>.value([]);
+
   TextEditingController _searchController = TextEditingController();
 
   //Variables for user details
-  bool _isloggedin = true;
-  String _id = '';
-  String _username = '';
-  String _full_name = '';
-  String _email = '';
-  String userImageUrl = '';
-  String _user_type = '';
-  String _password = '';
-  String _uuid = '';
+  String? username = '';
+  String? password = '';
+  String? loginType = '';
+  String? userType = '';
 
   @override
   void initState() {
     super.initState();
-    // _sealDataFuture = _getSealData();
-    _getUserDetails();
+    _vendorDataFuture = _getVendorData();
+    checkLogin();
   }
 
   //Fetching user details from sharedpreferences
-  _getUserDetails() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isloggedin = prefs.getBool("loggedin")!;
-      _id = prefs.getString('id')!;
-      _username = prefs.getString('username')!;
-      _full_name = prefs.getString('full_name')!;
-      _email = prefs.getString('email')!;
-      _user_type = prefs.getString('user_type') ?? '';
-      _password = prefs.getString('password')??'';
-      _uuid= prefs.getString('uuid')??'';
-
-    });
-
-    if (kDebugMode) {
-      //print("is logged in$_isloggedin");
-    }
-    if (_isloggedin == false) {
-      // ignore: use_build_context_synchronously
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) =>  StartPage()));
-    }
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
   void _updateSealList(String query) {
@@ -76,115 +56,85 @@ class _Vendor_listState extends State<Vendor_list> {
     });
   }
 
+  Future<List<VendorData>> _getVendorData() async {
+    await checkLogin();
 
-  // Future<List<SealData>> _getSealData({String? query}) async {
-  //   try {
-  //     // Fetch user details if not fetched already
-  //     await _getUserDetails();
-  //
-  //     // Add the query parameter to the request body
-  //     Map<String, dynamic> requestBody = {
-  //       'uuid': _uuid,
-  //       'user_id': _username,
-  //       'password': _password,
-  //       'user_type': _user_type,
-  //     };
-  //
-  //     if (query != null && query.isNotEmpty) {
-  //       requestBody['query'] = query;
-  //     }
-  //
-  //     // Make an HTTP POST request to the API endpoint
-  //     final response = await http.post(
-  //       Uri.parse('$URL/Mobile_flutter_api/get_seal_data'),
-  //       headers: {"Accept": "application/json"},
-  //       body: requestBody,
-  //     );
-  //
-  //     // Check if the response status code is 200 (OK)
-  //     if (response.statusCode == 200) {
-  //       // Parse the response body as JSON
-  //       final data = json.decode(response.body);
-  //
-  //       // Check if the API response indicates success and contains seal data
-  //       if (data["status"] == "1" && data["seal_data"] != null) {
-  //         // Create a list to store the fetched seal data
-  //         List<SealData> fetchedSealsData = [];
-  //
-  //         // Iterate through each seal in the response data
-  //         for (var seal in data["seal_data"] ?? []) {
-  //           // Initialize a new SealData object based on the response data
-  //           SealData sealData = SealData(
-  //             sr_no: seal["sr_no"]?.toString() ?? "",
-  //             location_name: seal["location_name"] ?? "",
-  //             seal_transaction_id: seal["seal_transaction_id"] ?? "",
-  //             seal_date: seal["seal_date"] ?? "",
-  //             seal_unloading_date: seal["seal_unloading_date"] ?? "",
-  //             seal_unloading_time: seal["seal_unloading_time"] ?? "",
-  //             vehicle_no: seal["vehicle_no"] ?? "",
-  //             allow_slip_no: seal["allow_slip_no"] ?? "",
-  //             plant_name: seal["plant_name"] ?? "",
-  //             material_name: seal["material_name"] ?? "",
-  //             vessel_name: seal["vessel_name"] ?? "",
-  //             net_weight: seal["net_weight"] ?? "",
-  //             start_seal_no: seal["start_seal_no"] ?? "",
-  //             end_seal_no: seal["end_seal_no"] ?? "",
-  //             seal_color: seal["seal_color"] ?? "",
-  //             no_of_seal: seal["no_of_seal"] ?? "",
-  //             gps_seal_no: seal["gps_seal_no"] ?? "",
-  //             extra_start_seal_no: seal["extra_start_seal_no"] ?? "",
-  //             extra_no_of_seal: seal["extra_no_of_seal"] ?? "",
-  //             rejected_seal_no: seal["rejected_seal_no"] ?? "",
-  //             new_seal_no: seal["new_seal_no"] ?? "",
-  //             remarks: seal["remarks"] ?? "",
-  //             rev_remarks: seal["rev_remarks"] ?? "",
-  //             img_cnt: seal["img_cnt"] ?? "",
-  //             extra_end_seal_no: seal["extra_end_seal_no"] ?? "",
-  //             first_weight: seal["first_weight"] ?? "",
-  //             second_weight: seal["second_weight"] ?? "",
-  //             tarpaulin_condition: seal["tarpaulin_condition"] ?? "",
-  //             sender_remarks: seal["sender_remarks"] ?? "",
-  //             pics: List<String>.from(seal["pics"] ?? []),
-  //           );
-  //
-  //
-  //           // Add the SealData object to the list
-  //           fetchedSealsData.add(sealData);
-  //         }
-  //
-  //
-  //         setState(() {
-  //           sealsData = List.from(fetchedSealsData);
-  //         });
-  //
-  //
-  //         // Return the fetched seal data
-  //         return fetchedSealsData;
-  //       }
-  //     }
-  //   } catch (e) {
-  //     // Print and rethrow the error to be handled by FutureBuilder
-  //     print('Error: $e');
-  //     throw e;
-  //   }
-  //
-  //   // Return an empty list if data fetching fails
-  //   return [];
-  // }
-
-
-  // Add this function in your _ViewSealState class
-  Future<void> deleteSealRecord(String seal_transaction_id) async {
     try {
-      print(seal_transaction_id);
+      // Prepare the request body with user credentials
+      Map<String, dynamic> requestBody = {
+        'user_id': username,
+        'user_pass': password,
+      };
+
+      // Make an HTTP POST request to the API endpoint
       final response = await http.post(
-        Uri.parse('$URL/Mobile_flutter_api/delete_seal_record'),
+        Uri.parse('${URL}ajax_auctioneer_list'),
+        headers: {"Accept": "application/json"},
+        body: requestBody,
+      );
+
+      // Check if the response status code is 200 (OK)
+      if (response.statusCode == 200) {
+        // Parse the response body as JSON
+        final data = json.decode(response.body);
+        print(data);
+        print("sfdefe");
+
+        // Check if the API response contains the vendor list
+        if (data["vendor_list"] != null) {
+          // Create a list to store the fetched vendor data
+          List<VendorData> fetchedVendorsData = [];
+
+          // Iterate through each vendor in the response data
+          for (var vendor in data["vendor_list"]) {
+            // Initialize a new VendorData object based on the response data
+            VendorData vendorData = VendorData(
+              srNo: vendor[0]?.toString() ?? "",
+              name: vendor[1] ?? "",
+              email: vendor[2]?.replaceAll('<br>', '\n') ?? "",
+              phone: vendor[3]?.replaceAll('<br>', '\n') ?? "",
+              addressLine1: vendor[4] ?? "",
+              addressLine2: vendor[5] ?? "",
+              state: vendor[6] ?? "",
+              country: vendor[7] ?? "",
+              postalCode: vendor[8] ?? "",
+              gstNumber: vendor[9] ?? "",
+              remarks: vendor[10] ?? "",
+              contactPerson: vendor[11] ?? "",
+            );
+
+            // Add the VendorData object to the list
+            fetchedVendorsData.add(vendorData);
+          }
+
+          setState(() {
+            vendorsData = List.from(fetchedVendorsData);
+          });
+
+          // Return the fetched vendor data
+          return fetchedVendorsData;
+        }
+      }
+    } catch (e) {
+      // Print and rethrow the error to be handled by FutureBuilder
+      print('Error: $e');
+      throw e;
+    }
+
+    // Return an empty list if data fetching fails
+    return [];
+  }
+
+  Future<void> deleteVendor(String Vendor_id) async {
+    try {
+      print(Vendor_id);
+      final response = await http.post(
+        Uri.parse('${URL}auctioneer_delete'),
         headers: {"Accept": "application/json"},
         body: {
-          'uuid': _uuid,
-          'user_id': _username,
-          'password': _password,
-          'id': seal_transaction_id,
+          'user_id': username,
+          'user_pass': password,
+          'object_id': Vendor_id,
         },
       );
 
@@ -197,15 +147,13 @@ class _Vendor_listState extends State<Vendor_list> {
             // _sealDataFuture = _getSealData(); // Refresh the seal data
           });
         } else {
-          print('Failed to delete seal record: ${data["message"]}');
+          print('Failed to delete seal record: ${data["msg"]}');
         }
       }
     } catch (e) {
       print('Error: $e');
     }
   }
-
-
 
   Future<bool> _onWillPop() async {
     bool exit = await showDialog(
@@ -250,99 +198,106 @@ class _Vendor_listState extends State<Vendor_list> {
           onPressed: () {
             // Navigator.push(
             //   context,
-            //   MaterialPageRoute(builder: (context) => AddSealData()),
+            //   MaterialPageRoute(builder: (context) => VendorForm()),
             // );
           },
           child: Icon(Icons.add),
+          backgroundColor: Colors.blueGrey[200], // FAB background color
         ),
-        // body: RefreshIndicator(
-        //   onRefresh: () async {
-        //     await _refreshData();
-        //   },
-        //   child: FutureBuilder<List<SealData>>(
-        //     future: _sealDataFuture,
-        //     builder: (context, snapshot) {
-        //       if (snapshot.connectionState == ConnectionState.waiting) {
-        //         return Center(child: CircularProgressIndicator());
-        //       } else if (snapshot.hasError) {
-        //         return Center(child: Text('Error: ${snapshot.error}'));
-        //       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-        //         return Center(child: Text('No data available'));
-        //       } else {
-        //         return Column(
-        //           crossAxisAlignment: CrossAxisAlignment.stretch,
-        //           children: [
-        //             // Display the "View Seals" card at the top
-        //             Center(
-        //               child: Card(
-        //                 child: Column(
-        //                   children: [
-        //                     Row(
-        //                       mainAxisAlignment: MainAxisAlignment.center,
-        //                       children: [
-        //                         Icon(
-        //                           Icons.circle_notifications,
-        //                           color: Colors.blue.shade900,
-        //                           size: 35,
-        //                         ),
-        //                         SizedBox(width: 10),
-        //                         Text(
-        //                           'View Seals',
-        //                           style: TextStyle(
-        //                             fontSize: 20,
-        //                             fontWeight: FontWeight.bold,
-        //                             color: Colors.blue.shade900,
-        //                           ),
-        //                         ),
-        //                       ],
-        //                     ),
-        //                     Padding(
-        //                       padding: const EdgeInsets.all(8.0),
-        //                       child: Row(
-        //                         mainAxisAlignment: MainAxisAlignment.center,
-        //                         children: [
-        //                           Expanded(
-        //                             child: TextField(
-        //                               controller: _searchController,
-        //                               onChanged: (query) {
-        //                                 if (query.isEmpty) {
-        //                                   _updateSealList(query);
-        //                                 }
-        //                               },
-        //                               onEditingComplete: () {
-        //                                 _updateSealList(_searchController.text);
-        //                               },
-        //                               decoration: InputDecoration(
-        //                                 hintText: 'Search by username',
-        //                                 suffixIcon: IconButton(
-        //                                   icon: Icon(Icons.search),
-        //                                   onPressed: () {
-        //                                     _updateSealList(_searchController.text);
-        //                                   },
-        //                                 ),
-        //                               ),
-        //                             ),
-        //                           ),
-        //                         ],
-        //                       ),
-        //                     ),
-        //                   ],
-        //                 ),
-        //               ),
-        //             ),
-        //             Expanded(
-        //               child: _buildSealsList(snapshot.data ?? []),
-        //             ),
-        //           ],
-        //         );
-        //       }
-        //     },
-        //   ),
-        // ),
+        body: RefreshIndicator(
+          onRefresh: () async {
+            await _refreshData();
+          },
+          child: FutureBuilder<List<VendorData>>(
+            future: _vendorDataFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text('No data available'));
+              } else {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Display the "View Seals" card at the top
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                "Vendor",
+                                style: TextStyle(
+                                  fontSize:
+                                      24, // Slightly larger font size for prominence
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: (query) {
+                                if (query.isEmpty) {
+                                  _updateSealList(query);
+                                }
+                              },
+                              onEditingComplete: () {
+                                // Hide the keyboard and update the search list
+                                FocusScope.of(context).unfocus();
+                                _updateSealList(_searchController.text);
+                              },
+                              decoration: InputDecoration(
+                                hintText: 'Search by username',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12), // Rounded corners
+                                ),
+                                filled: true, // Enable filled background
+                                fillColor: Colors.white, // Background color
+                                prefixIcon: IconButton(
+                                  icon: Icon(Icons.search),
+                                  onPressed: () {
+                                    // Hide the keyboard and update the search list
+                                    FocusScope.of(context).unfocus();
+                                    _updateSealList(_searchController.text);
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Expanded(
+                      child: _buildSealsList(snapshot.data ?? []),
+                    ),
+                  ],
+                );
+              }
+            },
+          ),
+        ),
       ),
     );
   }
-
 
   Widget _buildSealDataRow(String label, String value) {
     return Padding(
@@ -402,216 +357,209 @@ class _Vendor_listState extends State<Vendor_list> {
     );
   }
 
-  // List<SealData> _filterData(List<SealData> data, String query) {
-  //   // Trim white spaces from the query
-  //   query = query.trim();
-  //
-  //   if (query.isEmpty) {
-  //     // If the query is empty, return the original data
-  //     return data;
-  //   }
-  //
-  //   // Filter data based on the search query (case insensitive)
-  //   return data.where((seal) =>
-  //   seal.sr_no!.toLowerCase().contains(query.toLowerCase()) ||
-  //       seal.seal_transaction_id!.toLowerCase().contains(query.toLowerCase()) ||
-  //       seal.vehicle_no!.toLowerCase().contains(query.toLowerCase()) ||
-  //       seal.rejected_seal_no!.toLowerCase().contains(query.toLowerCase()) ||
-  //       seal.new_seal_no!.toLowerCase().contains(query.toLowerCase()) ||
-  //       seal.start_seal_no!.toLowerCase().contains(query.toLowerCase()) ||
-  //       seal.end_seal_no!.toLowerCase().contains(query.toLowerCase())
-  //   ).toList();
-  // }
+  List<VendorData> _filterData(List<VendorData> data, String query) {
+    // Trim white spaces from the query
+    query = query.trim();
 
+    if (query.isEmpty) {
+      // If the query is empty, return the original data
+      return data;
+    }
 
-  // Widget _buildSealsList(List<SealData> sealsData) {
-  //   List<SealData> filteredData = _filterData(sealsData, _searchController.text);
-  //
-  //   return ListView.builder(
-  //     itemCount: filteredData.length,
-  //     itemBuilder: (context, index) {
-  //       SealData seal = filteredData[index];
-  //
-  //       return Column(
-  //         children: [
-  //           Card(
-  //             color: Colors.grey.shade200,
-  //             child: Row(
-  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //               children: [
-  //                 Padding(
-  //                   padding: const EdgeInsets.all(8.0),
-  //                   child: Text(
-  //                     '${seal.sr_no ?? 'N/A'}',
-  //                     style: TextStyle(
-  //                       fontWeight: FontWeight.bold,
-  //                       fontSize: 17,
-  //                       color: Colors.blue,
-  //                     ),
-  //                   ),
-  //                 ),
-  //                 Expanded(
-  //                   child: Row(
-  //                     mainAxisAlignment: MainAxisAlignment.end,
-  //                     children: [
-  //                       IconButton(
-  //                         icon: Icon(Icons.edit),
-  //                         onPressed: () {
-  //                           Navigator.push(
-  //                             context,
-  //                             // MaterialPageRoute(
-  //                             //   builder: (context) => EditSeals(seal: seal),
-  //                             // ),
-  //                           );
-  //                         },
-  //                       ),
-  //                       IconButton(
-  //                         icon: Icon(Icons.delete, color: Colors.red),
-  //                         onPressed: () {
-  //                           deleteSealRecord(seal.seal_transaction_id ?? '');
-  //                         },
-  //                       ),
-  //                     ],
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //           Card(
-  //             elevation: 5.0,
-  //             margin: EdgeInsets.all(16.0),
-  //             shape: RoundedRectangleBorder(
-  //               borderRadius: BorderRadius.circular(15.0),
-  //             ),
-  //             child: Padding(
-  //               padding: const EdgeInsets.all(8.0),
-  //               child: Table(
-  //                 // border: TableBorder.all(color: Colors.black),
-  //                 columnWidths: {
-  //                   0: FixedColumnWidth(150),
-  //                 },
-  //                 children: [
-  //                   buildTableRows(
-  //                     ['Location', 'Plant'],
-  //                     [seal.location_name, seal.plant_name],
-  //                     0,
-  //                   ),
-  //
-  //                   // buildTableRow('Location', seal.location_name,0),
-  //                   // buildTableRow('Plant', seal.plant_name,1),
-  //
-  //                   buildTableRows(
-  //                     ['Material', 'Vessel'],
-  //                     [seal.material_name, seal.vessel_name],
-  //                     1,
-  //                   ),
-  //
-  //                   // buildTableRow('Material', seal.material_name,1),
-  //                   // buildTableRow('Vessel', seal.vessel_name,0),
-  //
-  //                   buildTableRows(
-  //                     ['Start Seal No', 'End Seal No'],
-  //                     [seal.start_seal_no, seal.end_seal_no],
-  //                     0,
-  //                   ),
-  //
-  //                   buildTableRows(
-  //                     ['Extra Start Seal No', 'Extra End Seal No'],
-  //                     [seal.extra_start_seal_no, seal.extra_end_seal_no.toString()],
-  //                     1,
-  //                   ),
-  //
-  //                   buildTableRows(
-  //                     ['No of Seals', 'No of Extra Seals'],
-  //                     [seal.no_of_seal, seal.extra_no_of_seal.toString()],
-  //                     0,
-  //                   ),
-  //
-  //                   buildTableRows(
-  //                     ['Rejected Seal', 'New Seal'],
-  //                     [seal.rejected_seal_no, seal.new_seal_no],
-  //                     1,
-  //                   ),
-  //
-  //                   buildTableRows(
-  //                     ['Net weight', 'Seal Color'],
-  //                     [seal.net_weight, seal.seal_color],
-  //                     0,
-  //                   ),
-  //
-  //                   buildTableRows(
-  //                     ['Vehicle No', 'Allow Slip No'],
-  //                     [seal.vehicle_no, seal.allow_slip_no],
-  //                     1,
-  //                   ),
-  //
-  //                   buildTableRow('Seal Date', seal.seal_date,0),
-  //                   buildTableRow('Vehicle Reached Date', seal.seal_unloading_date,1),
-  //
-  //                   // buildTableRow('Net weight', seal.net_weight,0),
-  //                   // buildTableRow('Seal Color', seal.seal_color,0),
-  //
-  //                   // buildTableRow('Rejected Seal', seal.rejected_seal_no,0),
-  //                   // buildTableRow('New Seal', seal.new_seal_no,0),
-  //
-  //                   // buildTableRow('No of Seals', seal.no_of_seal,1),
-  //                   // buildTableRow('No of Extra Seals', seal.extra_no_of_seal,1),
-  //
-  //                   // buildTableRow('Extra Start Seal No', seal.extra_start_seal_no,0),
-  //                   // buildTableRow('Extra End Seal No', seal.extra_end_seal_no,0),
-  //
-  //                   // buildTableRow('Start Seal No', seal.start_seal_no,0),
-  //                   // buildTableRow('End Seal No', seal.end_seal_no,0),
-  //
-  //                   buildTableRow('GPS Seal No', seal.gps_seal_no,0),
-  //                   // buildTableRow('Allow Slip No', seal.allow_slip_no,0),
-  //                   // buildTableRow('Vehicle No', seal.vehicle_no,1),
-  //
-  //
-  //
-  //                   // buildTableRow('No of Seals', seal.no_of_seal,1),
-  //
-  //                   // buildTableRow('No of Extra Seals', seal.extra_no_of_seal,1),
-  //
-  //
-  //
-  //
-  //
-  //                   buildTableRow('Sender Remarks', seal.remarks,1),
-  //                   buildTableRow('Receiver Remarks', seal.rev_remarks,0),
-  //
-  //                   // buildTableRow('Transaction ID', seal.seal_transaction_id,1),
-  //
-  //
-  //                   // Add more rows for other details here
-  //
-  //
-  //
-  //
-  //                 ],
-  //               ),
-  //             ),
-  //           ),
-  //           // Display a button to view images
-  //           ElevatedButton(
-  //             onPressed: () {
-  //               // Open a new screen or dialog to display the images
-  //               Navigator.push(
-  //                 context,
-  //                 MaterialPageRoute(
-  //                   builder: (context) => ImageViewer(imgUrls: seal.pics),
-  //                 ),
-  //               );
-  //             },
-  //             child: Text('View Images'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
+    // Filter data based on the search query (case insensitive)
+    return data
+        .where((vendor) =>
+            vendor.srNo!.toLowerCase().contains(query.toLowerCase()) ||
+            vendor.name!.toLowerCase().contains(query.toLowerCase()) ||
+            // vendor.vehicle_no!.toLowerCase().contains(query.toLowerCase()) ||
+            // vendor.rejected_seal_no!.toLowerCase().contains(query.toLowerCase()) ||
+            // vendor.new_seal_no!.toLowerCase().contains(query.toLowerCase()) ||
+            // vendor.start_seal_no!.toLowerCase().contains(query.toLowerCase()) ||
+            vendor.country!.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+  }
 
-  TableRow buildTableRows(List<String> labels, List<String?> values, int index) {
+  Widget _buildSealsList(List<VendorData> vendorsData) {
+    List<VendorData> filteredData =
+        _filterData(vendorsData, _searchController.text);
+
+    return ListView.builder(
+      itemCount: filteredData.length,
+      itemBuilder: (context, index) {
+        VendorData vendor = filteredData[index];
+
+        return Column(
+          children: [
+            Card(
+              color: Colors.blueGrey[500],
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      child: Text(
+                        '${vendor.srNo ?? 'N/A'}.   ${vendor.name ?? 'N/A'}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            Icons.edit,
+                            color: Colors.white,
+                          ),
+                          onPressed: () {
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder: (context) => EditSeals(seal: seal),
+                            //   ),
+                            // );
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.delete_forever,
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                          onPressed: () {
+                            // deleteVendor(vendor.Vendor_id ?? '');
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Table(
+                // border: TableBorder.all(color: Colors.black),
+                columnWidths: {
+                  0: FixedColumnWidth(150),
+                },
+                children: [
+                  buildTableRows(
+                    ['Name', 'Email'],
+                    [vendor.name, vendor.email],
+                    0,
+                  ),
+
+                  // buildTableRow('Location', seal.location_name,0),
+                  buildTableRow('Phone', vendor.phone, 1),
+
+                  buildTableRows(
+                    ['Address', ''],
+                    [vendor.addressLine1, vendor.addressLine2],
+                    0,
+                  ),
+
+                  // buildTableRow('Material', seal.material_name,1),
+                  // buildTableRow('Vessel', seal.vessel_name,0),
+
+                  buildTableRows(
+                    ['State', 'Country'],
+                    [vendor.state, vendor.country],
+                    1,
+                  ),
+
+                  buildTableRows(
+                    ['Postal Code', 'GST Number'],
+                    [vendor.postalCode, vendor.gstNumber.toString()],
+                    0,
+                  ),
+
+                  // buildTableRows(
+                  //   ['No of Seals', 'No of Extra Seals'],
+                  //   [vendor.no_of_seal, vendor.extra_no_of_seal.toString()],
+                  //   0,
+                  // ),
+                  //
+                  // buildTableRows(
+                  //   ['Rejected Seal', 'New Seal'],
+                  //   [vendor.rejected_seal_no, vendor.new_seal_no],
+                  //   1,
+                  // ),
+                  //
+                  // buildTableRows(
+                  //   ['Net weight', 'Seal Color'],
+                  //   [vendor.net_weight, vendor.seal_color],
+                  //   0,
+                  // ),
+                  //
+                  // buildTableRows(
+                  //   ['Vehicle No', 'Allow Slip No'],
+                  //   [vendor.vehicle_no, vendor.allow_slip_no],
+                  //   1,
+                  // ),
+                  //
+                  // buildTableRow('Seal Date', vendor.seal_date,0),
+                  // buildTableRow('Vehicle Reached Date', vendor.seal_unloading_date,1),
+
+                  // buildTableRow('Net weight', seal.net_weight,0),
+                  // buildTableRow('Seal Color', seal.seal_color,0),
+
+                  // buildTableRow('Rejected Seal', seal.rejected_seal_no,0),
+                  // buildTableRow('New Seal', seal.new_seal_no,0),
+
+                  // buildTableRow('No of Seals', seal.no_of_seal,1),
+                  // buildTableRow('No of Extra Seals', seal.extra_no_of_seal,1),
+
+                  // buildTableRow('Extra Start Seal No', seal.extra_start_seal_no,0),
+                  // buildTableRow('Extra End Seal No', seal.extra_end_seal_no,0),
+
+                  // buildTableRow('Start Seal No', seal.start_seal_no,0),
+                  // buildTableRow('End Seal No', seal.end_seal_no,0),
+
+                  // buildTableRow('GPS Seal No', vendor.gps_seal_no,0),
+                  // buildTableRow('Allow Slip No', seal.allow_slip_no,0),
+                  // buildTableRow('Vehicle No', seal.vehicle_no,1),
+
+                  // buildTableRow('No of Seals', seal.no_of_seal,1),
+
+                  // buildTableRow('No of Extra Seals', seal.extra_no_of_seal,1),
+
+                  buildTableRow('Remarks', vendor.remarks, 1),
+                  buildTableRow('Contact Person', vendor.contactPerson, 0),
+
+                  // buildTableRow('Transaction ID', seal.seal_transaction_id,1),
+
+                  // Add more rows for other details here
+                ],
+              ),
+            ),
+            // Display a button to view images
+            // ElevatedButton(
+            //   onPressed: () {
+            //     // Open a new screen or dialog to display the images
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (context) => ImageViewer(imgUrls: seal.pics),
+            //       ),
+            //     );
+            //   },
+            //   child: Text('View Images'),
+            // ),
+          ],
+        );
+      },
+    );
+  }
+
+  TableRow buildTableRows(
+      List<String> labels, List<String?> values, int index) {
     assert(labels.length == values.length);
 
     return TableRow(
@@ -638,7 +586,7 @@ class _Vendor_listState extends State<Vendor_list> {
     );
   }
 
-  TableRow buildTableRow(String label, String? value,int index) {
+  TableRow buildTableRow(String label, String? value, int index) {
     return TableRow(
       decoration: BoxDecoration(
         color: index % 2 == 0 ? Colors.white : Colors.grey[200],
@@ -662,5 +610,4 @@ class _Vendor_listState extends State<Vendor_list> {
       ],
     );
   }
-
 }

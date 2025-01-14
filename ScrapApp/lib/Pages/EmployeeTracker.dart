@@ -43,6 +43,7 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
   void initState() {
     super.initState();
     _fetchDropdownData();
+    checkLogin();
 
   }
 
