@@ -75,8 +75,8 @@ class _Vendor_listState extends State<Vendor_list> {
       if (response.statusCode == 200) {
         // Parse the response body as JSON
         final data = json.decode(response.body);
-        // print(data);
-        // print("sfdefe");
+        print(data);
+        print("sfdefe");
 
         // Check if the API response contains the vendor list
         if (data["vendor_list"] != null) {
@@ -101,10 +101,10 @@ class _Vendor_listState extends State<Vendor_list> {
               contactPerson: vendor[11] ?? "",
               Vendor_id: vendor[12] ?? "",
               // Removed the invalid vendor[13]
-              Active: "",  // You can set it to a default value or omit it if not present
+              Active: vendor[13] ?? "",
+
+              // Active: "",  // You can set it to a default value or omit it if not present
             );
-              // print(vendor.Vendor_id);
-              // print("bharat");
             // Add the VendorData object to the list
             fetchedVendorsData.add(vendorData);
           }
@@ -144,8 +144,11 @@ class _Vendor_listState extends State<Vendor_list> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        if (data["status"] == "1") {
+        if (data["status"] == "success") {
           print('Seal record deleted successfully');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Vendor deleted successfully!')),
+          );
           setState(() {
             _vendorDataFuture = _getVendorData(); // Refresh the seal data
           });
@@ -400,7 +403,20 @@ class _Vendor_listState extends State<Vendor_list> {
                             // Navigator.push(
                             //   context,
                             //   MaterialPageRoute(
-                            //     builder: (context) => EditSeals(seal: seal),
+                            //     builder: (context) => Edit_VendorForm(
+                            //       vendorID: vendor.Vendor_id,
+                            //       vendorName: vendor.name,
+                            //       address: vendor.addressLine1,
+                            //       country: vendor.country,
+                            //       state: vendor.state,
+                            //       city: vendor.addressLine2,
+                            //       pinCode:vendor.postalCode,
+                            //       gstNumber: vendor.gstNumber.toString(),
+                            //       remarks: vendor.remarks,
+                            //       isActive: vendor.Active,
+                            //       email: vendor.email,
+                            //       phone: vendor.phone,
+                            //     ),
                             //   ),
                             // );
                           },
@@ -412,9 +428,33 @@ class _Vendor_listState extends State<Vendor_list> {
                             size: 30,
                           ),
                           onPressed: () {
-                            deleteVendor(vendor.Vendor_id ?? '');
+                            // Show confirmation dialog before deleting
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: Text('Are you sure?'),
+                                  content: Text('Do you want to delete this vendor?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop(); // Close the dialog
+                                      },
+                                      child: Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop(); // Close the dialog
+                                        deleteVendor(vendor.Vendor_id ?? ''); // Proceed with deletion
+                                      },
+                                      child: Text('Yes'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
                           },
-                        ),
+                        )
                       ],
                     ),
                   ),
