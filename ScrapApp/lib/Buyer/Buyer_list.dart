@@ -98,6 +98,7 @@ class _Buyer_listState extends State<Buyer_list> {
               activeStatus: buyer[8] ?? "",
               businessType: buyer[9] ?? "",
               contactPerson: buyer[10] ?? "",
+              Buyer_id: buyer[11] ?? "",
 
               // Active: "",  // You can set it to a default value or omit it if not present
             );
@@ -128,7 +129,7 @@ class _Buyer_listState extends State<Buyer_list> {
       print(Buyer_id);
       print('pooja');
       final response = await http.post(
-        Uri.parse('${URL}auctioneer_delete'),
+        Uri.parse('${URL}bidder_delete'),
         headers: {"Accept": "application/json"},
         body: {
           'user_id': username,
@@ -140,7 +141,7 @@ class _Buyer_listState extends State<Buyer_list> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        if (data["status"] == "success") {
+        if (data["success"] == true) {
           print('Seal record deleted successfully');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Buyer deleted successfully!')),
@@ -374,15 +375,17 @@ class _Buyer_listState extends State<Buyer_list> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      child: Text(
-                        '${buyer.srNo ?? 'N/A'}.',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17,
-                          color: Colors.white,
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        child: Text(
+                          '${buyer.srNo ?? 'N/A'}.  ${buyer.name ?? 'N/A'}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -442,7 +445,7 @@ class _Buyer_listState extends State<Buyer_list> {
                                     TextButton(
                                       onPressed: () {
                                         Navigator.of(context).pop(); // Close the dialog
-                                        // deleteBuyer(buyer.Buyer_id ?? ''); // Proceed with deletion
+                                        deleteBuyer(buyer.Buyer_id ?? ''); // Proceed with deletion
                                       },
                                       child: Text('Yes'),
                                     ),
@@ -466,28 +469,28 @@ class _Buyer_listState extends State<Buyer_list> {
                 },
                 children: [
                   buildTableRows(
-                    ['Name', 'Phone'],
-                    [buyer.name, buyer.phone],
+                    ['Buyer Company Name', 'Email.'],
+                    [buyer.name, buyer.email],
                     0,
                   ),
-                  buildTableRow('Email', buyer.email, 1),
                   buildTableRows(
-                    ['Company Name', 'Address'],
-                    [buyer.companyName, buyer.address],
-                    0,
+                    ['Contact Person', 'Contacts.'],
+                    [buyer.companyName, buyer.phone],
+                    1,
                   ),
+                  buildTableRow('Address', buyer.address, 0),
 
                   buildTableRows(
-                    ['Entity Type', 'GST Number'],
+                    ['Type Of Company', 'GST Number'],
                     [buyer.entityType, buyer.gstNumber.toString()],
                     1,
                   ),
                   buildTableRows(
-                    ['Active Status', 'Business Type'],
+                    ['Is Active', 'Nature Of Activity'],
                     [buyer.activeStatus, buyer.businessType],
                     0,
                   ),
-                  buildTableRow('Contact Person', buyer.contactPerson, 1),
+                  buildTableRow('Updated By', buyer.contactPerson, 1),
                 ],
               ),
             ),

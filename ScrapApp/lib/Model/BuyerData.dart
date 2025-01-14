@@ -10,6 +10,8 @@ class BuyerData {
   final String activeStatus;
   final String businessType;
   final String contactPerson;
+  final String Buyer_id;
+
 
   BuyerData({
     required this.srNo,
@@ -23,6 +25,8 @@ class BuyerData {
     required this.activeStatus,
     required this.businessType,
     required this.contactPerson,
+    required this.Buyer_id,
+
   });
 
   // Factory method to create SealData from JSON
@@ -39,7 +43,7 @@ class BuyerData {
       activeStatus: json['activeStatus'],
       businessType: json['businessType'],
       contactPerson: json['contactPerson'],
-      // contactPerson: json['contactPerson'],
+      Buyer_id: json['Buyer_id'],
       // Vendor_id: json['Vendor_id'],
       // Active: json['Active'],
     );
