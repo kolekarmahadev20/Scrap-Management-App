@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,12 +8,42 @@ import '../AppClass/appBar.dart';
 import '../URL_CONSTANT.dart';
 import 'Vendor_list.dart';
 
-class VendorForm extends StatefulWidget {
+class Edit_VendorForm extends StatefulWidget {
+  final String vendorID;
+  final String vendorName;
+  final String address;
+  final String country;
+  final String state;
+  final String city;
+  final String pinCode;
+  final String gstNumber;
+  final String remarks;
+  final String isActive;
+  final String email;
+  final String phone;
+
+  // Constructor to accept all the values
+  Edit_VendorForm({
+    required this.vendorID,
+    required this.vendorName,
+    required this.address,
+    required this.country,
+    required this.state,
+    required this.city,
+    required this.pinCode,
+    required this.gstNumber,
+    required this.remarks,
+    required this.isActive,
+    required this.email,
+    required this.phone,
+  });
+
   @override
-  _VendorFormState createState() => _VendorFormState();
+  _Edit_VendorFormState createState() => _Edit_VendorFormState();
 }
 
-class _VendorFormState extends State<VendorForm> {
+
+class _Edit_VendorFormState extends State<Edit_VendorForm> {
   final TextEditingController vendorNameController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController countryController = TextEditingController();
@@ -39,8 +68,36 @@ class _VendorFormState extends State<VendorForm> {
   void initState() {
     super.initState();
     checkLogin();
-    phoneControllers.add(TextEditingController());
-    emailControllers.add(TextEditingController());
+
+    print('phone : ${widget.phone}');
+
+        vendorNameController.text = widget.vendorName;
+        addressController.text = widget.address;
+        countryController.text = widget.country;
+        stateController.text = widget.state;
+        cityController.text = widget.city;
+        pinCodeController.text = widget.pinCode;
+        gstNumberController.text = widget.gstNumber;
+        remarksController.text = widget.remarks;
+        isActive = widget.isActive == 'Y' ? true : false;
+        // phoneControllers.add(TextEditingController());
+        // emailControllers.add(TextEditingController());
+
+    if (widget.phone.isNotEmpty) {
+      phoneControllers = widget.phone
+          .split('\n') // Split the string by newline
+          .map((phone) => TextEditingController(text: phone.replaceAll('P - ', '').trim())) // Remove "P -" and initialize controllers
+          .toList();
+    }
+
+    // Initialize the email controllers only when the email data is available
+    if (widget.email.isNotEmpty) {
+      emailControllers = widget.email
+          .split('\n') // Split the string by newline
+          .map((email) => TextEditingController(text: email.trim())) // Initialize email controllers
+          .toList();
+    }
+
     // Fetch data from API and populate controllers if needed
   }
 
@@ -62,7 +119,8 @@ class _VendorFormState extends State<VendorForm> {
         stateController.text.isEmpty ||
         cityController.text.isEmpty ||
         gstNumberController.text.isEmpty ||
-        vendorNameController.text.isEmpty) {
+        vendorNameController.text.isEmpty
+    ) {
       // Print an error message or show a toast to the user
       Fluttertoast.showToast(
         msg: "Please fill all required fields.",
@@ -89,12 +147,13 @@ class _VendorFormState extends State<VendorForm> {
     print('email[]: ${emailControllers.map((controller) => controller.text).join(',')}');
 
 
-    final url = '${URL}add_vendor';
+    final url = '${URL}auctioneer_update';
     final response = await http.post(
       Uri.parse(url),
       body: {
         'user_id': username,
         'user_pass': password,
+       'auctioneer_id' : widget.vendorID,
         'auctioneer_name':vendorNameController.text??'',
         'address':addressController.text??'',
         'country':countryController.text??'',
@@ -125,10 +184,6 @@ class _VendorFormState extends State<VendorForm> {
           builder: (context) => Vendor_list(currentPage: 0),
         ),
       );
-
-      setState(() {
-
-      });
 
     } else {
       throw Exception('Failed to load dropdown data');
@@ -176,7 +231,7 @@ class _VendorFormState extends State<VendorForm> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  "ADD VENDOR DETAILS",
+                                  "EDIT VENDOR DETAILS",
                                   style: TextStyle(
                                     fontSize: 16,
                                     color: Colors.black54,
@@ -300,7 +355,17 @@ class _VendorFormState extends State<VendorForm> {
                 phoneControllers.add(TextEditingController());
               });
             },
-            icon: Icon(Icons.add, color: Colors.white, size: 18), // Icon with custom size and color
+            icon: Row(
+              mainAxisSize: MainAxisSize.min, // To prevent the Row from taking all available width
+              children: [
+                Icon(Icons.add, color: Colors.white, size: 18), // Icon with custom size and color
+                SizedBox(width: 8), // Space between icon and text
+                Text(
+                  'Add Phone', // The text to display next to the icon
+                  style: TextStyle(color: Colors.white, fontSize: 14), // Text style
+                ),
+              ],
+            ),
             style: IconButton.styleFrom(
               backgroundColor: Colors.blueAccent, // Button background color
               padding: EdgeInsets.all(8), // Compact padding
@@ -311,6 +376,7 @@ class _VendorFormState extends State<VendorForm> {
             ),
           ),
         ),
+
       ],
     );
   }
@@ -336,23 +402,35 @@ class _VendorFormState extends State<VendorForm> {
 
           );
         }),
-        Align(alignment: Alignment.bottomRight,
-        child:  IconButton(
-          onPressed: () {
-            setState(() {
-              emailControllers.add(TextEditingController());
-            });
-          },
-          icon: Icon(Icons.add, color: Colors.white, size: 18), // Icon with custom size and color
-          style: IconButton.styleFrom(
-            backgroundColor: Colors.blueAccent, // Button background color
-            padding: EdgeInsets.all(8), // Compact padding
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(50), // Rounded corners
+        Align(
+          alignment: Alignment.bottomRight,
+          child: IconButton(
+            onPressed: () {
+              setState(() {
+                emailControllers.add(TextEditingController());
+              });
+            },
+            icon: Row(
+              mainAxisSize: MainAxisSize.min, // Prevents the Row from taking all available width
+              children: [
+                Icon(Icons.add, color: Colors.white, size: 18), // Icon with custom size and color
+                SizedBox(width: 8), // Space between icon and text
+                Text(
+                  'Add Email ', // Text next to the icon
+                  style: TextStyle(color: Colors.white, fontSize: 14), // Text style
+                ),
+              ],
             ),
-            elevation: 1, // Minimal shadow
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.blueAccent, // Button background color
+              padding: EdgeInsets.all(8), // Compact padding
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(50), // Rounded corners
+              ),
+              elevation: 1, // Minimal shadow
+            ),
           ),
-        ),)
+        ),
       ],
     );
   }

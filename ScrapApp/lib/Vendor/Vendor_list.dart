@@ -7,6 +7,7 @@ import '../AppClass/AppDrawer.dart';
 import '../AppClass/appBar.dart';
 import '../Model/VendorData.dart';
 import '../URL_CONSTANT.dart';
+import 'Edit_VendorForm.dart';
 import 'VendorForm.dart';
 
 class Vendor_list extends StatefulWidget {
@@ -400,25 +401,25 @@ class _Vendor_listState extends State<Vendor_list> {
                             color: Colors.white,
                           ),
                           onPressed: () {
-                            // Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //     builder: (context) => Edit_VendorForm(
-                            //       vendorID: vendor.Vendor_id,
-                            //       vendorName: vendor.name,
-                            //       address: vendor.addressLine1,
-                            //       country: vendor.country,
-                            //       state: vendor.state,
-                            //       city: vendor.addressLine2,
-                            //       pinCode:vendor.postalCode,
-                            //       gstNumber: vendor.gstNumber.toString(),
-                            //       remarks: vendor.remarks,
-                            //       isActive: vendor.Active,
-                            //       email: vendor.email,
-                            //       phone: vendor.phone,
-                            //     ),
-                            //   ),
-                            // );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Edit_VendorForm(
+                                  vendorID: vendor.Vendor_id,
+                                  vendorName: vendor.name,
+                                  address: vendor.addressLine1,
+                                  country: vendor.country,
+                                  state: vendor.state,
+                                  city: vendor.addressLine2,
+                                  pinCode:vendor.postalCode,
+                                  gstNumber: vendor.gstNumber.toString(),
+                                  remarks: vendor.remarks,
+                                  isActive: vendor.Active,
+                                  email: vendor.email,
+                                  phone: vendor.phone,
+                                ),
+                              ),
+                            );
                           },
                         ),
                         IconButton(
