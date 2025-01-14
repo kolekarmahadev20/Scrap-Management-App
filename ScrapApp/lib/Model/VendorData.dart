@@ -11,6 +11,8 @@ class VendorData {
   final String gstNumber;
   final String remarks;
   final String contactPerson;
+  final String Vendor_id;
+
 
   VendorData({
     required this.srNo,
@@ -25,6 +27,8 @@ class VendorData {
     required this.gstNumber,
     required this.remarks,
     required this.contactPerson,
+    required this.Vendor_id,
+
   });
 
   // Factory method to create SealData from JSON
@@ -42,6 +46,8 @@ class VendorData {
       gstNumber: json['gstNumber'],
       remarks: json['remarks'],
       contactPerson: json['contactPerson'],
+      Vendor_id: json['Vendor_id'],
+
     );
   }
 }

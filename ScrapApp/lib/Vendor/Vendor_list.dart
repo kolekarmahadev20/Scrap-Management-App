@@ -1,15 +1,13 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
-
 import '../AppClass/AppDrawer.dart';
 import '../AppClass/appBar.dart';
 import '../Model/VendorData.dart';
-import '../Pages/StartPage.dart';
 import '../URL_CONSTANT.dart';
+import 'VendorForm.dart';
 
 class Vendor_list extends StatefulWidget {
   final int currentPage;
@@ -52,7 +50,7 @@ class _Vendor_listState extends State<Vendor_list> {
   void _updateSealList(String query) {
     setState(() {
       // Update the Future with the filtered data based on the search query
-      // _sealDataFuture = _getSealData(query: query);
+      // _vendorDataFuture = _getVendorData(query: query);
     });
   }
 
@@ -101,6 +99,7 @@ class _Vendor_listState extends State<Vendor_list> {
               gstNumber: vendor[9] ?? "",
               remarks: vendor[10] ?? "",
               contactPerson: vendor[11] ?? "",
+              Vendor_id: vendor[12] ?? "",
             );
 
             // Add the VendorData object to the list
@@ -147,7 +146,7 @@ class _Vendor_listState extends State<Vendor_list> {
             // _sealDataFuture = _getSealData(); // Refresh the seal data
           });
         } else {
-          print('Failed to delete seal record: ${data["msg"]}');
+          print('Failed to delete vendor record: ${data["msg"]}');
         }
       }
     } catch (e) {
@@ -183,7 +182,7 @@ class _Vendor_listState extends State<Vendor_list> {
 
   Future<void> _refreshData() async {
     setState(() {
-      // _sealDataFuture = _getSealData();
+      _vendorDataFuture = _getVendorData();
     });
   }
 
@@ -196,10 +195,10 @@ class _Vendor_listState extends State<Vendor_list> {
         appBar: CustomAppBar(),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => VendorForm()),
-            // );
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => VendorForm()),
+            );
           },
           child: Icon(Icons.add),
           backgroundColor: Colors.blueGrey[200], // FAB background color
@@ -265,7 +264,8 @@ class _Vendor_listState extends State<Vendor_list> {
                               decoration: InputDecoration(
                                 hintText: 'Search by username',
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12), // Rounded corners
+                                  borderRadius: BorderRadius.circular(
+                                      12), // Rounded corners
                                 ),
                                 filled: true, // Enable filled background
                                 fillColor: Colors.white, // Background color
@@ -295,31 +295,6 @@ class _Vendor_listState extends State<Vendor_list> {
             },
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildSealDataRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$label: ',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value ?? 'N/A',
-              style: TextStyle(
-                fontSize: 16.0,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -399,7 +374,7 @@ class _Vendor_listState extends State<Vendor_list> {
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
                       child: Text(
-                        '${vendor.srNo ?? 'N/A'}.   ${vendor.name ?? 'N/A'}',
+                        '${vendor.srNo ?? 'N/A'}.',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 17,
@@ -433,7 +408,7 @@ class _Vendor_listState extends State<Vendor_list> {
                             size: 30,
                           ),
                           onPressed: () {
-                            // deleteVendor(vendor.Vendor_id ?? '');
+                            deleteVendor(vendor.Vendor_id ?? '');
                           },
                         ),
                       ],
@@ -445,7 +420,6 @@ class _Vendor_listState extends State<Vendor_list> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Table(
-                // border: TableBorder.all(color: Colors.black),
                 columnWidths: {
                   0: FixedColumnWidth(150),
                 },
@@ -455,87 +429,25 @@ class _Vendor_listState extends State<Vendor_list> {
                     [vendor.name, vendor.email],
                     0,
                   ),
-
-                  // buildTableRow('Location', seal.location_name,0),
                   buildTableRow('Phone', vendor.phone, 1),
-
                   buildTableRows(
-                    ['Address', ''],
+                    ['Address', 'City'],
                     [vendor.addressLine1, vendor.addressLine2],
                     0,
                   ),
-
-                  // buildTableRow('Material', seal.material_name,1),
-                  // buildTableRow('Vessel', seal.vessel_name,0),
 
                   buildTableRows(
                     ['State', 'Country'],
                     [vendor.state, vendor.country],
                     1,
                   ),
-
                   buildTableRows(
                     ['Postal Code', 'GST Number'],
                     [vendor.postalCode, vendor.gstNumber.toString()],
                     0,
                   ),
-
-                  // buildTableRows(
-                  //   ['No of Seals', 'No of Extra Seals'],
-                  //   [vendor.no_of_seal, vendor.extra_no_of_seal.toString()],
-                  //   0,
-                  // ),
-                  //
-                  // buildTableRows(
-                  //   ['Rejected Seal', 'New Seal'],
-                  //   [vendor.rejected_seal_no, vendor.new_seal_no],
-                  //   1,
-                  // ),
-                  //
-                  // buildTableRows(
-                  //   ['Net weight', 'Seal Color'],
-                  //   [vendor.net_weight, vendor.seal_color],
-                  //   0,
-                  // ),
-                  //
-                  // buildTableRows(
-                  //   ['Vehicle No', 'Allow Slip No'],
-                  //   [vendor.vehicle_no, vendor.allow_slip_no],
-                  //   1,
-                  // ),
-                  //
-                  // buildTableRow('Seal Date', vendor.seal_date,0),
-                  // buildTableRow('Vehicle Reached Date', vendor.seal_unloading_date,1),
-
-                  // buildTableRow('Net weight', seal.net_weight,0),
-                  // buildTableRow('Seal Color', seal.seal_color,0),
-
-                  // buildTableRow('Rejected Seal', seal.rejected_seal_no,0),
-                  // buildTableRow('New Seal', seal.new_seal_no,0),
-
-                  // buildTableRow('No of Seals', seal.no_of_seal,1),
-                  // buildTableRow('No of Extra Seals', seal.extra_no_of_seal,1),
-
-                  // buildTableRow('Extra Start Seal No', seal.extra_start_seal_no,0),
-                  // buildTableRow('Extra End Seal No', seal.extra_end_seal_no,0),
-
-                  // buildTableRow('Start Seal No', seal.start_seal_no,0),
-                  // buildTableRow('End Seal No', seal.end_seal_no,0),
-
-                  // buildTableRow('GPS Seal No', vendor.gps_seal_no,0),
-                  // buildTableRow('Allow Slip No', seal.allow_slip_no,0),
-                  // buildTableRow('Vehicle No', seal.vehicle_no,1),
-
-                  // buildTableRow('No of Seals', seal.no_of_seal,1),
-
-                  // buildTableRow('No of Extra Seals', seal.extra_no_of_seal,1),
-
                   buildTableRow('Remarks', vendor.remarks, 1),
                   buildTableRow('Contact Person', vendor.contactPerson, 0),
-
-                  // buildTableRow('Transaction ID', seal.seal_transaction_id,1),
-
-                  // Add more rows for other details here
                 ],
               ),
             ),
