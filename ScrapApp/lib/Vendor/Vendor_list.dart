@@ -75,8 +75,8 @@ class _Vendor_listState extends State<Vendor_list> {
       if (response.statusCode == 200) {
         // Parse the response body as JSON
         final data = json.decode(response.body);
-        print(data);
-        print("sfdefe");
+        // print(data);
+        // print("sfdefe");
 
         // Check if the API response contains the vendor list
         if (data["vendor_list"] != null) {
@@ -100,8 +100,11 @@ class _Vendor_listState extends State<Vendor_list> {
               remarks: vendor[10] ?? "",
               contactPerson: vendor[11] ?? "",
               Vendor_id: vendor[12] ?? "",
+              // Removed the invalid vendor[13]
+              Active: "",  // You can set it to a default value or omit it if not present
             );
-
+              // print(vendor.Vendor_id);
+              // print("bharat");
             // Add the VendorData object to the list
             fetchedVendorsData.add(vendorData);
           }
@@ -127,6 +130,7 @@ class _Vendor_listState extends State<Vendor_list> {
   Future<void> deleteVendor(String Vendor_id) async {
     try {
       print(Vendor_id);
+      print('pooja');
       final response = await http.post(
         Uri.parse('${URL}auctioneer_delete'),
         headers: {"Accept": "application/json"},
@@ -143,7 +147,7 @@ class _Vendor_listState extends State<Vendor_list> {
         if (data["status"] == "1") {
           print('Seal record deleted successfully');
           setState(() {
-            // _sealDataFuture = _getSealData(); // Refresh the seal data
+            _vendorDataFuture = _getVendorData(); // Refresh the seal data
           });
         } else {
           print('Failed to delete vendor record: ${data["msg"]}');

@@ -12,6 +12,8 @@ class VendorData {
   final String remarks;
   final String contactPerson;
   final String Vendor_id;
+  final String Active;
+
 
 
   VendorData({
@@ -28,6 +30,8 @@ class VendorData {
     required this.remarks,
     required this.contactPerson,
     required this.Vendor_id,
+    required this.Active,
+
 
   });
 
@@ -47,6 +51,8 @@ class VendorData {
       remarks: json['remarks'],
       contactPerson: json['contactPerson'],
       Vendor_id: json['Vendor_id'],
+      Active: json['Active'],
+
 
     );
   }
