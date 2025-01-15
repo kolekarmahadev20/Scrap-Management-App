@@ -476,7 +476,7 @@ class _Vendor_listState extends State<Vendor_list> {
                     [vendor.name, vendor.email],
                     0,
                   ),
-                  buildTableRow('Phone', vendor.phone, 1),
+                  buildTableRow('Contact', vendor.phone, 1),
                   buildTableRows(
                     ['Address', 'City'],
                     [vendor.addressLine1, vendor.addressLine2],
@@ -489,12 +489,12 @@ class _Vendor_listState extends State<Vendor_list> {
                     1,
                   ),
                   buildTableRows(
-                    ['Postal Code', 'GST Number'],
+                    ['Pin Code', 'GST Number'],
                     [vendor.postalCode, vendor.gstNumber.toString()],
                     0,
                   ),
                   buildTableRow('Remarks', vendor.remarks, 1),
-                  buildTableRow('Contact Person', vendor.contactPerson, 0),
+                  buildTableRow('User by', vendor.contactPerson, 0),
                 ],
               ),
             ),
