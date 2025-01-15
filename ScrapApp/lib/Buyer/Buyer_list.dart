@@ -202,7 +202,7 @@ class _Buyer_listState extends State<Buyer_list> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => Buyer_DomesticForm()),
+              MaterialPageRoute(builder: (context) => Buyer_Form()),
             );
           },
           child: Icon(Icons.add),
