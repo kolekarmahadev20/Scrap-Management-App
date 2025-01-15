@@ -7,6 +7,7 @@ import '../AppClass/AppDrawer.dart';
 import '../AppClass/appBar.dart';
 import '../Model/BuyerData.dart';
 import '../URL_CONSTANT.dart';
+import 'Buyer_EditForm.dart';
 import 'Buyer_Form.dart';
 
 
@@ -100,6 +101,17 @@ class _Buyer_listState extends State<Buyer_list> {
               businessType: buyer[9] ?? "",
               contactPerson: buyer[10] ?? "",
               Buyer_id: buyer[11] ?? "",
+              CPCB: buyer[12] ?? "",
+              CPCBdate: buyer[13] ?? "",
+              SPCB: buyer[14] ?? "",
+              SPCBdate: buyer[15] ?? "",
+
+              country: buyer[17] ?? "",
+              pan: buyer[18] ?? "",
+              state: buyer[19] ?? "",
+              city: buyer[20] ?? "",
+              pinCode: buyer[21] ?? "",
+              formType: buyer[22] ?? "",
 
               // Active: "",  // You can set it to a default value or omit it if not present
             );
@@ -401,25 +413,56 @@ class _Buyer_listState extends State<Buyer_list> {
                             color: Colors.white,
                           ),
                           onPressed: () {
-                            // Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //     builder: (context) => Edit_BuyerForm(
-                            //       buyerID: buyer.Buyer_id,
-                            //       buyerName: buyer.name,
-                            //       address: buyer.addressLine1,
-                            //       country: buyer.country,
-                            //       state: buyer.state,
-                            //       city: buyer.addressLine2,
-                            //       pinCode:buyer.postalCode,
-                            //       gstNumber: buyer.gstNumber.toString(),
-                            //       remarks: buyer.remarks,
-                            //       isActive: buyer.Active,
-                            //       email: buyer.email,
-                            //       phone: buyer.phone,
-                            //     ),
-                            //   ),
-                            // );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Buyer_EditForm(
+                                  details : buyer.formType,
+                                  buyerID: buyer.Buyer_id,
+                                  country: buyer.country,
+                                  gstNumber: buyer.gstNumber,
+                                  finYear: '',
+                                  buyerName: buyer.name,
+                                  contactPerson: buyer.companyName,
+                                  address: buyer.address,
+                                  state: buyer.state,
+                                  city: buyer.city,
+                                  pinCode:buyer.pinCode,
+                                  pan:buyer.pan,
+                                  companyType:buyer.entityType,
+                                  natureActivity:buyer.businessType,
+                                  phone : buyer.phone,
+                                  email : buyer.email,
+                                  CPCB: buyer.CPCB,
+                                  CPCBdate: buyer.CPCBdate,
+                                  SPCB: buyer.SPCB,
+                                  SPCBdate: buyer.SPCBdate,
+                                  isActive: buyer.activeStatus,
+
+                                  //details : buyer.details,
+                                  //                                   buyerID: buyer.Buyer_id,
+                                  //                                   country: buyer.country,
+                                  //                                   gstNumber: buyer.gstNumber,
+                                  //                                   finYear: buyer.finYear,
+                                  //                                   buyerName: buyer.name,
+                                  //                                   contactPerson: buyer.contactPerson,
+                                  //                                   address: buyer.addressLine1,
+                                  //                                   state: buyer.state,
+                                  //                                   city: buyer.addressLine2,
+                                  //                                   pinCode:buyer.postalCode,
+                                  //                                   pan:buyer.pan,
+                                  //                                   companyType:buyer.entityType,
+                                  //                                   natureActivity:buyer.businessType,
+                                  //                                   phone : buyer.phone,
+                                  //                                   email : buyer.email,
+                                  //                                   CPCB: buyer.CPCB,
+                                  //                                   CPCBdate: buyer.CPCBdate,
+                                  //                                   SPCB: buyer.SPCB,
+                                  //                                   SPCBdate: buyer.SPCBdate,
+
+                                ),
+                              ),
+                            );
                           },
                         ),
                         IconButton(
