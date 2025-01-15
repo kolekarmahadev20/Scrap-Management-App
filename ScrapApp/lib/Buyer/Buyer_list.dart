@@ -7,6 +7,7 @@ import '../AppClass/AppDrawer.dart';
 import '../AppClass/appBar.dart';
 import '../Model/BuyerData.dart';
 import '../URL_CONSTANT.dart';
+import 'Buyer_Form.dart';
 
 
 class Buyer_list extends StatefulWidget {
@@ -199,10 +200,10 @@ class _Buyer_listState extends State<Buyer_list> {
         appBar: CustomAppBar(),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => BuyerForm()),
-            // );
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Buyer_DomesticForm()),
+            );
           },
           child: Icon(Icons.add),
           backgroundColor: Colors.blueGrey[200], // FAB background color
