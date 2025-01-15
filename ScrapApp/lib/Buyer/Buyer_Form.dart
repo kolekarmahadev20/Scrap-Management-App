@@ -80,7 +80,7 @@ class _Buyer_DomesticFormState extends State<Buyer_DomesticForm> {
         body: {
           'user_id': username,
           'user_pass': password,
-          'gstin': '27AAAAP0267H2ZN',
+          'gstin':  '27AAAAP0267H2ZN',
           'fy': finYearController.text ?? '',
         },
       );
@@ -88,24 +88,57 @@ class _Buyer_DomesticFormState extends State<Buyer_DomesticForm> {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
 
+        // Extract primary address and format it
         if (jsonData.containsKey('addresses') && jsonData['addresses'] is List) {
           final addresses = jsonData['addresses'] as List;
           if (addresses.isNotEmpty) {
             final primaryAddress = addresses[0]; // First address
+
+            final formattedAddress = [
+              primaryAddress['building'] ?? '',
+              primaryAddress['buildingName'] ?? '',
+              primaryAddress['floor'] ?? '',
+              primaryAddress['street'] ?? '',
+              primaryAddress['locality'] ?? '',
+              primaryAddress['district'] ?? '',
+              primaryAddress['state'] ?? '',
+              primaryAddress['zip'] ?? ''
+            ].where((element) => element.isNotEmpty).join(', ');
+
+            // Print formatted address
+            print("Formatted Address: $formattedAddress");
+
+            // Update state variables
             setState(() {
+              addressController.text = formattedAddress;
               stateController.text = primaryAddress['state'] ?? '';
               cityController.text = primaryAddress['locality'] ?? primaryAddress['district'] ?? '';
               pinCodeController.text = primaryAddress['zip'] ?? '';
             });
+
+            // Print state, city, and pin code
+            print("State: ${primaryAddress['state'] ?? ''}");
+            print("City: ${primaryAddress['locality'] ?? primaryAddress['district'] ?? ''}");
+            print("Pin Code: ${primaryAddress['zip'] ?? ''}");
           }
         }
 
-        // Update other fields like PAN if needed
+        // Print other details like PAN
         setState(() {
           panController.text = jsonData['pan'] ?? '';
         });
+        print("PAN: ${jsonData['pan'] ?? ''}");
+        print("Legal Name: ${jsonData['legalName'] ?? ''}");
+        print("Trade Name: ${jsonData['tradeName'] ?? ''}");
+        print("Constitution: ${jsonData['constitution'] ?? ''}");
+        print("Nature: ${jsonData['nature']?.join(', ') ?? ''}");
+        print("Type: ${jsonData['type'] ?? ''}");
+        print("Registered Date: ${jsonData['registered'] ?? ''}");
+        print("Updated Date: ${jsonData['updated'] ?? ''}");
+        print("State Code: ${jsonData['stateCode'] ?? ''}");
+        print("Center: ${jsonData['center'] ?? ''}");
+        print("Center Code: ${jsonData['centerCode'] ?? ''}");
 
-        print("Details prefilled successfully.");
       } else {
         print("Error: ${response.statusCode} - ${response.reasonPhrase}");
       }
