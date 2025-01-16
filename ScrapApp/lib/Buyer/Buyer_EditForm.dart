@@ -9,9 +9,9 @@ import '../URL_CONSTANT.dart';
 import 'dart:typed_data';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
-
 import 'Buyer_DomInterForm.dart';
-
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 
 class Buyer_EditForm extends StatefulWidget {
 
@@ -105,7 +105,18 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
     super.initState();
     checkLogin();
 
-// Populate controllers with initial values from the widget
+    if (widget.SPCB != null && widget.SPCB!.isNotEmpty) {
+      file_name_SPCB = widget.SPCB!.split('/').last;
+      _fetchFileBytesFromServer(widget.SPCB!, 'SPCB');
+    }
+
+    if (widget.CPCB != null && widget.CPCB!.isNotEmpty) {
+      file_name_CPCB = widget.CPCB!.split('/').last;
+      _fetchFileBytesFromServer(widget.CPCB!, 'CPCB');
+    }
+
+
+
     countryController.text = widget.country ?? '';
     gstNoController.text = widget.gstNumber ?? '';
     buyerNameController.text = widget.buyerName ?? '';
@@ -118,11 +129,6 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
     finYearController.text = widget.finYear ?? '';
 
 
-    print("Bharat ${widget.companyType}");
-    print("choudhary ${widget.natureActivity}");
-
-
-// Ensure the values exist in the lists before assigning
     if (widget.companyType != null && !companyTypes.contains(widget.companyType)) {
       companyTypes.add(widget.companyType!);
     }
@@ -135,8 +141,7 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
     selectedCompanyType = widget.companyType ?? 'Type of Company';
     selectedNatureofactivityType = widget.natureActivity ?? 'Nature of Company';
 
-    // Set other variables
-    //isActive = widget.isActive as bool;
+
     iscpcb = widget.CPCBdate != null && widget.CPCBdate.isNotEmpty;
     isspcb = widget.SPCBdate != null && widget.SPCBdate.isNotEmpty;
 
@@ -164,9 +169,9 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
           .map((email) => TextEditingController(text: email.trim())) // Initialize email controllers
           .toList();
     }
-    
+
     financialYears = generateFinancialYears();
-    finYearController.text = financialYears.first;
+    finYearController.text = financialYears[1];
   }
 
   //Fetching user details from sharedpreferences
@@ -189,7 +194,7 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
         body: {
           'user_id': username,
           'user_pass': password,
-          'gstin':  '27AAAAP0267H2ZN',
+          'gstin':  gstNoController.text,
           'fy': finYearController.text ?? '',
         },
       );
@@ -222,11 +227,6 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
               cityController.text = primaryAddress['locality'] ?? primaryAddress['district'] ?? '';
               pinCodeController.text = primaryAddress['zip'] ?? '';
             });
-
-            // Print state, city, and pin code
-            print("State: ${primaryAddress['state'] ?? ''}");
-            print("City: ${primaryAddress['locality'] ?? primaryAddress['district'] ?? ''}");
-            print("Pin Code: ${primaryAddress['zip'] ?? ''}");
           }
         }
 
@@ -271,7 +271,7 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
     }
 
     await checkLogin();
-    final url = Uri.parse('${URL}bidder_save');
+    final url = Uri.parse('${URL}bidder_update');
 
     final Map<String, String> body = {
       'user_id': username.toString(),
@@ -288,7 +288,7 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
       'tan': gstNoController.text ?? '',
       'type_of_company': selectedCompanyType,
       'nature_of_activity': selectedNatureofactivityType,
-      'CPCB_SPCB': (iscpcb && isspcb).toString() == false ? 'no' :'yes',
+      'CPCB_SPCB': (iscpcb || isspcb).toString() == false ? 'no' :'yes',
       'cpcb_exp_date':selectedCPCBDate.toString() ?? '',
       'spcb_exp_date': selectedFileSPCB.toString() ?? '',
       'formType': widget.details.toString() ?? '',
@@ -309,7 +309,17 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
           filename: selectedFileSPCB!.name,
         ),
       );
-    }if (selectedFileCPCB != null){
+    } else if (_fileBytesSPCB != null) {
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'spcb_files',
+          _fileBytesSPCB!,
+          filename: file_name_SPCB,
+        ),
+      );
+    }
+
+   if (selectedFileCPCB != null){
       request.files.add(
         http.MultipartFile.fromBytes(
           'cpcb_files',
@@ -318,7 +328,17 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
         ),
       );
 
-    } else {
+    } else if (_fileBytesCPCB != null) {
+     request.files.add(
+       http.MultipartFile.fromBytes(
+         'cpcb_files',
+         _fileBytesCPCB!,
+         filename: file_name_CPCB,
+       ),
+     );
+   }
+
+   else {
       print('Invalid file selected or file properties are null.');
     }
 
@@ -397,11 +417,37 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
     setState(() {
       if (type == 'SPCB') {
         selectedFileSPCB = null;
+        _fileBytesSPCB = null;
       } else if (type == 'CPCB') {
         selectedFileCPCB = null;
+        _fileBytesCPCB = null;
       }
     });
   }
+
+  Future<void> _fetchFileBytesFromServer(String fileUrl, String target) async {
+    print('Fetching $target file from URL: $fileUrl');
+    try {
+      var response = await http.get(Uri.parse(fileUrl));
+      print('Status Code for $target: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        setState(() {
+          if (target == 'SPCB') {
+            _fileBytesSPCB = response.bodyBytes;
+          } else if (target == 'CPCB') {
+            _fileBytesCPCB = response.bodyBytes;
+          }
+        });
+      } else {
+        print('Failed to load file from server: $target, Status Code: ${response.statusCode}');
+        print('Response Body: ${response.body}');
+      }
+    } catch (e) {
+      print('Exception fetching $target file: $e');
+    }
+  }
+
+
 
 
   @override
@@ -621,7 +667,7 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
           int index = phoneControllers.indexOf(controller);
           return Row(
             children: [
-              Expanded(child: _buildTextField("Phone *", controller)),
+              Expanded(child: _buildTextField("Phone", controller)),
               IconButton(
                 icon: Icon(Icons.delete),
                 onPressed: () {
@@ -740,6 +786,18 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
                             : 'Upload File',
                       ),
                     ),
+
+                    if(_fileBytesCPCB != null)
+                      TextButton(onPressed: (){
+                        downloadFile(widget.CPCB!,file_name_SPCB!);
+                        }, child: Text("View")),
+
+                    if(_fileBytesSPCB != null)
+                      TextButton(onPressed: (){
+                        downloadFile(widget.SPCB!,file_name_SPCB!);
+                      }, child: Text("View")),
+
+
                     if (fileName != null && fileName.isNotEmpty)
                       IconButton(
                         icon: Icon(Icons.delete, color: Colors.red),
@@ -753,6 +811,39 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
         ],
       ),
     );
+  }
+
+  Future<void> downloadFile(String url, String fileName) async {
+
+    try {
+      print('Fetching file from URL: $url');
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final directory = await getTemporaryDirectory();
+        final filePath = '${directory.path}/$fileName';
+        final file = File(filePath);
+
+        await file.writeAsBytes(response.bodyBytes);
+        print('File saved to: $filePath');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('File downloaded: $fileName')),
+        );
+
+        // Open the file
+        OpenFile.open(filePath);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to download file: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
+      print('Exception: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
   }
 
 
@@ -878,6 +969,12 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
       ),
     );
   }
+
+  Uint8List? _fileBytesCPCB;
+  Uint8List? _fileBytesSPCB;
+
+  String? file_name_CPCB;
+  String? file_name_SPCB;
 
 
 }

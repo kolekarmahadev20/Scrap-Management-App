@@ -58,7 +58,7 @@ class _Buyer_DomInterFormState extends State<Buyer_DomInterForm> {
     super.initState();
     checkLogin();
     financialYears = generateFinancialYears();
-    finYearController.text = financialYears.first;
+    finYearController.text = financialYears[1];
     phoneControllers.add(TextEditingController());
     emailControllers.add(TextEditingController());
     // Fetch data from API and populate controllers if needed
@@ -85,6 +85,7 @@ class _Buyer_DomInterFormState extends State<Buyer_DomInterForm> {
           'user_id': username,
           'user_pass': password,
           'gstin':  '27AAAAP0267H2ZN',
+          //          'gstin':  gstNoController.text,
           'fy': finYearController.text ?? '',
         },
       );
@@ -118,10 +119,6 @@ class _Buyer_DomInterFormState extends State<Buyer_DomInterForm> {
               pinCodeController.text = primaryAddress['zip'] ?? '';
             });
 
-            // Print state, city, and pin code
-            print("State: ${primaryAddress['state'] ?? ''}");
-            print("City: ${primaryAddress['locality'] ?? primaryAddress['district'] ?? ''}");
-            print("Pin Code: ${primaryAddress['zip'] ?? ''}");
           }
         }
 
@@ -513,7 +510,7 @@ class _Buyer_DomInterFormState extends State<Buyer_DomInterForm> {
           int index = phoneControllers.indexOf(controller);
           return Row(
             children: [
-              Expanded(child: _buildTextField("Phone *", controller)),
+              Expanded(child: _buildTextField("Phone", controller)),
               IconButton(
                 icon: Icon(Icons.delete),
                 onPressed: () {
