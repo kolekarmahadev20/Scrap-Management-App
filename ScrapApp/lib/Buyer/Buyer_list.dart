@@ -9,7 +9,7 @@ import '../Model/BuyerData.dart';
 import '../URL_CONSTANT.dart';
 import 'Buyer_EditForm.dart';
 import 'Buyer_Form.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 
 class Buyer_list extends StatefulWidget {
   final int currentPage;
@@ -22,8 +22,7 @@ class Buyer_list extends StatefulWidget {
 class _Buyer_listState extends State<Buyer_list> {
   List<BuyerData> buyersData = [];
 
-  Future<List<BuyerData>> _buyerDataFuture =
-  Future<List<BuyerData>>.value([]);
+  Future<List<BuyerData>> _buyerDataFuture = Future<List<BuyerData>>.value([]);
 
   TextEditingController _searchController = TextEditingController();
 
@@ -137,6 +136,34 @@ class _Buyer_listState extends State<Buyer_list> {
     return [];
   }
 
+  void _openFile(BuildContext context, String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      print("Could not launch $url");
+
+      // Show dialog if the file cannot be opened
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Message'),
+            // content: Text('$url'),
+            content: Text('No file available or the file could not be opened.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
   Future<void> deleteBuyer(String Buyer_id) async {
     try {
       print(Buyer_id);
@@ -249,7 +276,7 @@ class _Buyer_listState extends State<Buyer_list> {
                                 "Buyer",
                                 style: TextStyle(
                                   fontSize:
-                                  24, // Slightly larger font size for prominence
+                                      24, // Slightly larger font size for prominence
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black87,
                                   letterSpacing: 1.2,
@@ -361,20 +388,19 @@ class _Buyer_listState extends State<Buyer_list> {
     // Filter data based on the search query (case insensitive)
     return data
         .where((buyer) =>
-    buyer.srNo!.toLowerCase().contains(query.toLowerCase()) ||
-        buyer.name!.toLowerCase().contains(query.toLowerCase()) ||
-        // buyer.vehicle_no!.toLowerCase().contains(query.toLowerCase()) ||
-        // buyer.rejected_seal_no!.toLowerCase().contains(query.toLowerCase()) ||
-        // buyer.new_seal_no!.toLowerCase().contains(query.toLowerCase()) ||
-        // buyer.start_seal_no!.toLowerCase().contains(query.toLowerCase()) ||
-        buyer.companyName!.toLowerCase().contains(query.toLowerCase()
-        ))
+            buyer.srNo!.toLowerCase().contains(query.toLowerCase()) ||
+            buyer.name!.toLowerCase().contains(query.toLowerCase()) ||
+            // buyer.vehicle_no!.toLowerCase().contains(query.toLowerCase()) ||
+            // buyer.rejected_seal_no!.toLowerCase().contains(query.toLowerCase()) ||
+            // buyer.new_seal_no!.toLowerCase().contains(query.toLowerCase()) ||
+            // buyer.start_seal_no!.toLowerCase().contains(query.toLowerCase()) ||
+            buyer.companyName!.toLowerCase().contains(query.toLowerCase()))
         .toList();
   }
 
   Widget _buildSealsList(List<BuyerData> buyersData) {
     List<BuyerData> filteredData =
-    _filterData(buyersData, _searchController.text);
+        _filterData(buyersData, _searchController.text);
 
     return ListView.builder(
       itemCount: filteredData.length,
@@ -417,7 +443,7 @@ class _Buyer_listState extends State<Buyer_list> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => Buyer_EditForm(
-                                  details : buyer.formType,
+                                  details: buyer.formType,
                                   buyerID: buyer.Buyer_id,
                                   country: buyer.country,
                                   gstNumber: buyer.gstNumber,
@@ -427,39 +453,17 @@ class _Buyer_listState extends State<Buyer_list> {
                                   address: buyer.address,
                                   state: buyer.state,
                                   city: buyer.city,
-                                  pinCode:buyer.pinCode,
-                                  pan:buyer.pan,
-                                  companyType:buyer.entityType,
-                                  natureActivity:buyer.businessType,
-                                  phone : buyer.phone,
-                                  email : buyer.email,
+                                  pinCode: buyer.pinCode,
+                                  pan: buyer.pan,
+                                  companyType: buyer.entityType,
+                                  natureActivity: buyer.businessType,
+                                  phone: buyer.phone,
+                                  email: buyer.email,
                                   CPCB: buyer.CPCB,
                                   CPCBdate: buyer.CPCBdate,
                                   SPCB: buyer.SPCB,
                                   SPCBdate: buyer.SPCBdate,
                                   isActive: buyer.activeStatus,
-
-                                  //details : buyer.details,
-                                  //                                   buyerID: buyer.Buyer_id,
-                                  //                                   country: buyer.country,
-                                  //                                   gstNumber: buyer.gstNumber,
-                                  //                                   finYear: buyer.finYear,
-                                  //                                   buyerName: buyer.name,
-                                  //                                   contactPerson: buyer.contactPerson,
-                                  //                                   address: buyer.addressLine1,
-                                  //                                   state: buyer.state,
-                                  //                                   city: buyer.addressLine2,
-                                  //                                   pinCode:buyer.postalCode,
-                                  //                                   pan:buyer.pan,
-                                  //                                   companyType:buyer.entityType,
-                                  //                                   natureActivity:buyer.businessType,
-                                  //                                   phone : buyer.phone,
-                                  //                                   email : buyer.email,
-                                  //                                   CPCB: buyer.CPCB,
-                                  //                                   CPCBdate: buyer.CPCBdate,
-                                  //                                   SPCB: buyer.SPCB,
-                                  //                                   SPCBdate: buyer.SPCBdate,
-
                                 ),
                               ),
                             );
@@ -478,18 +482,22 @@ class _Buyer_listState extends State<Buyer_list> {
                               builder: (context) {
                                 return AlertDialog(
                                   title: Text('Are you sure?'),
-                                  content: Text('Do you want to delete this buyer?'),
+                                  content:
+                                      Text('Do you want to delete this buyer?'),
                                   actions: [
                                     TextButton(
                                       onPressed: () {
-                                        Navigator.of(context).pop(); // Close the dialog
+                                        Navigator.of(context)
+                                            .pop(); // Close the dialog
                                       },
                                       child: Text('Cancel'),
                                     ),
                                     TextButton(
                                       onPressed: () {
-                                        Navigator.of(context).pop(); // Close the dialog
-                                        deleteBuyer(buyer.Buyer_id ?? ''); // Proceed with deletion
+                                        Navigator.of(context)
+                                            .pop(); // Close the dialog
+                                        deleteBuyer(buyer.Buyer_id ??
+                                            ''); // Proceed with deletion
                                       },
                                       child: Text('Yes'),
                                     ),
@@ -507,50 +515,60 @@ class _Buyer_listState extends State<Buyer_list> {
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Table(
-                columnWidths: {
-                  0: FixedColumnWidth(150),
-                },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  buildTableRows(
-                    ['Buyer Company Name', 'Email.'],
-                    [buyer.name, buyer.email],
-                    0,
+                  Table(
+                    columnWidths: {0: FixedColumnWidth(150)},
+                    children: [
+                      buildTableRows(
+                        ['Buyer Company Name', 'Email'],
+                        [buyer.name, buyer.email],
+                        0, // Provide index
+                      ),
+                      buildTableRows(
+                        ['Contact Person', 'Contacts'],
+                        [buyer.contactPerson, buyer.phone],
+                        1, // Provide index
+                      ),
+                      buildTableRow('Address', buyer.address, 2), // Provide index
+                      buildTableRows(
+                        ['Type Of Company', 'GST Number'],
+                        [buyer.entityType, buyer.gstNumber],
+                        3, // Provide index
+                      ),
+                      buildTableRows(
+                        ['Is Active', 'Nature Of Activity'],
+                        [buyer.activeStatus, buyer.businessType],
+                        4, // Provide index
+                      ),
+                      buildTableRow('Updated By', buyer.contactPerson, 5), // Provide index
+                    ],
                   ),
-                  buildTableRows(
-                    ['Contact Person', 'Contacts.'],
-                    [buyer.companyName, buyer.phone],
-                    1,
-                  ),
-                  buildTableRow('Address', buyer.address, 0),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      TextButton.icon(
+                        onPressed: buyer.CPCB.isNotEmpty
+                            ? () => _openFile(context, buyer.CPCB)  // Pass context here
+                            : null,
+                        icon: const Icon(Icons.file_present, color: Colors.blue),
+                        label: const Text("View CPCB"),
+                      ),
+                      SizedBox(width: 14),
+                      TextButton.icon(
+                        onPressed: buyer.SPCB.isNotEmpty
+                            ? () => _openFile(context, buyer.SPCB)  // Pass context here
+                            : null,
+                        icon: const Icon(Icons.file_present, color: Colors.blue),
+                        label: const Text("View SPCB"),
+                      ),
+                    ],
+                  )
 
-                  buildTableRows(
-                    ['Type Of Company', 'GST Number'],
-                    [buyer.entityType, buyer.gstNumber.toString()],
-                    1,
-                  ),
-                  buildTableRows(
-                    ['Is Active', 'Nature Of Activity'],
-                    [buyer.activeStatus, buyer.businessType],
-                    0,
-                  ),
-                  buildTableRow('Updated By', buyer.contactPerson, 1),
                 ],
               ),
             ),
-            // Display a button to view images
-            // ElevatedButton(
-            //   onPressed: () {
-            //     // Open a new screen or dialog to display the images
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //         builder: (context) => ImageViewer(imgUrls: seal.pics),
-            //       ),
-            //     );
-            //   },
-            //   child: Text('View Images'),
-            // ),
           ],
         );
       },
