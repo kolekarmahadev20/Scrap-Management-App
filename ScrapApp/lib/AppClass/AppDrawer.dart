@@ -119,12 +119,12 @@ class _AppDrawerState extends State<AppDrawer> {
                   _buildDrawerItem(
                     context,
                     1,
-                    icon: Icons.person_rounded,
-                    text: "Profile",
+                    icon: Icons.dashboard_rounded,
+                    text: "Dashboard",
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage(currentPage: 1,)));
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => DashBoard(currentPage: 1,)));
                       });
 
                     },
@@ -132,12 +132,12 @@ class _AppDrawerState extends State<AppDrawer> {
                   _buildDrawerItem(
                     context,
                     2,
-                    icon: Icons.dashboard_rounded,
-                    text: "Dashboard",
+                    icon: Icons.person_rounded,
+                    text: "Profile",
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => DashBoard(currentPage: 2,)));
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage(currentPage: 2,)));
                       });
 
                     },
