@@ -294,8 +294,8 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
       'formType': widget.details.toString() ?? '',
       'is_active': isActive == true ? 'Y' : 'N',
       'tan':'',
-      'phone[]]': phoneControllers.map((controller) => controller.text).join(','),
-      'email[]': emailControllers.map((controller) => controller.text).join(','),
+      'phone': json.encode(phoneControllers.map((controller) => controller.text).toList()),
+      'email': json.encode(emailControllers.map((controller) => controller.text).toList()),
 
     };
 

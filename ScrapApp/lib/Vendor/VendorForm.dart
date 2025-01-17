@@ -104,8 +104,8 @@ class _VendorFormState extends State<VendorForm> {
         'gst_no':gstNumberController.text ?? '',
         'remarks':remarksController.text ?? '',
         'is_active_hidden':isActive == true ? 'Y' : 'N',
-        'phone[]]': phoneControllers.map((controller) => controller.text).join(','),
-        'email[]': emailControllers.map((controller) => controller.text).join(','),
+        'phone': json.encode(phoneControllers.map((controller) => controller.text).toList()),
+        'email': json.encode(emailControllers.map((controller) => controller.text).toList()),
       },
     );
 

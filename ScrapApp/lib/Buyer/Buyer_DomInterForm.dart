@@ -144,23 +144,23 @@ class _Buyer_DomInterFormState extends State<Buyer_DomInterForm> {
 
   Future<void> adddomesticDetails() async {
 
-    if (countryController.text.isEmpty ||
-        gstNoController.text.isEmpty ||
-        finYearController.text.isEmpty ||
-        buyerNameController.text.isEmpty ||
-        contactPersonController.text.isEmpty ||
-        addressController.text.isEmpty ||
-        pinCodeController.text.isEmpty ||
-        stateController.text.isEmpty ||
-        cityController.text.isEmpty
-    ) {
-      // Print an error message or show a toast to the user
-      Fluttertoast.showToast(
-        msg: "Please fill all required fields.",
-        fontSize: 16.0,
-      );
-      return; // Exit the function without making the API call
-    }
+    // if (countryController.text.isEmpty ||
+    //     gstNoController.text.isEmpty ||
+    //     finYearController.text.isEmpty ||
+    //     buyerNameController.text.isEmpty ||
+    //     contactPersonController.text.isEmpty ||
+    //     addressController.text.isEmpty ||
+    //     pinCodeController.text.isEmpty ||
+    //     stateController.text.isEmpty ||
+    //     cityController.text.isEmpty
+    // ) {
+    //   // Print an error message or show a toast to the user
+    //   Fluttertoast.showToast(
+    //     msg: "Please fill all required fields.",
+    //     fontSize: 16.0,
+    //   );
+    //   return; // Exit the function without making the API call
+    // }
 
     await checkLogin();
     final url = Uri.parse('${URL}bidder_save');

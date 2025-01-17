@@ -68,9 +68,6 @@ class _Edit_VendorFormState extends State<Edit_VendorForm> {
   void initState() {
     super.initState();
     checkLogin();
-
-    print('phone : ${widget.phone}');
-
         vendorNameController.text = widget.vendorName;
         addressController.text = widget.address;
         countryController.text = widget.country;
@@ -94,7 +91,7 @@ class _Edit_VendorFormState extends State<Edit_VendorForm> {
     if (widget.email.isNotEmpty) {
       emailControllers = widget.email
           .split('\n') // Split the string by newline
-          .map((email) => TextEditingController(text: email.trim())) // Initialize email controllers
+          .map((email) => TextEditingController(text: email.replaceAll('E - ', '').trim())) // Remove "P -" and initialize controllers
           .toList();
     }
 
@@ -163,8 +160,8 @@ class _Edit_VendorFormState extends State<Edit_VendorForm> {
         'gst_no':gstNumberController.text ?? '',
         'remarks':remarksController.text ?? '',
         'is_active_hidden':isActive == true ? 'Y' : 'N',
-        'phone[]]': phoneControllers.map((controller) => controller.text).join(','),
-        'email[]': emailControllers.map((controller) => controller.text).join(','),
+        'phone': json.encode(phoneControllers.map((controller) => controller.text).toList()),
+        'email': json.encode(emailControllers.map((controller) => controller.text).toList()),
       },
     );
 
