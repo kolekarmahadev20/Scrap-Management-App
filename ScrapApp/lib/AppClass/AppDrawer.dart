@@ -32,6 +32,9 @@ class _AppDrawerState extends State<AppDrawer> {
 
   String? userType = '';
 
+  String? person_email = '';
+
+  String? person_name = '';
 
   @override
   initState(){
@@ -47,6 +50,8 @@ class _AppDrawerState extends State<AppDrawer> {
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
+    person_email = prefs.getString("person_email");
+    person_name = prefs.getString("person_name");
   }
 
   Future<void> _logout(BuildContext context) async {
@@ -91,7 +96,7 @@ class _AppDrawerState extends State<AppDrawer> {
                       children: [
                         SizedBox(height: 20),
                         Text(
-                          "Bunty Jain",
+                          "$person_name",
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -100,7 +105,7 @@ class _AppDrawerState extends State<AppDrawer> {
                         ),
                         SizedBox(height: 4.0),
                         Text(
-                          "bunty.jain@salasarauction.com",
+                          "$person_email",
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: 14,
