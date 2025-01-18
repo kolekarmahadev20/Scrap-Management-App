@@ -207,7 +207,9 @@ class _StartDashBoardPageState extends State<StartPage> {
           var user_data = jsonData['session_data'] ?? "N?A";
           // Access fields using keys
           var person_name = user_data['user_name']?? "N?A";
-          var person_email = user_data['Email']?? "N?A";
+          var person_email = user_data['user_type'] == 'S'
+              ? user_data['user_email'] ?? "N/A"
+              : user_data['Email'] ?? "N/A";
           var emp_code = user_data['emp_code']?? "N?A";
           var emp_address = user_data['emp_address']?? "N?A";
           var contact = user_data['Mobile']?? "N?A";
