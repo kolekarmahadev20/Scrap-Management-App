@@ -198,31 +198,6 @@ class _Buyer_listState extends State<Buyer_list> {
     }
   }
 
-  Future<bool> _onWillPop() async {
-    bool exit = await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Are you sure?'),
-        content: Text('Do you want to exit the app?'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('No'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Yes'),
-          ),
-        ],
-      ),
-    );
-
-    if (exit != null && exit) {
-      SystemNavigator.pop(); // Exit the app
-    }
-
-    return exit ?? false;
-  }
 
   Future<void> _refreshData() async {
     setState(() {
@@ -232,112 +207,109 @@ class _Buyer_listState extends State<Buyer_list> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
-      child: Scaffold(
-        drawer: AppDrawer(currentPage: widget.currentPage),
-        appBar: CustomAppBar(),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => Buyer_Form()),
-            );
-          },
-          child: Icon(Icons.add),
-          backgroundColor: Colors.blueGrey[200], // FAB background color
-        ),
-        body: RefreshIndicator(
-          onRefresh: () async {
-            await _refreshData();
-          },
-          child: FutureBuilder<List<BuyerData>>(
-            future: _buyerDataFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(child: Text('No data available'));
-              } else {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Display the "View Seals" card at the top
-                    Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                "Buyer",
-                                style: TextStyle(
-                                  fontSize:
-                                      24, // Slightly larger font size for prominence
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+    return Scaffold(
+      drawer: AppDrawer(currentPage: widget.currentPage),
+      appBar: CustomAppBar(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Buyer_Form()),
+          );
+        },
+        child: Icon(Icons.add),
+        backgroundColor: Colors.blueGrey[200], // FAB background color
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await _refreshData();
+        },
+        child: FutureBuilder<List<BuyerData>>(
+          future: _buyerDataFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(child: Text('No data available'));
+            } else {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Display the "View Seals" card at the top
+                  Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _searchController,
-                              onChanged: (query) {
-                                if (query.isEmpty) {
-                                  _updateSealList(query);
-                                }
-                              },
-                              onEditingComplete: () {
-                                // Hide the keyboard and update the search list
-                                FocusScope.of(context).unfocus();
-                                _updateSealList(_searchController.text);
-                              },
-                              decoration: InputDecoration(
-                                hintText: 'Search by username',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      12), // Rounded corners
-                                ),
-                                filled: true, // Enable filled background
-                                fillColor: Colors.white, // Background color
-                                prefixIcon: IconButton(
-                                  icon: Icon(Icons.search),
-                                  onPressed: () {
-                                    // Hide the keyboard and update the search list
-                                    FocusScope.of(context).unfocus();
-                                    _updateSealList(_searchController.text);
-                                  },
-                                ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              "Buyer",
+                              style: TextStyle(
+                                fontSize:
+                                    24, // Slightly larger font size for prominence
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                                letterSpacing: 1.2,
                               ),
                             ),
                           ),
                         ],
                       ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: (query) {
+                              if (query.isEmpty) {
+                                _updateSealList(query);
+                              }
+                            },
+                            onEditingComplete: () {
+                              // Hide the keyboard and update the search list
+                              FocusScope.of(context).unfocus();
+                              _updateSealList(_searchController.text);
+                            },
+                            decoration: InputDecoration(
+                              hintText: 'Search by username',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                    12), // Rounded corners
+                              ),
+                              filled: true, // Enable filled background
+                              fillColor: Colors.white, // Background color
+                              prefixIcon: IconButton(
+                                icon: Icon(Icons.search),
+                                onPressed: () {
+                                  // Hide the keyboard and update the search list
+                                  FocusScope.of(context).unfocus();
+                                  _updateSealList(_searchController.text);
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    Expanded(
-                      child: _buildSealsList(snapshot.data ?? []),
-                    ),
-                  ],
-                );
-              }
-            },
-          ),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Expanded(
+                    child: _buildSealsList(snapshot.data ?? []),
+                  ),
+                ],
+              );
+            }
+          },
         ),
       ),
     );

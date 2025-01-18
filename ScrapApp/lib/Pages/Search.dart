@@ -236,31 +236,6 @@ class _SearchState extends State<Search> {
   //   }
   // }
 
-  Future<bool> _onWillPop() async {
-    bool exit = await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Are you sure?'),
-        content: Text('Do you want to exit the app?'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('No'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Yes'),
-          ),
-        ],
-      ),
-    );
-
-    if (exit != null && exit) {
-      SystemNavigator.pop(); // Exit the app
-    }
-
-    return exit ?? false;
-  }
 
   @override
   Widget build(BuildContext context) {
