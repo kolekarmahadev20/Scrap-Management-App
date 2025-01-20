@@ -10,6 +10,8 @@ import 'package:scrapapp/Refund/RefundList.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../Buyer/Buyer_list.dart';
+import '../Leave/LeaveStatus.dart';
+import '../Leave/Leave_Application.dart';
 import '../Pages/ChangePassword.dart';
 import '../Pages/EmployeeTracker.dart';
 import '../Pages/Search.dart';
@@ -128,7 +130,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   _buildDrawerItem(
                     context,
                     1,
-                    icon: Icons.dashboard_rounded,
+                    icon: Icons.dashboard_outlined,
                     text: "Dashboard",
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
@@ -141,7 +143,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   _buildDrawerItem(
                     context,
                     2,
-                    icon: Icons.person_rounded,
+                    icon: Icons.person_outline,
                     text: "Profile",
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
@@ -182,7 +184,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   _buildDrawerItem(
                     context,
                     5,
-                    icon: Icons.local_shipping_rounded,
+                    icon: Icons.local_shipping_outlined,
                     text: "Dispatch",
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
@@ -228,23 +230,23 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
-                  _buildDrawerItem(
-                    context,
-                    9,
-                    icon: Icons.people_alt,
-                    text: "Buyer",
-                    onTap: () {
-                      Timer(Duration(milliseconds: 300), () {
-                        Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => Buyer_list(currentPage: 9,)));
-                      });
-
-                    },
-                  ),
+                  // _buildDrawerItem(
+                  //   context,
+                  //   9,
+                  //   icon: Icons.people_alt,
+                  //   text: "Buyer",
+                  //   onTap: () {
+                  //     Timer(Duration(milliseconds: 300), () {
+                  //       Navigator.pop(context); // Close the drawer
+                  //       Navigator.push(context, MaterialPageRoute(builder: (context) => Buyer_list(currentPage: 9,)));
+                  //     });
+                  //
+                  //   },
+                  // ),
                   _buildDrawerItem(
                     context,
                     10,
-                    icon: Icons.people_alt,
+                    icon: Icons.lock_open,
                     text: "Change Password",
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
@@ -257,7 +259,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   _buildDrawerItem(
                     context,
                     11,
-                    icon: Icons.people_alt,
+                    icon: Icons.file_open_outlined,
                     text: "Summary Report",
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
@@ -270,7 +272,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   _buildDrawerItem(
                     context,
                     12,
-                    icon: Icons.people_alt,
+                    icon: Icons.people_alt_outlined,
                     text: "Users",
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
@@ -283,12 +285,38 @@ class _AppDrawerState extends State<AppDrawer> {
                   _buildDrawerItem(
                     context,
                     13,
-                    icon: Icons.people_alt,
+                    icon: Icons.content_paste_search,
                     text: "Search",
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.pop(context); // Close the drawer
                         Navigator.push(context, MaterialPageRoute(builder: (context) => Search(currentPage: 13,)));
+                      });
+
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    14,
+                    icon: Icons.free_cancellation_outlined,
+                    text: "Leave Application",
+                    onTap: () {
+                      Timer(Duration(milliseconds: 300), () {
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => LeaveApplication(currentPage: 14,)));
+                      });
+
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    15,
+                    icon: Icons.pending_actions_outlined,
+                    text: "Leave Status",
+                    onTap: () {
+                      Timer(Duration(milliseconds: 300), () {
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => LeaveStatus(currentPage: 15,)));
                       });
 
                     },

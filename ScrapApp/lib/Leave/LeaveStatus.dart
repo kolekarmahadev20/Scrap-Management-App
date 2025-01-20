@@ -11,7 +11,8 @@ import '../AppClass/AppDrawer.dart';
 import '../AppClass/appBar.dart';
 
 class LeaveStatus extends StatefulWidget {
-  const LeaveStatus({Key? key}) : super(key: key);
+  final int currentPage;
+  LeaveStatus({required this.currentPage});
 
   @override
   _LeaveStatusState createState() => _LeaveStatusState();
@@ -182,7 +183,7 @@ class _LeaveStatusState extends State<LeaveStatus> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: AppDrawer(currentPage: 0),
+      drawer: AppDrawer(currentPage: widget.currentPage),
       appBar: CustomAppBar(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
