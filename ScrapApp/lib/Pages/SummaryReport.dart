@@ -311,111 +311,110 @@ class _SummaryReportState extends State<SummaryReport> {
           child: Center(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children: [Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.circle_notifications,
-                      color: Colors.blue.shade900,
-                      size: 35, // Adjust the icon size as needed
-                    ),
-                    SizedBox(width: 10),
-                    Text(
-                      'Summary Report',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue.shade900,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          "Summary Report",
+                          style: TextStyle(
+                            fontSize: 26, // Slightly larger font size for prominence
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                  Card(
-                    elevation: 4.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(screenWidth * 0.02),
-                    ),
-                    child: Padding(padding: EdgeInsets.all(screenWidth * 0.02),
+                    ],
+                  ),
+                  Padding(padding: EdgeInsets.all(screenWidth * 0.02),
 
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        SizedBox(height: 16.0),
-                        buildDropdown(
-                          " All Location",
-                          "Location:",
-                          locations,
-                          selectedLocation,
-                              (value) {
-                            setState(() {
-                              selectedLocation = value;
-                            });
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      SizedBox(height: 16.0),
+                      buildDropdown(
+                        " All Location",
+                        "Location:",
+                        locations,
+                        selectedLocation,
+                            (value) {
+                          setState(() {
+                            selectedLocation = value;
+                          });
+                        },
+                      ),
+                      SizedBox(height: 10.0),
+                      buildFieldWithDatePicker(
+                        'From Date:',
+                        fromDate,
+                            (selectedDate) {
+                          setState(() {
+                            fromDate = selectedDate;
+                          });
+                        },
+                      ),
+                      SizedBox(height: 10.0),
+                      buildFieldWithDatePicker(
+                        'To Date:',
+                        toDate,
+                            (selectedEndDate) {
+                          setState(() {
+                            toDate = selectedEndDate;
+                          });
+                        },
+                      ),
+                      SizedBox(height: 24.0), // Increased spacing
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            get_seal_summary
+                              (
+                              locationId: selectedLocationId,
+                            );
                           },
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.blueGrey[400], // Text color
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12), // Rounded corners
+                            ),
+                            elevation: 5,
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Consistent padding
+                          ),
+                          child: Text('Get Data'),
                         ),
-                        SizedBox(height: 16.0),
-                        buildFieldWithDatePicker(
-                          'From Date:',
-                          fromDate,
-                              (selectedDate) {
-                            setState(() {
-                              fromDate = selectedDate;
-                            });
-                          },
+                      ),
+                      SizedBox(height: 16.0,),
+                      if (fromDate != null && toDate != null)
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            'From : (${fromDate!.toLocal().toString().split(' ')[0]})' '  To : '
+                                '(${toDate!.toLocal().toString().split(' ')[0]})',
+                            style: TextStyle(fontSize: 18),
+                          ),
                         ),
-                        SizedBox(height: 16.0),
-                        buildFieldWithDatePicker(
-                          'To Date:',
-                          toDate,
-                              (selectedEndDate) {
-                            setState(() {
-                              toDate = selectedEndDate;
-                            });
-                          },
-                        ),
-                        SizedBox(height: 24.0), // Increased spacing
+                      SizedBox(height:16.0),
+                      SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: buildDynamicTable(sealSummaryData)),
+                      // If data is still loading, you can return an empty container or other widget
+                      Container(),
+                      SizedBox(height:16.0),
+                      if (sealSummaryData.isNotEmpty) // Condition to check if the data is not empty
                         Center(
                           child: ElevatedButton(
                             onPressed: () {
-                              get_seal_summary
-                                (
-                                locationId: selectedLocationId,
-                              );
+                              _copyToClipboard();
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue, // Set button color
+                              backgroundColor: Colors.blueGrey[700],
                             ),
-                            child: Text('Get Data'),
+                            child: Text('Copy to Clipboard'),
                           ),
                         ),
-                        SizedBox(height: 16.0,),
-                        if (fromDate != null && toDate != null)
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              'From : (${fromDate!.toLocal().toString().split(' ')[0]})' '  To : '
-                                  '(${toDate!.toLocal().toString().split(' ')[0]})',
-                              style: TextStyle(fontSize: 18),
-                            ),
-                          ),
-                        SizedBox(height:16.0),
-                        SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: buildDynamicTable(sealSummaryData)),
-                        // If data is still loading, you can return an empty container or other widget
-                        Container(),
-                        SizedBox(height:16.0),
-                        if (sealSummaryData.isNotEmpty) // Condition to check if the data is not empty
-                          Center(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                _copyToClipboard();
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                              ),
-                              child: Text('Copy to Clipboard'),
-                            ),
-                          ),
-                      ],
-                      ),
+                    ],
                     ),
                   ),
                 ],
@@ -545,45 +544,45 @@ class _SummaryReportState extends State<SummaryReport> {
       String? selectedItem,
       void Function(String?) onChanged,
       ) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            labelText,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: Colors.black,
-            ),
-          ),
-        ),
-        SizedBox(width: 16.0),
-        Expanded(
-          child: Container(
-            height: 30,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              border: Border.all(
-                color: Colors.grey.shade600,
-                width: 1.0,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0,horizontal: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Label Text
+          Expanded(
+            flex: 3, // Adjust this to control label width
+            child: Text(
+              labelText,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
               ),
             ),
-            child: Center(
+          ),
+          Expanded(
+            flex: 7, // Adjust this to control dropdown width
+            child: Container(
+              height: 48, // Consistent height
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Colors.grey.shade600,
+                  width: 1.0,
+                ),
+              ),
               child: DropdownButtonFormField<String>(
                 value: selectedItem,
                 items: items.map((String item) {
                   return DropdownMenuItem<String>(
                     value: item,
-                    child: SizedBox(
-                      height: 40,
-                      child: Center(
-                        child: Text(
-                          item,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.black,
-                          ),
-                        ),
+                    child: Text(
+                      item,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
                       ),
                     ),
                   );
@@ -592,95 +591,88 @@ class _SummaryReportState extends State<SummaryReport> {
                 isExpanded: true,
                 decoration: InputDecoration.collapsed(
                   hintText: hint,
-                  hintStyle: TextStyle(color: Colors.black),
+                  hintStyle: TextStyle(color: Colors.grey.shade700),
                 ),
-                selectedItemBuilder: (BuildContext context) {
-                  return items.map<Widget>((String item) {
-                    return Center(
-                      child: Text(
-                        item,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.black,
-                        ),
-                      ),
-                    );
-                  }).toList();
-                },
                 icon: Icon(Icons.arrow_drop_down),
                 iconSize: 24,
-                elevation: 16,
+                elevation: 4,
                 style: TextStyle(color: Colors.black),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget buildFieldWithDatePicker(String label,
-      DateTime? selectedDate,
+
+  Widget buildFieldWithDatePicker(String label, DateTime? selectedDate,
       void Function(DateTime?) onDateChanged,) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: Colors.black,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-        ),
-        SizedBox(width: 16.0),
-        Expanded(
-          child: Row(
-            children: [
-              Expanded(
-                child: InkWell(
-                  onTap: () async {
-                    final newSelectedDate = await showDatePicker(
-                      context: context, // Make sure you have access to the context
-                      initialDate: selectedDate ?? DateTime.now(),
-                      firstDate: DateTime(1900),
-                      lastDate: DateTime.now().add(Duration(days: 365)),
-                    );
-                    if (newSelectedDate != null) {
-                      onDateChanged(newSelectedDate);
-                    }
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                    ),
-                    padding: EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          selectedDate != null
-                              ? '${selectedDate.toLocal()}'.split(' ')[0]
-                              : 'Select Date',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w300,
+          Expanded(
+            flex: 7,
+            child: Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () async {
+                      final newSelectedDate = await showDatePicker(
+                        context: context, // Make sure you have access to the context
+                        initialDate: selectedDate ?? DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now().add(Duration(days: 365)),
+                      );
+                      if (newSelectedDate != null) {
+                        onDateChanged(newSelectedDate);
+                      }
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8),
+
+
+                      ),
+                      padding: EdgeInsets.all(10.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            selectedDate != null
+                                ? '${selectedDate.toLocal()}'.split(' ')[0]
+                                : 'Select Date',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w300,
+                            ),
                           ),
-                        ),
-                        Icon(
-                          Icons.calendar_today,
-                          size: 19.0, // Adjust the size as needed
-                        ), // Calendar icon
-                      ],
+                          Icon(
+                            Icons.calendar_today,
+                            size: 19.0, // Adjust the size as needed
+                          ), // Calendar icon
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
