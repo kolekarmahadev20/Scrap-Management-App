@@ -10,6 +10,7 @@ import 'package:scrapapp/Refund/RefundList.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../Buyer/Buyer_list.dart';
+import '../Pages/ChangePassword.dart';
 import '../Pages/EmployeeTracker.dart';
 import '../Vendor/Vendor_list.dart';
 
@@ -233,6 +234,19 @@ class _AppDrawerState extends State<AppDrawer> {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.pop(context); // Close the drawer
                         Navigator.push(context, MaterialPageRoute(builder: (context) => Buyer_list(currentPage: 9,)));
+                      });
+
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    10,
+                    icon: Icons.people_alt,
+                    text: "Change Password",
+                    onTap: () {
+                      Timer(Duration(milliseconds: 300), () {
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => ChangePassword(currentPage: 10,)));
                       });
 
                     },
