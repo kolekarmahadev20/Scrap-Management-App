@@ -12,6 +12,10 @@ import '../AppClass/appBar.dart';
 import '../URL_CONSTANT.dart';
 
 class SummaryReport extends StatefulWidget {
+
+  final int currentPage;
+  SummaryReport({required this.currentPage});
+
   @override
   _SummaryReportState createState() => _SummaryReportState();
 }
@@ -299,7 +303,7 @@ class _SummaryReportState extends State<SummaryReport> {
     String? selectedLocationId = getSelectedLocationId();
 
     return Scaffold(
-      drawer: AppDrawer(currentPage: 0),
+      drawer: AppDrawer(currentPage: widget.currentPage),
       appBar: CustomAppBar(),
       body: SingleChildScrollView(
         child: Padding(

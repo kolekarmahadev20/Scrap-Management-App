@@ -27,15 +27,12 @@ class _ChangePasswordState extends State<ChangePassword> {
   FocusNode _newPasswordFocus = FocusNode();
   FocusNode _confirmPasswordFocus = FocusNode();
 
-  bool _isOldPasswordObscure = true;
-  bool _isNewPasswordObscure = true;
-  bool _isConfirmPasswordObscure = true;
-
   bool isLoading = false;
   String _errorText = '';
   String correctOldPassword = ''; // Replace with the actual old password
 
-  // Variables for user details
+
+  //Variables for user details
   bool _isloggedin = true;
   String _id = '';
   String _username = '';
@@ -46,10 +43,13 @@ class _ChangePasswordState extends State<ChangePassword> {
   String _password = '';
   String _uuid = '';
 
+
   @override
   void initState() {
     super.initState();
     _getUserDetails();
+    // correctOldPassword = _password;
+
   }
 
   @override
@@ -63,7 +63,7 @@ class _ChangePasswordState extends State<ChangePassword> {
     super.dispose();
   }
 
-  // Fetching user details from SharedPreferences
+  //Fetching user details from sharedpreferences
   _getUserDetails() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -73,31 +73,39 @@ class _ChangePasswordState extends State<ChangePassword> {
       _full_name = prefs.getString('full_name')!;
       _email = prefs.getString('email')!;
       _user_type = prefs.getString('user_type') ?? '';
-      _password = prefs.getString('password') ?? '';
-      _uuid = prefs.getString('uuid') ?? '';
+      _password = prefs.getString('password')??'';
+      _uuid= prefs.getString('uuid')??'';
+
     });
 
-    if (_isloggedin) {
+    if (kDebugMode) {
+      //print("is logged in$_isloggedin");
+    }
+    if (_isloggedin == false) {
+      // ignore: use_build_context_synchronously
+
+    }else {
+      // If the user is logged in, proceed to load the correct old password
       correctOldPassword = _password;
     }
   }
 
   void _submitForm() async {
     if (_formKey.currentState?.validate() ?? false) {
+
       var data = {
         'uuid': _uuid,
         'user_id': _username,
         'password': _password,
-        'new_password': _newPasswordController.text
+        'new_password' :_newPasswordController.text
       };
 
-      final response = await http.post(
-        Uri.parse('${URL}/Mobile_flutter_api/change_password'),
-        headers: {"Accept": "application/json"},
-        body: data,
-      );
+      final response = await http.post(Uri.parse('${URL}/Mobile_flutter_api/change_password'),
+          headers: {"Accept": "application/json"},
+          body: data);
 
-      if (kDebugMode) {
+      if (kDebugMode)
+      {
         print(response.body);
       }
 
@@ -114,18 +122,22 @@ class _ChangePasswordState extends State<ChangePassword> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Password changed successfully!'),
-            duration: Duration(seconds: 2),
+            duration: Duration(seconds: 2), // Adjust the duration as needed
           ),
         );
-      } else {
+      }
+      else
+      {
         setState(() {
           final error = resStr['error'];
           isLoading = false;
           _errorText = 'Password update failed. Error: $error';
         });
       }
+
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +158,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                     Icon(
                       Icons.lock,
                       color: Colors.blue.shade900,
-                      size: 40,
+                      size: 40, // Adjust the icon size as needed
                     ),
                     SizedBox(width: 25),
                     Text(
@@ -172,12 +184,6 @@ class _ChangePasswordState extends State<ChangePassword> {
                           label: 'Old Password',
                           controller: _oldPasswordController,
                           focusNode: _oldPasswordFocus,
-                          obscureText: _isOldPasswordObscure,
-                          toggleObscure: () {
-                            setState(() {
-                              _isOldPasswordObscure = !_isOldPasswordObscure;
-                            });
-                          },
                           validator: (value) {
                             if (value?.isEmpty ?? true) {
                               return 'Please enter your old password.';
@@ -193,16 +199,11 @@ class _ChangePasswordState extends State<ChangePassword> {
                           label: 'New Password',
                           controller: _newPasswordController,
                           focusNode: _newPasswordFocus,
-                          obscureText: _isNewPasswordObscure,
-                          toggleObscure: () {
-                            setState(() {
-                              _isNewPasswordObscure = !_isNewPasswordObscure;
-                            });
-                          },
                           validator: (value) {
                             if (value?.isEmpty ?? true) {
                               return 'Please enter your new password.';
                             }
+                            // Add additional validation logic here if needed.
                             return null;
                           },
                         ),
@@ -211,18 +212,13 @@ class _ChangePasswordState extends State<ChangePassword> {
                           label: 'Confirm Password',
                           controller: _confirmPasswordController,
                           focusNode: _confirmPasswordFocus,
-                          obscureText: _isConfirmPasswordObscure,
-                          toggleObscure: () {
-                            setState(() {
-                              _isConfirmPasswordObscure = !_isConfirmPasswordObscure;
-                            });
-                          },
                           validator: (value) {
                             if (value?.isEmpty ?? true) {
                               return 'Please confirm your new password.';
                             }
                             if (value != _newPasswordController.text) {
                               return 'Passwords do not match.';
+
                             }
                             return null;
                           },
@@ -239,8 +235,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                             onPressed: () {
                               _submitForm();
                             },
-                            child: isLoading
-                                ? Center(
+                            child: isLoading? Center(
                               child: CircularProgressIndicator(
                                 backgroundColor: Colors.white,
                               ),
@@ -266,16 +261,12 @@ class TextFormFieldCard extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final String? Function(String?)? validator;
-  final bool obscureText;
-  final VoidCallback toggleObscure;
 
   TextFormFieldCard({
     required this.label,
     required this.controller,
     required this.focusNode,
     required this.validator,
-    required this.obscureText,
-    required this.toggleObscure,
   });
 
   @override
@@ -314,27 +305,26 @@ class _TextFormFieldCardState extends State<TextFormFieldCard> {
       children: <Widget>[
         Text(
           widget.label,
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8.0),
-            border: Border.all(color: borderColor),
+            border: Border.all(
+              color: borderColor,
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: TextFormField(
               controller: widget.controller,
               focusNode: widget.focusNode,
-              obscureText: widget.obscureText,
+              obscureText: true,
               decoration: InputDecoration(
                 border: InputBorder.none,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    widget.obscureText ? Icons.visibility_off : Icons.visibility,
-                  ),
-                  onPressed: widget.toggleObscure,
-                ),
+                hintText: '',
               ),
               validator: widget.validator,
             ),
