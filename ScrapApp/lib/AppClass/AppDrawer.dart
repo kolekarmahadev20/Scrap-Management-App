@@ -293,31 +293,21 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
+                  InkWell(
+                    onTap:() {
+                      Timer(Duration(milliseconds: 300), () {
+                        _logout(context);
+                      });
+                    },
+                    splashColor: Colors.indigo[100],
+                    highlightColor: Colors.indigo[50],
+                    child: ListTile(
+                      leading: Icon(Icons.logout_outlined, color: Colors.redAccent, size: 30),
+                      title: Text("Logout"),
+                    ),
+                  ),
+
                 ],
-              ),
-            ),
-            Divider(thickness: 1, color: Colors.blueGrey[400]),
-            // _buildDrawerItem(
-            //   context,
-            //   icon: Icons.settings,
-            //   text: "Setting",
-            //   onTap: () {
-            //     Timer(Duration(milliseconds: 300), () {
-            //       // Navigator.push(context, MaterialPageRoute(builder: (context) => RefundList()));
-            //     });
-            //   },
-            // ),
-            InkWell(
-              onTap:() {
-                Timer(Duration(milliseconds: 300), () {
-                  _logout(context);
-                });
-              },
-              splashColor: Colors.indigo[100],
-              highlightColor: Colors.indigo[50],
-              child: ListTile(
-                leading: Icon(Icons.logout_outlined, color: Colors.redAccent, size: 30),
-                title: Text("Logout"),
               ),
             ),
           ],
