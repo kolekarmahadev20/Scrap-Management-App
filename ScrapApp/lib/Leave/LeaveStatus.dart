@@ -298,7 +298,8 @@ class _LeaveStatusState extends State<LeaveStatus> {
   }
 
   Widget _buildStatusRow(dynamic leave) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Status: ${getStatusLabel(leave['status'] ?? '0')}',
@@ -308,24 +309,33 @@ class _LeaveStatusState extends State<LeaveStatus> {
                 : leave['status'] == '1'
                 ? Colors.green
                 : Colors.red,
-              fontSize: 15
-
+            fontSize: 15,
           ),
         ),
-        Spacer(),
-        if (leave['status'] == '0') ...[
-          ElevatedButton(
-            onPressed: () => changeLeaveStatus(leave['id'].toString(), '1'),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green,foregroundColor: Colors.white),
-            child: Text('Approve',),
+        const SizedBox(height: 8.0),
+        if (leave['status'] == '0')
+          Wrap(
+            spacing: 8.0, // Space between buttons
+            runSpacing: 8.0, // Space between rows when buttons wrap
+            children: [
+              ElevatedButton(
+                onPressed: () => changeLeaveStatus(leave['id'].toString(), '1'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Approve'),
+              ),
+              ElevatedButton(
+                onPressed: () => changeLeaveStatus(leave['id'].toString(), '2'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Reject'),
+              ),
+            ],
           ),
-          SizedBox(width: 8.0),
-          ElevatedButton(
-            onPressed: () => changeLeaveStatus(leave['id'].toString(), '2'),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red,foregroundColor: Colors.white),
-            child: Text('Reject'),
-          ),
-        ],
       ],
     );
   }
