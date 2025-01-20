@@ -110,22 +110,22 @@ class _SearchState extends State<Search> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      buildDropdownPayment("Vendor", VendorType, (value) {
+                      buildDropdown("Vendor", VendorType, (value) {
                         setState(() {
                           selectedVendorType = value;
                         });
                       }),
-                      buildDropdownPayment("Plant Name", PlantName, (value) {
+                      buildDropdown("Plant Name", PlantName, (value) {
                         setState(() {
                           selectedPlantName = value;
                         });
                       }),
-                      buildDropdownPayment("Buyer", Buyer, (value) {
+                      buildDropdown("Buyer", Buyer, (value) {
                         setState(() {
                           selectedBuyer = value;
                         });
                       }),
-                      buildDropdownPayment("Material", Material, (value) {
+                      buildDropdown("Material", Material, (value) {
                         setState(() {
                           selectedMaterial = value;
                         });
@@ -174,7 +174,7 @@ class _SearchState extends State<Search> {
     );
   }
 
-  Widget buildDropdownPayment(String label, Map<String, String> options, ValueChanged<String?> onChanged) {
+  Widget buildDropdown(String label, Map<String, String> options, ValueChanged<String?> onChanged) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
