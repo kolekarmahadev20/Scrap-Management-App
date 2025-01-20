@@ -14,6 +14,7 @@ import '../Leave/LeaveStatus.dart';
 import '../Leave/Leave_Application.dart';
 import '../Pages/ChangePassword.dart';
 import '../Pages/EmployeeTracker.dart';
+import '../Pages/ForgotPunchOutPage.dart';
 import '../Pages/Search.dart';
 import '../Pages/SummaryReport.dart';
 import '../Users/User_list.dart';
@@ -321,6 +322,20 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
+                  _buildDrawerItem(
+                    context,
+                    16,
+                    icon: Icons.access_time,
+                    text: "Late Login Remark",
+                    onTap: () {
+                      Timer(Duration(milliseconds: 300), () {
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => ForgotPunchOutPage(currentPage: 16,)));
+                      });
+
+                    },
+                  ),
+
                   InkWell(
                     onTap:() {
                       Timer(Duration(milliseconds: 300), () {

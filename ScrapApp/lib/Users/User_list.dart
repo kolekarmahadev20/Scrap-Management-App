@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../AppClass/AppDrawer.dart';
 import '../AppClass/appBar.dart';
 import '../URL_CONSTANT.dart';
+import 'Add_user.dart';
 
 
 // User model to parse JSON data
@@ -228,7 +229,7 @@ class _view_userState extends State<view_user> {
       appBar: CustomAppBar(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navigator.push(context, MaterialPageRoute(builder: (context) => Add_user()));
+         Navigator.push(context, MaterialPageRoute(builder: (context) => Add_user()));
         },
         child: Icon(Icons.add),
       ),
