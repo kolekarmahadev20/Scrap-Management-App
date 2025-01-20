@@ -19,9 +19,36 @@ class LeaveStatus extends StatefulWidget {
 }
 
 class _LeaveStatusState extends State<LeaveStatus> {
-  List<dynamic> leaveData = [];
+  List<dynamic> leaveData = [
+    {
+      'id': 1,
+      'full_name': 'John Doe',
+      'submitted_on': '2025-01-01',
+      'from_date': '2025-01-10',
+      'to_date': '2025-01-15',
+      'reason': 'Vacation',
+      'status': '0',
+    },
+    {
+      'id': 2,
+      'full_name': 'Jane Smith',
+      'submitted_on': '2025-01-05',
+      'from_date': '2025-01-20',
+      'to_date': '2025-01-25',
+      'reason': 'Conference',
+      'status': '1',
+    },
+    {
+      'id': 3,
+      'full_name': 'Jane Smith',
+      'submitted_on': '2025-01-05',
+      'from_date': '2025-01-20',
+      'to_date': '2025-01-25',
+      'reason': 'Conference',
+      'status': '2',
+    },
+  ];
 
-  // Add a boolean variable to track if data is being loaded
   bool isLoading = true;
 
   getStatusLabel(String status) {
@@ -38,7 +65,6 @@ class _LeaveStatusState extends State<LeaveStatus> {
     }
   }
 
-  //Variables for user details
   bool _isloggedin = true;
   String _id = '';
   String _username = '';
@@ -48,8 +74,6 @@ class _LeaveStatusState extends State<LeaveStatus> {
   String _user_type = '';
   String _password = '';
   String _uuid = '';
-
-  String? a = '';
 
   @override
   void initState() {
@@ -63,10 +87,8 @@ class _LeaveStatusState extends State<LeaveStatus> {
         });
       }
     });
-
   }
 
-  // Fetching user details from shared preferences
   _getUserDetails() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -76,24 +98,14 @@ class _LeaveStatusState extends State<LeaveStatus> {
       _full_name = prefs.getString('full_name')!;
       _email = prefs.getString('email')!;
       _user_type = prefs.getString('user_type') ?? '';
-      _password = prefs.getString('password')??'';
-      _uuid= prefs.getString('uuid')??'';
-
+      _password = prefs.getString('password') ?? '';
+      _uuid = prefs.getString('uuid') ?? '';
     });
-
-    if (kDebugMode) {
-      //print("is logged in$_isloggedin");
-    }
-    if (_isloggedin == false) {
-      // ignore: use_build_context_synchronously
-
-    }
   }
 
   Future<void> changeLeaveStatus(String leaveId, String status) async {
     try {
       await _getUserDetails();
-
       final response = await http.post(
         Uri.parse('$URL/Mobile_flutter_api/change_leave_status'),
         headers: {"Accept": "application/json"},
@@ -108,20 +120,14 @@ class _LeaveStatusState extends State<LeaveStatus> {
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
-        print(responseData);
-
-        // Update leaveData based on the changed status
         setState(() {
           leaveData = leaveData.map((leave) {
             if (leave['id'].toString() == leaveId) {
-              // Update the status for the specific leave
               leave['status'] = status;
             }
             return leave;
           }).toList();
         });
-
-        // Handle the response data as needed
       } else {
         print('Failed to change leave status. Status code: ${response.statusCode}');
       }
@@ -130,9 +136,8 @@ class _LeaveStatusState extends State<LeaveStatus> {
     }
   }
 
-
   Future<List<dynamic>> fetchLeaveData() async {
-    await _getUserDetails(); // Ensure you have user details
+    await _getUserDetails();
     try {
       final response = await http.post(
         Uri.parse('$URL/Mobile_flutter_api/get_leaves'),
@@ -141,44 +146,23 @@ class _LeaveStatusState extends State<LeaveStatus> {
           'uuid': _uuid,
           'user_id': _username,
           'password': _password,
-          // Other necessary parameters
         },
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print(data);
-
-        if (data["status"] == "1") {
-          if (data.containsKey("user_data") && data["user_data"] is List) {
-            List<dynamic> leaveData = data["user_data"];
-
-            // Accessing the 'id' of the first user_data entry
-            // Accessing all the 'id' values in user_data
-            List<String> userIds = leaveData.map((userData) => userData["id"].toString()).toList();
-            // print("asjkfgbaijsbfas");
-            // print("User IDs: $userIds");
-
-            setState(() {
-              leaveData = data["user_data"] as List;
-            });
-
-            return leaveData;
-          } else {
-            print('No valid "user_data" found in the response');
-          }
-        } else {
-          print('Status is not 1 in the response');
+        if (data["status"] == "1" && data.containsKey("user_data") && data["user_data"] is List) {
+          setState(() {
+            leaveData = data["user_data"] as List;
+          });
+          return leaveData;
         }
-      } else {
-        print('Failed to fetch leave data. Status code: ${response.statusCode}');
       }
     } catch (e) {
       print('Error: $e');
     }
     return [];
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -187,215 +171,17 @@ class _LeaveStatusState extends State<LeaveStatus> {
       appBar: CustomAppBar(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        scrollDirection: Axis.horizontal, // Set horizontal scroll
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header Section
+            _buildHeader(),
             SizedBox(height: 16.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.menu_book,
-                  color: Colors.blue.shade900,
-                  size: 32,
-                ),
-                SizedBox(width: 10),
-                Text(
-                  'Leave Status',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade900,
-                  ),
-                ),
-              ],
-            ),
+            // Leave Status Indicators
+            _buildStatusIndicators(),
             SizedBox(height: 16.0),
-            // Indicator
-            Row(
-              children: [
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.green, // Adjust color as needed
-                  ),
-                ),
-                SizedBox(width: 5),
-                Text(
-                  'Approved',
-                  style: TextStyle(fontSize: 16),
-                ),
-                SizedBox(width: 10),
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.red, // Adjust color as needed
-                  ),
-                ),
-                SizedBox(width: 5),
-                Text(
-                  'Rejected',
-                  style: TextStyle(fontSize: 16),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.0),
-            if (leaveData.isNotEmpty)
-              Center(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal, // Set horizontal scroll
-                  child: DataTable(
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                    ),
-                    columnSpacing: 20,
-                    columns: [
-                      DataColumn(
-                        label: Text(
-                          'Sr No.',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Emp Name',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Apply Date',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Change Status',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'From Date',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'To Date',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Reason',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Status',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                    rows: List<DataRow>.generate(
-                      leaveData.length,
-                          (index) => DataRow(
-                        color: MaterialStateColor.resolveWith(
-                              (Set<MaterialState> states) {
-                            return index % 2 == 0
-                                ? Colors.white
-                                : Colors.transparent;
-                          },
-                        ),
-                        cells: [
-                          DataCell(Text((index + 1).toString())),
-                          DataCell(Text(leaveData[index]['full_name'] ?? '')),
-                          DataCell(Text(leaveData[index]['submitted_on'] ?? '')),
-                          DataCell(
-                            Row(
-                              children: [
-                                ElevatedButton(
-                                  onPressed: () {
-                                    changeLeaveStatus(
-                                      leaveData[index]['id'].toString(),
-                                      '1',
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-                                  ),
-                                  child: Text('Approve'),
-                                ),
-                                SizedBox(width: 8.0),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    changeLeaveStatus(
-                                      leaveData[index]['id'].toString(),
-                                      '2',
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                  ),
-                                  child: Text('Reject'),
-                                ),
-                              ],
-                            ),
-                          ),
-                          DataCell(Text(leaveData[index]['from_date'] ?? '')),
-                          DataCell(Text(leaveData[index]['to_date'] ?? '')),
-                          DataCell(Text(leaveData[index]['reason'] ?? '')),
-                          DataCell(
-                            Text(
-                              getStatusLabel(leaveData[index]['status'] ?? '0'),
-                              style: TextStyle(
-                                color: leaveData[index]['status'] == '0'
-                                    ? Colors.grey
-                                    : leaveData[index]['status'] == '1'
-                                    ? Colors.green
-                                    : leaveData[index]['status'] == '2'
-                                    ? Colors.red
-                                    : Colors.black,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+            // Leave Data
+            if (leaveData.isNotEmpty) _buildLeaveList(),
             if (leaveData.isEmpty && !isLoading)
               Center(
                 child: Text(
@@ -406,6 +192,141 @@ class _LeaveStatusState extends State<LeaveStatus> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              "Leave Status",
+              style: TextStyle(
+                fontSize:
+                24, // Slightly larger font size for prominence
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ),
+        ],
+      );
+  }
+
+  Widget _buildStatusIndicators() {
+    return Row(
+      children: [
+        _buildStatusIndicator(Colors.green, 'Approved'),
+        SizedBox(width: 10),
+        _buildStatusIndicator(Colors.red, 'Rejected'),
+      ],
+    );
+  }
+
+  Widget _buildStatusIndicator(Color color, String label) {
+    return Row(
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: color,
+          ),
+        ),
+        SizedBox(width: 5),
+        Text(
+          label,
+          style: TextStyle(fontSize: 16),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLeaveList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: leaveData.length,
+      itemBuilder: (context, index) {
+        final leave = leaveData[index];
+        return _buildLeaveCard(leave, index);
+      },
+    );
+  }
+
+  Widget _buildLeaveCard(dynamic leave, int index) {
+    return Card(
+      color: Colors.white,
+      elevation: 4,
+      margin: EdgeInsets.only(bottom: 12.0),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Leave Applicant Info
+            _buildLeaveInfoRow('Leave Applicant:', leave['full_name'], index),
+            SizedBox(height: 8.0),
+            // Leave Dates and Reason
+            _buildLeaveInfoRow('From Date:', leave['from_date'], index),
+            _buildLeaveInfoRow('To Date:', leave['to_date'], index),
+            _buildLeaveInfoRow('Reason:', leave['reason'], index),
+            SizedBox(height: 12.0),
+            // Leave Status and Actions
+            _buildStatusRow(leave),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLeaveInfoRow(String label, String? value, int index) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          '$label',
+          style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15),
+        ),
+        Text(value ?? 'N/A',style: TextStyle(fontSize: 15),),
+      ],
+    );
+  }
+
+  Widget _buildStatusRow(dynamic leave) {
+    return Row(
+      children: [
+        Text(
+          'Status: ${getStatusLabel(leave['status'] ?? '0')}',
+          style: TextStyle(
+            color: leave['status'] == '0'
+                ? Colors.grey
+                : leave['status'] == '1'
+                ? Colors.green
+                : Colors.red,
+              fontSize: 15
+
+          ),
+        ),
+        Spacer(),
+        if (leave['status'] == '0') ...[
+          ElevatedButton(
+            onPressed: () => changeLeaveStatus(leave['id'].toString(), '1'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green,foregroundColor: Colors.white),
+            child: Text('Approve',),
+          ),
+          SizedBox(width: 8.0),
+          ElevatedButton(
+            onPressed: () => changeLeaveStatus(leave['id'].toString(), '2'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red,foregroundColor: Colors.white),
+            child: Text('Reject'),
+          ),
+        ],
+      ],
     );
   }
 }
