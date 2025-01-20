@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Buyer/Buyer_list.dart';
 import '../Pages/ChangePassword.dart';
 import '../Pages/EmployeeTracker.dart';
+import '../Pages/Search.dart';
 import '../Pages/SummaryReport.dart';
 import '../Users/User_list.dart';
 import '../Vendor/Vendor_list.dart';
@@ -275,6 +276,19 @@ class _AppDrawerState extends State<AppDrawer> {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.pop(context); // Close the drawer
                         Navigator.push(context, MaterialPageRoute(builder: (context) => view_user(currentPage: 12,)));
+                      });
+
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    13,
+                    icon: Icons.people_alt,
+                    text: "Search",
+                    onTap: () {
+                      Timer(Duration(milliseconds: 300), () {
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => Search(currentPage: 13,)));
                       });
 
                     },

@@ -9,6 +9,10 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
 
 class Search extends StatefulWidget {
+
+  final int currentPage;
+  Search({required this.currentPage});
+
   @override
   _SearchState createState() => _SearchState();
 }
@@ -16,15 +20,10 @@ class Search extends StatefulWidget {
 class _SearchState extends State<Search> {
 
   //Variables for user details
-  bool _isloggedin = true;
-  String _id = '';
-  String _username = '';
-  String _full_name = '';
-  String _email = '';
-  String userImageUrl = '';
-  String _user_type = '';
-  String _password = '';
-  String _uuid = '';
+  String? username = '';
+  String? password = '';
+  String? loginType = '';
+  String? userType = '';
 
 
   final _vehicleNoFocusNode = FocusNode();
@@ -52,7 +51,7 @@ class _SearchState extends State<Search> {
   @override
   void initState() {
     super.initState();
-    _getUserDetails();
+    checkLogin();
     fetchdropdownData();
   }
 
@@ -63,39 +62,23 @@ class _SearchState extends State<Search> {
   }
 
 
-  //Fetching user details from sharedpreferences
-  _getUserDetails() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isloggedin = prefs.getBool("loggedin")!;
-      _id = prefs.getString('id')!;
-      _username = prefs.getString('username')!;
-      _full_name = prefs.getString('full_name')!;
-      _email = prefs.getString('email')!;
-      _user_type = prefs.getString('user_type') ?? '';
-      _password = prefs.getString('password')??'';
-      _uuid= prefs.getString('uuid')??'';
-    });
-
-    if (kDebugMode) {
-      //print("is logged in$_isloggedin");
-    }
-    if (_isloggedin == false) {
-      // ignore: use_build_context_synchronously
-
-    }
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
   fetchdropdownData() async {
-    await _getUserDetails();
+    await checkLogin();
     try {
       final response = await http.post(
         Uri.parse('$URL/Mobile_flutter_api/get_dropdown_data'),
         headers: {"Accept": "application/json"},
         body: {
-          'uuid': _uuid,
-          'user_id': _username,
-          'password': _password,
+          'user_id': username,
+          'user_pass': password,
         },
       );
 
