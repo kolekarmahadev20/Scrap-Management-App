@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:location/location.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Pages/StartPage.dart';
@@ -38,7 +39,7 @@ class _ProfilePageState extends State<ProfilePage> {
   DateTime? punchOutTime;
   String? attendanceType ;
   int _currentIndex = 0; // Current tab index
-
+  LocationData? _locationData;
 
 
   final Icon nameIcon =
@@ -56,12 +57,28 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
+    _initLocation();
     getCredentialDetails();
     checkLogin().then((_){
       setState(() {});
     });
     fetchPunchTimeFromDatabase();
     fetchLogoutPunchTimeFromDatabase();
+  }
+
+  // Method to initialize location
+  void _initLocation() async {
+    try {
+      _locationData = await Location().getLocation();
+      if (_locationData != null) {
+        double latitude = _locationData!.latitude!;
+        double longitude = _locationData!.longitude!;
+      } else {
+        print('Failed to fetch location data.');
+      }
+    } catch (e) {
+      print('Error fetching location: $e');
+    }
   }
 
   Future<void> checkLogin() async {
@@ -179,6 +196,58 @@ class _ProfilePageState extends State<ProfilePage> {
 
     }
   }
+
+  Future<String> getAddress(double latitude, double longitude) async {
+    final apiKey = 'AIzaSyCdIqus6Zv1nGHQtQA-JmoVxotbLtr1Cv0';
+    final endpoint = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=$latitude,$longitude&key=$apiKey';
+
+    try {
+      final response = await http.get(Uri.parse(endpoint));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final results = data['results'] as List<dynamic>;
+        if (results.isNotEmpty) {
+          final formattedAddress = results[0]['formatted_address'];
+          return formattedAddress;
+        }
+      }
+      return 'Address not found';
+    } catch (e) {
+      print('Error getting address: $e');
+      return 'Error';
+    }
+  }
+
+  //Fetching API for User Attendance
+  Future<void> set_user_attendance(
+      String punchType, double? latitude, double? longitude) async {
+    try {
+      final address = await getAddress(latitude ?? 0.0, longitude ?? 0.0);
+
+      final response = await http.post(
+        Uri.parse('${URL}set_user_attend'),
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id':username,
+          'user_pass':password,
+          'punch_type': punchType,
+          'location[lat]': latitude?.toString() ?? '',
+          'location[long]': longitude?.toString() ?? '',
+          'address': address ?? ''
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+      } else {
+        print('Response Body: ${response.body}');
+      }
+    } catch (e) {
+      print('Error: $e'); // Log any errors that occur
+    }
+  }
+
 
   enablePunching(String status) {
     DateTime currentDateTime = DateTime.now();
@@ -391,17 +460,17 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               // User Details Section (Cards)
-              Row(
-                children: [
-                  Expanded(
-                      child: buildCard(
-                          name, nameIcon, 'assets/images/user2.jpg')),
-                  SizedBox(width: 8),
-                  Expanded(
-                      child: buildCard(
-                          contact, contactIcon, 'assets/images/contact3.jpeg')),
-                ],
-              ),
+              // Row(
+              //   children: [
+              //     Expanded(
+              //         child: buildCard(
+              //             name, nameIcon, 'assets/images/user2.jpg')),
+              //     SizedBox(width: 8),
+              //     Expanded(
+              //         child: buildCard(
+              //             contact, contactIcon, 'assets/images/contact3.jpeg')),
+              //   ],
+              // ),
               //Additional Info
               buildListTile('Email', email, 'assets/images/email2.jpeg'),
               buildListTile('Address', address, 'assets/images/location.jpeg'),
@@ -416,6 +485,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         label: Text("Punch In", style: TextStyle(color: Colors.white)),
                         onPressed: isPunchedIn
                             ? () {
+                          set_user_attendance('logged in', _locationData?.latitude,
+                              _locationData?.longitude);
                           Fluttertoast.showToast(msg: 'Your attendance marked for today');
                         }
                             : () {
@@ -443,6 +514,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         label: Text("Punch Out", style: TextStyle(color: Colors.white)),
                         onPressed: isPunchedOut
                           ? () {
+                          set_user_attendance('logged out', _locationData?.latitude,
+                              _locationData?.longitude);
                           Fluttertoast.showToast(msg: 'Your attendance marked for today');
                           }
                           : () {
