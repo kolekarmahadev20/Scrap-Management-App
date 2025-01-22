@@ -252,10 +252,8 @@ class _ProfilePageState extends State<ProfilePage> {
   enablePunching(String status) {
     DateTime currentDateTime = DateTime.now();
     String currentformattedDate = DateFormat('yyyy-MM-dd').format(currentDateTime);
-    print('Current Time : $currentformattedDate');
     if (status == 'logged in'){
       String punchFormattedDate = DateFormat('yyyy-MM-dd').format(punchTime!);
-      print('punchIn Time : $punchFormattedDate');
       if (currentformattedDate != punchFormattedDate) {
         setState(() {
           isPunchedIn = false;
@@ -269,7 +267,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
     if(status == 'logged out') {
       String punchOutFormattedDate = DateFormat('yyyy-MM-dd').format(punchOutTime!);
-      print('punchOut Time : $punchOutFormattedDate');
       if(currentformattedDate != punchOutFormattedDate){
         setState(() {
           isPunchedOut = false;
@@ -281,11 +278,6 @@ class _ProfilePageState extends State<ProfilePage> {
         });
       }
     }
-
-
-
-
-
   }
 
   void _onItemTapped(int index) {
