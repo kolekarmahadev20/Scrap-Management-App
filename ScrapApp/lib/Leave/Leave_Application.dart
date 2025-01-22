@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:scrapapp/Pages/StartPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -20,23 +20,13 @@ class LeaveApplication extends StatefulWidget {
   _LeaveApplicationState createState() => _LeaveApplicationState();
 }
 
-class AuthorizedName {
-  final int id;
-  final String fullName;
-
-  AuthorizedName({required this.id, required this.fullName});
-}
-
 class _LeaveApplicationState extends State<LeaveApplication> {
+
   // Controller Declarations
   TextEditingController locationController = TextEditingController();
-  TextEditingController fromdateController = TextEditingController();
-  TextEditingController todateController = TextEditingController();
   TextEditingController reasonController = TextEditingController();
   TextEditingController contactController = TextEditingController();
   TextEditingController authController = TextEditingController();
-
-
 
   // Variables for user details
   String? username = '';
@@ -76,6 +66,75 @@ class _LeaveApplicationState extends State<LeaveApplication> {
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
+  }
+
+
+  Future<void> _submitLeave() async {
+    // Validate fields
+    if (locationController.text.isEmpty ||
+        fromDate == null ||
+        toDate == null ||
+        reasonController.text.isEmpty ||
+        contactController.text.isEmpty) {
+      Fluttertoast.showToast(
+        msg: "Please fill in all fields and ensure dates are selected",
+      );
+      return;
+    }
+
+    // Ensure fromDate is before toDate
+    if (fromDate!.isAfter(toDate!)) {
+      Fluttertoast.showToast(
+        msg: "From Date cannot be after To Date",
+      );
+      return;
+    }
+
+
+    await checkLogin();
+    final url = '${URL}submit_leave';
+    final response = await http.post(
+      Uri.parse(url),
+      body: {
+        'user_id': username,
+        'user_pass': password,
+        'location_id': locationController.text,
+        'from_date':fromDate != null ? fromDate?.toLocal().toString() : '',
+        'to_date': toDate != null ? toDate?.toLocal().toString() : '',
+        'reason': reasonController.text,
+        'contact_no': contactController.text,
+        'authorised_by': '10',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('Response body: ${response.body}');
+      final data = json.decode(response.body);
+      if (data['status'] == "1") {
+        // Display success message
+        Fluttertoast.showToast(
+          msg: data['msg'] ?? "Leave submitted successfully!",
+        );
+
+        // Clear fields and notify the UI
+        setState(() {
+          locationController.clear();
+          reasonController.clear();
+          contactController.clear();
+          fromDate = null;
+          toDate = null;
+        });
+
+      } else {
+        // Display error message if status is not "1"
+        Fluttertoast.showToast(
+          msg: data['msg'] ?? "Failed to submit leave",
+        );
+      }
+
+    } else {
+      throw Exception('Failed to load dropdown data');
+    }
   }
 
 
@@ -278,6 +337,7 @@ class _LeaveApplicationState extends State<LeaveApplication> {
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
+                      _submitLeave();
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
@@ -310,6 +370,8 @@ class _LeaveApplicationState extends State<LeaveApplication> {
                     ),
                   ],
                 ),
+
+                
               ],
             ),
           ),
