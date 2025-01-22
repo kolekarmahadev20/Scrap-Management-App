@@ -364,7 +364,7 @@ class _view_userState extends State<view_user> {
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
                 child: Text(
-                  "Not Active ",
+                  "InActive ",
                   style: TextStyle(color: Colors.white, fontSize: 12),
                 ),
               ),

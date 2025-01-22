@@ -22,45 +22,38 @@ class SummaryReport extends StatefulWidget {
 
 class _SummaryReportState extends State<SummaryReport> {
 
-  List<List<dynamic>> locationLists = [];
 
   String locationDataString = '';
   List<dynamic> sealSummaryData = [];
 
 
+  // State variables
+  String? selectedLocationId = '0'; // Default value for "All Location"
+  Map<String, String> locationMap = {'All Location': '0'};
+
   //Variables for user selected values
-  String? selectedLocation;
   DateTime? fromDate;
   DateTime? toDate;
 
 
   final searchStrController = TextEditingController();
 
-  //Variables for user details
-  bool _isloggedin = true;
-  String _id = '';
-  String _username = '';
-  String _full_name = '';
-  String _email = '';
-  String userImageUrl = '';
-  String _user_type = '';
-  String _password = '';
-  String _uuid = '';
 
-  // List to store location names
-  List<String> locations = [];
+  //Variables for user details
+  String? username = '';
+  String? password = '';
+  String? loginType = '';
+  String? userType = '';
 
   List<TextSpan> textSpans = [];
-  // List to store location_id
-  List<String> locationIds = [];
+
 
 
   @override
   void initState() {
     super.initState();
-    _getUserDetails();
-    fetchdropdownData();
-    get_seal_summary();
+    checkLogin();
+    fetchLocations();
   }
 
   @override
@@ -71,140 +64,85 @@ class _SummaryReportState extends State<SummaryReport> {
   }
 
   //Fetching user details from sharedpreferences
-  _getUserDetails() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isloggedin = prefs.getBool("loggedin")!;
-      _id = prefs.getString('id')!;
-      _username = prefs.getString('username')!;
-      _full_name = prefs.getString('full_name')!;
-      _email = prefs.getString('email')!;
-      _user_type = prefs.getString('user_type') ?? '';
-      _password = prefs.getString('password')??'';
-      _uuid= prefs.getString('uuid')??'';
-
-    });
-
-    if (kDebugMode) {
-      //print("is logged in$_isloggedin");
-    }
-    if (_isloggedin == false) {
-      // ignore: use_build_context_synchronously
-
-    }
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
-  //Fetching API for Dropdown
-  fetchdropdownData() async {
-    await _getUserDetails();
+  Future<void> fetchLocations() async {
     try {
+      await checkLogin();
+      final url = '${URL}get_dropdown';
       final response = await http.post(
-        Uri.parse('$URL/Mobile_flutter_api/get_dropdown_data'),
-        headers: {"Accept": "application/json"},
+        Uri.parse(url),
         body: {
-          'uuid': _uuid,
-          'user_id': _username,
-          'password': _password,
+          'user_id': username,
+          'user_pass': password,
         },
       );
-
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        //Fetching API for location
-        if (data["status"] == "1") {
-          if (data.containsKey("location")) {
-            updateLocationData(data["location"]);
-          } else {
-            print('No "location" data found in the response');
-          }
-
-          if (data['material'] != null && data['material'].isNotEmpty) {
-            List<dynamic> materials = data['material'];
-            String materialNames = '';
-
-          }
+        if (data['status'] == "1") {
           setState(() {
-            selectedLocation;
-            // a = material['material_name'].toString();
+            // Keep "All Location" as the first option
+            locationMap = {'All Location': '0'};
+            for (var location in data['location']) {
+              locationMap[location['location_name']] = location['id'];
+            }
           });
-
-          setState(() {
-            selectedLocation;
-          });
-
         } else {
-          print('Status is not 1 in the response');
+          print("Error: No locations found.");
         }
       } else {
-        print('Failed to fetch Dropdown API. Status code: ${response.statusCode}');
+        print("Error: Failed to fetch data.");
       }
     } catch (e) {
-      print('Error: $e');
+      print("Error: $e");
     }
   }
 
-  void updateLocationData(List<dynamic> locationDataList) {
-    locations.clear();
-    locationIds.clear();
-
-    for (var locationData in locationDataList) {
-      String locationName = locationData["location_name"].toString();
-      String locationId = locationData["location_id"].toString();
-
-      locations.add(locationName);
-      locationIds.add(locationId);
-    }
-  }
-
-  // Define a function to get the location_id for the selected location name
-  String? getSelectedLocationId() {
-    if (selectedLocation != null && selectedLocation != null) {
-      int selectedIndex = locations.indexOf(selectedLocation!);
-      if (selectedIndex != -1 && selectedIndex < locationIds.length) {
-        return locationIds[selectedIndex];
-      }
-    }
-    return null;
-  }
 
   //Fetching API for Search Seal Data
-  get_seal_summary({String? plantId, String? locationId,String? materialId, String? vehicleNumber })
-  async {
-    try {
-      await _getUserDetails();
-      final response = await http.post(
-        Uri.parse('$URL/Mobile_flutter_api/get_seal_summary'),
-        headers: {"Accept": "application/json"},
-        body: {
-          'uuid': _uuid,
-          'user_id': _username,
-          'password': _password,
-          'location_id':locationId,
-          'report_date_from':fromDate != null ? fromDate?.toLocal().toString() : '',
-          // '2019-08-18',
-          'report_date_to': toDate != null ? toDate?.toLocal().toString() : '',
-          // '2019-08-18',
-        },
-      );
-
-      // 08/16/2019
-
-      if (response.statusCode == 200) {
-
-        setState(() {
-          sealSummaryData = json.decode(response.body); // Store fetched data
-
-          print(sealSummaryData);
-        });
-      } else {
-        print('Failed to fetch Seal Summary API. Status code: ${response.statusCode}');
-
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
-  }
+  // get_seal_summary({String? plantId, String? locationId,String? materialId, String? vehicleNumber })
+  // async {
+  //   try {
+  //     await _getUserDetails();
+  //     final response = await http.post(
+  //       Uri.parse('$URL/Mobile_flutter_api/get_seal_summary'),
+  //       headers: {"Accept": "application/json"},
+  //       body: {
+  //         'uuid': _uuid,
+  //         'user_id': _username,
+  //         'password': _password,
+  //         'location_id':locationId,
+  //         'report_date_from':fromDate != null ? fromDate?.toLocal().toString() : '',
+  //         // '2019-08-18',
+  //         'report_date_to': toDate != null ? toDate?.toLocal().toString() : '',
+  //         // '2019-08-18',
+  //       },
+  //     );
+  //
+  //     // 08/16/2019
+  //
+  //     if (response.statusCode == 200) {
+  //
+  //       setState(() {
+  //         sealSummaryData = json.decode(response.body); // Store fetched data
+  //
+  //         print(sealSummaryData);
+  //       });
+  //     } else {
+  //       print('Failed to fetch Seal Summary API. Status code: ${response.statusCode}');
+  //
+  //     }
+  //   } catch (e) {
+  //     print('Error: $e');
+  //   }
+  // }
 
   Widget buildDynamicTable(List<dynamic> data) {
     if (data.isEmpty) {
@@ -295,12 +233,51 @@ class _SummaryReportState extends State<SummaryReport> {
     return customNames[originalName] ?? originalName;
   }
 
+  Widget buildDropdown(String label, Map<String, String> options, ValueChanged<String?> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 7,
+            child: DropdownButtonFormField<String>(
+              isExpanded: true,
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.all(10.0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              value: selectedLocationId, // Set the default value
+              items: options.entries.map((entry) {
+                return DropdownMenuItem<String>(
+                  value: entry.value, // Return ID
+                  child: Text(entry.key), // Display name
+                );
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-
-    String? selectedLocationId = getSelectedLocationId();
 
     return Scaffold(
       drawer: AppDrawer(currentPage: widget.currentPage),
@@ -334,13 +311,12 @@ class _SummaryReportState extends State<SummaryReport> {
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       SizedBox(height: 16.0),
                       buildDropdown(
-                        " All Location",
                         "Location:",
-                        locations,
-                        selectedLocation,
+                        locationMap,
                             (value) {
                           setState(() {
-                            selectedLocation = value;
+                            selectedLocationId = value;
+                            print("Selected Location ID: $selectedLocationId");
                           });
                         },
                       ),
@@ -368,10 +344,7 @@ class _SummaryReportState extends State<SummaryReport> {
                       Center(
                         child: ElevatedButton(
                           onPressed: () {
-                            get_seal_summary
-                              (
-                              locationId: selectedLocationId,
-                            );
+
                           },
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.white,
@@ -473,11 +446,6 @@ class _SummaryReportState extends State<SummaryReport> {
     }
   }
 
-
-
-
-
-  // Function to convert table data to a formatted string
   // Function to convert table data to a formatted string
   String _getTableDataAsString(List<dynamic> data) {
     if (data.isEmpty) {
@@ -534,77 +502,6 @@ class _SummaryReportState extends State<SummaryReport> {
       return 'No Data Found..';
     }
   }
-
-
-
-  Widget buildDropdown(
-      String hint,
-      String labelText,
-      List<String> items,
-      String? selectedItem,
-      void Function(String?) onChanged,
-      ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0,horizontal: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Label Text
-          Expanded(
-            flex: 3, // Adjust this to control label width
-            child: Text(
-              labelText,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 7, // Adjust this to control dropdown width
-            child: Container(
-              height: 48, // Consistent height
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Colors.grey.shade600,
-                  width: 1.0,
-                ),
-              ),
-              child: DropdownButtonFormField<String>(
-                value: selectedItem,
-                items: items.map((String item) {
-                  return DropdownMenuItem<String>(
-                    value: item,
-                    child: Text(
-                      item,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                    ),
-                  );
-                }).toList(),
-                onChanged: onChanged,
-                isExpanded: true,
-                decoration: InputDecoration.collapsed(
-                  hintText: hint,
-                  hintStyle: TextStyle(color: Colors.grey.shade700),
-                ),
-                icon: Icon(Icons.arrow_drop_down),
-                iconSize: 24,
-                elevation: 4,
-                style: TextStyle(color: Colors.black),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
 
   Widget buildFieldWithDatePicker(String label, DateTime? selectedDate,
       void Function(DateTime?) onDateChanged,) {
