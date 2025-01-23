@@ -15,8 +15,10 @@ class StartPage extends StatefulWidget {
 }
 
 class _StartDashBoardPageState extends State<StartPage> {
-  TextEditingController usernameController = TextEditingController(text: "Bantu");
-  TextEditingController passwordController = TextEditingController(text : "Bantu#123");
+  // TextEditingController usernameController = TextEditingController(text: "Bantu");
+  // TextEditingController passwordController = TextEditingController(text : "Bantu#123");
+  TextEditingController usernameController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
   bool _obscureText = true; // Variable to manage password visibility
 
   late Timer _gpsCheckTimer;
@@ -202,43 +204,31 @@ class _StartDashBoardPageState extends State<StartPage> {
       );
 
       var jsonData = json.decode(response.body);
-      if (jsonData['success'] == true) {
-        if(jsonData['session_data'] != null && jsonData != null ){
-          var user_data = jsonData['session_data'] ?? "N?A";
-          // Access fields using keys
-          var person_name = user_data['user_name']?? "N?A";
-          var person_email = user_data['user_type'] == 'S'
-              ? user_data['user_email'] ?? "N/A"
-              : user_data['Email'] ?? "N/A";
-          var emp_code = user_data['emp_code']?? "N?A";
-          var emp_address = user_data['emp_address']?? "N?A";
-          var contact = user_data['Mobile']?? "N?A";
-          var loginType = user_data['login_type']?? "N?A";
-          var userType = user_data['user_type']?? "N?A";
-          await saveUserData(true ,person_name, contact, person_email, emp_code, emp_address);
-          await checkLogin(username, password ,loginType ,userType,person_email,person_name);
-        }else{
-          // Access fields using keys
-          var person_name = "N/A";
-          var person_email ="N/A";
-          var emp_code ="N/A";
-          var emp_address = "N/A";
-          var contact ="N/A";
-          var loginType = "N/A";
-          var userType ="N/A";
-          await saveUserData(true ,person_name, contact, person_email, emp_code, emp_address);
-          await checkLogin(username, password ,loginType,userType,person_email,person_name);
-        }
+      // if (jsonData['success'] == true) {
+
+      var user_data = jsonData['session_data'] ?? "N?A";
+      // Access fields using keys
+      var person_name = user_data['user_name']?? "N?A";
+      var person_email = user_data['user_type'] == 'S'
+          ? user_data['user_email'] ?? "N/A"
+          : user_data['user_email'] ?? "N/A";
+      var emp_code = user_data['emp_code']?? "N?A";
+      var emp_address = user_data['emp_address']?? "N?A";
+      var contact = user_data['Mobile']?? "N?A";
+      var loginType = user_data['login_type']?? "N?A";
+      var userType = user_data['user_type']?? "N?A";
+      await saveUserData(true ,person_name, contact, person_email, emp_code, emp_address);
+      await checkLogin(username, password ,loginType ,userType,person_email,person_name);
 
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => DashBoard(currentPage: 1,)),
         );
-      } else {
-        showErrorDialog("${jsonData['msg']}");
-        print("${jsonData['msg']}");
-
-      }
+      // } else {
+      //   showErrorDialog("${jsonData['msg']}");
+      //   print("${jsonData['msg']}");
+      //
+      // }
     } catch (e) {
       showErrorDialog("Server Exception: $e");
       print("Server Exception: $e");

@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Buyer/Buyer_list.dart';
 import '../Leave/LeaveStatus.dart';
 import '../Leave/Leave_Application.dart';
+import '../Organization/OrganizationList.dart';
 import '../Pages/ChangePassword.dart';
 import '../Pages/EmployeeTracker.dart';
 import '../Pages/ForgotPunchOutPage.dart';
@@ -137,6 +138,19 @@ class _AppDrawerState extends State<AppDrawer> {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.pop(context); // Close the drawer
                         Navigator.push(context, MaterialPageRoute(builder: (context) => DashBoard(currentPage: 1,)));
+                      });
+
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    1,
+                    icon: Icons.dashboard_outlined,
+                    text: "Organization",
+                    onTap: () {
+                      Timer(Duration(milliseconds: 300), () {
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => OrganizationList()));
                       });
 
                     },
