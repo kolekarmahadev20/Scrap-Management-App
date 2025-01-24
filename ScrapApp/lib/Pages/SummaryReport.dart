@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:clipboard/clipboard.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 import '../AppClass/AppDrawer.dart';
 import '../AppClass/appBar.dart';
@@ -24,7 +25,8 @@ class _SummaryReportState extends State<SummaryReport> {
 
 
   String locationDataString = '';
-  List<dynamic> sealSummaryData = [];
+  List<dynamic> scrapSummaryData = [];
+  final DateFormat formatter = DateFormat('yyyy-MM-dd');
 
 
   // State variables
@@ -54,6 +56,7 @@ class _SummaryReportState extends State<SummaryReport> {
     super.initState();
     checkLogin();
     fetchLocations();
+    // get_scrap_summary();
   }
 
   @override
@@ -106,131 +109,162 @@ class _SummaryReportState extends State<SummaryReport> {
   }
 
 
-  //Fetching API for Search Seal Data
-  // get_seal_summary({String? plantId, String? locationId,String? materialId, String? vehicleNumber })
-  // async {
-  //   try {
-  //     await _getUserDetails();
-  //     final response = await http.post(
-  //       Uri.parse('$URL/Mobile_flutter_api/get_seal_summary'),
-  //       headers: {"Accept": "application/json"},
-  //       body: {
-  //         'uuid': _uuid,
-  //         'user_id': _username,
-  //         'password': _password,
-  //         'location_id':locationId,
-  //         'report_date_from':fromDate != null ? fromDate?.toLocal().toString() : '',
-  //         // '2019-08-18',
-  //         'report_date_to': toDate != null ? toDate?.toLocal().toString() : '',
-  //         // '2019-08-18',
-  //       },
-  //     );
-  //
-  //     // 08/16/2019
-  //
-  //     if (response.statusCode == 200) {
-  //
-  //       setState(() {
-  //         sealSummaryData = json.decode(response.body); // Store fetched data
-  //
-  //         print(sealSummaryData);
-  //       });
-  //     } else {
-  //       print('Failed to fetch Seal Summary API. Status code: ${response.statusCode}');
-  //
-  //     }
-  //   } catch (e) {
-  //     print('Error: $e');
-  //   }
-  // }
+  // Fetching API for Search Seal Data
+  get_scrap_summary() async {
 
-  Widget buildDynamicTable(List<dynamic> data) {
-    if (data.isEmpty) {
-      return Text('');
-    }
+    print(username);
+    print(password);
+    print(selectedLocationId);
+    print(formatter.format(fromDate!));
+    print(formatter.format(toDate!));
 
-    // Assuming there is at least one item in the list
-    var firstItem = data[0];
+    try {
+      await checkLogin();
+      final response = await http.post(
+        Uri.parse('${URL}get_scrap_summary'),
+        headers: {"Accept": "application/json"},
+        body: {
+          // 'uuid': _uuid,
+          'user_id': username,
+          'user_pass': password,
+          'branch_id':selectedLocationId.toString(),
+          'from_date': fromDate != null ? formatter.format(fromDate!) : '',
+          'to_date': toDate != null ? formatter.format(toDate!) : '',
+          // 'from_date':fromDate != null ? fromDate?.toLocal().toString() : '',
+          // 'to_date': toDate != null ? toDate?.toLocal().toString() : '',
 
-    // Check if the first item has a dynamic key (the key for your data)
-    if (firstItem.isNotEmpty) {
-      var dynamicKey = firstItem.keys.first;
+          // 'user_id': "Bantu",
+          // 'user_pass': "Bantu#123",
+          // 'branch_id':"5",
+          // 'from_date':"2023-11-30",
+          // 'to_date': "2023-12-02",
 
-      // Extract the keys dynamically from the first item's dynamic key
-      var keys = (firstItem[dynamicKey][0] as Map<String, dynamic>).keys.toList();
-
-      // Create a list of DataColumn widgets with custom names
-      List<DataColumn> customColumns = [
-        DataColumn(label: Text('Material',style: TextStyle(fontSize: 16.0 , fontWeight: FontWeight.bold),)),
-        ...keys.where((key) => key != 'location_id').map((key) => DataColumn(label: Text(_getCustomColumnName(key) ,
-          style: TextStyle(fontSize: 16.0 , fontWeight: FontWeight.bold),))).toList(),
-      ];
-
-      // Calculate totals
-      double totalNetWT = 0.0;
-      int totalSeal = 0;
-      int totalVehicle = 0;
-
-      // Create DataRow widgets for each item
-      List<DataRow> dataRows = firstItem[dynamicKey].map<DataRow>((item) {
-        // Update totals
-        totalNetWT += double.parse(item['net_weight']);
-        totalSeal += int.parse(item['total_seal']);
-        totalVehicle += int.parse(item['no_of_trucks']);
-
-        // Create cells for each key-value pair
-        List<DataCell> cells = [
-          DataCell(Text(dynamicKey)),
-          ...keys.where((key) => key != 'location_id').map<DataCell>((key) {
-            return DataCell(Text(item[key].toString()));
-          }).toList(),
-        ];
-
-        return DataRow(cells: cells);
-      }).toList();
-
-      // Add a row for totals
-      dataRows.add(DataRow(
-        color: MaterialStateColor.resolveWith((states) => Colors.blue.shade200), // Set background color for the entire DataRow
-        cells: [
-          DataCell(Text('Grand Total',style: TextStyle(fontSize: 16.0 , fontWeight: FontWeight.bold),)),
-          DataCell(Text(totalNetWT.toStringAsFixed(3),style: TextStyle(fontSize: 16.0 , fontWeight: FontWeight.bold),)),
-          DataCell(Text(totalSeal.toString(),style: TextStyle(fontSize: 16.0 , fontWeight: FontWeight.bold),)),
-          DataCell(Text(totalVehicle.toString(),style: TextStyle(fontSize: 16.0 , fontWeight: FontWeight.bold),)),
-          DataCell(Text('')), // Placeholder for 'Location'
-          DataCell(Text('')), // Placeholder for 'Plant'
-        ],
-      ));
-
-      // Return the DataTable
-      return DataTable(
-        border: TableBorder.all(color: Colors.grey, width: 1.0),
-        headingRowColor: MaterialStateProperty.all(Colors.grey.shade300), // Set background color for the header row
-        columns: customColumns,
-        dataRowHeight: 50, // Adjust the row height as needed
-        columnSpacing: 10, // Set the column spacing
-        horizontalMargin: 10, // Set the horizontal margin
-        rows: dataRows,
+        },
       );
 
-    } else {
-      return Text('Data Not Found');
+      // 08/16/2019
+
+      if (response.statusCode == 200) {
+        // Parse the API response
+        final parsedResponse = jsonDecode(response.body);
+
+        setState(() {
+          if (parsedResponse != null && parsedResponse['result'] != null) {
+            scrapSummaryData = parsedResponse['result'];
+            print("$scrapSummaryData Pooja");
+          } else {
+            scrapSummaryData = []; // Fallback to an empty list if 'result' is null
+            print("Result key is null or missing in API response.");
+          }
+        });
+      } else {
+        print('Failed to fetch Seal Summary API. Status code: ${response.statusCode}');
+      }
+
+    } catch (e) {
+      print('Error: $e');
     }
   }
 
-  String _getCustomColumnName(String originalName) {
-    // Map original column names to custom names
-    Map<String, String> customNames = {
-      'net_weight':'NetWT',
-      'total_seal':'TotalSeal',
-      'no_of_trucks':'Vehicle',
-      'location_name':'Location',
-      // 'location_id': 'Id',
-      'plant_name':'Plant',
-    };
 
-    // Return the custom name if available, otherwise use the original name
-    return customNames[originalName] ?? originalName;
+  Widget buildDynamicTable(List<dynamic> data) {
+    if (data.isEmpty) {
+      return Text('No Data Available');
+    }
+
+    // Group data by material_name
+    Map<String, List<Map<String, dynamic>>> groupedData = {};
+    for (var item in data) {
+      String materialName = item['material_name'];
+      if (!groupedData.containsKey(materialName)) {
+        groupedData[materialName] = [];
+      }
+      groupedData[materialName]?.add(item);
+    }
+
+    // Define table columns
+    List<DataColumn> columns = [
+      DataColumn(label: Text('Invoice No', style: TextStyle(fontWeight: FontWeight.bold))),
+      DataColumn(label: Text('Qty', style: TextStyle(fontWeight: FontWeight.bold))),
+      DataColumn(label: Text('Unit', style: TextStyle(fontWeight: FontWeight.bold))),
+      DataColumn(label: Text('Rate', style: TextStyle(fontWeight: FontWeight.bold))),
+      DataColumn(label: Text('Truck No', style: TextStyle(fontWeight: FontWeight.bold))),
+    ];
+
+    List<Widget> tableWidgets = [];
+
+    groupedData.forEach((materialName, items) {
+      // Calculate the total quantity for the current material
+      double totalQty = items.fold(0.0, (sum, item) => sum + double.parse(item['qty']));
+
+      // Create rows for the material
+      List<DataRow> rows = items.map((item) {
+        return DataRow(
+          cells: [
+            DataCell(Text(item['invoice_no'])),
+            DataCell(Text(item['qty'])),
+            DataCell(Text(item['unit'])),
+            DataCell(Text(item['lifted_rate'])),
+            DataCell(Text(item['truck_no'])),
+          ],
+        );
+      }).toList();
+
+      // Add a "Total" row
+      rows.add(DataRow(
+        color: MaterialStateProperty.resolveWith((states) => Colors.grey.shade300),
+        cells: [
+          DataCell(Text('Total', style: TextStyle(fontWeight: FontWeight.bold))),
+          DataCell(Text(totalQty.toStringAsFixed(3), style: TextStyle(fontWeight: FontWeight.bold))),
+          DataCell(Text('')),
+          DataCell(Text('')),
+          DataCell(Text('')),
+        ],
+      ));
+
+      // Add material title and table to widgets
+      tableWidgets.add(Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Text(
+          materialName,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ));
+      tableWidgets.add(DataTable(
+        border: TableBorder.all(color: Colors.grey),
+        columns: columns,
+        rows: rows,
+        headingRowColor: MaterialStateProperty.all(Colors.grey.shade200),
+      ));
+    });
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: tableWidgets,
+      ),
+    );
+  }
+
+  Widget buildTableHeaderCell(String text) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Text(
+        text,
+        style: TextStyle(fontWeight: FontWeight.bold),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+  Widget buildTableCell(String text) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+      ),
+    );
   }
 
   Widget buildDropdown(String label, Map<String, String> options, ValueChanged<String?> onChanged) {
@@ -272,8 +306,6 @@ class _SummaryReportState extends State<SummaryReport> {
       ),
     );
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -344,7 +376,7 @@ class _SummaryReportState extends State<SummaryReport> {
                       Center(
                         child: ElevatedButton(
                           onPressed: () {
-
+                            get_scrap_summary();
                           },
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.white,
@@ -358,6 +390,16 @@ class _SummaryReportState extends State<SummaryReport> {
                           child: Text('Get Data'),
                         ),
                       ),
+                      // SizedBox(height: 16.0,),
+                      // if (fromDate != null && toDate != null)
+                      //   Padding(
+                      //     padding: const EdgeInsets.all(8.0),
+                      //     child: Text(
+                      //       'From : (${fromDate!.toLocal().toString().split(' ')[0]})' '  To : '
+                      //           '(${toDate!.toLocal().toString().split(' ')[0]})',
+                      //       style: TextStyle(fontSize: 18),
+                      //     ),
+                      //   ),
                       SizedBox(height: 16.0,),
                       if (fromDate != null && toDate != null)
                         Padding(
@@ -371,17 +413,18 @@ class _SummaryReportState extends State<SummaryReport> {
                       SizedBox(height:16.0),
                       SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
-                          child: buildDynamicTable(sealSummaryData)),
+                          child: buildDynamicTable(scrapSummaryData)),
                       // If data is still loading, you can return an empty container or other widget
                       Container(),
                       SizedBox(height:16.0),
-                      if (sealSummaryData.isNotEmpty) // Condition to check if the data is not empty
+                      if (scrapSummaryData.isNotEmpty) // Condition to check if the data is not empty
                         Center(
                           child: ElevatedButton(
                             onPressed: () {
                               _copyToClipboard();
                             },
                             style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
                               backgroundColor: Colors.blueGrey[700],
                             ),
                             child: Text('Copy to Clipboard'),
@@ -399,37 +442,83 @@ class _SummaryReportState extends State<SummaryReport> {
   }
 
   void _copyToClipboard() {
-    // Check if there is data in the table
-    if (sealSummaryData.isNotEmpty && fromDate != null && toDate != null) {
-      // Convert the table data to a string
-      String tableData = _getTableDataAsString(sealSummaryData);
+    // Check if there is data in the table and date range is selected
+    if (scrapSummaryData.isNotEmpty && fromDate != null && toDate != null) {
+      // Group data by material_name
+      Map<String, List<Map<String, dynamic>>> groupedData = {};
+      for (var item in scrapSummaryData) {
+        String materialName = item['material_name'];
+        if (!groupedData.containsKey(materialName)) {
+          groupedData[materialName] = [];
+        }
+        groupedData[materialName]?.add(item);
+      }
 
-      // Calculate totals
+      // Prepare clipboard content
+      StringBuffer clipboardContent = StringBuffer();
+
+      // Format the selected date range
+      String formattedFromDate = "${fromDate!.year}-${fromDate!.month.toString().padLeft(2, '0')}-${fromDate!.day.toString().padLeft(2, '0')}";
+      String formattedToDate = "${toDate!.year}-${toDate!.month.toString().padLeft(2, '0')}-${toDate!.day.toString().padLeft(2, '0')}";
+      clipboardContent.writeln("Date: ($formattedFromDate) to ($formattedToDate)");
+      // clipboardContent.writeln("================================");
+
+      // Variables to calculate grand totals
+      double grandTotalQty = 0.0;
+      // Iterate over the grouped data and write to the clipboard
       double totalNetWT = 0.0;
       int totalSeal = 0;
       int totalVehicle = 0;
 
-      for (var item in sealSummaryData) {
-        var dynamicKey = item.keys.first;
-        for (var material in item[dynamicKey]) {
-          totalNetWT += double.parse(material['net_weight']);
-          totalSeal += int.parse(material['total_seal']);
-          totalVehicle += int.parse(material['no_of_trucks']);
+      // Process each material group
+      groupedData.forEach((materialName, items) {
+        clipboardContent.writeln("\n----------------------------------------------------------------");
+        clipboardContent.writeln("$materialName");
+        clipboardContent.writeln("----------------------------------------------------------------");
+
+        // clipboardContent.writeln("Invoice No | Qty   | Unit | Rate | Truck No");
+        // clipboardContent.writeln("\n");
+
+
+        double materialTotalQty = 0.0;
+
+        int counter = 1;  // Initialize a counter for numbering
+
+        for (var item in items) {
+          String invoiceNo = item['invoice_no'];
+          String qty = item['qty'];
+          String unit = item['unit'].isEmpty ? "N/A" : item['unit'];
+          String rate = item['lifted_rate'].isEmpty ? "N/A" : item['lifted_rate'];
+          String truckNo = item['truck_no'];
+
+          // Add numbering to the item display
+          clipboardContent.writeln("$counter. Invoice No : $invoiceNo | Qty : $qty "
+              "| Unit : $unit | Rate : $rate | Truck No : $truckNo\n");
+
+          // Increase counter for next item
+          counter++;
+
+          // Add the quantity to the total
+          materialTotalQty += double.parse(qty);
         }
-      }
 
-      // Format the selected date range
-      String dateRange = 'Date: (${fromDate!.day}-${fromDate!.month}-${fromDate!.year}) '
-          'to (${toDate!.day}-${toDate!.month}-${toDate!.year})\n\n';
 
-      // Combine the date range and table data
-      String clipboardData = '$dateRange==============\n$tableData\n\n'
-          '=============\nGrand Total: NetWT: ${totalNetWT.toStringAsFixed(3)}, '
-          'TotalSeal: $totalSeal, Vehicle: $totalVehicle\n=============';
+        // Add total for the material group
+        clipboardContent.writeln("~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        // clipboardContent.writeln("\n");
+        clipboardContent.writeln("                      Total Qty: ${materialTotalQty.toStringAsFixed(3)}");
+        // clipboardContent.writeln("________________________________________");
 
-      // Copy the data to the clipboard
-      FlutterClipboard.copy(clipboardData).then((value) {
-        // Show a toast message indicating that the data has been copied
+        grandTotalQty += materialTotalQty;
+      });
+
+      // Add grand total
+      clipboardContent.writeln("\n==================================");
+      clipboardContent.writeln("Grand Total Qty: ${grandTotalQty.toStringAsFixed(3)}");
+      clipboardContent.writeln("==================================");
+
+      // Copy the content to clipboard
+      FlutterClipboard.copy(clipboardContent.toString()).then((value) {
         Fluttertoast.showToast(
           msg: 'Table data copied to clipboard',
           toastLength: Toast.LENGTH_SHORT,
@@ -437,69 +526,12 @@ class _SummaryReportState extends State<SummaryReport> {
         );
       });
     } else {
-      // If there is no data or date range selected, show a toast message
+      // Show a toast if no data or date range is available
       Fluttertoast.showToast(
         msg: 'No data or date range available to copy',
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
       );
-    }
-  }
-
-  // Function to convert table data to a formatted string
-  String _getTableDataAsString(List<dynamic> data) {
-    if (data.isEmpty) {
-      return 'No data available';
-    }
-
-    // Assuming there is at least one item in the list
-    var firstItem = data[0];
-
-    // Check if the first item has a dynamic key (the key for your data)
-    if (firstItem.isNotEmpty) {
-      var dynamicKey = firstItem.keys.first;
-
-      // Extract the keys dynamically from the first item's dynamic key
-      var keys = (firstItem[dynamicKey][0] as Map<String, dynamic>).keys.toList();
-
-      // Data rows
-      var dataRows = data.expand((item) {
-        var materialName = item.keys.first;
-        return item[materialName].map((material) {
-          var formattedMaterialName = materialName.toUpperCase(); // Capitalize material name
-          var rowData = [
-            // 'Date: (${fromDate!.day}-${fromDate!.month}-${fromDate!.year}) to (${toDate!.day}-${toDate!.month}-${toDate!.year})',
-            // '',
-            // '==============',
-            formattedMaterialName,
-            '------------------------',
-            ...keys.where((key) => key != 'location_id').map((key) => '$key: ${material[key]}')
-          ];
-          return rowData.join('\n');
-        });
-      }).toList();
-
-      // Calculate totals
-      double totalNetWT = 0.0;
-      int totalSeal = 0;
-      int totalVehicle = 0;
-
-      // Iterate through data to calculate totals
-      firstItem[dynamicKey].forEach((item) {
-        totalNetWT += double.parse(item['net_weight']);
-        totalSeal += int.parse(item['total_seal']);
-        totalVehicle += int.parse(item['no_of_trucks']);
-      });
-
-      // Add totals to the data rows
-      // dataRows.add('=============',
-      //     '\nGrand Total: NetWT: ${totalNetWT.toStringAsFixed(3)}, TotalSeal: $totalSeal, Vehicle: $totalVehicle',
-      //     '=============');
-
-      // Combine all data rows into a single string
-      return dataRows.join('\n');
-    } else {
-      return 'No Data Found..';
     }
   }
 
