@@ -13,73 +13,111 @@ import 'Add_user.dart';
 
 // User model to parse JSON data
 class User {
-  final String fullName;
-  final String email;
-  final String appVersion;
-  final String uuid;
-  final String material;
-  final String? plant;
-  final String accessScrapData;
-  final String accessSealData;
-  final String activeUser;
-  final String allowedMobileLogin;
-  final String id;
-  final String password;
-  final String readonly;
-  final String receiver;
-  final String sender;
-  final String accessGpsModule;
-  final String userType;
-  final String username;
+  final String personId;
+  final String empCode;
+  final String personName;
+  final String fatherName;
+  final String motherName;
+  final String dob;
+  final String doj;
+  final String village;
+  final String district;
+  final String state;
+  final String pincode;
+  final String address;
+  final String familyPhone;
+  final String adharNum;
+  final String empEmail;
+  final String empComStatus;
+  final String? userType;
+  final String? cPass;
+  final String? uname;
+  final String isActive;
+  final String? uuid;
+  final String? orgId;
+  final String isDuplicate;
+  final String duplicateEmpId;
+  final String termAccept;
+  final String terminationStatus;
+  final String dateUpdated;
+  final String updatedBy;
+  final String copyUserEmployee;
+  final String contactDetails;
+  final String? approveStatus;
+  final String? aprovePerson;
 
   User({
-    required this.fullName,
-    required this.email,
-    required this.appVersion,
-    required this.uuid,
-    required this.material,
-    this.plant,
-    required this.accessScrapData,
-    required this.accessSealData,
-    required this.activeUser,
-    required this.allowedMobileLogin,
-    required this.id,
-    required this.password,
-    required this.readonly,
-    required this.receiver,
-    required this.sender,
-    required this.accessGpsModule,
-    required this.userType,
-    required this.username,
+    required this.personId,
+    required this.empCode,
+    required this.personName,
+    required this.fatherName,
+    required this.motherName,
+    required this.dob,
+    required this.doj,
+    required this.village,
+    required this.district,
+    required this.state,
+    required this.pincode,
+    required this.address,
+    required this.familyPhone,
+    required this.adharNum,
+    required this.empEmail,
+    required this.empComStatus,
+    this.userType,
+    this.cPass,
+    this.uname,
+    required this.isActive,
+    this.uuid,
+    this.orgId,
+    required this.isDuplicate,
+    required this.duplicateEmpId,
+    required this.termAccept,
+    required this.terminationStatus,
+    required this.dateUpdated,
+    required this.updatedBy,
+    required this.copyUserEmployee,
+    required this.contactDetails,
+    this.approveStatus,
+    this.aprovePerson,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      fullName: json['full_name'] ?? '',
-      email: json['email'] ?? '',
-      appVersion: json['app_version'] ?? '',
-      uuid: json['uuid'] ?? '',
-      material: json['material'] ?? '',
-      plant: json['plant'] ?? null, // assuming 'plant' can be null
-      accessScrapData: json['access_scrap_data'] ?? '',
-      accessSealData: json['access_seal_data'] ?? '',
-      activeUser: json['active_user'] ?? '',
-      allowedMobileLogin: json['allowed_mobile_login'] ?? '',
-      id: json['id'] ?? '',
-      password: json['password'] ?? '',
-      readonly: json['readonly'] ?? '',
-      receiver: json['receiver'] ?? '',
-      sender: json['sender'] ?? '',
-      accessGpsModule: json['access_gps_module'] ?? '',
-      userType: json['user_type'] ?? '',
-      username: json['username'] ?? '',
+      personId: json['person_id'] ?? '',
+      empCode: json['emp_code'] ?? '',
+      personName: json['person_name'] ?? '',
+      fatherName: json['father_name'] ?? '',
+      motherName: json['mother_name'] ?? '',
+      dob: json['dob'] ?? '',
+      doj: json['doj'] ?? '',
+      village: json['village'] ?? '',
+      district: json['district'] ?? '',
+      state: json['state'] ?? '',
+      pincode: json['pincode'] ?? '',
+      address: json['address'] ?? '',
+      familyPhone: json['family_phone'] ?? '',
+      adharNum: json['adhar_num'] ?? '',
+      empEmail: json['emp_email'] ?? '',
+      empComStatus: json['emp_com_Status'] ?? '',
+      userType: json['user_type'],
+      cPass: json['c_pass'],
+      uname: json['uname'],
+      isActive: json['is_active'] ?? '',
+      uuid: json['uuid'],
+      orgId: json['org_id'],
+      isDuplicate: json['is_duplicate'] ?? '',
+      duplicateEmpId: json['duplicate_emp_id'] ?? '',
+      termAccept: json['term_accept'] ?? '',
+      terminationStatus: json['termination_status'] ?? '',
+      dateUpdated: json['date_updated'] ?? '',
+      updatedBy: json['updated_by'] ?? '',
+      copyUserEmployee: json['copyUserEmployee'] ?? '',
+      contactDetails: json['contact_details'] ?? '',
+      approveStatus: json['approve_status'],
+      aprovePerson: json['aprove_person'],
     );
   }
 }
-
-
-
-
 
 class view_user extends StatefulWidget {
 
@@ -96,16 +134,11 @@ class _view_userState extends State<view_user> {
   User? selectedUser;
   bool? _showActiveUsers; // Default to show all users
 
-  //Variables for user details
-  bool _isloggedin = true;
-  String _id = '';
-  String _username = '';
-  String _full_name = '';
-  String _email = '';
-  String userImageUrl = '';
-  String _user_type = '';
-  String _password = '';
-  String _uuid = '';
+  // Variables for user details
+  String? username = '';
+  String? password = '';
+  String? loginType = '';
+  String? userType = '';
 
   @override
   void initState() {
@@ -124,15 +157,15 @@ class _view_userState extends State<view_user> {
 
   // Function to fetch data from API
   Future<List<User>> fetchUsers() async {
-    await _getUserDetails();
+    await checkLogin();
 
     final response = await http.post(
-      Uri.parse('$URL/Mobile_flutter_api/get_users_data'),
+      Uri.parse('${URL}user_list_details'),
       body: {
-        'uuid': _uuid,
-        'user_id': _username,
-        'password': _password,
-        'user_type': _user_type,
+        // 'uuid': _uuid,
+        'user_id': username,
+        'user_pass': password,
+        // 'user_type': _user_type,
       },
     );
 
@@ -156,9 +189,9 @@ class _view_userState extends State<view_user> {
 
     // Filter users by username or fullname containing the search text
     List<User> filteredUsers = allUsers.where((user) =>
-    (user.username.toLowerCase().contains(searchText.toLowerCase()) ||
-        user.fullName.toLowerCase().contains(searchText.toLowerCase())) &&
-        (_showActiveUsers == null || (_showActiveUsers ?? true) ? user.activeUser.toLowerCase() == 'yes' : user.activeUser.toLowerCase() != 'yes')
+    (user.uname!.toLowerCase().contains(searchText.toLowerCase()) ||
+        user.personName.toLowerCase().contains(searchText.toLowerCase())) &&
+        (_showActiveUsers == null || (_showActiveUsers ?? true) ? user.isActive.toLowerCase() == 'yes' : user.isActive.toLowerCase() != 'yes')
     ).toList();
 
     return filteredUsers;
@@ -173,7 +206,7 @@ class _view_userState extends State<view_user> {
       if (_showActiveUsers == null) {
         return true; // Show all users when _showActiveUsers is null
       } else {
-        bool isActive = user.activeUser.toLowerCase() == 'yes';
+        bool isActive = user.isActive.toLowerCase() == 'yes';
         return includeYes ? isActive : !isActive;
       }
     }).toList();
@@ -201,26 +234,14 @@ class _view_userState extends State<view_user> {
   }
 
   //Fetching user details from sharedpreferences
-  _getUserDetails() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isloggedin = prefs.getBool("loggedin")!;
-      _id = prefs.getString('id')!;
-      _username = prefs.getString('username')!;
-      _full_name = prefs.getString('full_name')!;
-      _email = prefs.getString('email')!;
-      _user_type = prefs.getString('user_type') ?? '';
-      _password = prefs.getString('password')??'';
-      _uuid= prefs.getString('uuid')??'';
-
-    });
-
-    if (_isloggedin == false) {
-      // ignore: use_build_context_synchronously
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => StartPage()));
-    }
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -248,7 +269,7 @@ class _view_userState extends State<view_user> {
                 }
 
                 List<User> users = snapshot.data ?? [];
-                users.sort((a, b) => a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase()));
+                users.sort((a, b) => a.personName.toLowerCase().compareTo(b.personName.toLowerCase()));
                 users = _filterUsers(users);
 
                 return SingleChildScrollView(
@@ -265,7 +286,7 @@ class _view_userState extends State<view_user> {
                               children: [
                                 UserCard(
                                   user: user,
-                                  onEdit: () => _navigateToEditUser(user.id),
+                                  onEdit: () => _navigateToEditUser(user.personId),
                                 ),
                                 SubDetails(user: user),
                                 SizedBox(height: 16),
@@ -275,7 +296,7 @@ class _view_userState extends State<view_user> {
                         ] else ...[
                           UserCard(
                             user: selectedUser!,
-                            onEdit: () => _navigateToEditUser(selectedUser!.id),
+                            onEdit: () => _navigateToEditUser(selectedUser!.personId),
                           ),
                           SubDetails(user: selectedUser!),
                         ],
@@ -313,13 +334,13 @@ class _view_userState extends State<view_user> {
                   },
                   itemBuilder: (context, User user) {
                     return ListTile(
-                      title: Text('${user.fullName} - (${user.username})'),
+                      title: Text('${user.personName} - (${user.uname})'),
                     );
                   },
                   onSuggestionSelected: (User user) {
                     setState(() {
                       selectedUser = user;
-                      _typeAheadController.text = '${user.fullName} - (${user.username})';
+                      _typeAheadController.text = '${user.personName} - (${user.uname})';
                     });
                   },
                 ),
@@ -403,7 +424,7 @@ class UserCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isActive = user.activeUser.toLowerCase() == 'yes'; // Check if activeUser is "yes"
+    bool isActive = user.isActive.toLowerCase() == 'yes'; // Check if activeUser is "yes"
 
     return Container(
       width: double.infinity,
@@ -432,7 +453,7 @@ class UserCard extends StatelessWidget {
                 ],
               ),
               Text(
-                user.fullName,
+                user.personName,
                 style: TextStyle(fontSize: 24, color: Colors.blue),
               ),
               SizedBox(height: 10),
@@ -441,7 +462,7 @@ class UserCard extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Text(
-                user.email,
+                user.empEmail,
                 style: TextStyle(color: Colors.orange),
               ),
               Align(
@@ -489,7 +510,7 @@ class SubDetails extends StatelessWidget {
             children: [
               buildTableRows(
                 ['Username', 'Password'],
-                [user.username, user.password],
+                [user.uname, user.cPass],
                 1,
               ),
               buildTableRows(
@@ -497,29 +518,29 @@ class SubDetails extends StatelessWidget {
                 [user.userType, user.uuid],
                 1,
               ),
-              buildTableRows(
-                ['Access Scrap Data', 'Access Seal Data'],
-                [user.accessScrapData, user.accessSealData],
-                1,
-              ),
-              buildTableRows(
-                ['Active User', 'Allowed Mobile Login'],
-                [user.activeUser, user.allowedMobileLogin],
-                1,
-              ),
-              buildTableRows(
-                ['Receiver', 'Sender'],
-                [user.receiver, user.sender],
-                1,
-              ),
-              buildTableRows(
-                ['Access GPS Module', 'App Version'],
-                [user.accessGpsModule, user.appVersion],
-                1,
-              ),
-
-              buildTableRow('Material', user.material,1),
-              if (user.plant != null) buildTableRow('Plant', user.plant!,1),
+              // buildTableRows(
+              //   ['Access Scrap Data', 'Access Seal Data'],
+              //   [user.accessScrapData, user.accessSealData],
+              //   1,
+              // ),
+              // buildTableRows(
+              //   ['Active User', 'Allowed Mobile Login'],
+              //   [user.activeUser, user.allowedMobileLogin],
+              //   1,
+              // ),
+              // buildTableRows(
+              //   ['Receiver', 'Sender'],
+              //   [user.receiver, user.sender],
+              //   1,
+              // ),
+              // buildTableRows(
+              //   ['Access GPS Module', 'App Version'],
+              //   [user.accessGpsModule, user.appVersion],
+              //   1,
+              // ),
+              //
+              // buildTableRow('Material', user.material,1),
+              // if (user.plant != null) buildTableRow('Plant', user.plant!,1),
 
             ],
           ),
