@@ -472,9 +472,9 @@ class _SummaryReportState extends State<SummaryReport> {
 
       // Process each material group
       groupedData.forEach((materialName, items) {
-        clipboardContent.writeln("\n----------------------------------------------------------------");
+        clipboardContent.writeln("\n-----------------------------------------------");
         clipboardContent.writeln("$materialName");
-        clipboardContent.writeln("----------------------------------------------------------------");
+        clipboardContent.writeln("-------------------------------------------------");
 
         // clipboardContent.writeln("Invoice No | Qty   | Unit | Rate | Truck No");
         // clipboardContent.writeln("\n");
@@ -504,18 +504,18 @@ class _SummaryReportState extends State<SummaryReport> {
 
 
         // Add total for the material group
-        clipboardContent.writeln("~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        clipboardContent.writeln("~~~~~~~~~~~~~~~~~~~~~~");
         // clipboardContent.writeln("\n");
-        clipboardContent.writeln("                      Total Qty: ${materialTotalQty.toStringAsFixed(3)}");
+        clipboardContent.writeln("                    Total Qty: ${materialTotalQty.toStringAsFixed(3)}");
         // clipboardContent.writeln("________________________________________");
 
         grandTotalQty += materialTotalQty;
       });
 
       // Add grand total
-      clipboardContent.writeln("\n==================================");
+      clipboardContent.writeln("\n=============================");
       clipboardContent.writeln("Grand Total Qty: ${grandTotalQty.toStringAsFixed(3)}");
-      clipboardContent.writeln("==================================");
+      clipboardContent.writeln("=============================");
 
       // Copy the content to clipboard
       FlutterClipboard.copy(clipboardContent.toString()).then((value) {
