@@ -175,16 +175,16 @@ class _Vendor_listState extends State<Vendor_list> {
     return Scaffold(
       drawer: AppDrawer(currentPage: widget.currentPage),
       appBar: CustomAppBar(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => VendorForm()),
-          );
-        },
-        child: Icon(Icons.add),
-        backgroundColor: Colors.blueGrey[200], // FAB background color
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     Navigator.push(
+      //       context,
+      //       MaterialPageRoute(builder: (context) => VendorForm()),
+      //     );
+      //   },
+      //   child: Icon(Icons.add),
+      //   backgroundColor: Colors.blueGrey[200], // FAB background color
+      // ),
       body: RefreshIndicator(
         onRefresh: () async {
           await _refreshData();
@@ -366,74 +366,74 @@ class _Vendor_listState extends State<Vendor_list> {
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            Icons.edit,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Edit_VendorForm(
-                                  vendorID: vendor.Vendor_id,
-                                  vendorName: vendor.name,
-                                  address: vendor.addressLine1,
-                                  country: vendor.country,
-                                  state: vendor.state,
-                                  city: vendor.addressLine2,
-                                  pinCode:vendor.postalCode,
-                                  gstNumber: vendor.gstNumber.toString(),
-                                  remarks: vendor.remarks,
-                                  isActive: vendor.Active,
-                                  email: vendor.email,
-                                  phone: vendor.phone,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            Icons.delete_forever,
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                          onPressed: () {
-                            // Show confirmation dialog before deleting
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: Text('Are you sure?'),
-                                  content: Text('Do you want to delete this vendor?'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop(); // Close the dialog
-                                      },
-                                      child: Text('Cancel'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop(); // Close the dialog
-                                        deleteVendor(vendor.Vendor_id ?? ''); // Proceed with deletion
-                                      },
-                                      child: Text('Yes'),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                        )
-                      ],
-                    ),
-                  ),
+                  // Expanded(
+                  //   child: Row(
+                  //     mainAxisAlignment: MainAxisAlignment.end,
+                  //     children: [
+                  //       IconButton(
+                  //         icon: Icon(
+                  //           Icons.edit,
+                  //           color: Colors.white,
+                  //         ),
+                  //         onPressed: () {
+                  //           Navigator.push(
+                  //             context,
+                  //             MaterialPageRoute(
+                  //               builder: (context) => Edit_VendorForm(
+                  //                 vendorID: vendor.Vendor_id,
+                  //                 vendorName: vendor.name,
+                  //                 address: vendor.addressLine1,
+                  //                 country: vendor.country,
+                  //                 state: vendor.state,
+                  //                 city: vendor.addressLine2,
+                  //                 pinCode:vendor.postalCode,
+                  //                 gstNumber: vendor.gstNumber.toString(),
+                  //                 remarks: vendor.remarks,
+                  //                 isActive: vendor.Active,
+                  //                 email: vendor.email,
+                  //                 phone: vendor.phone,
+                  //               ),
+                  //             ),
+                  //           );
+                  //         },
+                  //       ),
+                  //       IconButton(
+                  //         icon: Icon(
+                  //           Icons.delete_forever,
+                  //           color: Colors.white,
+                  //           size: 30,
+                  //         ),
+                  //         onPressed: () {
+                  //           // Show confirmation dialog before deleting
+                  //           showDialog(
+                  //             context: context,
+                  //             builder: (context) {
+                  //               return AlertDialog(
+                  //                 title: Text('Are you sure?'),
+                  //                 content: Text('Do you want to delete this vendor?'),
+                  //                 actions: [
+                  //                   TextButton(
+                  //                     onPressed: () {
+                  //                       Navigator.of(context).pop(); // Close the dialog
+                  //                     },
+                  //                     child: Text('Cancel'),
+                  //                   ),
+                  //                   TextButton(
+                  //                     onPressed: () {
+                  //                       Navigator.of(context).pop(); // Close the dialog
+                  //                       deleteVendor(vendor.Vendor_id ?? ''); // Proceed with deletion
+                  //                     },
+                  //                     child: Text('Yes'),
+                  //                   ),
+                  //                 ],
+                  //               );
+                  //             },
+                  //           );
+                  //         },
+                  //       )
+                  //     ],
+                  //   ),
+                  // ),
                 ],
               ),
             ),

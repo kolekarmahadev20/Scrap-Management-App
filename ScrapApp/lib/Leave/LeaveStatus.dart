@@ -19,37 +19,46 @@ class LeaveStatus extends StatefulWidget {
 }
 
 class _LeaveStatusState extends State<LeaveStatus> {
-  List<dynamic> leaveData = [
-    {
-      'id': 1,
-      'full_name': 'John Doe',
-      'submitted_on': '2025-01-01',
-      'from_date': '2025-01-10',
-      'to_date': '2025-01-15',
-      'reason': 'Vacation',
-      'status': '0',
-    },
-    {
-      'id': 2,
-      'full_name': 'Jane Smith',
-      'submitted_on': '2025-01-05',
-      'from_date': '2025-01-20',
-      'to_date': '2025-01-25',
-      'reason': 'Conference',
-      'status': '1',
-    },
-    {
-      'id': 3,
-      'full_name': 'Jane Smith',
-      'submitted_on': '2025-01-05',
-      'from_date': '2025-01-20',
-      'to_date': '2025-01-25',
-      'reason': 'Conference',
-      'status': '2',
-    },
-  ];
+
+  List<dynamic> leaveData = [];
+
+  // List<dynamic> leaveData = [
+  //   {
+  //     'id': 1,
+  //     'full_name': 'John Doe',
+  //     'submitted_on': '2025-01-01',
+  //     'from_date': '2025-01-10',
+  //     'to_date': '2025-01-15',
+  //     'reason': 'Vacation',
+  //     'status': '0',
+  //   },
+  //   {
+  //     'id': 2,
+  //     'full_name': 'Jane Smith',
+  //     'submitted_on': '2025-01-05',
+  //     'from_date': '2025-01-20',
+  //     'to_date': '2025-01-25',
+  //     'reason': 'Conference',
+  //     'status': '1',
+  //   },
+  //   {
+  //     'id': 3,
+  //     'full_name': 'Jane Smith',
+  //     'submitted_on': '2025-01-05',
+  //     'from_date': '2025-01-20',
+  //     'to_date': '2025-01-25',
+  //     'reason': 'Conference',
+  //     'status': '2',
+  //   },
+  // ];
 
   bool isLoading = true;
+
+  // Variables for user details
+  String? username = '';
+  String? password = '';
+  String? loginType = '';
+  String? userType = '';
 
   getStatusLabel(String status) {
     if (status != '-1') {
@@ -65,20 +74,12 @@ class _LeaveStatusState extends State<LeaveStatus> {
     }
   }
 
-  bool _isloggedin = true;
-  String _id = '';
-  String _username = '';
-  String _full_name = '';
-  String _email = '';
-  String userImageUrl = '';
-  String _user_type = '';
-  String _password = '';
-  String _uuid = '';
+
 
   @override
   void initState() {
     super.initState();
-    _getUserDetails();
+    checkLogin();
     fetchLeaveData().then((data) {
       if (data != null) {
         setState(() {
@@ -89,37 +90,34 @@ class _LeaveStatusState extends State<LeaveStatus> {
     });
   }
 
-  _getUserDetails() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isloggedin = prefs.getBool("loggedin")!;
-      _id = prefs.getString('id')!;
-      _username = prefs.getString('username')!;
-      _full_name = prefs.getString('full_name')!;
-      _email = prefs.getString('email')!;
-      _user_type = prefs.getString('user_type') ?? '';
-      _password = prefs.getString('password') ?? '';
-      _uuid = prefs.getString('uuid') ?? '';
-    });
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
 
   Future<void> changeLeaveStatus(String leaveId, String status) async {
     try {
-      await _getUserDetails();
+      await checkLogin();
       final response = await http.post(
-        Uri.parse('$URL/Mobile_flutter_api/change_leave_status'),
+        Uri.parse('${URL}change_leave_status'),
         headers: {"Accept": "application/json"},
         body: {
-          'uuid': _uuid,
-          'user_id': _username,
-          'password': _password,
+          // 'uuid': _uuid,
+          'user_id': username,
+          'user_pass': password,
+          'id': leaveId,
           'status': status,
-          'leave_id': leaveId,
+          'rejection_note':'Rejected',
         },
       );
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
+        print(responseData);
+        print('bharat');
         setState(() {
           leaveData = leaveData.map((leave) {
             if (leave['id'].toString() == leaveId) {
@@ -137,20 +135,22 @@ class _LeaveStatusState extends State<LeaveStatus> {
   }
 
   Future<List<dynamic>> fetchLeaveData() async {
-    await _getUserDetails();
+    await checkLogin();
     try {
       final response = await http.post(
-        Uri.parse('$URL/Mobile_flutter_api/get_leaves'),
+        Uri.parse('${URL}get_leaves'),
         headers: {"Accept": "application/json"},
         body: {
-          'uuid': _uuid,
-          'user_id': _username,
-          'password': _password,
+          // 'uuid': _uuid,
+          'user_id': username,
+          'user_pass': password,
         },
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        // print(data);
+        // print('pooja');
         if (data["status"] == "1" && data.containsKey("user_data") && data["user_data"] is List) {
           setState(() {
             leaveData = data["user_data"] as List;
@@ -164,7 +164,6 @@ class _LeaveStatusState extends State<LeaveStatus> {
     return [];
   }
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: AppDrawer(currentPage: widget.currentPage),
@@ -176,12 +175,16 @@ class _LeaveStatusState extends State<LeaveStatus> {
           children: [
             // Header Section
             _buildHeader(),
-            SizedBox(height: 16.0),
-            // Leave Status Indicators
+            SizedBox(height: 6.0),
             _buildStatusIndicators(),
             SizedBox(height: 16.0),
             // Leave Data
-            if (leaveData.isNotEmpty) _buildLeaveList(),
+            if (isLoading)
+              Center(
+                child: CircularProgressIndicator(),
+              )
+            else if (leaveData.isNotEmpty)
+              _buildScrollableLeaveList(),
             if (leaveData.isEmpty && !isLoading)
               Center(
                 child: Text(
@@ -195,13 +198,27 @@ class _LeaveStatusState extends State<LeaveStatus> {
     );
   }
 
+  Widget _buildScrollableLeaveList() {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.7, // Set desired height
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemCount: leaveData.length,
+        itemBuilder: (context, index) {
+          final leave = leaveData[index];
+          return _buildLeaveCard(leave, index);
+        },
+      ),
+    );
+  }
+
   Widget _buildHeader() {
     return
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(4.0),
             child: Text(
               "Leave Status",
               style: TextStyle(
@@ -247,16 +264,6 @@ class _LeaveStatusState extends State<LeaveStatus> {
     );
   }
 
-  Widget _buildLeaveList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: leaveData.length,
-      itemBuilder: (context, index) {
-        final leave = leaveData[index];
-        return _buildLeaveCard(leave, index);
-      },
-    );
-  }
 
   Widget _buildLeaveCard(dynamic leave, int index) {
     return Card(
@@ -269,7 +276,7 @@ class _LeaveStatusState extends State<LeaveStatus> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Leave Applicant Info
-            _buildLeaveInfoRow('Leave Applicant:', leave['full_name'], index),
+            _buildLeaveInfoRow('Leave Applicant:', leave['person_name'], index),
             SizedBox(height: 8.0),
             // Leave Dates and Reason
             _buildLeaveInfoRow('From Date:', leave['from_date'], index),
