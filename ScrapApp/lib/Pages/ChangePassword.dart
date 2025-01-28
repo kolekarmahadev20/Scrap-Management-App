@@ -5,6 +5,7 @@ import 'dart:convert';
 
 import '../AppClass/AppDrawer.dart';
 import '../AppClass/appBar.dart';
+import '../URL_CONSTANT.dart';
 
 class ChangePassword extends StatefulWidget {
   final int currentPage;
@@ -18,7 +19,7 @@ class _ChangePasswordState extends State<ChangePassword> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _oldPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  // final TextEditingController _confirmPasswordController = TextEditingController();
 
   bool _isOldPasswordObscure = true;
   bool _isNewPasswordObscure = true;
@@ -27,26 +28,63 @@ class _ChangePasswordState extends State<ChangePassword> {
   bool isLoading = false;
   String correctOldPassword = '';
 
+  // Variables for user details
+  String? username = '';
+  String? password = '';
+  String? loginType = '';
+  String? userType = '';
+
   @override
   void initState() {
     super.initState();
-    _getUserDetails();
+    checkLogin();
   }
 
   @override
   void dispose() {
     _oldPasswordController.dispose();
     _newPasswordController.dispose();
-    _confirmPasswordController.dispose();
+    // _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> _getUserDetails() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      correctOldPassword = prefs.getString('password') ?? '';
-    });
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
   }
+
+  Future<void> changePass() async {
+    try {
+      await checkLogin();
+      final response = await http.post(
+        Uri.parse('${URL}change_password'),
+        headers: {"Accept": "application/json"},
+        body: {
+          // 'uuid': _uuid,
+          'user_id': username,
+          'user_pass': password,
+          'new_password':_newPasswordController.text,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        print(responseData);
+        print('bharat');
+        setState(() {
+
+        });
+      } else {
+        print('Failed to change leave status. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
 
   void _submitForm() async {
     if (_formKey.currentState?.validate() ?? false) {
@@ -70,7 +108,7 @@ class _ChangePasswordState extends State<ChangePassword> {
 
       _oldPasswordController.clear();
       _newPasswordController.clear();
-      _confirmPasswordController.clear();
+      // _confirmPasswordController.clear();
     }
   }
 
@@ -116,7 +154,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                   if (value?.isEmpty ?? true) {
                     return 'Please enter your old password.';
                   }
-                  if (value != correctOldPassword) {
+                  if (value != password) {
                     return 'Incorrect old password.';
                   }
                   return null;
@@ -142,26 +180,26 @@ class _ChangePasswordState extends State<ChangePassword> {
                   return null;
                 },
               ),
-              SizedBox(height: 20),
-              _buildPasswordField(
-                controller: _confirmPasswordController,
-                label: "Confirm Password",
-                isObscure: _isConfirmPasswordObscure,
-                onToggle: () {
-                  setState(() {
-                    _isConfirmPasswordObscure = !_isConfirmPasswordObscure;
-                  });
-                },
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return 'Please confirm your password.';
-                  }
-                  if (value != _newPasswordController.text) {
-                    return 'Passwords do not match.';
-                  }
-                  return null;
-                },
-              ),
+              // SizedBox(height: 20),
+              // _buildPasswordField(
+              //   controller: _confirmPasswordController,
+              //   label: "Confirm Password",
+              //   isObscure: _isConfirmPasswordObscure,
+              //   onToggle: () {
+              //     setState(() {
+              //       _isConfirmPasswordObscure = !_isConfirmPasswordObscure;
+              //     });
+              //   },
+              //   validator: (value) {
+              //     if (value?.isEmpty ?? true) {
+              //       return 'Please confirm your password.';
+              //     }
+              //     if (value != _newPasswordController.text) {
+              //       return 'Passwords do not match.';
+              //     }
+              //     return null;
+              //   },
+              // ),
               SizedBox(height: 30),
               ElevatedButton(
                 onPressed: isLoading ? null : _submitForm,
