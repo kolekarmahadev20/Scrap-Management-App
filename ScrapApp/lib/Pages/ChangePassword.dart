@@ -52,11 +52,18 @@ class _ChangePasswordState extends State<ChangePassword> {
     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     password = prefs.getString("password");
+    print(password);
+
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
   }
 
   Future<void> changePass() async {
+
+    print(username);
+    print(password);
+    print(_newPasswordController.text);
+
     try {
       await checkLogin();
       final response = await http.post(
@@ -93,6 +100,7 @@ class _ChangePasswordState extends State<ChangePassword> {
       });
 
       // Mock API call simulation
+      await changePass();
       await Future.delayed(Duration(seconds: 2));
 
       setState(() {
