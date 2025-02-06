@@ -7,6 +7,8 @@ import 'package:scrapapp/DashBoard/DashBoard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
 import 'dart:math' as math;
+import 'package:device_info_plus/device_info_plus.dart';
+import 'ProfilePage.dart';
 
 
 class StartPage extends StatefulWidget {
@@ -15,10 +17,12 @@ class StartPage extends StatefulWidget {
 }
 
 class _StartDashBoardPageState extends State<StartPage> {
-  // TextEditingController usernameController = TextEditingController(text: "Bantu");
-  // TextEditingController passwordController = TextEditingController(text : "Bantu#123");
-  TextEditingController usernameController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+  // TextEditingController usernameController = TextEditingController(text: "bhag2368");
+  // TextEditingController passwordController = TextEditingController(text : "Bhag@2368");
+  // TextEditingController usernameController = TextEditingController(text: "paar9044");
+  // TextEditingController passwordController = TextEditingController(text: "Paar@9044");
+  TextEditingController usernameController = TextEditingController(text: "Bantu");
+  TextEditingController passwordController = TextEditingController(text: "Bantu#123");
   bool _obscureText = true; // Variable to manage password visibility
 
   late Timer _gpsCheckTimer;
@@ -38,6 +42,8 @@ class _StartDashBoardPageState extends State<StartPage> {
   @override
   void initState() {
     super.initState();
+    _getDeviceInfo();
+
     _gpsCheckTimer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
       getlocation();
       _updateLocation();
@@ -49,6 +55,31 @@ class _StartDashBoardPageState extends State<StartPage> {
   void dispose() {
     _gpsCheckTimer.cancel();
     super.dispose();
+  }
+
+  String? _deviceID;
+
+
+  Future<void> _getDeviceInfo() async {
+    WidgetsBinding.instance!.addPostFrameCallback((_) async {
+      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      try {
+        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+        setState(() {
+          _deviceID = androidInfo.id!;
+          print("_deviceID");
+
+          print(_deviceID);
+
+        });
+
+        // SharedPreferences prefs = await SharedPreferences.getInstance();
+        // await prefs.setString("uuid", _deviceID);
+
+      } catch (e) {
+        print('Error getting device info: $e');
+      }
+    });
   }
 
   Location location = new Location();
@@ -94,40 +125,51 @@ class _StartDashBoardPageState extends State<StartPage> {
     return R * c;
   }
 
-
-
   Future<void> updateLocation(double latitude, double longitude) async {
-    // Construct the API URL
-    String url = '${URL}update_location';
-
-    // Prepare the request body
-    var requestBody = {
-      'user_id': usernameController.text,
-      'user_pass': passwordController.text,
-      'locations[lat]':latitude.toString(),
-      'locations[long]':longitude.toString(),
-    };
+    print("=== Starting updateLocation Function ===");
+    print("Username: ${usernameController.text}");
+    print("Password: ${passwordController.text}");
+    print("Latitude: $latitude");
+    print("Longitude: $longitude");
 
     try {
+      // Construct the API URL
+      final url = '${URL}update_location';
+      print("API URL: $url");
+
       // Send the POST request
       final response = await http.post(
         Uri.parse(url),
-        headers: {"Accept": "application/json"},
-        body: requestBody,
+        body: {
+          'user_id': usernameController.text,
+          'user_pass': passwordController.text,
+          'locations[lat]': latitude.toString(),
+          'locations[long]': longitude.toString(),
+        },
       );
+
+      // Debug response status
+      print("Response Status Code: ${response.statusCode}");
+      print("Response Body: ${response.body}");
 
       // Handle the response
       if (response.statusCode == 200) {
-        // Request successful
-        print('Location updated successfully');
+        var responseData = jsonDecode(response.body);
+        print("Decoded Response: $responseData");
+
+        if (responseData['status'] == "1") {
+          print("Success: ${responseData['msg']}");
+        } else {
+          print("Failed: ${responseData['msg']}");
+        }
       } else {
-        // Request failed
-        print('Failed to update location. Status code: ${response.statusCode}');
+        print("Failed to update location. Status code: ${response.statusCode}");
       }
     } catch (e) {
-      // Handle exceptions
-      print('Error updating location: $e');
+      print("Exception occurred: $e");
     }
+
+    print("=== End of updateLocation Function ===");
   }
 
   void _updateLocation() async {
@@ -165,7 +207,7 @@ class _StartDashBoardPageState extends State<StartPage> {
 
 /*---------------------------------------------------------------------------------------------------------------*/
 // Function to save user data
-  Future<void> saveUserData(bool isLoggedIn ,String name, String contact, String email, String empCode, String address) async {
+  Future<void> saveUserData(bool isLoggedIn ,String name, String contact, String email, String empCode, String address, String person_id,String uuid) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', isLoggedIn);
     await prefs.setString('name', name);
@@ -173,11 +215,13 @@ class _StartDashBoardPageState extends State<StartPage> {
     await prefs.setString('email', email);
     await prefs.setString('empCode', empCode);
     await prefs.setString('address', address);
+    await prefs.setString('person_id', person_id);
+    prefs.setString("uuid", uuid!);
   }
 
 /*---------------------------------------------------------------------------------------------------------------*/
   checkLogin(String username , String password , String loginType,String userType,
-      String person_email, String person_name)async{
+      String person_email, String person_name,String uuid)async{
     final login = await SharedPreferences.getInstance();
     await login.setString("username", username);
     await login.setString("password", password);
@@ -185,11 +229,14 @@ class _StartDashBoardPageState extends State<StartPage> {
     await login.setString("userType", userType);
     await login.setString("person_email", person_email);
     await login.setString("person_name", person_name);
+    await login.setString("uuid", uuid!);
+
   }
 /*---------------------------------------------------------------------------------------------------------------*/
 
   //Api function for Getting login Credentials and setting onto next page
   Future<void> getCredentials() async {
+    print("BHASFHASF:$_deviceID");
     String username = usernameController.text;
     String password = passwordController.text;
     try {
@@ -200,35 +247,52 @@ class _StartDashBoardPageState extends State<StartPage> {
         body: {
           'user_id': username,
           'user_pass': password,
+          'uuid':_deviceID
         },
       );
 
       var jsonData = json.decode(response.body);
-      // if (jsonData['success'] == true) {
 
-      var user_data = jsonData['session_data'] ?? "N?A";
-      // Access fields using keys
-      var person_name = user_data['user_name']?? "N?A";
-      var person_email = user_data['user_type'] == 'S'
-          ? user_data['user_email'] ?? "N/A"
-          : user_data['user_email'] ?? "N/A";
-      var emp_code = user_data['emp_code']?? "N?A";
-      var emp_address = user_data['emp_address']?? "N?A";
-      var contact = user_data['Mobile']?? "N?A";
-      var loginType = user_data['login_type']?? "N?A";
-      var userType = user_data['user_type']?? "N?A";
-      await saveUserData(true ,person_name, contact, person_email, emp_code, emp_address);
-      await checkLogin(username, password ,loginType ,userType,person_email,person_name);
+      if (jsonData['success'] == true) {
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => DashBoard(currentPage: 1,)),
-        );
-      // } else {
-      //   showErrorDialog("${jsonData['msg']}");
-      //   print("${jsonData['msg']}");
-      //
-      // }
+        var user_data = jsonData['session_data'] ?? "N?A";
+        // Access fields using keys
+        var person_id = user_data['person_id']?? "N?A";
+        var person_name = user_data['user_name']?? "N?A";
+        var person_email = user_data['user_type'] == 'S'
+            ? user_data['user_email'] ?? "N/A"
+            : user_data['user_email'] ?? "N/A";
+        var emp_code = user_data['emp_code']?? "N?A";
+        var emp_address = user_data['user_add']?? "N?A";
+        var contact = user_data['Mobile']?? "N?A";
+        var loginType = user_data['login_type']?? "N?A";
+        var userType = user_data['user_type']?? "N?A";
+
+        await saveUserData(true ,person_name, contact, person_email, emp_code, emp_address,person_id,_deviceID!);
+        await checkLogin(username, password ,loginType ,userType,person_email,person_name,_deviceID!);
+
+        if (userType == "S") {
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => DashBoard(currentPage: 1))
+          );
+        } else {
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => ProfilePage(currentPage: 2))
+          );
+        }
+
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => ProfilePage(currentPage: 2,)),
+        // );
+
+      } else {
+        showErrorDialog("${jsonData['msg']}");
+        print("${jsonData['msg']}");
+
+      }
     } catch (e) {
       showErrorDialog("Server Exception: $e");
       print("Server Exception: $e");
@@ -334,6 +398,8 @@ class _StartDashBoardPageState extends State<StartPage> {
                   height: 50, // Adjust the height of the button as needed
                   child: ElevatedButton(
                     onPressed: () {
+                      _updateLocation();
+
                       getCredentials();
                     },
                     child: Text(

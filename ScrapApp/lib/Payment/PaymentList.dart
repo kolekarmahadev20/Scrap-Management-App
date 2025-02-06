@@ -24,6 +24,7 @@ class _PaymentListState extends State<PaymentList> {
   TextEditingController searchBidderController = TextEditingController(); // Controller for search input
 
   String? username = '';
+ String uuid = '';
 
   String? password = '';
   String? loginType = '';
@@ -46,8 +47,10 @@ class _PaymentListState extends State<PaymentList> {
   }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -64,7 +67,8 @@ class _PaymentListState extends State<PaymentList> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
         },
       );

@@ -31,6 +31,7 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
   final TextEditingController totalEmdController = TextEditingController();
   final TextEditingController totalCmdController = TextEditingController();
   final TextEditingController totalEmdCmdController = TextEditingController();
+  final TextEditingController totalAmountController = TextEditingController();
   final TextEditingController materialNameController = TextEditingController();
   final TextEditingController dateController1 = TextEditingController();
   final TextEditingController amountController = TextEditingController();
@@ -39,6 +40,7 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
   final TextEditingController remarkController = TextEditingController();
 
   String? username = '';
+ String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -76,8 +78,10 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
   }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -95,7 +99,8 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
           'sale_order_id_pay':widget.sale_order_id ?? '',
           'payment_type': selectedPaymentType ?? '',
@@ -153,7 +158,8 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
           'sale_order_id':widget.sale_order_id,
         },
@@ -165,6 +171,7 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
           totalEmdController.text = jsonData['total_EMD'].toString() ?? 'N/A';
           totalCmdController.text = jsonData['total_CMD'].toString()  ?? 'N/A';
           totalEmdCmdController.text = jsonData['total_amount_included_emdCmd'].toString() ?? 'N/A';
+          totalAmountController.text =  jsonData['totalAmount'].toString() ?? 'N/A';
           rate = jsonData['rate'].toString();
         });
       } else {
@@ -288,7 +295,8 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
                             buildTextField("Total Payment", totalPaymentController,true, false, Colors.grey[400]!,context),
                             buildTextField("Total EMD", totalEmdController,true, false,Colors.grey[400]!, context),
                             buildTextField("Total CMD", totalCmdController,true, false, Colors.grey[400]!,context),
-                            buildTextField("Total Amount Including EMD/CMD", totalEmdCmdController,true, false,Colors.grey[400]!, context),
+                            buildTextField("Total EMD And CMD", totalEmdCmdController,true, false,Colors.grey[400]!, context),
+                            buildTextField("Total Amount", totalAmountController,true, false,Colors.grey[400]!, context),
                             Divider(),
                             buildTextField("Material Name", materialNameController,true, false,Colors.grey[400]!, context), // Modified here for DatePicker
                             buildDropdownPayment("Payment Type", PaymentType, (value) {

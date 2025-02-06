@@ -43,6 +43,7 @@ class _SummaryReportState extends State<SummaryReport> {
 
   //Variables for user details
   String? username = '';
+ String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -68,8 +69,10 @@ class _SummaryReportState extends State<SummaryReport> {
 
   //Fetching user details from sharedpreferences
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -82,7 +85,8 @@ class _SummaryReportState extends State<SummaryReport> {
       final response = await http.post(
         Uri.parse(url),
         body: {
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
         },
       );
@@ -125,7 +129,8 @@ class _SummaryReportState extends State<SummaryReport> {
         headers: {"Accept": "application/json"},
         body: {
           // 'uuid': _uuid,
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
           'branch_id':selectedLocationId.toString(),
           'from_date': fromDate != null ? formatter.format(fromDate!) : '',

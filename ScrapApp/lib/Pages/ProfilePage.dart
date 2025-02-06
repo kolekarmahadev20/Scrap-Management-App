@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
@@ -32,6 +34,11 @@ class _ProfilePageState extends State<ProfilePage> {
   String email = '';
   String address = '';
   String empCode = '';
+  String personId = '';
+  String uuid = '';
+
+
+
   bool isLoggedIn = false;
   bool isPunchedIn = false;
   bool isPunchedOut = false;
@@ -41,6 +48,7 @@ class _ProfilePageState extends State<ProfilePage> {
   int _currentIndex = 0; // Current tab index
   LocationData? _locationData;
 
+  late Timer _lateloginCheckTimer;
 
   final Icon nameIcon =
   Icon(Icons.person, color: Colors.blue.shade900, size: 40);
@@ -57,13 +65,24 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
+
     _initLocation();
     getCredentialDetails();
     checkLogin().then((_){
-      setState(() {});
+      setState(() {
+         if(userType != 'S')
+          check_first_login();
+      });
     });
+
     fetchPunchTimeFromDatabase();
     fetchLogoutPunchTimeFromDatabase();
+  }
+
+  @override
+  void dispose() {
+    _lateloginCheckTimer.cancel();
+    super.dispose();
   }
 
   // Method to initialize location
@@ -82,118 +101,42 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
+    uuid = prefs.getString("uuid")!;
+    print("UUID:$uuid");
+
+
   }
+
   getCredentialDetails() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
+
     setState(() {
       isLoggedIn = prefs.getBool('isLoggedIn')!;
+      username = prefs.getString("username");
+      uuid = prefs.getString("uuid")!;
       name = prefs.getString('name') ?? 'N/A';
       contact = prefs.getString('contact') ?? 'N/A';
       email = prefs.getString('email') ?? 'N/A';
       address = prefs.getString('address') ?? 'N/A';
       empCode = prefs.getString('empCode') ?? 'N/A';
+      personId = prefs.getString('person_id') ?? 'N/A';
+      // uuid = prefs.getString('uuid') ?? 'N/A';
+
+
+      print("UUID:$uuid");
     });
     if (!isLoggedIn) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => StartPage()),
       );
-    }
-  }
-
-  void sendPunchTimeToDatabase(String status) async{
-    try {
-      await checkLogin();
-      final url = Uri.parse('${URL}set_user_attendance');
-      var response = await http.post(
-        url,
-        headers: {"Accept": "application/json"},
-        body: {
-          'user_id':username,
-          'user_pass':password,
-          'status' : status,
-        },
-      );
-      if (response.statusCode == 200) {
-        setState(() {
-          var data = jsonDecode(response.body);
-          Fluttertoast.showToast(msg: data['msg']);
-          print("status : $status");
-          if(status == 'logged in') {
-            fetchPunchTimeFromDatabase();
-          }else{
-            fetchLogoutPunchTimeFromDatabase();
-          }
-        });
-      } else {
-        Fluttertoast.showToast(msg: 'Unable to mark punch time');
-      }
-    }catch(e){
-      print('Server Exception : $e');
-    }finally{
-
-    }
-  }
-
-  void fetchPunchTimeFromDatabase() async{
-    try {
-      await checkLogin();
-      final url = Uri.parse('${URL}fetch_attendance_time');
-      var response = await http.post(
-        url,
-        headers: {"Accept": "application/json"},
-        body: {
-          'user_id':username,
-          'user_pass':password,
-        },
-      );
-      if (response.statusCode == 200) {
-        setState(() {
-          var data = jsonDecode(response.body);
-          punchTime = DateTime.parse(data['login_time']);
-          print("PunchIn Time : $punchTime");
-          enablePunching("logged in");
-        });
-      } else {
-        Fluttertoast.showToast(msg: 'Unable to fetch punch time');
-      }
-    }catch(e){
-      print('Server Exception : $e');
-    }finally{
-
-    }
-  }
-
-  void fetchLogoutPunchTimeFromDatabase() async{
-    try {
-      await checkLogin();
-      final url = Uri.parse('${URL}fetch_attendance_Outime');
-      var response = await http.post(
-        url,
-        headers: {"Accept": "application/json"},
-        body: {
-          'user_id':username,
-          'user_pass':password,
-        },
-      );
-      if (response.statusCode == 200) {
-        setState(() {
-          var data = jsonDecode(response.body);
-          punchOutTime = DateTime.parse(data['logout_time']);
-          enablePunching("logged out");
-        });
-      } else {
-        Fluttertoast.showToast(msg: 'Unable to fetch punch time');
-      }
-    }catch(e){
-      print('Server Exception : $e');
-    }finally{
-
     }
   }
 
@@ -230,6 +173,7 @@ class _ProfilePageState extends State<ProfilePage> {
         body: {
           'user_id':username,
           'user_pass':password,
+         'uuid':uuid,
           'punch_type': punchType,
           'location[lat]': latitude?.toString() ?? '',
           'location[long]': longitude?.toString() ?? '',
@@ -248,6 +192,363 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  void sendPunchTimeToDatabase(String status) async{
+    try {
+      await checkLogin();
+      final url = Uri.parse('${URL}set_user_attendance');
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id':username,
+          'user_pass':password,
+          'uuid':uuid,
+          'status' : status,
+        },
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          var data = jsonDecode(response.body);
+          Fluttertoast.showToast(msg: data['msg']);
+          print("status : $status");
+          if(status == 'logged in') {
+            fetchPunchTimeFromDatabase();
+          }else{
+            fetchLogoutPunchTimeFromDatabase();
+          }
+        });
+      } else {
+        Fluttertoast.showToast(msg: 'Unable to mark punch time');
+      }
+    }catch(e){
+      print('Server Exception : $e');
+    }finally{
+
+    }
+  }
+
+  void fetchPunchTimeFromDatabase() async{
+    try {
+      await checkLogin();
+      final url = Uri.parse('${URL}fetch_attendance_time');
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id':username,
+          'user_pass':password,
+          'uuid':uuid
+        },
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          var data = jsonDecode(response.body);
+          punchTime = DateTime.parse(data['login_time']);
+          print("PunchIn Time : $punchTime");
+          enablePunching("logged in");
+        });
+      } else {
+        //Fluttertoast.showToast(msg: 'Unable to fetch punch time');
+      }
+    }catch(e){
+      print('Server Exception : $e');
+    }finally{
+
+    }
+  }
+
+  void check_first_login() async{
+    try {
+      await checkLogin();
+      final url = Uri.parse('${URL}check_first_login');
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id':username,
+          'user_pass':password,
+          'uuid':uuid
+        },
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          var data = jsonDecode(response.body);
+
+          var firstLoginCheck = data['admin_id'];
+
+          print("Admin ID: $firstLoginCheck");
+
+          // Check for empty or null admin_id
+          if (firstLoginCheck == null || firstLoginCheck.toString().trim().isEmpty|| firstLoginCheck == 'Not Found' ) {
+            print("Admin ID is empty, showing alert");
+            _showLateLoginRemarkDialog();
+          }
+          else {
+            print("Admin ID is valid: $firstLoginCheck");
+          }
+
+
+        });
+      } else {
+       // Fluttertoast.showToast(msg: 'Unable to fetch punch time');
+      }
+    }catch(e){
+      print('Server Exception : $e');
+    }finally{
+
+    }
+  }
+
+
+
+  void fetchLogoutPunchTimeFromDatabase() async{
+    try {
+      print("uuid");
+
+      print(uuid);
+      await checkLogin();
+      final url = Uri.parse('${URL}fetch_attendance_Outime');
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          // 'user_id':'Bantu',
+          // 'user_pass':'Bantu#123',
+          // 'uuid':'UKQ1.231108.001'
+          'user_id':username,
+          'user_pass':password,
+         'uuid':uuid,
+        },
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          var data = jsonDecode(response.body);
+          print("data");
+
+          print(data);
+
+
+          punchOutTime = DateTime.parse(data['logout_time']);
+          enablePunching("logged out");
+
+          print("punchOutTime:$punchOutTime");
+
+          //Get today's date
+          DateTime today = DateTime.now();
+          DateTime punchOutDate = DateTime(punchOutTime!.year, punchOutTime!.month, punchOutTime!.day);
+          // Compare the dates
+          print('PunchOut Date: ${punchOutDate.toIso8601String().split('T')[0]}');
+          print('PunchOut Time: ${punchOutTime!.toIso8601String().split('T')[0]}');
+
+          print('Today: ${DateTime(today.year, today.month, today.day)}');
+
+          if (punchOutDate.isBefore(DateTime(today.year, today.month, today.day))) {
+            print('Condition met: Showing Late Login Remark Dialog');
+            setState(() {
+              if(userType != 'S')
+                print("BHAR TA");
+                // trackadminresponse();
+            });
+            // _showLateLoginRemarkDialog();  //Not needed but keepet for safe side
+          } else {
+            print('Condition not met: No dialog shown');
+          }
+
+
+        });
+      } else {
+       // Fluttertoast.showToast(msg: 'Unable to fetch punch time');
+      }
+    }catch(e){
+      print('Server Exceptionasfs : $e');
+    }finally{
+
+    }
+  }
+
+  Future<void> trackadminresponse() async {
+    print(username);
+    print(password);
+
+    try {
+      await checkLogin();
+      final response = await http.post(
+        Uri.parse('${URL}track_admin_response'),
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': username,
+          'user_pass': password,
+          'id': personId,
+          'uuid':uuid,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        print(responseData);
+
+        if (responseData['status'] == '1') {
+          final adminActivity = responseData['tracked_admin_activity'];
+
+          if (adminActivity != null) {
+            final adminremarkmsg = adminActivity['remark'] ?? 'No remark found';
+
+            setState(() {
+              print("Admin remark message: $adminremarkmsg");
+
+              if (adminremarkmsg == "No remark found") {
+                print("Condition met: Showing Late Login Remark Dialog");
+                _showLateLoginRemarkDialog();
+              } else {
+                print("Condition met: Showing Late Login Admin Remark Dialog");
+                _showLateLoginAdminRemarkDialog();
+              }
+            });
+          } else {
+            print("No tracked admin activity found.");
+          }
+        } else if (responseData['status'] == '0') {
+          print("Status is 0: Showing Late Login Remark Dialog");
+          _showLateLoginRemarkDialog();
+        } else {
+          print('Unexpected status: ${responseData['status']}');
+        }
+      } else {
+        print('Failed. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<void> _submitLateLoginRemark(String remark) async {
+    try {
+
+      print(personId);
+      print(remark);
+      print(password);
+      print(username);
+
+      await checkLogin();
+      final url = Uri.parse('${URL}submit_late_remark');
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id':username,
+          'user_pass':password,
+          'id':personId,
+          'remark': remark,
+          'uuid':uuid
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        print(data);
+        print("data");
+
+        if (data['status'] == '1') {
+          // Refresh the page by calling setState
+          setState(() {
+            trackadminresponse();
+          });
+          // Handle success
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Remark submitted successfully')),
+          );
+
+
+
+          Navigator.pop(context); // Close the dialog
+        } else {
+          // Handle failure
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to submit remark')),
+          );
+        }
+      }
+    } catch (e) {
+      // Handle exception
+      print('Error submitting remark: $e');
+
+    }
+  }
+
+  void _showLateLoginRemarkDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible : false,
+      builder: (context) {
+        final TextEditingController remarkController = TextEditingController();
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          title: Text('Enter Late Login Remark'),
+          content: TextField(
+            controller: remarkController,
+            maxLines: 3,
+            decoration: InputDecoration(
+              hintText: 'Write your remark here...',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                SystemNavigator.pop();
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (remarkController.text.isNotEmpty) {
+                  await _submitLateLoginRemark(remarkController.text);
+                  // Refresh the page by calling setState
+
+
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Remark cannot be empty')),
+                  );
+                }
+              },
+              child: Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showLateLoginAdminRemarkDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible : false,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          title:  Text(
+            "Admin will shortly connect to you. Please wait for their response.",
+            style: TextStyle(fontSize: 16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                SystemNavigator.pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   enablePunching(String status) {
     DateTime currentDateTime = DateTime.now();
@@ -376,9 +677,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    print(isPunchedIn);
+    print("isPunchedIn");
+
     return StatefulBuilder(builder: (BuildContext context , StateSetter setState) {
       return Scaffold(
-        drawer: AppDrawer(currentPage: widget.currentPage),
+      // drawer: isPunchedIn ? AppDrawer(currentPage: widget.currentPage) : null,
+       drawer: AppDrawer(currentPage: widget.currentPage),
+
         appBar: CustomAppBar(),
         body: SingleChildScrollView(
           child: Column(
