@@ -23,6 +23,7 @@ class DashBoard extends StatefulWidget {
 
 class _DashBoardState extends State<DashBoard> {
   String? username;
+  String uuid = '';
   String? password;
   String? loginType;
   String? userType;
@@ -60,8 +61,10 @@ class _DashBoardState extends State<DashBoard> {
   }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -75,7 +78,8 @@ class _DashBoardState extends State<DashBoard> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': username,
+        'user_id': username,
+         'uuid':uuid,
           'user_pass': password,
         },
       );
@@ -152,7 +156,8 @@ class _DashBoardState extends State<DashBoard> {
 
     // Prepare the request body
     var requestBody = {
-      'user_id': username,
+    'user_id': username,
+     'uuid':uuid,
       'user_pass': password,
       'locations[lat]':latitude.toString(),
       'locations[long]':longitude.toString(),

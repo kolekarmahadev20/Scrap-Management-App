@@ -14,13 +14,18 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io'; // Import for File
 import 'package:path/path.dart' as path;
 
+import 'View_dispatch_details.dart';
+
 class addDispatchToSaleOrder extends StatefulWidget {
 
   final String sale_order_id;
   final String material_name;
+  final String bidder_id;
+
   addDispatchToSaleOrder({
     required this.sale_order_id,
     required this.material_name,
+    required this.bidder_id,
   });
 
   @override
@@ -43,6 +48,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
 
 
   String? username = '';
+ String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -80,6 +86,8 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     _initializeData();
   }
 
+
+
   Future<void> _initializeData() async {
     await checkLogin().then((_) {setState(() {});}); // Rebuilds the widget after `userType` is updated.
     await materialNameId();
@@ -93,8 +101,9 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -125,6 +134,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
           'user_id':username,
           'user_pass':password,
           'sale_order_id': widget.sale_order_id,
+          'uuid':uuid
         },
       );
       //variable to send material value instead of name in backend.
@@ -161,6 +171,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
         headers: {"Accept": "application/json"},
         body: {
           'user_id': username,
+          'uuid':uuid,
           'user_pass': password,
           'sale_order_id':widget.sale_order_id,
         },
@@ -216,6 +227,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       // Add form data
       request.fields['user_id'] = username!;
       request.fields['user_pass'] = password!;
+      request.fields['uuid'] = uuid!;
       request.fields['sale_order_id_lift'] = widget.sale_order_id ?? '';
       request.fields['rate'] = rate ?? '';
       request.fields['advance_payment'] = advancePayment ?? '';
@@ -277,15 +289,25 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       if (response.statusCode == 200) {
         final res = await http.Response.fromStream(response);
         final jsonData = json.decode(res.body);
+        print(jsonData);
+        print("jsonData");
+
         setState(() {
           if(jsonData.containsKey('liftedTaxAmount')){
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${jsonData['msg']} ${jsonData['liftedTaxAmount']}")));
+            Fluttertoast.showToast(
+              msg: "${jsonData['msg']}", // You can change the text color
+            );
           }else{
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${jsonData['msg']}")));
+            Fluttertoast.showToast(
+              msg: "${jsonData['msg']} ",
+            );
           }
         });
-        if(jsonData['status'] == 'success'){
-          Navigator.pop(context);
+        if (jsonData['status'] == 'success') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => View_dispatch_details(sale_order_id: widget.sale_order_id, bidder_id: widget.bidder_id,)), // Navigate to the desired screen
+          );
         }
       } else {
         Fluttertoast.showToast(
@@ -296,15 +318,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
           textColor: Colors.yellow,
         );
       }
-    } catch (e) {
-      Fluttertoast.showToast(
-        msg: 'Server Exception: $e',
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.red,
-        textColor: Colors.yellow,
-      );
-    } finally {
+    }  finally {
       setState(() {
         isLoading = false;
       });

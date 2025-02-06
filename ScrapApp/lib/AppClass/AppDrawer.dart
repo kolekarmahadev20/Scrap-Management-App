@@ -33,6 +33,7 @@ class AppDrawer extends StatefulWidget {
 
 class _AppDrawerState extends State<AppDrawer> {
   String? username = '';
+ String uuid = '';
 
   String? password = '';
 
@@ -53,8 +54,10 @@ class _AppDrawerState extends State<AppDrawer> {
   }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -129,7 +132,8 @@ class _AppDrawerState extends State<AppDrawer> {
               child: ListView(
                 padding: EdgeInsets.only(top: 16),
                 children: [
-                  _buildDrawerItem(
+                  if(userType == 'S')
+                    _buildDrawerItem(
                     context,
                     1,
                     icon: Icons.dashboard_outlined,
@@ -142,19 +146,19 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
-                  _buildDrawerItem(
-                    context,
-                    1,
-                    icon: Icons.dashboard_outlined,
-                    text: "Organization",
-                    onTap: () {
-                      Timer(Duration(milliseconds: 300), () {
-                        Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => OrganizationList()));
-                      });
-
-                    },
-                  ),
+                  // _buildDrawerItem(
+                  //   context,
+                  //   1,
+                  //   icon: Icons.dashboard_outlined,
+                  //   text: "Organization",
+                  //   onTap: () {
+                  //     Timer(Duration(milliseconds: 300), () {
+                  //       Navigator.pop(context); // Close the drawer
+                  //       Navigator.push(context, MaterialPageRoute(builder: (context) => OrganizationList()));
+                  //     });
+                  //
+                  //   },
+                  // ),
                   _buildDrawerItem(
                     context,
                     2,
@@ -220,7 +224,8 @@ class _AppDrawerState extends State<AppDrawer> {
                       });
                     },
                   ),
-                  _buildDrawerItem(
+                if(userType == 'S')
+                    _buildDrawerItem(
                     context,
                     7,
                     icon: Icons.location_on_outlined,
@@ -232,7 +237,8 @@ class _AppDrawerState extends State<AppDrawer> {
                       });
                     },
                   ),
-                  _buildDrawerItem(
+                  if(userType == 'S' || userType == 'A')
+                    _buildDrawerItem(
                     context,
                     8,
                     icon: Icons.business,
@@ -242,7 +248,6 @@ class _AppDrawerState extends State<AppDrawer> {
                         Navigator.pop(context); // Close the drawer
                         Navigator.push(context, MaterialPageRoute(builder: (context) => Vendor_list(currentPage: 8,)));
                       });
-
                     },
                   ),
                   // _buildDrawerItem(
@@ -271,7 +276,8 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
-                  _buildDrawerItem(
+                  if(userType == 'S' || userType == 'A')
+                    _buildDrawerItem(
                     context,
                     11,
                     icon: Icons.file_open_outlined,
@@ -297,7 +303,8 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
-                  _buildDrawerItem(
+                  if(userType == 'S' || userType == 'A')
+                    _buildDrawerItem(
                     context,
                     13,
                     icon: Icons.content_paste_search,
@@ -323,7 +330,8 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
-                  _buildDrawerItem(
+                  if(userType == 'S')
+                    _buildDrawerItem(
                     context,
                     15,
                     icon: Icons.pending_actions_outlined,
@@ -336,7 +344,8 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
-                  _buildDrawerItem(
+                  if(userType == 'S' || userType == 'A')
+                    _buildDrawerItem(
                     context,
                     16,
                     icon: Icons.access_time,

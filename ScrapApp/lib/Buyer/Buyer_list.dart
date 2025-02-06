@@ -28,6 +28,7 @@ class _Buyer_listState extends State<Buyer_list> {
 
   //Variables for user details
   String? username = '';
+ String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -41,8 +42,10 @@ class _Buyer_listState extends State<Buyer_list> {
 
   //Fetching user details from sharedpreferences
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -61,7 +64,8 @@ class _Buyer_listState extends State<Buyer_list> {
     try {
       // Prepare the request body with user credentials
       Map<String, dynamic> requestBody = {
-        'user_id': username,
+      'user_id': username,
+'uuid':uuid,
         'user_pass': password,
       };
 
@@ -172,7 +176,8 @@ class _Buyer_listState extends State<Buyer_list> {
         Uri.parse('${URL}bidder_delete'),
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
           'object_id': Buyer_id,
         },

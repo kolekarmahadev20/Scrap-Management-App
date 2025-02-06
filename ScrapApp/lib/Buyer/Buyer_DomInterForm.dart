@@ -38,6 +38,7 @@ class _Buyer_DomInterFormState extends State<Buyer_DomInterForm> {
 
   //Variables for user details
   String? username = '';
+ String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -66,8 +67,10 @@ class _Buyer_DomInterFormState extends State<Buyer_DomInterForm> {
 
   //Fetching user details from sharedpreferences
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -83,6 +86,7 @@ class _Buyer_DomInterFormState extends State<Buyer_DomInterForm> {
         headers: {"Accept": "application/json"},
         body: {
           'user_id': username,
+          'uuid':uuid,
           'user_pass': password,
           'gstin':  '27AAAAP0267H2ZN',
           //          'gstin':  gstNoController.text,

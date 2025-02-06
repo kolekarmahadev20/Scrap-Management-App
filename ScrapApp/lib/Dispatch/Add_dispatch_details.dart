@@ -34,6 +34,7 @@
 //
 //
 //   String? username = '';
+ String uuid = '';
 //   String? password = '';
 //   String? selectedOrderId;
 //   bool isLoading = false;
@@ -102,7 +103,8 @@
 //         url,
 //         headers: {"Accept": "application/json"},
 //         body: {
-//           'user_id': username,
+//         'user_id': username,
+// 'uuid':uuid,
 //           'user_pass': password,
 //         },
 //       );

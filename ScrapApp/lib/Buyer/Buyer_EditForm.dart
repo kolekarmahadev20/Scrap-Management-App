@@ -85,6 +85,7 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
 
   //Variables for user details
   String? username = '';
+ String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -176,8 +177,10 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
 
   //Fetching user details from sharedpreferences
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -192,7 +195,8 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': username,
+        'user_id': username,
+          'uuid':uuid,
           'user_pass': password,
           'gstin':  gstNoController.text,
           'fy': finYearController.text ?? '',
