@@ -9,13 +9,16 @@ import '../URL_CONSTANT.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'dart:math'; // For Random
 
-class Add_user extends StatefulWidget {
+class Edit_User extends StatefulWidget {
+  final String? empcode;
+
+  const Edit_User({super.key, this.empcode});
 
   @override
-  State<Add_user> createState() => _Add_userState();
+  State<Edit_User> createState() => _Edit_UserState();
 }
 
-class _Add_userState extends State<Add_user> {
+class _Edit_UserState extends State<Edit_User> {
 
   final TextEditingController _vendorController = TextEditingController();
   final List<Map<String, String>> _vendorList = []; // Stores vendor data
@@ -96,7 +99,8 @@ class _Add_userState extends State<Add_user> {
     checkLogin();
     _fetchOrganizations();
     _fetchVendors();
-    generateEmployeeCode();
+    // generateEmployeeCode();
+    _fetchUsers();
     emailIdController.addListener(() {
       final email = emailIdController.text.trim();
       if (email.isNotEmpty && email.contains("@")) {
@@ -109,7 +113,7 @@ class _Add_userState extends State<Add_user> {
 
   //Fetching user details from sharedpreferences
   Future<void> checkLogin() async {
-     final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
@@ -151,6 +155,53 @@ class _Add_userState extends State<Add_user> {
     return employeeCode;
   }
 
+  Future<void> _fetchUsers() async {
+    try {
+      await checkLogin();
+      final url = '${URL}add_user';
+
+      final response = await http.post(
+        Uri.parse(url),
+        body: {
+          'user_id': username,
+          'user_pass': password,
+          'uuid': uuid,
+          'emp_code': employeeCodeController.text ?? '',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        selectedUserType = 'S';
+
+        //     usernameController.text
+    //     passwordController.text
+    //     isActiveYes
+    //     isMobileLoginYes
+    //     hasAccessSaleOrderDataYes
+    //     isDispatchYes
+    //     isPaymentYes
+    //     isRefundYes
+    //     fullNameController.text
+    //     emailIdController.text
+    //     uuIDController.text
+    //
+    // 'vendor_ids': vendorIds.join(',')?? '',
+    // 'plant_id': plantIds.join(',')?? '',
+    // 'org_id': organizationIds.join('')?? '',
+
+
+      } else {
+        // Handle error response
+        Fluttertoast.showToast(
+          msg: "Failed to fetch employee",
+        );
+      }
+    } catch (e) {
+      print("Error adding user: $e");
+    }
+  }
+
   Future<void> _addUsers() async {
     final vendorIds = _selectedVendors.values.toList();  // Extract IDs
     final plantIds = _selectedLocations.values.toList();  // Extract IDs
@@ -169,7 +220,7 @@ class _Add_userState extends State<Add_user> {
         'user_id': username,
         'user_pass': password,
         'uuid': uuid,
-        'emp_code': employeeCodeController.text ?? '',
+        'emp_code': widget.empcode,
         'user_type': userType.toString() ?? '',
         'uname': usernameController.text ?? '',
         'c_pass': passwordController.text ?? '',
@@ -752,7 +803,7 @@ class _Add_userState extends State<Add_user> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    "Add User",
+                    "Edit User",
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -899,7 +950,7 @@ class _Add_userState extends State<Add_user> {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                   _addUsers();
+                  _addUsers();
                   // print(_selectedVendors);
                   // print("_selectedVendors");
                 },

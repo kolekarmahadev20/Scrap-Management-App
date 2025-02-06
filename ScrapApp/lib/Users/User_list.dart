@@ -9,6 +9,7 @@ import '../AppClass/AppDrawer.dart';
 import '../AppClass/appBar.dart';
 import '../URL_CONSTANT.dart';
 import 'Add_user.dart';
+import 'Edit_User.dart';
 
 
 // User model to parse JSON data
@@ -16,6 +17,7 @@ class User {
   final String personId;
   final String empCode;
   final String personName;
+  final String username;
   final String fatherName;
   final String motherName;
   final String dob;
@@ -31,7 +33,6 @@ class User {
   final String empComStatus;
   final String? userType;
   final String? cPass;
-  final String? uname;
   final String isActive;
   final String? uuid;
   final String? orgId;
@@ -45,11 +46,19 @@ class User {
   final String contactDetails;
   final String? approveStatus;
   final String? aprovePerson;
+  final String? isMobile;
+  final String? accesSaleOrder;
+  final String? accesDispatch;
+  final String? accesRefund;
+  final String? accesPayment;
+  final String? vendorId;
+  final String? plantId;
 
   User({
     required this.personId,
     required this.empCode,
     required this.personName,
+    required this.username,
     required this.fatherName,
     required this.motherName,
     required this.dob,
@@ -65,10 +74,10 @@ class User {
     required this.empComStatus,
     this.userType,
     this.cPass,
-    this.uname,
     required this.isActive,
     this.uuid,
     this.orgId,
+    required this.isMobile,
     required this.isDuplicate,
     required this.duplicateEmpId,
     required this.termAccept,
@@ -79,42 +88,55 @@ class User {
     required this.contactDetails,
     this.approveStatus,
     this.aprovePerson,
+    this.accesSaleOrder,
+    this.accesDispatch,
+    this.accesRefund,
+    this.accesPayment,
+    this.vendorId,
+    this.plantId,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      personId: json['person_id'] ?? '',
-      empCode: json['emp_code'] ?? '',
-      personName: json['person_name'] ?? '',
-      fatherName: json['father_name'] ?? '',
-      motherName: json['mother_name'] ?? '',
-      dob: json['dob'] ?? '',
-      doj: json['doj'] ?? '',
-      village: json['village'] ?? '',
-      district: json['district'] ?? '',
-      state: json['state'] ?? '',
-      pincode: json['pincode'] ?? '',
-      address: json['address'] ?? '',
-      familyPhone: json['family_phone'] ?? '',
-      adharNum: json['adhar_num'] ?? '',
-      empEmail: json['emp_email'] ?? '',
-      empComStatus: json['emp_com_Status'] ?? '',
-      userType: json['user_type'],
-      cPass: json['c_pass'],
-      uname: json['uname'],
-      isActive: json['is_active'] ?? '',
-      uuid: json['uuid'],
-      orgId: json['org_id'],
-      isDuplicate: json['is_duplicate'] ?? '',
-      duplicateEmpId: json['duplicate_emp_id'] ?? '',
-      termAccept: json['term_accept'] ?? '',
-      terminationStatus: json['termination_status'] ?? '',
-      dateUpdated: json['date_updated'] ?? '',
-      updatedBy: json['updated_by'] ?? '',
-      copyUserEmployee: json['copyUserEmployee'] ?? '',
-      contactDetails: json['contact_details'] ?? '',
-      approveStatus: json['approve_status'],
-      aprovePerson: json['aprove_person'],
+      personId: json['person_id'] ?? 'NA',
+      empCode: json['emp_code']  ?? 'NA',
+      personName: json['person_name']  ?? 'NA',
+      fatherName: json['father_name'] ?? 'NA',
+      motherName: json['mother_name']  ?? 'NA',
+      dob: json['dob']  ?? 'NA',
+      doj: json['doj']  ?? 'NA',
+      village: json['village'] ?? 'NA',
+      district: json['district'] ?? 'NA',
+      state: json['state']  ?? 'NA',
+      pincode: json['pincode'] ?? 'NA',
+      address: json['address']  ?? 'NA',
+      familyPhone: json['family_phone'] ?? 'NA',
+      adharNum: json['adhar_num'] ?? 'NA',
+      empEmail: json['emp_email'] ?? 'NA',
+      empComStatus: json['emp_com_Status']  ?? 'NA',
+      userType: json['user_type'] ?? 'NA',
+      cPass: json['c_pass'] ?? 'NA',
+      username: json['uname'] ?? 'NA',
+      isActive: json['is_active'] ?? 'NA',
+      isMobile: json['mob_login'] ?? 'NA',
+      uuid: json['uuid']?? 'NA',
+      orgId: json['org_id']?? 'NA',
+      isDuplicate: json['is_duplicate'] ?? 'NA',
+      duplicateEmpId: json['duplicate_emp_id'] ?? 'NA',
+      termAccept: json['term_accept']?? 'NA',
+      terminationStatus: json['termination_status'] ?? 'NA',
+      dateUpdated: json['date_updated'] ?? 'NA',
+      updatedBy: json['updated_by'] ?? 'NA',
+      copyUserEmployee: json['copyUserEmployee'] ?? 'NA',
+      contactDetails: json['contact_details'] ?? 'NA',
+      approveStatus: json['approve_status']?? 'NA',
+      aprovePerson: json['aprove_person']?? 'NA',
+      accesSaleOrder: json['acces_sale_order']?? 'NA',
+      accesDispatch: json['acces_dispatch']?? 'NA',
+      accesRefund: json['acces_refund']?? 'NA',
+      accesPayment: json['acces_payment']?? 'NA',
+      vendorId: json['vendor_id']?? 'NA',
+      plantId: json['plant_id']?? 'NA',
     );
   }
 }
@@ -136,6 +158,7 @@ class _view_userState extends State<view_user> {
 
   // Variables for user details
   String? username = '';
+  String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -162,10 +185,9 @@ class _view_userState extends State<view_user> {
     final response = await http.post(
       Uri.parse('${URL}user_list_details'),
       body: {
-        // 'uuid': _uuid,
-        'user_id': username,
+       'uuid':uuid,
+      'user_id': username,
         'user_pass': password,
-        // 'user_type': _user_type,
       },
     );
 
@@ -189,7 +211,7 @@ class _view_userState extends State<view_user> {
 
     // Filter users by username or fullname containing the search text
     List<User> filteredUsers = allUsers.where((user) =>
-    (user.uname!.toLowerCase().contains(searchText.toLowerCase()) ||
+    (user.username!.toLowerCase().contains(searchText.toLowerCase()) ||
         user.personName.toLowerCase().contains(searchText.toLowerCase())) &&
         (_showActiveUsers == null || (_showActiveUsers ?? true) ? user.isActive.toLowerCase() == 'yes' : user.isActive.toLowerCase() != 'yes')
     ).toList();
@@ -218,10 +240,8 @@ class _view_userState extends State<view_user> {
     await 
     Navigator.pushReplacement(
       context,
-      // MaterialPageRoute(builder: (context) => EditUsers(userId: userId)),
-      MaterialPageRoute(builder: (context) => LeaveApplication(currentPage: 0),
-
-    ));
+      MaterialPageRoute(builder: (context) => Edit_User(empcode: userId))
+    );
 
     if (result == true) {
       // Refresh the user list if changes were made
@@ -235,11 +255,14 @@ class _view_userState extends State<view_user> {
 
   //Fetching user details from sharedpreferences
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
+    uuid = prefs.getString("uuid")!;
   }
 
 
@@ -286,7 +309,7 @@ class _view_userState extends State<view_user> {
                               children: [
                                 UserCard(
                                   user: user,
-                                  onEdit: () => _navigateToEditUser(user.personId),
+                                  onEdit: () => _navigateToEditUser(user.empCode),
                                 ),
                                 SubDetails(user: user),
                                 SizedBox(height: 16),
@@ -296,7 +319,7 @@ class _view_userState extends State<view_user> {
                         ] else ...[
                           UserCard(
                             user: selectedUser!,
-                            onEdit: () => _navigateToEditUser(selectedUser!.personId),
+                            onEdit: () => _navigateToEditUser(selectedUser!.empCode),
                           ),
                           SubDetails(user: selectedUser!),
                         ],
@@ -334,13 +357,13 @@ class _view_userState extends State<view_user> {
                   },
                   itemBuilder: (context, User user) {
                     return ListTile(
-                      title: Text('${user.personName} - (${user.uname})'),
+                      title: Text('${user.personName} - (${user.username})'),
                     );
                   },
                   onSuggestionSelected: (User user) {
                     setState(() {
                       selectedUser = user;
-                      _typeAheadController.text = '${user.personName} - (${user.uname})';
+                      _typeAheadController.text = '${user.personName} - (${user.username})';
                     });
                   },
                 ),
@@ -430,6 +453,9 @@ class UserCard extends StatelessWidget {
       width: double.infinity,
       child: Card(
         elevation: 10,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero,
+        ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -477,7 +503,7 @@ class UserCard extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    isActive ? 'Active' : 'Not Active', // Dynamic text based on isActive
+                    isActive == 'Y' ? 'Active' : 'Not Active', // Dynamic text based on isActive
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
@@ -510,35 +536,36 @@ class SubDetails extends StatelessWidget {
             children: [
               buildTableRows(
                 ['Username', 'Password'],
-                [user.uname, user.cPass],
+                [user.username, user.cPass],
                 1,
               ),
+              buildTableRow('Email ID', user.empEmail,0),
               buildTableRows(
                 ['User Type', 'UUID'],
                 [user.userType, user.uuid],
                 1,
               ),
-              // buildTableRows(
-              //   ['Access Scrap Data', 'Access Seal Data'],
-              //   [user.accessScrapData, user.accessSealData],
-              //   1,
-              // ),
-              // buildTableRows(
-              //   ['Active User', 'Allowed Mobile Login'],
-              //   [user.activeUser, user.allowedMobileLogin],
-              //   1,
-              // ),
-              // buildTableRows(
-              //   ['Receiver', 'Sender'],
-              //   [user.receiver, user.sender],
-              //   1,
-              // ),
-              // buildTableRows(
-              //   ['Access GPS Module', 'App Version'],
-              //   [user.accessGpsModule, user.appVersion],
-              //   1,
-              // ),
-              //
+              buildTableRows(
+                ['Organization', 'Active'],
+                [user.empEmail,user.isActive == 'Y' ? 'Yes' : 'No'],
+                0,
+              ),
+              buildTableRows(
+                ['Mobile Login', 'Access Sale Order'],
+                [user.isMobile== 'Y' ? 'Yes' : 'No', user.accesSaleOrder== 'Y' ? 'Yes' : 'No'],
+                1,
+              ),
+              buildTableRows(
+                ['Access Dispatch', 'Acccess Refund'],
+                [user.accesDispatch== 'Y' ? 'Yes' : 'No', user.accesRefund== 'Y' ? 'Yes' : 'No'],
+                0,
+              ),
+              buildTableRows(
+                ['Access Payment', 'Emp Code'],
+                [user.accesPayment== 'Y' ? 'Yes' : 'No', user.empCode],
+                1,
+              ),
+
               // buildTableRow('Material', user.material,1),
               // if (user.plant != null) buildTableRow('Plant', user.plant!,1),
 
