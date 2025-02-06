@@ -53,8 +53,13 @@ class User {
   final String? accesPayment;
   final String? vendorId;
   final String? plantId;
+  final String? orgID;
+
+
+
 
   User({
+    required this.orgID,
     required this.personId,
     required this.empCode,
     required this.personName,
@@ -137,6 +142,7 @@ class User {
       accesPayment: json['acces_payment']?? 'NA',
       vendorId: json['vendor_id']?? 'NA',
       plantId: json['plant_id']?? 'NA',
+      orgID: json['org_id']??'NA',
     );
   }
 }
@@ -235,12 +241,14 @@ class _view_userState extends State<view_user> {
   }
 
 
-  Future<void> _navigateToEditUser(String userId) async {
+  Future<void> _navigateToEditUser(User user) async {
     final result = 
     await 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => Edit_User(empcode: userId))
+      MaterialPageRoute(
+        builder: (context) => Edit_User(user: user), // Pass full user object
+      ),
     );
 
     if (result == true) {
@@ -309,7 +317,7 @@ class _view_userState extends State<view_user> {
                               children: [
                                 UserCard(
                                   user: user,
-                                  onEdit: () => _navigateToEditUser(user.empCode),
+                                  onEdit: () => _navigateToEditUser(user),
                                 ),
                                 SubDetails(user: user),
                                 SizedBox(height: 16),
@@ -319,7 +327,7 @@ class _view_userState extends State<view_user> {
                         ] else ...[
                           UserCard(
                             user: selectedUser!,
-                            onEdit: () => _navigateToEditUser(selectedUser!.empCode),
+                            onEdit: () => _navigateToEditUser(selectedUser!),
                           ),
                           SubDetails(user: selectedUser!),
                         ],

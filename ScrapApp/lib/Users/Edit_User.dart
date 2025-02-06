@@ -7,12 +7,14 @@ import '../AppClass/AppDrawer.dart';
 import '../AppClass/appBar.dart';
 import '../URL_CONSTANT.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'dart:math'; // For Random
+import 'dart:math';
+
+import 'User_list.dart'; // For Random
 
 class Edit_User extends StatefulWidget {
-  final String? empcode;
+  final User user;
 
-  const Edit_User({super.key, this.empcode});
+  const Edit_User({required this.user, Key? key}) : super(key: key);
 
   @override
   State<Edit_User> createState() => _Edit_UserState();
@@ -36,7 +38,7 @@ class _Edit_UserState extends State<Edit_User> {
   final TextEditingController _organizationController = TextEditingController();
   final List<Map<String, String>> _organizationList = []; // Stores location data
   final List<String> _organizationOptions = []; // Stores location_name for suggestions
-  final List<String> _selectedorganizationValues = [];
+  late final List<String> _selectedorganizationValues = [];
   final Map<String, String> _selectedOrganization= {}; // Maps location_name to location_id
 
   String? selectedUserType;
@@ -96,9 +98,40 @@ class _Edit_UserState extends State<Edit_User> {
   @override
   void initState() {
     super.initState();
+
+
+    print(widget.user.vendorId);
+    print(widget.user.plantId);
+
+
+    selectedUserType = widget.user.userType??'';
+    employeeCodeController.text = widget.user.empCode??'';
+    fullNameController.text = widget.user.personName??'';
+    emailIdController.text = widget.user.empEmail??'';
+    usernameController.text = widget.user.username??'';
+    passwordController.text = widget.user.cPass??'';
+    uuIDController.text = widget.user.uuid??'';
+
+     isActiveYes = widget.user.isActive == 'Y';
+     isActiveNo = widget.user.isActive != 'Y';
+     isMobileLoginYes = widget.user.isMobile == 'Y';
+     isMobileLoginNo =  widget.user.isMobile != 'Y';
+     hasAccessSaleOrderDataYes = widget.user.accesSaleOrder == 'Y';
+     hasAccessSaleOrderDataNo = widget.user.accesSaleOrder != 'Y';
+     isRefundYes = widget.user.accesRefund == 'Y';
+     isRefundNo = widget.user.accesRefund != 'Y';
+     isPaymentYes = widget.user.accesPayment == 'Y';
+     isPaymentNo = widget.user.accesPayment != 'Y';
+     isDispatchYes =widget.user.accesDispatch == 'Y';
+     isDispatchNo = widget.user.accesDispatch != 'Y';
+
+
+
+
     checkLogin();
     _fetchOrganizations();
     _fetchVendors();
+
     // generateEmployeeCode();
     _fetchUsers();
     emailIdController.addListener(() {
@@ -107,6 +140,9 @@ class _Edit_UserState extends State<Edit_User> {
         generateUsernameAndPassword(email);
       }
     });
+
+    print(widget.user.orgID);
+    print('BHHARAT');
 
   }
 
@@ -211,7 +247,7 @@ class _Edit_UserState extends State<Edit_User> {
     try {
       await checkLogin();
 
-      final url = '${URL}add_user';
+      final url = '${URL}edit_user';
 
       // Debug: Print URL and the request body data before making the API call
       print("Making POST request to URL: $url");
@@ -220,7 +256,7 @@ class _Edit_UserState extends State<Edit_User> {
         'user_id': username,
         'user_pass': password,
         'uuid': uuid,
-        'emp_code': widget.empcode,
+        'emp_code': widget.user.empCode,
         'user_type': userType.toString() ?? '',
         'uname': usernameController.text ?? '',
         'c_pass': passwordController.text ?? '',
@@ -317,15 +353,7 @@ class _Edit_UserState extends State<Edit_User> {
               }
             }
 
-            // Process location list
-            // if (locationList != null) {
-            //   for (var location in locationList) {
-            //     final locationName = location['location_name'];
-            //     final locationId = location['id'];
-            //     _locationList.add({"id": locationId, "name": locationName});
-            //     _locationOptions.add(locationName);
-            //   }
-            // }
+            _prefillSelectedVendors();
           });
         } else {
           print("Response data is null.");
@@ -338,7 +366,38 @@ class _Edit_UserState extends State<Edit_User> {
     }
   }
 
+  void _prefillSelectedVendors() {
+    if (widget.user.vendorId!.isNotEmpty) {
+      List<String> selectedVendorIds = widget.user.vendorId!.split(',');
+
+      for (var id in selectedVendorIds) {
+        final vendor = _vendorList.firstWhere(
+              (vendor) => vendor['id'].toString() == id.trim(),
+          orElse: () => {},
+        );
+
+        if (vendor.isNotEmpty) {
+          // Avoid duplicates in selected vendors
+          if (!_selectedVendorValues.contains(vendor['name'])) {
+            _selectedVendorValues.add(vendor['name']!);
+            _selectedVendors[vendor['name']!] = vendor['id']!;
+          }
+        }
+      }
+
+      print("Final Selected Vendors: $_selectedVendorValues");
+      print("Selected Vendor Map: $_selectedVendors");
+
+      _fetchPlants(_selectedVendors);
+      setState(() {}); // Update UI
+    }
+  }
+
+
   Future<void> _fetchPlants(Map<String, String> selectedVendors) async {
+
+    print(_selectedVendors);
+    print("POOJA");
     final vendorIds = selectedVendors.values.toList();  // Extract IDs
 
     // Debug: Print the vendor IDs being sent
@@ -388,6 +447,8 @@ class _Edit_UserState extends State<Edit_User> {
               }
             }
           });
+
+          _prefillSelectedLocations();
         } else {
           print("Response data is null or 'plants' not found.");
         }
@@ -401,6 +462,68 @@ class _Edit_UserState extends State<Edit_User> {
     }
   }
 
+
+  // void _prefillSelectedLocations(Map<String, String> selectedVendors) {
+  //   // Extract vendor IDs from selectedVendors map
+  //   final vendorIds = selectedVendors.values.toList();
+  //
+  //   if (vendorIds.isNotEmpty) {
+  //     // Sending the vendor IDs for fetching plant locations
+  //     _fetchPlants(selectedVendors);
+  //   }
+  //
+  //   // Check if user already has selected plant locations
+  //   if (widget.user.plantId != null && widget.user.plantId!.isNotEmpty) {
+  //     List<String> selectedPlantIds = widget.user.plantId!.split(',');
+  //
+  //     for (var id in selectedPlantIds) {
+  //       final location = _locationList.firstWhere(
+  //             (location) => location['id'].toString() == id.trim(),
+  //         orElse: () => {},
+  //       );
+  //
+  //       if (location.isNotEmpty) {
+  //         // Avoid duplicates in selected locations
+  //         if (!_selectedLocationValues.contains(location['name'])) {
+  //           _selectedLocationValues.add(location['name']!);
+  //           _selectedLocations[location['name']!] = location['id']!;
+  //         }
+  //       }
+  //     }
+  //
+  //     // Debug: Print the selected locations after prefill
+  //     print("Selected Locations: $_selectedLocations");
+  //   }
+  //
+  //   setState(() {}); // Update the UI
+  // }
+
+  void _prefillSelectedLocations() {
+    if (widget.user.plantId!.isNotEmpty) {
+      List<String> selectedVendorIds = widget.user.plantId!.split(',');
+
+      for (var id in selectedVendorIds) {
+        final vendor = _locationList.firstWhere(
+              (vendor) => vendor['id'].toString() == id.trim(),
+          orElse: () => {},
+        );
+
+        if (vendor.isNotEmpty) {
+          // Avoid duplicates in selected vendors
+          if (!_selectedLocationValues.contains(vendor['name'])) {
+            _selectedLocationValues.add(vendor['name']!);
+            _selectedLocations[vendor['name']!] = vendor['id']!;
+          }
+        }
+      }
+
+      print("Final Selected Vendors: $_selectedVendorValues");
+      print("Selected Vendor Map: $_selectedVendors");
+
+      _fetchPlants(_selectedVendors);
+      setState(() {}); // Update UI
+    }
+  }
 
 
   Future<void> _fetchOrganizations() async {
@@ -428,6 +551,9 @@ class _Edit_UserState extends State<Edit_User> {
 
               _organizationList.add({"id": orgId, "name": orgName});
               _organizationOptions.add(orgName);
+
+              _prefillSelectedOrganizations();
+
             }
           });
         } else {
@@ -440,6 +566,31 @@ class _Edit_UserState extends State<Edit_User> {
       print("Error fetching organizations: $e");
     }
   }
+
+
+  void _prefillSelectedOrganizations() {
+    if (widget.user.orgID!.isNotEmpty) {
+      List<String> selectedOrgIds = widget.user.orgID!.split(',');
+
+      for (var id in selectedOrgIds) {
+        final org = _organizationList.firstWhere(
+              (org) => org['id'].toString() == id.trim(),
+          orElse: () => {},
+        );
+
+        if (org.isNotEmpty) {
+
+          // Avoid duplicates in selected organization
+          if (!_selectedorganizationValues.contains(org['name'])) {
+            _selectedorganizationValues.add(org['name']!);
+            _selectedOrganization[org['name']!] = org['id']!;
+          }
+        }
+      }
+      setState(() {}); // Update UI
+    }
+  }
+
 
   // Function to build a reusable TypeAhead dropdown
   Widget buildTypeAheadDropdownVendor({
