@@ -67,6 +67,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   final TextEditingController noteController = TextEditingController();
 
   String? username = '';
+ String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -126,8 +127,10 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -168,6 +171,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
           'user_id':username,
           'user_pass':password,
           'sale_order_id':widget.sale_order_id,
+          'uuid':uuid
         },
       );
       //variable to send material value instead of name in backend.
@@ -202,7 +206,8 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
           'sale_order_id':widget.sale_order_id,
         },
@@ -427,7 +432,8 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
           'invoice_no': widget.invoiceNo,

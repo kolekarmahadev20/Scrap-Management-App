@@ -52,6 +52,7 @@ class View_dispatch_lifting_details extends StatefulWidget {
 class _View_dispatch_lifting_detailsState
     extends State<View_dispatch_lifting_details> {
   String? username = '';
+ String uuid = '';
 
   String? password = '';
   String? loginType = '';
@@ -120,8 +121,10 @@ class _View_dispatch_lifting_detailsState
   }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -149,7 +152,8 @@ class _View_dispatch_lifting_detailsState
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
           'invoice_no': widget.invoiceNo,

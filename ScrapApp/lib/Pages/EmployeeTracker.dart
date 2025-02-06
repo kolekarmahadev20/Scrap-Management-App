@@ -8,7 +8,6 @@ import 'package:flutter/foundation.dart';
 import '../AppClass/AppDrawer.dart';
 import '../AppClass/appBar.dart';
 import 'package:flutter/services.dart';
-
 import '../URL_CONSTANT.dart';
 import 'StartPage.dart';
 
@@ -35,6 +34,7 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
 
   //Variables for user details
   String? username = '';
+ String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -49,8 +49,10 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
 
   //Fetching user details from sharedpreferences
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -58,11 +60,12 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
 
   Future<void> _fetchDropdownData() async {
     await checkLogin();
-    final url = '${URL}get_dropdown_data';
+    final url = '${URL}get_dropdown';
     final response = await http.post(
       Uri.parse(url),
       body: {
-        'user_id': username,
+      'user_id': username,
+'uuid':uuid,
         'user_pass': password,
       },
     );
@@ -71,14 +74,20 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
       print('Response body: ${response.body}');
       final data = json.decode(response.body);
 
-
-        setState(() {
-          employees = List<Map<String, String>>.from(data['users'].map((x) => {
-            'id': x['person_id'] as String, // Correct key
-            'full_name': x['person_name'] as String,
-            'username': x['uname'] as String,
-          }));
-        });
+      setState(() {
+        employees = List<Map<String, String>>.from(data['users'].map((x) => {
+          'id': x['person_id']?.toString() ?? '',  // Handle null safely
+          'full_name': x['person_name']?.toString() ?? '', // Handle null safely
+          'username': x['uname']?.toString() ?? '', // Use emp_code instead of uname
+        }));
+      });
+        // setState(() {
+        //   employees = List<Map<String, String>>.from(data['users'].map((x) => {
+        //     'id': x['person_id'] as String, // Correct key
+        //     'full_name': x['person_name'] as String,
+        //     'username': x['uname'] as String,
+        //   }));
+        // });
 
     } else {
       throw Exception('Failed to load dropdown data');
@@ -101,7 +110,8 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
     final response = await http.post(
       Uri.parse(url),
       body: {
-        'user_id': username,
+      'user_id': username,
+'uuid':uuid,
         'user_pass': password,
         'date': selectedDate.toIso8601String().split('T')[0],
         'id': selectedEmployeeId,

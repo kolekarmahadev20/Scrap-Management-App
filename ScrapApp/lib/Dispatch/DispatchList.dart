@@ -24,6 +24,7 @@ class _DispatchListState extends State<DispatchList> {
   TextEditingController searchVendorController = TextEditingController(); // Controller for search input
   TextEditingController searchBidderController = TextEditingController(); // Controller for search input
   String? username = '';
+ String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -43,44 +44,107 @@ class _DispatchListState extends State<DispatchList> {
   }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
   }
+
   Future<void> fetchDispatchList() async {
     try {
+      print("Fetching Dispatch List...");
+
       setState(() {
         isLoading = true;
       });
+
       await checkLogin();
-      final url = Uri.parse("${URL}ajax_sale_order_dispatch_list");
+      print("Login check completed.");
+    print(username);
+          print(password);
+
+
+      await checkLogin();
+      final url = Uri.parse('${URL}ajax_sale_order_dispatch_list');
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': username,
-          'user_pass': password,
+          'user_id':username,
+          'user_pass':password,
+          'uuid':uuid
         },
       );
+      print("Request URL: $url");
+
+      print("Response Status Code: ${response.statusCode}");
+
       if (response.statusCode == 200) {
+        var jsonData = json.decode(response.body);
+        print("Response Data: $jsonData");
+
         setState(() {
-          var jsonData = json.decode(response.body);
-          dispatchList = List<Map<String, dynamic>>.from(jsonData['saleOrder_dispatchList']);
-          filteredDispatchList = dispatchList;
+          if (jsonData.containsKey('saleOrder_dispatchList')) {
+            dispatchList = List<Map<String, dynamic>>.from(jsonData['saleOrder_dispatchList']);
+            filteredDispatchList = dispatchList;
+            print("Dispatch List Fetched: ${dispatchList.length} items");
+          } else {
+            print("Key 'saleOrder_dispatchList' not found in response.");
+            dispatchList = [];
+            filteredDispatchList = [];
+          }
         });
       } else {
-        print("Unable to fetch data.");
+        print("Unable to fetch data. Status Code: ${response.statusCode}");
       }
     } catch (e) {
       print("Server Exception: $e");
-    }finally{
+    } finally {
       setState(() {
         isLoading = false;
       });
+      print("Fetching completed. isLoading set to false.");
     }
   }
+
+
+  // Future<void> fetchDispatchList() async {
+  //   try {
+  //     setState(() {
+  //       isLoading = true;
+  //     });
+  //     await checkLogin();
+  //     final url = Uri.parse("${URL}ajax_sale_order_dispatch_list");
+  //     var response = await http.post(
+  //       url,
+  //       headers: {"Accept": "application/json"},
+  //       body: {
+  //       'user_id': username,
+// 'uuid':uuid,
+  //         'user_pass': password,
+  //       },
+  //     );
+  //     if (response.statusCode == 200) {
+  //       setState(() {
+  //         var jsonData = json.decode(response.body);
+  //         print(jsonData);
+  //         dispatchList = List<Map<String, dynamic>>.from(jsonData['saleOrder_dispatchList']);
+  //         filteredDispatchList = dispatchList;
+  //       });
+  //     } else {
+  //       print("Unable to fetch data.");
+  //     }
+  //   } catch (e) {
+  //     print("Server Exception: $e");
+  //   }finally{
+  //     setState(() {
+  //       isLoading = false;
+  //     });
+  //   }
+  // }
 
   void filterResults() {
     List<dynamic> searchResults = dispatchList;

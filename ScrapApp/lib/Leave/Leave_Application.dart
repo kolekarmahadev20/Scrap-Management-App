@@ -32,6 +32,7 @@ class _LeaveApplicationState extends State<LeaveApplication> {
 
   // Variables for user details
   String? username = '';
+ String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -73,8 +74,10 @@ class _LeaveApplicationState extends State<LeaveApplication> {
   }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -107,7 +110,8 @@ class _LeaveApplicationState extends State<LeaveApplication> {
     final response = await http.post(
       Uri.parse(url),
       body: {
-        'user_id': username,
+      'user_id': username,
+'uuid':uuid,
         'user_pass': password,
         'location_id': locationController.text,
         'from_date': fromDate != null ? fromDate?.toLocal().toString() : '',
@@ -155,8 +159,9 @@ class _LeaveApplicationState extends State<LeaveApplication> {
         Uri.parse('${URL}user_leaves'),
         headers: {"Accept": "application/json"},
         body: {
-          // 'uuid': _uuid,
-          'user_id': username,
+          // 'uuid': 'UKQ1.231108.001',
+        'user_id': username,
+        'uuid':uuid,
           'user_pass': password,
           // 'person_id':'92'
         },
@@ -179,53 +184,117 @@ class _LeaveApplicationState extends State<LeaveApplication> {
     return [];
   }
 
-
   Future<List<dynamic>> fetchLeaveData() async {
+    print("=== Starting fetchLeaveData Function ===");
     await checkLogin();
+
     try {
+      final url = '${URL}authorized_by';
+      print("API URL: $url");
+
       final response = await http.post(
-        Uri.parse('${URL}authorized_by'),
+        Uri.parse(url),
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
         },
       );
 
+      print("Response Status Code: ${response.statusCode}");
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print(data);
-
-        setState(() {
-          // Keep "All Location" as the first option
-          AuthorizationByType = {'Select': '0'};
-          for (var location in data['user_data']) {
-            AuthorizationByType[location['person_name']] = location['emp_person_id'];
-          }
-        });
+        print("Response Data: $data");
 
         if (data["status"] == "1") {
           if (data.containsKey("user_data") && data["user_data"] is List) {
             setState(() {
+              // Keep "Select" as the first option
+              AuthorizationByType = {'Select': '0'};
+
+              for (var location in data['user_data']) {
+                String personName = location['person_name'] ?? 'Unknown';
+                String? empPersonId = location['emp_person_id'];
+
+                // Handle null `emp_person_id`
+                if (empPersonId != null) {
+                  AuthorizationByType[personName] = empPersonId;
+                } else {
+                  print("Warning: emp_person_id is null for $personName");
+                }
+              }
+
               leaveData = data["user_data"] as List;
             });
 
             return leaveData;
           } else {
-            print('No valid "user_data" found in the response');
+            print('Error: "user_data" key is missing or not a List in response.');
           }
         } else {
-          print('Status is not 1 in the response');
+          print('Error: Status is not "1" in the response.');
         }
       } else {
-        print(
-            'Failed to fetch leave data. Status code: ${response.statusCode}');
+        print("Error: Failed to fetch leave data. Status code: ${response.statusCode}");
       }
     } catch (e) {
-      print('Error: $e');
+      print("Exception occurred: $e");
     }
+
+    print("=== End of fetchLeaveData Function ===");
     return [];
   }
+
+
+  // Future<List<dynamic>> fetchLeaveData() async {
+  //   await checkLogin();
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse('${URL}authorized_by'),
+  //       headers: {"Accept": "application/json"},
+  //       body: {
+  //       'user_id': username,
+// 'uuid':uuid,
+  //         'user_pass': password,
+  //       },
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       final data = json.decode(response.body);
+  //       print(data);
+  //
+  //       setState(() {
+  //         // Keep "All Location" as the first option
+  //         AuthorizationByType = {'Select': '0'};
+  //         for (var location in data['user_data']) {
+  //           AuthorizationByType[location['person_name']] = location['emp_person_id'];
+  //         }
+  //       });
+  //
+  //       if (data["status"] == "1") {
+  //         if (data.containsKey("user_data") && data["user_data"] is List) {
+  //           setState(() {
+  //             leaveData = data["user_data"] as List;
+  //           });
+  //
+  //           return leaveData;
+  //         } else {
+  //           print('No valid "user_data" found in the response');
+  //         }
+  //       } else {
+  //         print('Status is not 1 in the response');
+  //       }
+  //     } else {
+  //       print(
+  //           'Failed to fetch leave data. Status code: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     print('Error: $e');
+  //   }
+  //   return [];
+  // }
 
   Widget buildFieldWithDatePicker(
     String label,

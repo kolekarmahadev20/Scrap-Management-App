@@ -24,6 +24,7 @@ class View_dispatch_details extends StatefulWidget {
 
 class _View_dispatch_detailsState extends State<View_dispatch_details> {
   String? username = '';
+ String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -44,8 +45,9 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
   }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -53,6 +55,10 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
 
   Future<void> fetchDispatchDetails() async {
     try {
+      print(widget.sale_order_id);
+      print(widget.bidder_id);
+      print("55419844894");
+
       setState(() {
         isLoading = true;
       });
@@ -62,7 +68,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': username,
+        'user_id': username,
+        'uuid':uuid,
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
           'bidder_id':widget.bidder_id,
@@ -137,16 +144,45 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                           8.0), // Match padding from previous code
                       child: buildVendorInfo(),
                     ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            buildScrollableContainerWithListView(
-                                "Lifting Details", buildInvoiceListView),
-                          ],
+                    if (liftingDetails.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          "Lifting Details",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                            letterSpacing: 1.2,
+                          ),
                         ),
                       ),
+                    Expanded(
+                      child: liftingDetails.isNotEmpty
+                          ? ListView.builder(
+                        itemCount: liftingDetails.length,
+                        itemBuilder: (context, index) {
+                          final liftingDetailsIndex = liftingDetails[index];
+                          return buildInvoiceListTile(context, liftingDetailsIndex);
+                        },
+                      )
+                          : Center(
+                            child: Text(
+                              "No Lifting Details Found.",
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                            ),
+                      ),
                     ),
+                    // Expanded(
+                    //   child: SingleChildScrollView(
+                    //     child: Column(
+                    //       children: [
+                    //         buildScrollableContainerWithListView(
+                    //             "Lifting Details", buildInvoiceListView),
+                    //       ],
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -159,7 +195,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
             MaterialPageRoute(
               builder: (context) => addDispatchToSaleOrder(
                   sale_order_id: widget.sale_order_id,
-                  material_name: ViewDispatchData['sale_order_details']?[0]['material_name']?? 'N/A'),
+                  material_name: ViewDispatchData['sale_order_details']?[0]['material_name']?? 'N/A',
+                bidder_id: widget.bidder_id,),
             ),
           ).then((value) => setState(() {
                 fetchDispatchDetails();

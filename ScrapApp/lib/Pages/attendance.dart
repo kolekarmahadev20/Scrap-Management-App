@@ -16,6 +16,7 @@ class AttendanceMarkedPage extends StatefulWidget {
 
 class _AttendanceMarkedPageState extends State<AttendanceMarkedPage> {
   String? username = '';
+ String uuid = '';
 
   String? password = '';
 
@@ -33,8 +34,10 @@ class _AttendanceMarkedPageState extends State<AttendanceMarkedPage> {
   }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");

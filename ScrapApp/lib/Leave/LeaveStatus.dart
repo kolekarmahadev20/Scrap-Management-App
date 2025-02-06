@@ -56,6 +56,7 @@ class _LeaveStatusState extends State<LeaveStatus> {
 
   // Variables for user details
   String? username = '';
+  String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -91,11 +92,14 @@ class _LeaveStatusState extends State<LeaveStatus> {
   }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
     username = prefs.getString("username");
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
+    uuid = prefs.getString("uuid")!;
   }
 
   Future<void> changeLeaveStatus(String leaveId, String status) async {
@@ -106,7 +110,8 @@ class _LeaveStatusState extends State<LeaveStatus> {
         headers: {"Accept": "application/json"},
         body: {
           // 'uuid': _uuid,
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
           'id': leaveId,
           'status': status,
@@ -119,6 +124,7 @@ class _LeaveStatusState extends State<LeaveStatus> {
         print(responseData);
         print('bharat');
         setState(() {
+          fetchLeaveData();
           leaveData = leaveData.map((leave) {
             if (leave['id'].toString() == leaveId) {
               leave['status'] = status;
@@ -141,16 +147,16 @@ class _LeaveStatusState extends State<LeaveStatus> {
         Uri.parse('${URL}get_leaves'),
         headers: {"Accept": "application/json"},
         body: {
-          // 'uuid': _uuid,
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
         },
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        // print(data);
-        // print('pooja');
+        print(data);
+        print('pooja');
         if (data["status"] == "1" && data.containsKey("user_data") && data["user_data"] is List) {
           setState(() {
             leaveData = data["user_data"] as List;
@@ -326,7 +332,9 @@ class _LeaveStatusState extends State<LeaveStatus> {
             runSpacing: 8.0, // Space between rows when buttons wrap
             children: [
               ElevatedButton(
-                onPressed: () => changeLeaveStatus(leave['id'].toString(), '1'),
+                onPressed: () {
+                changeLeaveStatus(leave['id'].toString(), '1');
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
@@ -334,7 +342,9 @@ class _LeaveStatusState extends State<LeaveStatus> {
                 child: const Text('Approve'),
               ),
               ElevatedButton(
-                onPressed: () => changeLeaveStatus(leave['id'].toString(), '2'),
+                onPressed: () => {
+                changeLeaveStatus(leave['id'].toString(), '2')
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,

@@ -6,6 +6,7 @@ import 'dart:convert';
 import '../AppClass/AppDrawer.dart';
 import '../AppClass/appBar.dart';
 import '../URL_CONSTANT.dart';
+import 'StartPage.dart';
 
 class ChangePassword extends StatefulWidget {
   final int currentPage;
@@ -30,6 +31,7 @@ class _ChangePasswordState extends State<ChangePassword> {
 
   // Variables for user details
   String? username = '';
+ String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -49,8 +51,10 @@ class _ChangePasswordState extends State<ChangePassword> {
   }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     print(password);
 
@@ -71,7 +75,8 @@ class _ChangePasswordState extends State<ChangePassword> {
         headers: {"Accept": "application/json"},
         body: {
           // 'uuid': _uuid,
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
           'new_password':_newPasswordController.text,
         },
@@ -81,8 +86,14 @@ class _ChangePasswordState extends State<ChangePassword> {
         final responseData = json.decode(response.body);
         print(responseData);
         print('bharat');
-        setState(() {
-
+        setState(() async {
+          SharedPreferences login = await SharedPreferences.getInstance();
+          await login.clear(); // Clear all saved data
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => StartPage()),
+                (Route<dynamic> route) => false,
+          );
         });
       } else {
         print('Failed to change leave status. Status code: ${response.statusCode}');
