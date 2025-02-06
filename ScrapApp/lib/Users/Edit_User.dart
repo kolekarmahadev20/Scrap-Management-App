@@ -462,43 +462,13 @@ class _Edit_UserState extends State<Edit_User> {
     }
   }
 
+  bool isPrefilled = false; // Add this as a class-level variable
 
-  // void _prefillSelectedLocations(Map<String, String> selectedVendors) {
-  //   // Extract vendor IDs from selectedVendors map
-  //   final vendorIds = selectedVendors.values.toList();
-  //
-  //   if (vendorIds.isNotEmpty) {
-  //     // Sending the vendor IDs for fetching plant locations
-  //     _fetchPlants(selectedVendors);
-  //   }
-  //
-  //   // Check if user already has selected plant locations
-  //   if (widget.user.plantId != null && widget.user.plantId!.isNotEmpty) {
-  //     List<String> selectedPlantIds = widget.user.plantId!.split(',');
-  //
-  //     for (var id in selectedPlantIds) {
-  //       final location = _locationList.firstWhere(
-  //             (location) => location['id'].toString() == id.trim(),
-  //         orElse: () => {},
-  //       );
-  //
-  //       if (location.isNotEmpty) {
-  //         // Avoid duplicates in selected locations
-  //         if (!_selectedLocationValues.contains(location['name'])) {
-  //           _selectedLocationValues.add(location['name']!);
-  //           _selectedLocations[location['name']!] = location['id']!;
-  //         }
-  //       }
-  //     }
-  //
-  //     // Debug: Print the selected locations after prefill
-  //     print("Selected Locations: $_selectedLocations");
-  //   }
-  //
-  //   setState(() {}); // Update the UI
-  // }
 
   void _prefillSelectedLocations() {
+    if (isPrefilled) return; // Prevent re-execution
+    isPrefilled = true; // Mark as executed
+
     if (widget.user.plantId!.isNotEmpty) {
       List<String> selectedVendorIds = widget.user.plantId!.split(',');
 
@@ -509,7 +479,6 @@ class _Edit_UserState extends State<Edit_User> {
         );
 
         if (vendor.isNotEmpty) {
-          // Avoid duplicates in selected vendors
           if (!_selectedLocationValues.contains(vendor['name'])) {
             _selectedLocationValues.add(vendor['name']!);
             _selectedLocations[vendor['name']!] = vendor['id']!;
@@ -517,10 +486,10 @@ class _Edit_UserState extends State<Edit_User> {
         }
       }
 
-      print("Final Selected Vendors: $_selectedVendorValues");
-      print("Selected Vendor Map: $_selectedVendors");
+      print("Final Selected Vendors: $_selectedLocationValues");
+      print("Selected Vendor Map: $_selectedLocations");
 
-      _fetchPlants(_selectedVendors);
+      _fetchPlants(_selectedLocations);
       setState(() {}); // Update UI
     }
   }

@@ -290,7 +290,8 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
-                  _buildDrawerItem(
+                  if(userType == 'S')
+                    _buildDrawerItem(
                     context,
                     12,
                     icon: Icons.people_alt_outlined,
