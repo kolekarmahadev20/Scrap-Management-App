@@ -175,20 +175,20 @@ class _Edit_UserState extends State<Edit_User> {
         selectedUserType = 'S';
 
         //     usernameController.text
-    //     passwordController.text
-    //     isActiveYes
-    //     isMobileLoginYes
-    //     hasAccessSaleOrderDataYes
-    //     isDispatchYes
-    //     isPaymentYes
-    //     isRefundYes
-    //     fullNameController.text
-    //     emailIdController.text
-    //     uuIDController.text
-    //
-    // 'vendor_ids': vendorIds.join(',')?? '',
-    // 'plant_id': plantIds.join(',')?? '',
-    // 'org_id': organizationIds.join('')?? '',
+        //     passwordController.text
+        //     isActiveYes
+        //     isMobileLoginYes
+        //     hasAccessSaleOrderDataYes
+        //     isDispatchYes
+        //     isPaymentYes
+        //     isRefundYes
+        //     fullNameController.text
+        //     emailIdController.text
+        //     uuIDController.text
+        //
+        // 'vendor_ids': vendorIds.join(',')?? '',
+        // 'plant_id': plantIds.join(',')?? '',
+        // 'org_id': organizationIds.join('')?? '',
 
 
       } else {

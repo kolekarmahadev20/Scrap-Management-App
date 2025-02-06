@@ -44,6 +44,7 @@ class View_Payment_Amount extends StatefulWidget {
 class _View_Payment_AmountState extends State<View_Payment_Amount> {
 
   String? username = '';
+ String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -82,8 +83,10 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
   }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -97,7 +100,8 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
           'sale_order_id':widget.sale_order_id,
         },

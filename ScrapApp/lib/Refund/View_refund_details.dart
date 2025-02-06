@@ -24,6 +24,7 @@ class View_refund_details extends StatefulWidget {
 class _View_refund_detailsState extends State<View_refund_details> {
 
   String? username = '';
+ String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -47,8 +48,10 @@ class _View_refund_detailsState extends State<View_refund_details> {
   }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -65,7 +68,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
           'bidder_id': widget.bidder_id,
@@ -545,29 +549,29 @@ class _View_refund_detailsState extends State<View_refund_details> {
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "Ref No : ",
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontWeight: FontWeight.bold, // Bold key
-                            fontSize: 16,
-                          ),
-                        ),
-                        TextSpan(
-                          text: "${index['pay_ref_no'] ?? 'N/A'}",
-                          style: TextStyle(
-                            color: Colors.black54,
-                            fontWeight: FontWeight.normal, // Normal value
-                            fontSize: 16,
-
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  // RichText(
+                  //   text: TextSpan(
+                  //     children: [
+                  //       TextSpan(
+                  //         text: "Ref No : ",
+                  //         style: TextStyle(
+                  //           color: Colors.black87,
+                  //           fontWeight: FontWeight.bold, // Bold key
+                  //           fontSize: 16,
+                  //         ),
+                  //       ),
+                  //       TextSpan(
+                  //         text: "${index['pay_ref_no'] ?? 'N/A'}",
+                  //         style: TextStyle(
+                  //           color: Colors.black54,
+                  //           fontWeight: FontWeight.normal, // Normal value
+                  //           fontSize: 16,
+                  //
+                  //         ),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
                   RichText(
                     text: TextSpan(
                       children: [
@@ -593,64 +597,64 @@ class _View_refund_detailsState extends State<View_refund_details> {
                   ),
                 ],
               ),
-              trailing: IconButton(
-                icon: Icon(Icons.arrow_forward_ios, size: 16),
-                color: Colors.grey[600],
-                onPressed: () {
-                  print(index['nfa_no']);
-                  // Action on tapping the arrow
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => View_Refund_Amount(
-                        sale_order_id: widget.sale_order_id,
-                        bidder_id: widget.bidder_id,
-                        refundId: index['payment_id'],
-                        paymentType: index['payment_type'],
-                        date1: index['date'],
-                        amount: index['amt'],
-                        totalPayment: ViewRefundData['totalPayment'].toString(),
-                        totalEmd: ViewRefundData['total_emd'].toString(),
-                        totalAmountIncludingEmd:ViewRefundData['totalAvailablebalIncludingEmd'],
-                        note: index['narration'],
-                        referenceNo: index['pay_ref_no'],
-                        rvNo: index['receipt_voucher_no'],
-                        date2: index['receipt_voucher_date'],
-                        typeOfTransfer: index['typeoftransfer'],
-                        nfa: index['nfa_no'],
-                      ),
-                    ),
-                  ).then((value) => setState((){
-                    fetchRefundDetails();
-                  }));
-                },
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => View_Refund_Amount(
-                      sale_order_id: widget.sale_order_id,
-                      bidder_id: widget.bidder_id,
-                      refundId: index['payment_id'],
-                      paymentType: index['payment_type'],
-                      date1: index['pay_date'],
-                      amount: index['amt'],
-                      totalPayment: ViewRefundData['totalPayment'].toString(),
-                      totalEmd: ViewRefundData['total_emd'].toString(),
-                      totalAmountIncludingEmd: ViewRefundData['totalAvailablebalIncludingEmd'],
-                      note: index['narration'],
-                      referenceNo: index['pay_ref_no'],
-                      rvNo: index['receipt_voucher_no'],
-                      date2: index['receipt_voucher_date'],
-                      typeOfTransfer: index['typeoftransfer'],
-                      nfa: index['nfa_no'],
-                    ),
-                  ),
-                ).then((value) => setState((){
-                  fetchRefundDetails();
-                }));
-              },
+              // trailing: IconButton(
+              //   icon: Icon(Icons.arrow_forward_ios, size: 16),
+              //   color: Colors.grey[600],
+              //   onPressed: () {
+              //     print(index['nfa_no']);
+              //     // Action on tapping the arrow
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //         builder: (context) => View_Refund_Amount(
+              //           sale_order_id: widget.sale_order_id,
+              //           bidder_id: widget.bidder_id,
+              //           refundId: index['payment_id'],
+              //           paymentType: index['payment_type'],
+              //           date1: index['date'],
+              //           amount: index['amt'],
+              //           totalPayment: ViewRefundData['totalPayment'].toString(),
+              //           totalEmd: ViewRefundData['total_emd'].toString(),
+              //           totalAmountIncludingEmd:ViewRefundData['totalAvailablebalIncludingEmd'],
+              //           note: index['narration'],
+              //           referenceNo: index['pay_ref_no'],
+              //           rvNo: index['receipt_voucher_no'],
+              //           date2: index['receipt_voucher_date'],
+              //           typeOfTransfer: index['typeoftransfer'],
+              //           nfa: index['nfa_no'],
+              //         ),
+              //       ),
+              //     ).then((value) => setState((){
+              //       fetchRefundDetails();
+              //     }));
+              //   },
+              // ),
+              // onTap: () {
+              //   Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //       builder: (context) => View_Refund_Amount(
+              //         sale_order_id: widget.sale_order_id,
+              //         bidder_id: widget.bidder_id,
+              //         refundId: index['payment_id'],
+              //         paymentType: index['payment_type'],
+              //         date1: index['pay_date'],
+              //         amount: index['amt'],
+              //         totalPayment: ViewRefundData['totalPayment'].toString(),
+              //         totalEmd: ViewRefundData['total_emd'].toString(),
+              //         totalAmountIncludingEmd: ViewRefundData['totalAvailablebalIncludingEmd'],
+              //         note: index['narration'],
+              //         referenceNo: index['pay_ref_no'],
+              //         rvNo: index['receipt_voucher_no'],
+              //         date2: index['receipt_voucher_date'],
+              //         typeOfTransfer: index['typeoftransfer'],
+              //         nfa: index['nfa_no'],
+              //       ),
+              //     ),
+              //   ).then((value) => setState((){
+              //     fetchRefundDetails();
+              //   }));
+              // },
             ),
           ),
         ),
@@ -713,29 +717,29 @@ class _View_refund_detailsState extends State<View_refund_details> {
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "Ref No : ",
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontWeight: FontWeight.bold, // Bold key
-                            fontSize: 16,
-                          ),
-                        ),
-                        TextSpan(
-                          text: "${index['pay_ref_no'] ?? 'N/A'}",
-                          style: TextStyle(
-                            color: Colors.black54,
-                            fontWeight: FontWeight.normal, // Normal value
-                            fontSize: 16,
-
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  // RichText(
+                  //   text: TextSpan(
+                  //     children: [
+                  //       TextSpan(
+                  //         text: "Ref No : ",
+                  //         style: TextStyle(
+                  //           color: Colors.black87,
+                  //           fontWeight: FontWeight.bold, // Bold key
+                  //           fontSize: 16,
+                  //         ),
+                  //       ),
+                  //       TextSpan(
+                  //         text: "${index['pay_ref_no'] ?? 'N/A'}",
+                  //         style: TextStyle(
+                  //           color: Colors.black54,
+                  //           fontWeight: FontWeight.normal, // Normal value
+                  //           fontSize: 16,
+                  //
+                  //         ),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
                   RichText(
                     text: TextSpan(
                       children: [
@@ -761,63 +765,63 @@ class _View_refund_detailsState extends State<View_refund_details> {
                   ),
                 ],
               ),
-              trailing: IconButton(
-                icon: Icon(Icons.arrow_forward_ios, size: 16),
-                color: Colors.grey[600],
-                onPressed: () {
-                  // Action on tapping the arrow
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => View_Refund_Amount(
-                        sale_order_id: widget.sale_order_id,
-                        bidder_id: widget.bidder_id,
-                        refundId: index['payment_id'],
-                        paymentType: index['payment_type'],
-                        date1: index['date'],
-                        amount: index['amt'],
-                        totalPayment: ViewRefundData['totalPayment'].toString(),
-                        totalEmd: ViewRefundData['total_emd'].toString(),
-                        totalAmountIncludingEmd:ViewRefundData['totalAvailablebalIncludingEmd'],
-                        note: index['narration'],
-                        referenceNo: index['pay_ref_no'],
-                        rvNo: index['receipt_voucher_no'],
-                        date2: index['receipt_voucher_date'],
-                        typeOfTransfer: index['typeoftransfer'],
-                        nfa: index['nfa_no'],
-                      ),
-                    ),
-                  ).then((value) => setState((){
-                    fetchRefundDetails();
-                  }));
-                },
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => View_Refund_Amount(
-                      sale_order_id: widget.sale_order_id,
-                      bidder_id: widget.bidder_id,
-                      refundId: index['payment_id'],
-                      paymentType: index['payment_type'],
-                      date1: index['date'],
-                      amount: index['amt'],
-                      totalPayment: ViewRefundData['totalPayment'].toString(),
-                      totalEmd: ViewRefundData['total_emd'].toString(),
-                      totalAmountIncludingEmd:ViewRefundData['totalAvailablebalIncludingEmd'],
-                      note: index['narration'],
-                      referenceNo: index['pay_ref_no'],
-                      rvNo: index['receipt_voucher_no'],
-                      date2: index['receipt_voucher_date'],
-                      typeOfTransfer: index['typeoftransfer'],
-                      nfa: index['nfa_no'],
-                    ),
-                  ),
-                ).then((value) => setState((){
-                  fetchRefundDetails();
-                }));
-              },
+              // trailing: IconButton(
+              //   icon: Icon(Icons.arrow_forward_ios, size: 16),
+              //   color: Colors.grey[600],
+              //   onPressed: () {
+              //     // Action on tapping the arrow
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //         builder: (context) => View_Refund_Amount(
+              //           sale_order_id: widget.sale_order_id,
+              //           bidder_id: widget.bidder_id,
+              //           refundId: index['payment_id'],
+              //           paymentType: index['payment_type'],
+              //           date1: index['date'],
+              //           amount: index['amt'],
+              //           totalPayment: ViewRefundData['totalPayment'].toString(),
+              //           totalEmd: ViewRefundData['total_emd'].toString(),
+              //           totalAmountIncludingEmd:ViewRefundData['totalAvailablebalIncludingEmd'],
+              //           note: index['narration'],
+              //           referenceNo: index['pay_ref_no'],
+              //           rvNo: index['receipt_voucher_no'],
+              //           date2: index['receipt_voucher_date'],
+              //           typeOfTransfer: index['typeoftransfer'],
+              //           nfa: index['nfa_no'],
+              //         ),
+              //       ),
+              //     ).then((value) => setState((){
+              //       fetchRefundDetails();
+              //     }));
+              //   },
+              // ),
+              // onTap: () {
+              //   Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //       builder: (context) => View_Refund_Amount(
+              //         sale_order_id: widget.sale_order_id,
+              //         bidder_id: widget.bidder_id,
+              //         refundId: index['payment_id'],
+              //         paymentType: index['payment_type'],
+              //         date1: index['date'],
+              //         amount: index['amt'],
+              //         totalPayment: ViewRefundData['totalPayment'].toString(),
+              //         totalEmd: ViewRefundData['total_emd'].toString(),
+              //         totalAmountIncludingEmd:ViewRefundData['totalAvailablebalIncludingEmd'],
+              //         note: index['narration'],
+              //         referenceNo: index['pay_ref_no'],
+              //         rvNo: index['receipt_voucher_no'],
+              //         date2: index['receipt_voucher_date'],
+              //         typeOfTransfer: index['typeoftransfer'],
+              //         nfa: index['nfa_no'],
+              //       ),
+              //     ),
+              //   ).then((value) => setState((){
+              //     fetchRefundDetails();
+              //   }));
+              // },
             ),
           ),
         ),
@@ -879,29 +883,29 @@ class _View_refund_detailsState extends State<View_refund_details> {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: "Ref No : ",
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontWeight: FontWeight.bold, // Bold key
-                          fontSize: 16,
-                        ),
-                      ),
-                      TextSpan(
-                        text: "${index['pay_ref_no'] ?? 'N/A'}",
-                        style: TextStyle(
-                          color: Colors.black54,
-                          fontWeight: FontWeight.normal, // Normal value
-                          fontSize: 16,
-
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // RichText(
+                //   text: TextSpan(
+                //     children: [
+                //       TextSpan(
+                //         text: "Ref No : ",
+                //         style: TextStyle(
+                //           color: Colors.black87,
+                //           fontWeight: FontWeight.bold, // Bold key
+                //           fontSize: 16,
+                //         ),
+                //       ),
+                //       TextSpan(
+                //         text: "${index['pay_ref_no'] ?? 'N/A'}",
+                //         style: TextStyle(
+                //           color: Colors.black54,
+                //           fontWeight: FontWeight.normal, // Normal value
+                //           fontSize: 16,
+                //
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
                 RichText(
                   text: TextSpan(
                     children: [
@@ -927,18 +931,18 @@ class _View_refund_detailsState extends State<View_refund_details> {
                 ),
               ],
             ),
-            trailing: IconButton(
-              icon: Icon(Icons.arrow_forward_ios, size: 16),
-              color: Colors.grey[600],
-              onPressed: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => View_Payment_Amount(),
-                //   ),
-                // );
-              },
-            ),
+            // trailing: IconButton(
+            //   icon: Icon(Icons.arrow_forward_ios, size: 16),
+            //   color: Colors.grey[600],
+            //   onPressed: () {
+            //     // Navigator.push(
+            //     //   context,
+            //     //   MaterialPageRoute(
+            //     //     builder: (context) => View_Payment_Amount(),
+            //     //   ),
+            //     // );
+            //   },
+            // ),
             onTap: () {
               // Navigator.push(
               //   context,

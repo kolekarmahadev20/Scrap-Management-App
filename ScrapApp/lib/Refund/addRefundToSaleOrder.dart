@@ -31,11 +31,13 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
   final TextEditingController totalEmdController = TextEditingController();
   final TextEditingController totalCmdController = TextEditingController();
   final TextEditingController totalEmdCmdController = TextEditingController();
+  final TextEditingController totalAmountController = TextEditingController();
   final TextEditingController noteController = TextEditingController();
   final TextEditingController refNoController = TextEditingController();
   final TextEditingController nfaController = TextEditingController();
 
   String? username = '';
+ String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -84,8 +86,10 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
 
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -100,7 +104,8 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
           'sale_order_id':widget.sale_order_id,
         },
@@ -113,6 +118,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
           totalCmdController.text = jsonData['total_CMD'].toString()  ?? 'N/A';
           totalEmdCmdController.text = jsonData['total_amount_included_emdCmd'].toString() ?? 'N/A';
           totalAmount = jsonData['totalAmount'].toString() ?? 'N/A';
+          totalAmountController.text = jsonData['totalAmount'].toString() ?? 'N/A';
           rate = jsonData['rate'].toString();
         });
       } else {
@@ -144,7 +150,8 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id': username,
+        'user_id': username,
+'uuid':uuid,
           'user_pass': password,
           'sale_order_id_pay': widget.sale_order_id ?? '',
           'payment_type': selectedPaymentType ?? '',
@@ -271,7 +278,8 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
                           buildTextField("Total Payment", totalPaymentController, true,false ,Colors.grey[400]!, context),
                           buildTextField("Total EMD", totalEmdController, true,false , Colors.grey[400]!,context),
                           buildTextField("Total CMD", totalCmdController, true,false , Colors.grey[400]!,context),
-                          buildTextField("Total Amount Including EMD/CMD", totalEmdCmdController, true,false ,Colors.grey[400]!, context),
+                          buildTextField("Total EMD And CMD", totalEmdCmdController, true,false ,Colors.grey[400]!, context),
+                          buildTextField("Total Amount", totalAmountController,true, false,Colors.grey[400]!, context),
                           Divider(),
                           buildTextField("Material Name", materialController, true, false , Colors.grey[400]!,context),
                           buildDropdownPayment("Payment Type", refundMap, (value) {

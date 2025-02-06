@@ -62,6 +62,7 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
   final TextEditingController nfaController = TextEditingController();
 
   String? username = '';
+ String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -128,8 +129,10 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
   }
 
   Future<void> checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
+     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -148,6 +151,7 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
         body: {
           'user_id':username,
           'user_pass':password,
+          'uuid':uuid,
           'sale_order_id_pay':widget.sale_order_id,
           'pay_id':widget.refundId,
           'payment_type':selectedPaymentType ?? '',
