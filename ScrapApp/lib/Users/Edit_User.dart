@@ -133,7 +133,6 @@ class _Edit_UserState extends State<Edit_User> {
     _fetchVendors();
 
     // generateEmployeeCode();
-    _fetchUsers();
     emailIdController.addListener(() {
       final email = emailIdController.text.trim();
       if (email.isNotEmpty && email.contains("@")) {
@@ -191,52 +190,6 @@ class _Edit_UserState extends State<Edit_User> {
     return employeeCode;
   }
 
-  Future<void> _fetchUsers() async {
-    try {
-      await checkLogin();
-      final url = '${URL}add_user';
-
-      final response = await http.post(
-        Uri.parse(url),
-        body: {
-          'user_id': username,
-          'user_pass': password,
-          'uuid': uuid,
-          'emp_code': employeeCodeController.text ?? '',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        selectedUserType = 'S';
-
-        //     usernameController.text
-        //     passwordController.text
-        //     isActiveYes
-        //     isMobileLoginYes
-        //     hasAccessSaleOrderDataYes
-        //     isDispatchYes
-        //     isPaymentYes
-        //     isRefundYes
-        //     fullNameController.text
-        //     emailIdController.text
-        //     uuIDController.text
-        //
-        // 'vendor_ids': vendorIds.join(',')?? '',
-        // 'plant_id': plantIds.join(',')?? '',
-        // 'org_id': organizationIds.join('')?? '',
-
-
-      } else {
-        // Handle error response
-        Fluttertoast.showToast(
-          msg: "Failed to fetch employee",
-        );
-      }
-    } catch (e) {
-      print("Error adding user: $e");
-    }
-  }
 
   Future<void> _addUsers() async {
     final vendorIds = _selectedVendors.values.toList();  // Extract IDs
@@ -248,31 +201,6 @@ class _Edit_UserState extends State<Edit_User> {
       await checkLogin();
 
       final url = '${URL}edit_user';
-
-      // Debug: Print URL and the request body data before making the API call
-      print("Making POST request to URL: $url");
-      print("Request Body: ");
-      print({
-        'user_id': username,
-        'user_pass': password,
-        'uuid': uuid,
-        'emp_code': widget.user.empCode,
-        'user_type': userType.toString() ?? '',
-        'uname': usernameController.text ?? '',
-        'c_pass': passwordController.text ?? '',
-        'is_active': isActiveYes ? 'Y' : 'N',
-        'mob_login': isMobileLoginYes ? 'Y' : 'N',
-        'acces_sale_order': hasAccessSaleOrderDataYes ? 'Y' : 'N',
-        'acces_dispatch': isDispatchYes ? 'Y' : 'N',
-        'acces_payment': isPaymentYes ? 'Y' : 'N',
-        'acces_refund': isRefundYes ? 'Y' : 'N',
-        'vendor_ids': vendorIds.join(',')?? '',
-        'plant_id': plantIds.join(',')?? '',
-        'org_id': organizationIds.join('')?? '',
-        'person_name': fullNameController.text ?? '',
-        'email': emailIdController.text ?? '',
-        'uuid': uuIDController.text ?? '',
-      });
 
       final response = await http.post(
         Uri.parse(url),
@@ -295,7 +223,8 @@ class _Edit_UserState extends State<Edit_User> {
           'org_id': organizationIdsString,
           'person_name': fullNameController.text ?? '',
           'email': emailIdController.text ?? '',
-          'uuid': uuIDController.text ?? '',
+          'uuiid': uuIDController.text ?? '',
+          'person_id':widget.user.personId,
         },
       );
 
@@ -308,7 +237,12 @@ class _Edit_UserState extends State<Edit_User> {
         );
 
         // Pop the current page from the navigation stack
-        Navigator.pop(context);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => view_user(currentPage: 0), // Ensure view_user is a widget
+          ),
+        );
       } else {
         // Handle error response
         Fluttertoast.showToast(
@@ -430,7 +364,7 @@ class _Edit_UserState extends State<Edit_User> {
         final data = json.decode(response.body);
 
         // Debug: Log the response data for inspection
-        print("Response Body: $data");
+        print("Response Body1: $data");
 
         // Check if 'plants' data exists and process it
         if (data != null && data['plants'] != null) {
@@ -455,7 +389,7 @@ class _Edit_UserState extends State<Edit_User> {
       } else {
         print("Failed to fetch plants. Status code: ${response.statusCode}");
         // Debug: Log the full response body in case of failure
-        print("Response Body: ${response.body}");
+        print("Response Body2: ${response.body}");
       }
     } catch (e) {
       print("Error fetching plants: $e");
@@ -910,183 +844,195 @@ class _Edit_UserState extends State<Edit_User> {
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
-      drawer: AppDrawer(currentPage: 0),
-      appBar: CustomAppBar(),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    "Edit User",
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-              child: Row(
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => view_user(currentPage: 0), // Ensure view_user is a widget
+          ),
+        );
+        return false; // Prevents back navigation
+      },
+
+      child: Scaffold(
+        drawer: AppDrawer(currentPage: 0),
+        appBar: CustomAppBar(),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ListView(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                    flex: 3,// Fixed width for the label, adjust as needed
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      "Employee Code",
+                      "Edit User",
                       style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        letterSpacing: 1.2,
                       ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 7,
-                    child:  TextField(
-                      controller: employeeCodeController,
-                      decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.all(10),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      readOnly: true,
                     ),
                   ),
                 ],
               ),
-            ),
-
-            buildDropdown("User Type", UserTypes, (value) {
-              setState(() {
-                selectedUserType = value;
-              });
-            }),
-            _buildTextField("Full Name", fullNameController),
-            _buildTextField('Email ID', emailIdController),
-            _buildTextField('Username', usernameController),
-            _buildTextField('Password', passwordController),
-            _buildCheckboxWithOptions('Active?', isActiveYes, isActiveNo, (bool? yesChecked) {
-              setState(() {
-                isActiveYes = yesChecked ?? false;
-                isActiveNo = !yesChecked! ?? true;
-              });
-            }, isMandatory: true),
-            _buildCheckboxWithOptions(
-              'Mobile Login?',
-              isMobileLoginYes,
-              isMobileLoginNo,
-                  (bool? yesChecked) {
-                setState(() {
-                  isMobileLoginYes = yesChecked ?? false;
-                  isMobileLoginNo = !yesChecked! ?? true;
-                });
-              },
-              isMandatory: true,
-            ),
-            _buildCheckboxWithOptions(
-              'Access Sale Order?',
-              hasAccessSaleOrderDataYes,
-              hasAccessSaleOrderDataNo,
-                  (bool? yesChecked) {
-                setState(() {
-                  hasAccessSaleOrderDataYes = yesChecked ?? false;
-                  hasAccessSaleOrderDataNo = !(yesChecked ?? true);
-                });
-              },
-              isMandatory: true,
-            ),
-            _buildCheckboxWithOptions(
-              'Access Dispatch?',
-              isDispatchYes,
-              isDispatchNo,
-                  (bool? yesChecked) {
-                setState(() {
-                  isDispatchYes = yesChecked ?? false;
-                  isDispatchNo = !yesChecked! ?? true;
-                });
-              },
-              isMandatory: true,
-            ),
-            _buildCheckboxWithOptions(
-              'Access Refund?',
-              isRefundYes,
-              isRefundNo,
-                  (bool? yesChecked) {
-                setState(() {
-                  isRefundYes = yesChecked ?? false;
-                  isRefundNo = !yesChecked! ?? true;
-                });
-              },
-              isMandatory: true,
-            ),
-            _buildCheckboxWithOptions(
-              'Access Payment?',
-              isPaymentYes,
-              isPaymentNo,
-                  (bool? yesChecked) {
-                setState(() {
-                  isPaymentYes = yesChecked ?? false;
-                  isPaymentNo = !yesChecked! ?? true;
-                });
-              },
-              isMandatory: true,
-            ),
-
-            buildTypeAheadDropdownorganization(
-              label: "Organization",
-              items: _organizationOptions,
-              controller: _organizationController,
-              selectedValues: _selectedorganizationValues,
-            ),
-
-            buildTypeAheadDropdownVendor(
-              label: "Vendor",
-              items: _vendorOptions,
-              controller: _vendorController,
-              selectedValues: _selectedVendorValues,
-            ),
-
-            buildTypeAheadDropdownplant(
-              label: "Plant Name",
-              items: _locationOptions,
-              controller: _locationController,
-              selectedValues: _selectedLocationValues,
-            ),
-
-            _buildTextField('UUID', uuIDController),
-
-            const SizedBox(height: 10),
-
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  _addUsers();
-                  // print(_selectedVendors);
-                  // print("_selectedVendors");
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blueGrey[400], // Text color
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12), // Rounded corners
-                  ),
-                  elevation: 5,
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Consistent padding
+              SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 3,// Fixed width for the label, adjust as needed
+                      child: Text(
+                        "Employee Code",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 7,
+                      child:  TextField(
+                        controller: employeeCodeController,
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.all(10),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        readOnly: true,
+                      ),
+                    ),
+                  ],
                 ),
-                child: Text('Submit'),
               ),
-            ),
-          ],
+      
+              buildDropdown("User Type", UserTypes, (value) {
+                setState(() {
+                  selectedUserType = value;
+                });
+              }),
+              _buildTextField("Full Name", fullNameController),
+              _buildTextField('Email ID', emailIdController),
+              _buildTextField('Username', usernameController),
+              _buildTextField('Password', passwordController),
+              _buildCheckboxWithOptions('Active?', isActiveYes, isActiveNo, (bool? yesChecked) {
+                setState(() {
+                  isActiveYes = yesChecked ?? false;
+                  isActiveNo = !yesChecked! ?? true;
+                });
+              }, isMandatory: true),
+              _buildCheckboxWithOptions(
+                'Mobile Login?',
+                isMobileLoginYes,
+                isMobileLoginNo,
+                    (bool? yesChecked) {
+                  setState(() {
+                    isMobileLoginYes = yesChecked ?? false;
+                    isMobileLoginNo = !yesChecked! ?? true;
+                  });
+                },
+                isMandatory: true,
+              ),
+              _buildCheckboxWithOptions(
+                'Access Sale Order?',
+                hasAccessSaleOrderDataYes,
+                hasAccessSaleOrderDataNo,
+                    (bool? yesChecked) {
+                  setState(() {
+                    hasAccessSaleOrderDataYes = yesChecked ?? false;
+                    hasAccessSaleOrderDataNo = !(yesChecked ?? true);
+                  });
+                },
+                isMandatory: true,
+              ),
+              _buildCheckboxWithOptions(
+                'Access Dispatch?',
+                isDispatchYes,
+                isDispatchNo,
+                    (bool? yesChecked) {
+                  setState(() {
+                    isDispatchYes = yesChecked ?? false;
+                    isDispatchNo = !yesChecked! ?? true;
+                  });
+                },
+                isMandatory: true,
+              ),
+              _buildCheckboxWithOptions(
+                'Access Refund?',
+                isRefundYes,
+                isRefundNo,
+                    (bool? yesChecked) {
+                  setState(() {
+                    isRefundYes = yesChecked ?? false;
+                    isRefundNo = !yesChecked! ?? true;
+                  });
+                },
+                isMandatory: true,
+              ),
+              _buildCheckboxWithOptions(
+                'Access Payment?',
+                isPaymentYes,
+                isPaymentNo,
+                    (bool? yesChecked) {
+                  setState(() {
+                    isPaymentYes = yesChecked ?? false;
+                    isPaymentNo = !yesChecked! ?? true;
+                  });
+                },
+                isMandatory: true,
+              ),
+      
+              buildTypeAheadDropdownorganization(
+                label: "Organization",
+                items: _organizationOptions,
+                controller: _organizationController,
+                selectedValues: _selectedorganizationValues,
+              ),
+      
+              buildTypeAheadDropdownVendor(
+                label: "Vendor",
+                items: _vendorOptions,
+                controller: _vendorController,
+                selectedValues: _selectedVendorValues,
+              ),
+      
+              buildTypeAheadDropdownplant(
+                label: "Plant Name",
+                items: _locationOptions,
+                controller: _locationController,
+                selectedValues: _selectedLocationValues,
+              ),
+      
+              _buildTextField('UUID', uuIDController),
+      
+              const SizedBox(height: 10),
+      
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    _addUsers();
+                    // print(_selectedVendors);
+                    // print("_selectedVendors");
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blueGrey[400], // Text color
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12), // Rounded corners
+                    ),
+                    elevation: 5,
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Consistent padding
+                  ),
+                  child: Text('Submit'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

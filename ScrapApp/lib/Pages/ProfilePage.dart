@@ -70,8 +70,8 @@ class _ProfilePageState extends State<ProfilePage> {
     getCredentialDetails();
     checkLogin().then((_){
       setState(() {
-         if(userType != 'S')
-          check_first_login();
+         // if(userType != 'S')
+         //  check_first_login();
       });
     });
 
@@ -173,7 +173,7 @@ class _ProfilePageState extends State<ProfilePage> {
         body: {
           'user_id':username,
           'user_pass':password,
-         'uuid':uuid,
+          'uuid':uuid,
           'punch_type': punchType,
           'location[lat]': latitude?.toString() ?? '',
           'location[long]': longitude?.toString() ?? '',
@@ -331,28 +331,32 @@ class _ProfilePageState extends State<ProfilePage> {
           punchOutTime = DateTime.parse(data['logout_time']);
           enablePunching("logged out");
 
-          print("punchOutTime:$punchOutTime");
 
           //Get today's date
           DateTime today = DateTime.now();
-          DateTime punchOutDate = DateTime(punchOutTime!.year, punchOutTime!.month, punchOutTime!.day);
-          // Compare the dates
-          print('PunchOut Date: ${punchOutDate.toIso8601String().split('T')[0]}');
-          print('PunchOut Time: ${punchOutTime!.toIso8601String().split('T')[0]}');
+          String todayDate = DateFormat('yyyy-MM-dd').format(today);
+          String punchOutDate = DateFormat('yyyy-MM-dd').format(punchOutTime!);
 
-          print('Today: ${DateTime(today.year, today.month, today.day)}');
+          print("Todays:$todayDate");
 
-          if (punchOutDate.isBefore(DateTime(today.year, today.month, today.day))) {
-            print('Condition met: Showing Late Login Remark Dialog');
-            setState(() {
-              if(userType != 'S')
-                print("BHAR TA");
-                // trackadminresponse();
-            });
-            // _showLateLoginRemarkDialog();  //Not needed but keepet for safe side
-          } else {
-            print('Condition not met: No dialog shown');
+          print("punchOutTime:$punchOutDate");
+
+          // Check if punchOutDate is before today
+          if(punchOutTime! == "0000-00-00" && userType != 'S')
+          {
+            if (punchOutTime!.isBefore(today) && userType != 'S') {
+              print("Hitting trackadminresponse...");
+              trackadminresponse();
+            }
+            else {
+              print('Condition not met: No dialog shown');
+            }
           }
+          else
+          {
+            print("Invalid date detected, not hitting trackadminresponse.");
+          }
+
 
 
         });
@@ -682,8 +686,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return StatefulBuilder(builder: (BuildContext context , StateSetter setState) {
       return Scaffold(
-      // drawer: isPunchedIn ? AppDrawer(currentPage: widget.currentPage) : null,
-       drawer: AppDrawer(currentPage: widget.currentPage),
+        drawer: userType != 'S'
+            ? (isPunchedIn ? AppDrawer(currentPage: widget.currentPage) : null)
+            : AppDrawer(currentPage: widget.currentPage),
 
         appBar: CustomAppBar(),
         body: SingleChildScrollView(

@@ -169,6 +169,10 @@ class _view_userState extends State<view_user> {
   String? loginType = '';
   String? userType = '';
 
+  int totalUsers = 0;
+  int activeUsers = 0;
+  int inactiveUsers = 0;
+
   @override
   void initState() {
     super.initState();
@@ -202,11 +206,22 @@ class _view_userState extends State<view_user> {
       final List<User> users = (data['user_data'] as List)
           .map((userJson) => User.fromJson(userJson))
           .toList();
+      // Count active and inactive users
+      totalUsers = users.length;
+      activeUsers = users.where((user) => user.isActive.toLowerCase() == 'y').length;
+      inactiveUsers = totalUsers - activeUsers;
+
+      setState(() {}); // UI update ke liye
       return users;
     } else {
       throw Exception('Failed to load users');
     }
   }
+
+
+
+
+
 
   Future<List<User>> _getUsers(String searchText) async {
     List<User> allUsers = await futureUsers;
@@ -219,7 +234,7 @@ class _view_userState extends State<view_user> {
     List<User> filteredUsers = allUsers.where((user) =>
     (user.username!.toLowerCase().contains(searchText.toLowerCase()) ||
         user.personName.toLowerCase().contains(searchText.toLowerCase())) &&
-        (_showActiveUsers == null || (_showActiveUsers ?? true) ? user.isActive.toLowerCase() == 'yes' : user.isActive.toLowerCase() != 'yes')
+        (_showActiveUsers == null || (_showActiveUsers ?? true) ? user.isActive.toLowerCase() == 'y' : user.isActive.toLowerCase() != 'y')
     ).toList();
 
     return filteredUsers;
@@ -234,7 +249,7 @@ class _view_userState extends State<view_user> {
       if (_showActiveUsers == null) {
         return true; // Show all users when _showActiveUsers is null
       } else {
-        bool isActive = user.isActive.toLowerCase() == 'yes';
+        bool isActive = user.isActive.toLowerCase() == 'y';
         return includeYes ? isActive : !isActive;
       }
     }).toList();
@@ -265,7 +280,6 @@ class _view_userState extends State<view_user> {
   Future<void> checkLogin() async {
      final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
-    uuid = prefs.getString("uuid")!;
     uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
@@ -398,11 +412,20 @@ class _view_userState extends State<view_user> {
                     _showActiveUsers = true;
                   });
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),),
-                child: Text(
-                  "Active User",
-                  style: TextStyle(color: Colors.white, fontSize: 12),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.lightGreen, padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),),
+                child: RichText(
+                  text: TextSpan(
+                    text: "Active User ", // Default text
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    children: [
+                      TextSpan(
+                        text: "($activeUsers)", // Active user count
+                        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
                 ),
+
               ),
 
               ElevatedButton(
@@ -412,13 +435,26 @@ class _view_userState extends State<view_user> {
                   });
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                  backgroundColor: Colors.orange.shade600,
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
-                child: Text(
-                  "InActive ",
-                  style: TextStyle(color: Colors.white, fontSize: 12),
+                child:
+                RichText(
+                  text: TextSpan(
+                    text: "InActive", // Default text
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    children: [
+                      TextSpan(
+                        text: " ($inactiveUsers)", // Active user count
+                        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
                 ),
+                // Text(
+                //   "InActive ($inactiveUsers)",
+                //   style: TextStyle(color: Colors.white, fontSize: 12),
+                // ),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -427,13 +463,25 @@ class _view_userState extends State<view_user> {
                   });
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.lightGreen,
+                  backgroundColor: Colors.blue,
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
-                child: Text(
-                  "All User",
-                  style: TextStyle(color: Colors.white, fontSize: 12),
+                child: RichText(
+                  text: TextSpan(
+                    text: "All User", // Default text
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    children: [
+                      TextSpan(
+                        text: " ($totalUsers)", // Active user count
+                        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
                 ),
+                // Text(
+                //   "All User ($totalUsers)",
+                //   style: TextStyle(color: Colors.white, fontSize: 12),
+                // ),
               ),
             ],
           ),
@@ -455,8 +503,9 @@ class UserCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isActive = user.isActive.toLowerCase() == 'yes'; // Check if activeUser is "yes"
+    bool isActive = user.isActive.toLowerCase() == 'y'; // Check if activeUser is "yes"
 
+    print(isActive);
     return Container(
       width: double.infinity,
       child: Card(
@@ -511,11 +560,12 @@ class UserCard extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    isActive == 'Y' ? 'Active' : 'Not Active', // Dynamic text based on isActive
+                    isActive == true ? 'Active' : 'InActive', // Dynamic text based on isActive
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
               ),
+
             ],
           ),
         ),
@@ -524,10 +574,94 @@ class UserCard extends StatelessWidget {
   }
 }
 
-class SubDetails extends StatelessWidget {
+class SubDetails extends StatefulWidget {
   final User user;
 
   const SubDetails({required this.user});
+
+  @override
+  State<SubDetails> createState() => _SubDetailsState();
+}
+
+class _SubDetailsState extends State<SubDetails> {
+
+  // Variables for user details
+  String? username = '';
+  String uuid = '';
+  String? password = '';
+  String? loginType = '';
+  String? userType = '';
+
+  @override
+  void initState() {
+    super.initState();
+    checkLogin();
+    // fetchAndStoreData();
+    // print("ASFasf");
+    // print(widget.user.plantId );
+    // print(widget.user.vendorId );
+    // print(widget.user.orgID );
+  }
+
+  //Fetching user details from sharedpreferences
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
+    uuid = prefs.getString("uuid")!;
+  }
+
+  String orgNames = "";
+  String branchNames = "";
+  String vendorNames = "";
+
+
+
+  Future<void> fetchAndStoreData() async {
+
+    await checkLogin();
+
+    final response = await http.post(
+      Uri.parse('${URL}fetchplantOrg'),
+      body: {
+        // 'user_id':'bantu',
+        // 'user_pass':'Bantu#123',
+        // 'uuid':'UP1A.231005.007',
+        // 'branch_id':'1,2',
+        // 'vendor_id':'1,2',
+        // 'org_id':'1,2',
+
+        'uuid':uuid,
+        'user_id': username,
+        'user_pass': password,
+        "branch_id":widget.user.plantId ,
+        "vendor_id": widget.user.vendorId,
+        "org_id": widget.user.orgID
+      },
+    );
+
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+      List<dynamic> organizations = responseData["organizatrion"];
+
+      setState(() {
+        orgNames = organizations.map((org) => org["OrgName"].toString()).join(", ");
+        branchNames = organizations.map((org) => org["branch_name"].toString()).join(", ");
+        vendorNames = organizations.map((org) => org["vendor_name"].toString()).join(", ");
+      });
+
+      print("Org Names: $orgNames");
+      print("Branch Names: $branchNames");
+      print("Vendor Names: $vendorNames");
+    } else {
+      print("Failed to fetch data: ${response.statusCode}");
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -544,35 +678,38 @@ class SubDetails extends StatelessWidget {
             children: [
               buildTableRows(
                 ['Username', 'Password'],
-                [user.username, user.cPass],
+                [widget.user.username, widget.user.cPass],
                 1,
               ),
-              buildTableRow('Email ID', user.empEmail,0),
+              buildTableRow('Email ID', widget.user.empEmail,0),
               buildTableRows(
                 ['User Type', 'UUID'],
-                [user.userType, user.uuid],
+                [widget.user.userType, widget.user.uuid],
                 1,
               ),
-              buildTableRows(
-                ['Organization', 'Active'],
-                [user.empEmail,user.isActive == 'Y' ? 'Yes' : 'No'],
-                0,
-              ),
+              // buildTableRows(
+              //   ['Organization', 'Active'],
+              //   [widget.user.orgID,widget.user.isActive == 'Y' ? 'Yes' : 'No'],
+              //   0,
+              // ),
               buildTableRows(
                 ['Mobile Login', 'Access Sale Order'],
-                [user.isMobile== 'Y' ? 'Yes' : 'No', user.accesSaleOrder== 'Y' ? 'Yes' : 'No'],
+                [widget.user.isMobile== 'Y' ? 'Yes' : 'No', widget.user.accesSaleOrder== 'Y' ? 'Yes' : 'No'],
                 1,
               ),
               buildTableRows(
                 ['Access Dispatch', 'Acccess Refund'],
-                [user.accesDispatch== 'Y' ? 'Yes' : 'No', user.accesRefund== 'Y' ? 'Yes' : 'No'],
+                [widget.user.accesDispatch== 'Y' ? 'Yes' : 'No', widget.user.accesRefund== 'Y' ? 'Yes' : 'No'],
                 0,
               ),
               buildTableRows(
                 ['Access Payment', 'Emp Code'],
-                [user.accesPayment== 'Y' ? 'Yes' : 'No', user.empCode],
+                [widget.user.accesPayment== 'Y' ? 'Yes' : 'No', widget.user.empCode],
                 1,
               ),
+
+              // buildTableRow('Vendor Name', orgNames,0),
+              // buildTableRow('Plant Name', orgNames,1),
 
               // buildTableRow('Material', user.material,1),
               // if (user.plant != null) buildTableRow('Plant', user.plant!,1),
