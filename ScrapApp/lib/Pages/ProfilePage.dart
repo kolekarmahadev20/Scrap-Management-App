@@ -340,12 +340,17 @@ class _ProfilePageState extends State<ProfilePage> {
 
 
           punchOutTime = DateTime.parse(data['logout_time']);
+          String logoutTimeString = data['logout_time'];
+
           enablePunching("logged out");
+          print("logoutTimeString");
+
+          print(logoutTimeString);
 
           DateTime today = DateTime.now();
           String todayDate = DateFormat('yyyy-MM-dd').format(today);
 
-          if (punchOutTime == null || punchOutTime! == "0000-00-00" ) {
+          if (logoutTimeString == null || logoutTimeString! == "0000-00-00" ) {
             print("punchOutTime is NULL, skipping logic.");
           } else {
             String punchOutDate = DateFormat('yyyy-MM-dd').format(punchOutTime!);
