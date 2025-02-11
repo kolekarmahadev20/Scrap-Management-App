@@ -164,8 +164,18 @@ class _ProfilePageState extends State<ProfilePage> {
   //Fetching API for User Attendance
   Future<void> set_user_attendance(
       String punchType, double? latitude, double? longitude) async {
+    print("username");
+
+    print(username);
+    print(password);
+    print(uuid);
+    print( latitude?.toString());
+    print( longitude?.toString());
+    print(address);
     try {
       final address = await getAddress(latitude ?? 0.0, longitude ?? 0.0);
+
+
 
       final response = await http.post(
         Uri.parse('${URL}set_user_attend'),
@@ -183,6 +193,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print("DASDasdasd:$data");
 
       } else {
         print('Response Body: ${response.body}');
@@ -317,7 +328,7 @@ class _ProfilePageState extends State<ProfilePage> {
           // 'uuid':'UKQ1.231108.001'
           'user_id':username,
           'user_pass':password,
-         'uuid':uuid,
+          'uuid':uuid,
         },
       );
       if (response.statusCode == 200) {
@@ -331,33 +342,50 @@ class _ProfilePageState extends State<ProfilePage> {
           punchOutTime = DateTime.parse(data['logout_time']);
           enablePunching("logged out");
 
-
-          //Get today's date
           DateTime today = DateTime.now();
           String todayDate = DateFormat('yyyy-MM-dd').format(today);
-          String punchOutDate = DateFormat('yyyy-MM-dd').format(punchOutTime!);
 
-          print("Todays:$todayDate");
+          if (punchOutTime == null || punchOutTime! == "0000-00-00" ) {
+            print("punchOutTime is NULL, skipping logic.");
+          } else {
+            String punchOutDate = DateFormat('yyyy-MM-dd').format(punchOutTime!);
+            print("Today's Date: $todayDate");
+            print("Punch Out Date: $punchOutDate");
 
-          print("punchOutTime:$punchOutDate");
-
-          // Check if punchOutDate is before today
-          if(punchOutTime! == "0000-00-00" && userType != 'S')
-          {
             if (punchOutTime!.isBefore(today) && userType != 'S') {
               print("Hitting trackadminresponse...");
               trackadminresponse();
+            } else {
+              print("Condition not met: No dialog shown");
             }
-            else {
-              print('Condition not met: No dialog shown');
-            }
-          }
-          else
-          {
-            print("Invalid date detected, not hitting trackadminresponse.");
           }
 
 
+
+          // //Get today's date
+          // DateTime today = DateTime.now();
+          // String todayDate = DateFormat('yyyy-MM-dd').format(today);
+          // String punchOutDate = DateFormat('yyyy-MM-dd').format(punchOutTime!);
+          //
+          // print("Todays:$todayDate");
+          //
+          // print("punchOutTime:$punchOutDate");
+          //
+          // // Check if punchOutDate is before today
+          // if(punchOutTime! == "0000-00-00" && userType != 'S')
+          // {
+          //   if (punchOutTime!.isBefore(today) && userType != 'S') {
+          //     print("Hitting trackadminresponse...");
+          //     trackadminresponse();
+          //   }
+          //   else {
+          //     print('Condition not met: No dialog shown');
+          //   }
+          // }
+          // else
+          // {
+          //   print("Invalid date detected, not hitting trackadminresponse.");
+          // }
 
         });
       } else {
@@ -390,6 +418,12 @@ class _ProfilePageState extends State<ProfilePage> {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         print(responseData);
+
+        // If status is 0 and message is "Failed To Track Admin Activity...", do nothing
+        if (responseData['status'] == '0' && responseData['msg'] == "Failed To Track Admin Activity...") {
+          print("Condition met: Do nothing");
+          return;
+        }
 
         if (responseData['status'] == '1') {
           final adminActivity = responseData['tracked_admin_activity'];
@@ -793,6 +827,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           Fluttertoast.showToast(msg: 'Your attendance marked for today');
                         }
                             : () {
+                          set_user_attendance('logged in', _locationData?.latitude,
+                              _locationData?.longitude);
                           sendPunchTimeToDatabase("logged in");
                           print('isPunchedIn :$isPunchedIn');
                         },
@@ -823,6 +859,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           }
                           : () {
                             if(isPunchedIn) {
+                              set_user_attendance('logged out', _locationData?.latitude,
+                                  _locationData?.longitude);
                               sendPunchTimeToDatabase("logged out");
                             }else{
                               Fluttertoast.showToast(msg: 'Please punch in first');

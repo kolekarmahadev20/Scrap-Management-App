@@ -128,18 +128,19 @@ class _SummaryReportState extends State<SummaryReport> {
         Uri.parse('${URL}get_scrap_summary'),
         headers: {"Accept": "application/json"},
         body: {
-          // 'uuid': _uuid,
-        'user_id': username,
-'uuid':uuid,
+          'user_id': username,
           'user_pass': password,
+          'uuid':uuid,
           'branch_id':selectedLocationId.toString(),
           'from_date': fromDate != null ? formatter.format(fromDate!) : '',
           'to_date': toDate != null ? formatter.format(toDate!) : '',
+
           // 'from_date':fromDate != null ? fromDate?.toLocal().toString() : '',
           // 'to_date': toDate != null ? toDate?.toLocal().toString() : '',
 
           // 'user_id': "Bantu",
           // 'user_pass': "Bantu#123",
+          // 'uuid':'UKQ1.231108.001',
           // 'branch_id':"5",
           // 'from_date':"2023-11-30",
           // 'to_date': "2023-12-02",

@@ -60,6 +60,10 @@ class _SearchState extends State<Search> {
 
   Future<void> fetchData() async {
     try {
+      print('selectedVendorType');
+
+      print(selectedVendorType);
+      print(selectedPlantName);
       print(selectedBuyer);
       print(selectedMaterial);
 
@@ -68,13 +72,16 @@ class _SearchState extends State<Search> {
         Uri.parse('${URL}search_scrap_data'),
         headers: {"Accept": "application/json"},
         body: {
-        'user_id': username,
-'uuid':uuid,
+          'user_id': username,
+          'uuid':uuid,
           'user_pass': password,
-          "vendor_id": selectedVendorType.toString(),
-          "plant_id": selectedPlantName.toString(),
-          "buyer_id": selectedBuyer?.toString() ?? '', // Use empty string if null
-          "mat_id": selectedMaterial?.toString() ?? '', // Use empty string if null
+          "vendor_id": selectedVendorType.toString()?? '',
+          if(selectedPlantName!=null && selectedPlantName !='Select')
+           "plant_id": selectedPlantName.toString()?? '',
+          if(selectedBuyer!=null&& selectedBuyer !='Select')
+            "buyer_id": selectedBuyer?.toString() ?? '', // Use empty string if null
+          if(selectedMaterial!=null&& selectedMaterial !='Select')
+            "mat_id": selectedMaterial?.toString() ?? '', // Use empty string if null
           "from_date": fromDate.toString(),
           "to_date": toDate.toString(),
         },

@@ -21,8 +21,12 @@ class _StartDashBoardPageState extends State<StartPage> {
   // TextEditingController passwordController = TextEditingController(text : "Bhag@2368");
   // TextEditingController usernameController = TextEditingController(text: "paar9044");
   // TextEditingController passwordController = TextEditingController(text: "Paar@9044");
-  TextEditingController usernameController = TextEditingController(text: "Bantu");
-  TextEditingController passwordController = TextEditingController(text: "Bantu#123");
+  // TextEditingController usernameController = TextEditingController(text: "mite7330");
+  // TextEditingController passwordController = TextEditingController(text: "Mite@7330");
+  TextEditingController usernameController = TextEditingController(text: "mite7330");
+  TextEditingController passwordController = TextEditingController(text: "Mite@7330");
+  // TextEditingController usernameController = TextEditingController();
+  // TextEditingController passwordController = TextEditingController();
   bool _obscureText = true; // Variable to manage password visibility
 
   late Timer _gpsCheckTimer;
@@ -143,6 +147,7 @@ class _StartDashBoardPageState extends State<StartPage> {
         body: {
           'user_id': usernameController.text,
           'user_pass': passwordController.text,
+          'uuid':_deviceID!??'',
           'locations[lat]': latitude.toString(),
           'locations[long]': longitude.toString(),
         },

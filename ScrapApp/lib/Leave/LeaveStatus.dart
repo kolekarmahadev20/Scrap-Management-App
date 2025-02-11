@@ -148,8 +148,8 @@ class _LeaveStatusState extends State<LeaveStatus> {
         headers: {"Accept": "application/json"},
         body: {
         'user_id': username,
-'uuid':uuid,
-          'user_pass': password,
+        'uuid':uuid,
+        'user_pass': password,
         },
       );
 
@@ -160,6 +160,7 @@ class _LeaveStatusState extends State<LeaveStatus> {
         if (data["status"] == "1" && data.containsKey("user_data") && data["user_data"] is List) {
           setState(() {
             leaveData = data["user_data"] as List;
+            leaveData.sort((a, b) => int.parse(b["id"]).compareTo(int.parse(a["id"])));
           });
           return leaveData;
         }
@@ -282,7 +283,7 @@ class _LeaveStatusState extends State<LeaveStatus> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Leave Applicant Info
-            _buildLeaveInfoRow('Leave Applicant:', leave['person_name'], index),
+            _buildLeaveInfoRowName('Leave Applicant:', leave['person_name'], index),
             SizedBox(height: 8.0),
             // Leave Dates and Reason
             _buildLeaveInfoRow('From Date:', leave['from_date'], index),
@@ -306,6 +307,26 @@ class _LeaveStatusState extends State<LeaveStatus> {
           style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15),
         ),
         Text(value ?? 'N/A',style: TextStyle(fontSize: 15),),
+      ],
+    );
+  }
+  Widget _buildLeaveInfoRowName(String label, String? value, int index) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Center(
+          child: Text(
+            '$label',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
+        ),
+        SizedBox(height: 5), // Adds spacing between label and value
+        Center(
+          child: Text(
+            value ?? 'N/A',
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
       ],
     );
   }

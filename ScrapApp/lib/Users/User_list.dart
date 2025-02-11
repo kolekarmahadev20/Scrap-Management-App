@@ -412,7 +412,7 @@ class _view_userState extends State<view_user> {
                     _showActiveUsers = true;
                   });
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.lightGreen, padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.lightGreen, padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),),
                 child: RichText(
                   text: TextSpan(
                     text: "Active User ", // Default text
@@ -436,7 +436,7 @@ class _view_userState extends State<view_user> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange.shade600,
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 ),
                 child:
                 RichText(
@@ -464,7 +464,7 @@ class _view_userState extends State<view_user> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 ),
                 child: RichText(
                   text: TextSpan(

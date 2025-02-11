@@ -247,55 +247,6 @@ class _LeaveApplicationState extends State<LeaveApplication> {
     return [];
   }
 
-
-  // Future<List<dynamic>> fetchLeaveData() async {
-  //   await checkLogin();
-  //   try {
-  //     final response = await http.post(
-  //       Uri.parse('${URL}authorized_by'),
-  //       headers: {"Accept": "application/json"},
-  //       body: {
-  //       'user_id': username,
-// 'uuid':uuid,
-  //         'user_pass': password,
-  //       },
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       final data = json.decode(response.body);
-  //       print(data);
-  //
-  //       setState(() {
-  //         // Keep "All Location" as the first option
-  //         AuthorizationByType = {'Select': '0'};
-  //         for (var location in data['user_data']) {
-  //           AuthorizationByType[location['person_name']] = location['emp_person_id'];
-  //         }
-  //       });
-  //
-  //       if (data["status"] == "1") {
-  //         if (data.containsKey("user_data") && data["user_data"] is List) {
-  //           setState(() {
-  //             leaveData = data["user_data"] as List;
-  //           });
-  //
-  //           return leaveData;
-  //         } else {
-  //           print('No valid "user_data" found in the response');
-  //         }
-  //       } else {
-  //         print('Status is not 1 in the response');
-  //       }
-  //     } else {
-  //       print(
-  //           'Failed to fetch leave data. Status code: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     print('Error: $e');
-  //   }
-  //   return [];
-  // }
-
   Widget buildFieldWithDatePicker(
     String label,
     DateTime? selectedDate,
