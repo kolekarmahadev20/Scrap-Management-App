@@ -11,8 +11,8 @@ import 'package:scrapapp/Pages/StartPage.dart';
 import 'package:scrapapp/URL_CONSTANT.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-
 import 'attendance.dart';
+import 'dart:math' as math;
 
 
 class ProfilePage extends StatefulWidget {
@@ -25,6 +25,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  String uuid = '';
   String? username;
   String? password;
   String? loginType = '';
@@ -35,9 +36,9 @@ class _ProfilePageState extends State<ProfilePage> {
   String address = '';
   String empCode = '';
   String personId = '';
-  String uuid = '';
 
-
+  String logINTimeString = "";
+  String logoutTimeString = "";
 
   bool isLoggedIn = false;
   bool isPunchedIn = false;
@@ -47,8 +48,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String? attendanceType ;
   int _currentIndex = 0; // Current tab index
   LocationData? _locationData;
-
-  late Timer _lateloginCheckTimer;
+  late Timer _gpsCheckTimer;
 
   final Icon nameIcon =
   Icon(Icons.person, color: Colors.blue.shade900, size: 40);
@@ -65,24 +65,28 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-
     _initLocation();
-    getCredentialDetails();
-    checkLogin().then((_){
-      setState(() {
-         // if(userType != 'S')
-         //  check_first_login();
-      });
+
+    _gpsCheckTimer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
+      getlocation();
+      _updateLocation();
     });
 
-    fetchPunchTimeFromDatabase();
-    fetchLogoutPunchTimeFromDatabase();
+    getCredentialDetails();
+    checkLogin().then((_){
+      setState(() {});
+    });
+
+    fetchPunchTimeFromDatabase(); // First call
+    Future.delayed(Duration(milliseconds: 500), () {
+      fetchLogoutPunchTimeFromDatabase(); // Second call after a small delay
+    });
   }
 
   @override
   void dispose() {
-    _lateloginCheckTimer.cancel();
     super.dispose();
+    _gpsCheckTimer.cancel();
   }
 
   // Method to initialize location
@@ -101,36 +105,24 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> checkLogin() async {
-     final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
-    uuid = prefs.getString("uuid")!;
-    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
     uuid = prefs.getString("uuid")!;
-    print("UUID:$uuid");
-
-
   }
 
   getCredentialDetails() async {
-     final prefs = await SharedPreferences.getInstance();
-
+    final prefs = await SharedPreferences.getInstance();
     setState(() {
       isLoggedIn = prefs.getBool('isLoggedIn')!;
-      username = prefs.getString("username");
-      uuid = prefs.getString("uuid")!;
       name = prefs.getString('name') ?? 'N/A';
       contact = prefs.getString('contact') ?? 'N/A';
       email = prefs.getString('email') ?? 'N/A';
       address = prefs.getString('address') ?? 'N/A';
       empCode = prefs.getString('empCode') ?? 'N/A';
       personId = prefs.getString('person_id') ?? 'N/A';
-      // uuid = prefs.getString('uuid') ?? 'N/A';
-
-
-      print("UUID:$uuid");
     });
     if (!isLoggedIn) {
       Navigator.pushReplacement(
@@ -139,6 +131,123 @@ class _ProfilePageState extends State<ProfilePage> {
       );
     }
   }
+
+  Location location = new Location();
+  bool _serviceEnabled = true;
+  late PermissionStatus _permissionGranted;
+
+  Future<dynamic> getlocation() async {
+    _serviceEnabled = await location.serviceEnabled();
+
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      _serviceEnabled = await location.serviceEnabled();
+      if (!_serviceEnabled) {
+        _serviceEnabled = await location.requestService();
+        if (!_serviceEnabled) {
+          return;
+        }
+      }
+      _permissionGranted = await location.hasPermission();
+      if (_permissionGranted == PermissionStatus.denied) {
+        _permissionGranted = await location.requestPermission();
+        if (_permissionGranted != PermissionStatus.granted) {
+          return;
+        }
+      }
+    }
+    _locationData = await location.getLocation();
+  }
+
+  final Location _location = Location();
+  LocationData? _previousLocation;
+
+  // Haversine formula to calculate distance between two coordinates
+  double degToRad(double deg) {
+    return deg * (math.pi / 180);
+  }
+
+
+  double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const int R = 6371000; // Earth radius in meters
+    double dLat = degToRad(lat2 - lat1);
+    double dLon = degToRad(lon2 - lon1);
+    double a = math.pow(math.sin(dLat / 2), 2) +
+        math.cos(degToRad(lat1)) * math.cos(degToRad(lat2)) * math.pow(math.sin(dLon / 2), 2);
+    double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    return R * c;
+  }
+
+  Future<void> updateLocation(double latitude, double longitude) async {
+    // Construct the API URL
+    String url = '${URL}update_location';
+
+    // Prepare the request body
+    var requestBody = {
+      'user_id': username,
+      'uuid':uuid,
+      'user_pass': password,
+      'locations[lat]':latitude.toString(),
+      'locations[long]':longitude.toString(),
+    };
+
+    try {
+      // Send the POST request
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {"Accept": "application/json"},
+        body: requestBody,
+      );
+
+      // Handle the response
+      if (response.statusCode == 200) {
+        // Request successful
+        print('Location updated successfully');
+      } else {
+        // Request failed
+        print('Failed to update location. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Handle exceptions
+      print('Error updating location: $e');
+    }
+  }
+
+
+  void _updateLocation() async {
+    try {
+      if (_locationData != null) {
+        double latitude = _locationData!.latitude!;
+        double longitude = _locationData!.longitude!;
+
+        // Calculate the distance from the previous location, if available
+        if (_previousLocation != null) {
+          double previousLat = _previousLocation!.latitude!;
+          double previousLong = _previousLocation!.longitude!;
+          double distance = calculateDistance(previousLat, previousLong, latitude, longitude);
+
+          // Check if the calculated distance is greater than or equal to the desired threshold
+          if (distance >= 5000) {
+            // Update the location only if the condition is satisfied
+            await updateLocation(latitude, longitude);
+
+            // Update the previous location
+            _previousLocation = _locationData;
+          }
+        } else {
+          // If previous location is not available, update the location
+          await updateLocation(latitude, longitude);
+
+          // Update the previous location
+          _previousLocation = _locationData;
+        }
+      }
+    } catch (e) {
+      print('Error updating location: $e');
+    }
+  }
+
+
 
   Future<String> getAddress(double latitude, double longitude) async {
     final apiKey = 'AIzaSyCdIqus6Zv1nGHQtQA-JmoVxotbLtr1Cv0';
@@ -162,48 +271,74 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   //Fetching API for User Attendance
-  Future<void> set_user_attendance(
+  Future<void> set_user_attendances(
       String punchType, double? latitude, double? longitude) async {
-    print("username");
-
-    print(username);
-    print(password);
-    print(uuid);
-    print( latitude?.toString());
-    print( longitude?.toString());
-    print(address);
     try {
+       int hitCounter = 0;
+      hitCounter++;
+
+      print("========== DEBUG: set_user_attendances START ==========");
+       print("Function called $hitCounter time(s)");
+       print("Function called with:");
+      print("Punch Type: $punchType");
+      print("Latitude: ${latitude?.toString() ?? 'null'}");
+      print("Longitude: ${longitude?.toString() ?? 'null'}");
+
+      print("Fetching address...");
       final address = await getAddress(latitude ?? 0.0, longitude ?? 0.0);
+      print("Resolved Address: $address");
 
+      final url = Uri.parse('${URL}set_user_attend');
+      print("API URL: $url");
 
+      final requestBody = {
+        'user_id': username,
+        'user_pass': password,
+        'uuid': uuid,
+        'punch_type': punchType,
+        'location[lat]': latitude?.toString() ?? '',
+        'location[long]': longitude?.toString() ?? '',
+        'address': address ?? ''
+      };
+      print("Request Body: $requestBody");
 
+      print("Sending HTTP POST request...");
       final response = await http.post(
-        Uri.parse('${URL}set_user_attend'),
+        url,
         headers: {"Accept": "application/json"},
-        body: {
-          'user_id':username,
-          'user_pass':password,
-          'uuid':uuid,
-          'punch_type': punchType,
-          'location[lat]': latitude?.toString() ?? '',
-          'location[long]': longitude?.toString() ?? '',
-          'address': address ?? ''
-        },
+        body: requestBody,
       );
 
+      print("Response Received!");
+      print("Response Status Code: ${response.statusCode}");
+
       if (response.statusCode == 200) {
+        print("Parsing response JSON...");
         final data = json.decode(response.body);
-        print("DASDasdasd:$data");
+
+        Fluttertoast.showToast(msg: 'Attendance marked successfully.');
+
+        if (punchType == 'logged in') {
+          fetchPunchTimeFromDatabase();
+        } else {
+          fetchLogoutPunchTimeFromDatabase();
+        }
 
       } else {
-        print('Response Body: ${response.body}');
+        print("========== ERROR RESPONSE ==========");
+        print("Response Status Code: ${response.statusCode}");
+        print("Response Body: ${response.body}");
       }
-    } catch (e) {
-      print('Error: $e'); // Log any errors that occur
+    } catch (e, stackTrace) {
+      print("StackTrace: $stackTrace");
+    } finally {
+      print("========== DEBUG: set_user_attendances END ==========");
     }
   }
 
-  void sendPunchTimeToDatabase(String status) async{
+
+  void sendPunchTimeToDatabase(String status) async {
+
     try {
       await checkLogin();
       final url = Uri.parse('${URL}set_user_attendance');
@@ -211,30 +346,28 @@ class _ProfilePageState extends State<ProfilePage> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id':username,
-          'user_pass':password,
-          'uuid':uuid,
-          'status' : status,
+          'user_id': username,
+          'user_pass': password,
+          'status': status,
+          'uuid': uuid,
         },
       );
+
       if (response.statusCode == 200) {
-        setState(() {
-          var data = jsonDecode(response.body);
-          Fluttertoast.showToast(msg: data['msg']);
-          print("status : $status");
-          if(status == 'logged in') {
-            fetchPunchTimeFromDatabase();
-          }else{
-            fetchLogoutPunchTimeFromDatabase();
-          }
-        });
+        var data = jsonDecode(response.body);
+        Fluttertoast.showToast(msg: data['msg']);
+        print("Punch Status: $status");
+
+        if (status == 'logged in') {
+          fetchPunchTimeFromDatabase();
+        } else {
+          fetchLogoutPunchTimeFromDatabase();
+        }
       } else {
         Fluttertoast.showToast(msg: 'Unable to mark punch time');
       }
-    }catch(e){
-      print('Server Exception : $e');
-    }finally{
-
+    } catch (e) {
+      print('Server Exception: $e');
     }
   }
 
@@ -247,157 +380,107 @@ class _ProfilePageState extends State<ProfilePage> {
         headers: {"Accept": "application/json"},
         body: {
           'user_id':username,
+          'uuid':uuid,
           'user_pass':password,
-          'uuid':uuid
         },
       );
-      if (response.statusCode == 200) {
-        setState(() {
-          var data = jsonDecode(response.body);
-          punchTime = DateTime.parse(data['login_time']);
-          print("PunchIn Time : $punchTime");
-          enablePunching("logged in");
-        });
+      var data = jsonDecode(response.body);
+
+      if (data.containsKey('login_time') && data['login_time'] == "0000-00-00") {
+        // print("Skipping punchTime assignment. Invalid logout_time detected.");
+        logINTimeString = data['login_time'];
+      } else if (data.containsKey('login_time') && data['login_time'] != null) {
+        punchTime = DateTime.parse(data['login_time']);
+        // print("PunchIn Time : $punchTime");
+        enablePunching("logged in");
       } else {
-        //Fluttertoast.showToast(msg: 'Unable to fetch punch time');
+        // print("Skipping punchTime assignment. 'login_time' not found in response.");
       }
+
+      DateTime today = DateTime.now();
+      String todayDate = DateFormat('yyyy-MM-dd').format(today);
+
+      // print("TodayDate:$todayDate");
+      // print("logoutTimeString in case of Zero: $logoutTimeString");
+      // print("logINTimeString in case of Zero: $logINTimeString");
+      //
+      // print("punchTime:$punchTime");
+      String punchINDate = DateFormat('yyyy-MM-dd').format(punchTime!);
+      // print("punchINDate:$punchINDate");
+
+      if (logINTimeString == "0000-00-00"  && userType != 'S') {
+        // print("Skipping trackadminresponse call because logINTimeString is 0000-00-00");
+      } else if (punchINDate != todayDate  && userType != 'S') {
+        // print("punchINDate $punchINDate is not equal to todayDate $todayDate, calling fasfasf...");
+        trackadminresponse();
+      }else {
+        // print("Skipping trackadminresponse call because punchINDate matches today’s date.");
+      }
+
+      // if (response.statusCode == 200) {
+      //   setState(() {
+      //     var data = jsonDecode(response.body);
+      //
+      //     logINTimeString = data['login_time'];
+      //
+      //     punchTime = DateTime.parse(data['login_time']);
+      //
+      //     print(logINTimeString);
+      //     print("asfsa");
+      //     print("PunchIn Time : $punchTime");
+      //     enablePunching("logged in");
+      //   });
+      // } else {
+      //   Fluttertoast.showToast(msg: 'Unable to fetch punch time');
+      // }
     }catch(e){
-      print('Server Exception : $e');
+      print('Server Exception 258 : $e');
     }finally{
 
     }
   }
-
-  void check_first_login() async{
-    try {
-      await checkLogin();
-      final url = Uri.parse('${URL}check_first_login');
-      var response = await http.post(
-        url,
-        headers: {"Accept": "application/json"},
-        body: {
-          'user_id':username,
-          'user_pass':password,
-          'uuid':uuid
-        },
-      );
-      if (response.statusCode == 200) {
-        setState(() {
-          var data = jsonDecode(response.body);
-
-          var firstLoginCheck = data['admin_id'];
-
-          print("Admin ID: $firstLoginCheck");
-
-          // Check for empty or null admin_id
-          if (firstLoginCheck == null || firstLoginCheck.toString().trim().isEmpty|| firstLoginCheck == 'Not Found' ) {
-            print("Admin ID is empty, showing alert");
-            _showLateLoginRemarkDialog();
-          }
-          else {
-            print("Admin ID is valid: $firstLoginCheck");
-          }
-
-
-        });
-      } else {
-       // Fluttertoast.showToast(msg: 'Unable to fetch punch time');
-      }
-    }catch(e){
-      print('Server Exception : $e');
-    }finally{
-
-    }
-  }
-
-
 
   void fetchLogoutPunchTimeFromDatabase() async{
     try {
-      print("uuid");
-
-      print(uuid);
       await checkLogin();
       final url = Uri.parse('${URL}fetch_attendance_Outime');
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
         body: {
-          // 'user_id':'Bantu',
-          // 'user_pass':'Bantu#123',
-          // 'uuid':'UKQ1.231108.001'
           'user_id':username,
-          'user_pass':password,
           'uuid':uuid,
+          'user_pass':password,
         },
       );
       if (response.statusCode == 200) {
         setState(() {
           var data = jsonDecode(response.body);
-          print("data");
 
-          print(data);
-
-
-          punchOutTime = DateTime.parse(data['logout_time']);
-          String logoutTimeString = data['logout_time'];
-
-          enablePunching("logged out");
-          print("logoutTimeString");
-
-          print(logoutTimeString);
-
-          DateTime today = DateTime.now();
-          String todayDate = DateFormat('yyyy-MM-dd').format(today);
-
-          if (logoutTimeString == null || logoutTimeString! == "0000-00-00" ) {
-            print("punchOutTime is NULL, skipping logic.");
-          } else {
-            String punchOutDate = DateFormat('yyyy-MM-dd').format(punchOutTime!);
-            print("Today's Date: $todayDate");
-            print("Punch Out Date: $punchOutDate");
-
-            if (punchOutTime!.isBefore(today) && userType != 'S') {
-              print("Hitting trackadminresponse...");
-              trackadminresponse();
-            } else {
-              print("Condition not met: No dialog shown");
+          if (data.containsKey('logout_time') && data['logout_time'] == "0000-00-00") {
+            print("Skipping punchTime assignment. Invalid logout_time detected.");
+            logoutTimeString = data['logout_time'] ?? ""; // Ensure it's not null
+            print("logoutTimeString: $logoutTimeString");
+          } else if (data.containsKey('logout_time') && data['logout_time'] != "0000-00-00") {
+            try {
+              punchOutTime = DateTime.tryParse(data['logout_time']); // Use tryParse to prevent crashes
+              if (punchOutTime != null) {
+                enablePunching("logged out");
+              }
+            } catch (e) {
+              print("Error parsing logout_time: ${data['logout_time']}");
+              punchOutTime = null; // Ensure it's handled safely
             }
+          } else {
+            print("Skipping punchTime assignment. 'logout_time' not found in response.");
           }
-
-
-
-          // //Get today's date
-          // DateTime today = DateTime.now();
-          // String todayDate = DateFormat('yyyy-MM-dd').format(today);
-          // String punchOutDate = DateFormat('yyyy-MM-dd').format(punchOutTime!);
-          //
-          // print("Todays:$todayDate");
-          //
-          // print("punchOutTime:$punchOutDate");
-          //
-          // // Check if punchOutDate is before today
-          // if(punchOutTime! == "0000-00-00" && userType != 'S')
-          // {
-          //   if (punchOutTime!.isBefore(today) && userType != 'S') {
-          //     print("Hitting trackadminresponse...");
-          //     trackadminresponse();
-          //   }
-          //   else {
-          //     print('Condition not met: No dialog shown');
-          //   }
-          // }
-          // else
-          // {
-          //   print("Invalid date detected, not hitting trackadminresponse.");
-          // }
-
         });
       } else {
-       // Fluttertoast.showToast(msg: 'Unable to fetch punch time');
+        Fluttertoast.showToast(msg: 'Unable to fetch punch time');
       }
+
     }catch(e){
-      print('Server Exceptionasfs : $e');
+      print('Server Exceptionasfasf : $e');
     }finally{
 
     }
@@ -435,25 +518,30 @@ class _ProfilePageState extends State<ProfilePage> {
 
           if (adminActivity != null) {
             final adminremarkmsg = adminActivity['remark'] ?? 'No remark found';
+            final adminstatus = adminActivity['status'] ?? 'P';
+
+            print(adminstatus);
+            print("adminstatus");
 
             setState(() {
               print("Admin remark message: $adminremarkmsg");
 
               if (adminremarkmsg == "No remark found") {
-                print("Condition met: Showing Late Login Remark Dialog");
+                print("Condition met without status: Showing Late Login Remark Dialog");
                 _showLateLoginRemarkDialog();
-              } else {
-                print("Condition met: Showing Late Login Admin Remark Dialog");
+              }
+              else if (adminstatus == "P" || adminstatus == "R") {
+                print("Condition met with status: Showing Late Login Admin Remark Dialog");
                 _showLateLoginAdminRemarkDialog();
+              }
+              else {
+                print("Login Approved.");
               }
             });
           } else {
             print("No tracked admin activity found.");
           }
-        } else if (responseData['status'] == '0') {
-          print("Status is 0: Showing Late Login Remark Dialog");
-          _showLateLoginRemarkDialog();
-        } else {
+        }  else {
           print('Unexpected status: ${responseData['status']}');
         }
       } else {
@@ -608,7 +696,7 @@ class _ProfilePageState extends State<ProfilePage> {
           isPunchedIn = true;
         });
       }
-  }
+    }
     if(status == 'logged out') {
       String punchOutFormattedDate = DateFormat('yyyy-MM-dd').format(punchOutTime!);
       if(currentformattedDate != punchOutFormattedDate){
@@ -720,15 +808,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    print(isPunchedIn);
-    print("isPunchedIn");
-
     return StatefulBuilder(builder: (BuildContext context , StateSetter setState) {
       return Scaffold(
         drawer: userType != 'S'
             ? (isPunchedIn ? AppDrawer(currentPage: widget.currentPage) : null)
             : AppDrawer(currentPage: widget.currentPage),
-
         appBar: CustomAppBar(),
         body: SingleChildScrollView(
           child: Column(
@@ -827,14 +911,12 @@ class _ProfilePageState extends State<ProfilePage> {
                         label: Text("Punch In", style: TextStyle(color: Colors.white)),
                         onPressed: isPunchedIn
                             ? () {
-                          set_user_attendance('logged in', _locationData?.latitude,
-                              _locationData?.longitude);
                           Fluttertoast.showToast(msg: 'Your attendance marked for today');
                         }
                             : () {
-                          set_user_attendance('logged in', _locationData?.latitude,
-                              _locationData?.longitude);
-                          sendPunchTimeToDatabase("logged in");
+                          set_user_attendances('logged in', _locationData?.latitude, _locationData?.longitude);
+                          // sendPunchTimeToDatabase("logged in");
+
                           print('isPunchedIn :$isPunchedIn');
                         },
                         style: ElevatedButton.styleFrom(
@@ -857,20 +939,18 @@ class _ProfilePageState extends State<ProfilePage> {
                         icon: Icon(Icons.logout_rounded, color: Colors.white),
                         label: Text("Punch Out", style: TextStyle(color: Colors.white)),
                         onPressed: isPunchedOut
-                          ? () {
-                          set_user_attendance('logged out', _locationData?.latitude,
-                              _locationData?.longitude);
+                            ? () {
                           Fluttertoast.showToast(msg: 'Your attendance marked for today');
+                        }
+                            : () {
+                          if(isPunchedIn) {
+                            set_user_attendances('logged out', _locationData?.latitude, _locationData?.longitude);
+                            // sendPunchTimeToDatabase("logged out");
+
+                          }else{
+                            Fluttertoast.showToast(msg: 'Please punch in first');
                           }
-                          : () {
-                            if(isPunchedIn) {
-                              set_user_attendance('logged out', _locationData?.latitude,
-                                  _locationData?.longitude);
-                              sendPunchTimeToDatabase("logged out");
-                            }else{
-                              Fluttertoast.showToast(msg: 'Please punch in first');
-                            }
-                          },
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isPunchedOut
                               ? Colors.grey[400]
@@ -922,19 +1002,19 @@ class _ProfilePageState extends State<ProfilePage> {
         //     backgroundColor:Colors.blueGrey[200]!,
         // )
         bottomNavigationBar: BottomNavigationBar(
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Profile',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.check_circle),
-              label: 'Attendance',
-            ),
-          ],
-          currentIndex: _currentIndex, // Set the index for the current tab
-          selectedItemColor: Colors.blueGrey[900],
-          onTap: _onItemTapped
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: 'Profile',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.check_circle),
+                label: 'Attendance',
+              ),
+            ],
+            currentIndex: _currentIndex, // Set the index for the current tab
+            selectedItemColor: Colors.blueGrey[900],
+            onTap: _onItemTapped
         ),
       );
     });

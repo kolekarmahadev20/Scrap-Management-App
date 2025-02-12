@@ -103,8 +103,13 @@ class _Edit_UserState extends State<Edit_User> {
     print(widget.user.vendorId);
     print(widget.user.plantId);
 
+    print('widget.user.userType');
 
-    selectedUserType = widget.user.userType??'';
+    print(widget.user.userType);
+
+    if(widget.user.userType != 'NA')
+      selectedUserType = widget.user.userType??'';
+
     employeeCodeController.text = widget.user.empCode??'';
     fullNameController.text = widget.user.personName??'';
     emailIdController.text = widget.user.empEmail??'';
@@ -286,8 +291,9 @@ class _Edit_UserState extends State<Edit_User> {
                 _vendorOptions.add(vendorName);
               }
             }
+            // if (widget.user.vendorId != null && widget.user.vendorId!.isNotEmpty && widget.user.vendorId != 'NA')
+              _prefillSelectedVendors();
 
-            _prefillSelectedVendors();
           });
         } else {
           print("Response data is null.");
@@ -321,8 +327,13 @@ class _Edit_UserState extends State<Edit_User> {
 
       print("Final Selected Vendors: $_selectedVendorValues");
       print("Selected Vendor Map: $_selectedVendors");
-
       _fetchPlants(_selectedVendors);
+
+      // if (_selectedVendors.isNotEmpty) {
+      //   _fetchPlants(_selectedVendors);
+      // } else {
+      //   print("No vendors selected. Skipping _fetchPlants call.");
+      // }
       setState(() {}); // Update UI
     }
   }
@@ -382,7 +393,9 @@ class _Edit_UserState extends State<Edit_User> {
             }
           });
 
-          _prefillSelectedLocations();
+          // if (widget.user.plantId != null && widget.user.plantId!.isNotEmpty && widget.user.plantId != 'NA')
+            _prefillSelectedLocations();
+
         } else {
           print("Response data is null or 'plants' not found.");
         }
@@ -455,7 +468,8 @@ class _Edit_UserState extends State<Edit_User> {
               _organizationList.add({"id": orgId, "name": orgName});
               _organizationOptions.add(orgName);
 
-              _prefillSelectedOrganizations();
+              // if (widget.user.orgID != null && widget.user.orgID!.isNotEmpty && widget.user.orgID != 'NA')
+                _prefillSelectedOrganizations();
 
             }
           });

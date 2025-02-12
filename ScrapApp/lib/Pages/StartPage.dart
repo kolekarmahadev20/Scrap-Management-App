@@ -23,8 +23,10 @@ class _StartDashBoardPageState extends State<StartPage> {
   // TextEditingController passwordController = TextEditingController(text: "Paar@9044");
   // TextEditingController usernameController = TextEditingController(text: "mite7330");
   // TextEditingController passwordController = TextEditingController(text: "Mite@7330");
-  TextEditingController usernameController = TextEditingController(text: "mite7330");
-  TextEditingController passwordController = TextEditingController(text: "Mite@7330");
+  // TextEditingController usernameController = TextEditingController(text: "mite7330");
+  // TextEditingController passwordController = TextEditingController(text: "Mite@7330");
+  TextEditingController usernameController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
   // TextEditingController usernameController = TextEditingController();
   // TextEditingController passwordController = TextEditingController();
   bool _obscureText = true; // Variable to manage password visibility

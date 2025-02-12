@@ -18,8 +18,11 @@ class ForgotPunchOutPage extends StatefulWidget {
 }
 
 class _ForgotPunchOutPageState extends State<ForgotPunchOutPage> {
-  List<Map<String, dynamic>> _users = [];
+  List<Map<String, dynamic>> _users = []; // Original user list
+  List<Map<String, dynamic>> _filteredUsers = []; // Filtered user list
   bool _isLoading = true;
+  TextEditingController _searchController = TextEditingController(); // Search controller
+
 
   //Variables for user details
   String? username = '';
@@ -37,6 +40,8 @@ class _ForgotPunchOutPageState extends State<ForgotPunchOutPage> {
       });
     });
     _fetchLateLoggedOutUsers();
+    _searchController.addListener(_filterUsers); // Add search listener
+
   }
 
   //Fetching user details from sharedpreferences
@@ -81,6 +86,17 @@ class _ForgotPunchOutPageState extends State<ForgotPunchOutPage> {
     }
   }
 
+  // Function to filter users based on search query
+  void _filterUsers() {
+    setState(() {
+      String query = _searchController.text.toLowerCase();
+      _filteredUsers = _users
+          .where((user) =>
+          user['name'].toLowerCase().contains(query)) // Filter by name
+          .toList();
+    });
+  }
+
   // Function to fetch late-logged-out users from the API
   Future<void> _fetchLateLoggedOutUsers() async {
     try {
@@ -118,6 +134,9 @@ class _ForgotPunchOutPageState extends State<ForgotPunchOutPage> {
 
               };
             }));
+            _users.sort((a, b) => (b['attendance_id']).compareTo(a['attendance_id']));
+            _filteredUsers = _users; // Initialize the filtered list with all users
+
           }
         });
       } else {
@@ -213,40 +232,72 @@ class _ForgotPunchOutPageState extends State<ForgotPunchOutPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  user['name'],
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Chip(
-                  label: Text(
-                    user['status'] == 'P'
-                        ? 'Pending'
-                        : (user['status'] == 'A'
-                        ? 'Accepted'
-                        : 'Rejected'),
-                    style: TextStyle(
-                      color: user['status'] == 'P'
-                          ? Colors.orange
-                          : (user['status'] == 'A'
-                          ? Colors.green
-                          : Colors.red),
-                    ),
-                  ),
-                  backgroundColor: user['status'] == 'P'
-                      ? Colors.orange.shade100
-                      : (user['status'] == 'A'
-                      ? Colors.green.shade100
-                      : Colors.red.shade100),
-                ),
-
-              ],
+            Text(
+              user['name'],
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Chip(
+                label: Text(
+                  user['status'] == 'P'
+                      ? 'Pending'
+                      : (user['status'] == 'A'
+                      ? 'Accepted'
+                      : 'Rejected'),
+                  style: TextStyle(
+                    color: user['status'] == 'P'
+                        ? Colors.orange
+                        : (user['status'] == 'A'
+                        ? Colors.green
+                        : Colors.red),
+                  ),
+                ),
+                backgroundColor: user['status'] == 'P'
+                    ? Colors.orange.shade100
+                    : (user['status'] == 'A'
+                    ? Colors.green.shade100
+                    : Colors.red.shade100),
+              ),
+            ),
+
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //   children: [
+            //     Text(
+            //       user['name'],
+            //       style: TextStyle(
+            //         fontSize: 18,
+            //         fontWeight: FontWeight.bold,
+            //       ),
+            //     ),
+            //     Chip(
+            //       label: Text(
+            //         user['status'] == 'P'
+            //             ? 'Pending'
+            //             : (user['status'] == 'A'
+            //             ? 'Accepted'
+            //             : 'Rejected'),
+            //         style: TextStyle(
+            //           color: user['status'] == 'P'
+            //               ? Colors.orange
+            //               : (user['status'] == 'A'
+            //               ? Colors.green
+            //               : Colors.red),
+            //         ),
+            //       ),
+            //       backgroundColor: user['status'] == 'P'
+            //           ? Colors.orange.shade100
+            //           : (user['status'] == 'A'
+            //           ? Colors.green.shade100
+            //           : Colors.red.shade100),
+            //     ),
+            //
+            //   ],
+            // ),
             SizedBox(height: 8),
             // Text(
             //   'Email: ${user['email']}',
@@ -362,13 +413,68 @@ class _ForgotPunchOutPageState extends State<ForgotPunchOutPage> {
     return Scaffold(
       drawer: AppDrawer(currentPage: widget.currentPage),
       appBar: CustomAppBar(),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : ListView.builder(
-        itemCount: _users.length,
-        itemBuilder: (context, index) {
-          return _buildUserCard(_users[index]);
-        },
+      body: Column(
+        children: [
+          // Search Bar
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.3),
+                    spreadRadius: 1,
+                    blurRadius: 5,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (value) {
+                  _filterUsers();
+                },
+                decoration: InputDecoration(
+                  hintText: "Search by Name...",
+                  hintStyle: TextStyle(color: Colors.grey.shade600),
+                  prefixIcon: Icon(Icons.search, color: Colors.blueAccent),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                    icon: Icon(Icons.clear, color: Colors.redAccent),
+                    onPressed: () {
+                      _searchController.clear();
+                      _filterUsers();
+                    },
+                  )
+                      : null,
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+          ),
+
+          // List of Users
+          Expanded(
+            child: _isLoading
+                ? Center(child: CircularProgressIndicator())
+                : _filteredUsers.isEmpty
+                ? Center(child: Text("No users found"))
+                : ListView.builder(
+              itemCount: _filteredUsers.length,
+              itemBuilder: (context, index) {
+                return _buildUserCard(_filteredUsers[index]);
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

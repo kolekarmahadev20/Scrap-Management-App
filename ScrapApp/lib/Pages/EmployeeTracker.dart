@@ -10,6 +10,7 @@ import '../AppClass/appBar.dart';
 import 'package:flutter/services.dart';
 import '../URL_CONSTANT.dart';
 import 'StartPage.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class EmployeeTrackers extends StatefulWidget {
 
@@ -200,6 +201,47 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
     mapController = controller;
   }
 
+  Widget buildSearchableDropdown(
+      String label,
+      String? value,
+      Function(String) onChanged,
+      List<Map<String, String>> employees) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label),
+          SizedBox(height: 8.0),
+          TypeAheadFormField<Map<String, String>>(
+            textFieldConfiguration: TextFieldConfiguration(
+              decoration: InputDecoration(
+                hintText: 'Select an employee',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12.0),
+              ),
+            ),
+            suggestionsCallback: (pattern) {
+              return employees.where((employee) =>
+              employee['full_name']!.toLowerCase().contains(pattern.toLowerCase()) ||
+                  employee['username']!.toLowerCase().contains(pattern.toLowerCase()));
+            },
+            itemBuilder: (context, Map<String, String> suggestion) {
+              return ListTile(
+                title: Text('${suggestion['full_name']} - (${suggestion['username']})'),
+              );
+            },
+            onSuggestionSelected: (Map<String, String> suggestion) {
+              onChanged(suggestion['id']!);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -209,16 +251,27 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
         children: [
 
           SizedBox(height: 20,),
-          buildDropdown(
+          buildSearchableDropdown(
             "Employee Name:",
             selectedEmployeeId,
                 (value) {
               setState(() {
-                selectedEmployeeId = value!;
+                selectedEmployeeId = value;
               });
             },
-            employees, // Pass the list of employees here
+            employees, // Pass the list of employees
           ),
+
+          // buildDropdown(
+          //   "Employee Name:",
+          //   selectedEmployeeId,
+          //       (value) {
+          //     setState(() {
+          //       selectedEmployeeId = value!;
+          //     });
+          //   },
+          //   employees, // Pass the list of employees here
+          // ),
           SizedBox(height: 8.0),
           // Date picker
           buildFieldWithDatePicker(

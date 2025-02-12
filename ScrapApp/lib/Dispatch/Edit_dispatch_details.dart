@@ -263,6 +263,8 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
 
       request.fields['user_id'] = username!;
       request.fields['user_pass'] = password!;
+      request.fields['uuid'] = uuid!;
+
       request.fields['sale_order_id_lift'] = widget.sale_order_id;
       request.fields['rate'] = rate ?? '';
       request.fields['advance_payment'] = advancePayment ?? '';
@@ -382,6 +384,10 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       if (response.statusCode == 200) {
         final res = await http.Response.fromStream(response);
         final jsonData = json.decode(res.body);
+
+        print(jsonData);
+        print(res);
+
         if(jsonData.containsKey('liftedTaxAmount')){
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${jsonData['msg']} ${jsonData['liftedTaxAmount']}")));
         }else{
@@ -585,95 +591,135 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
                   child: ListView(
                     children: [
                       buildTextField("Material", materialController,true, false , Colors.white,context),
-                      buildTextField("Invoice No", invoiceController , false,false ,Colors.white, context),
-                      buildTextField("Date", dateController, false,true , Colors.white,context),
-                      buildTextField("Truck No", truckNoController, false,false ,Colors.white, context),
+                      buildTextField("Invoice No", invoiceController , true,false ,Colors.white, context),
+                      buildTextField("Date", dateController, true,false , Colors.white,context),
+                      buildTextField("Truck No", truckNoController, true,false ,Colors.white, context),
                       buildTextField("First Weight", firstWeightNoController, false,false ,Colors.white, context),
                       buildTextField("Gross Weight", fullWeightController, false,false , Colors.white,context),
                       buildTextField("Net", netWeightController, true,false ,Colors.grey[400]!, context),
-                      buildTextField("Moisture Weight", moistureWeightController, false,false ,Colors.white, context),
-                      buildTextField("DMT/Quantity Weight", quantityController, false,false , Colors.white,context),
-                      buildTextField("Note", noteController, false,false , Colors.white,context),
+                      buildTextField("Moisture Weight", moistureWeightController, true,false ,Colors.white, context),
+                      buildTextField("DMT/Quantity Weight", quantityController, true,false , Colors.white,context),
+                      buildTextField("Note", noteController, true,false , Colors.white,context),
                       SizedBox(height: 100,),
                       Container(
-
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Text("Edit Images" , style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
+                              child: Text(
+                                "View Images",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24),
+                              ),
                             ),
                             ImageWidget(
-                                value: '1) Vehicle Front',
-                                cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                filePath: frontVehicle!,
-                                onImagesSelected: (images) { // Handle selected images
-                                  setState(() {
-                                    vehicleFront.addAll(images); // Store uploaded images
-                                    print(vehicleFront);
-                                  });
-                                }
+                              value: '1) Vehicle Front',
+                              filePath: frontVehicle!,
                             ),
                             ImageWidget(
-                                value: '2) Vehicle Back',
-                                cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                filePath: backVehicle!,
-                                onImagesSelected: (images) { // Handle selected images
-                                  setState(() {
-                                    vehicleBack.addAll(images); // Store uploaded images
-                                  });
-                                }
+                              value: '2) Vehicle Back',
+                              filePath: backVehicle!,
                             ),
                             ImageWidget(
-                                value: '3) Material',
-                                cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                filePath: materialImg!,
-                                onImagesSelected: (images) { // Handle selected images
-                                  setState(() {
-                                    Material.addAll(images); // Store uploaded images
-                                  });
-                                }
+                              value: '3) Material',
+                              filePath: materialImg!,
                             ),
                             ImageWidget(
-                                value: '4) Material Half Load',
-                                cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                filePath: materialHalfLoad!,
-                                onImagesSelected: (images) { // Handle selected images
-                                  setState(() {
-                                    MaterialHalfLoad.addAll(images); // Store uploaded images
-                                  });
-                                }
+                              value: '4) Material Half Load',
+                              filePath: materialHalfLoad!,
                             ),
                             ImageWidget(
-                                value: '5) Material Full Load',
-                                cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                filePath: materialFullLoad!,
-                                onImagesSelected: (images) { // Handle selected images
-                                  setState(() {
-                                    MaterialFullLoad.addAll(images); // Store uploaded images
-                                  });
-                                }
+                              value: '5) Material Full Load',
+                              filePath: materialFullLoad!,
                             ),
                             ImageWidget(
-                                value: '6) Other',
-                                cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                filePath: otherImg!,
-                                onImagesSelected: (images) { // Handle selected images
-                                  setState(() {
-                                    other.addAll(images); // Store uploaded images
-                                  });
-                                }
+                              value: '6) Other',
+                              filePath: otherImg!,
                             ),
                           ],
                         ),
                       ),
+                      // Container(
+                      //
+                      //   child: Column(
+                      //     crossAxisAlignment: CrossAxisAlignment.start,
+                      //     children: [
+                      //       Padding(
+                      //         padding: const EdgeInsets.all(8.0),
+                      //         child: Text("Edit Images" , style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
+                      //       ),
+                      //       ImageWidget(
+                      //           value: '1) Vehicle Front',
+                      //           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                      //           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                      //           filePath: frontVehicle!,
+                      //           onImagesSelected: (images) { // Handle selected images
+                      //             setState(() {
+                      //               vehicleFront.addAll(images); // Store uploaded images
+                      //               print(vehicleFront);
+                      //             });
+                      //           }
+                      //       ),
+                      //       ImageWidget(
+                      //           value: '2) Vehicle Back',
+                      //           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                      //           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                      //           filePath: backVehicle!,
+                      //           onImagesSelected: (images) { // Handle selected images
+                      //             setState(() {
+                      //               vehicleBack.addAll(images); // Store uploaded images
+                      //             });
+                      //           }
+                      //       ),
+                      //       ImageWidget(
+                      //           value: '3) Material',
+                      //           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                      //           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                      //           filePath: materialImg!,
+                      //           onImagesSelected: (images) { // Handle selected images
+                      //             setState(() {
+                      //               Material.addAll(images); // Store uploaded images
+                      //             });
+                      //           }
+                      //       ),
+                      //       ImageWidget(
+                      //           value: '4) Material Half Load',
+                      //           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                      //           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                      //           filePath: materialHalfLoad!,
+                      //           onImagesSelected: (images) { // Handle selected images
+                      //             setState(() {
+                      //               MaterialHalfLoad.addAll(images); // Store uploaded images
+                      //             });
+                      //           }
+                      //       ),
+                      //       ImageWidget(
+                      //           value: '5) Material Full Load',
+                      //           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                      //           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                      //           filePath: materialFullLoad!,
+                      //           onImagesSelected: (images) { // Handle selected images
+                      //             setState(() {
+                      //               MaterialFullLoad.addAll(images); // Store uploaded images
+                      //             });
+                      //           }
+                      //       ),
+                      //       ImageWidget(
+                      //           value: '6) Other',
+                      //           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                      //           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                      //           filePath: otherImg!,
+                      //           onImagesSelected: (images) { // Handle selected images
+                      //             setState(() {
+                      //               other.addAll(images); // Store uploaded images
+                      //             });
+                      //           }
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
                       SizedBox(height: 60,),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -802,18 +848,12 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
 
 class ImageWidget extends StatefulWidget {
   final String value;
-  final Icon cameraIcon;
-  final Icon galleryIcon;
   final String? filePath;
-  final Function(List<File>) onImagesSelected;
 
   const ImageWidget({
     Key? key,
     required this.value,
-    required this.cameraIcon,
-    required this.galleryIcon,
     required this.filePath,
-    required this.onImagesSelected,
   }) : super(key: key);
 
   @override
@@ -821,88 +861,10 @@ class ImageWidget extends StatefulWidget {
 }
 
 class _ImageWidgetState extends State<ImageWidget> {
-
   List<File> _images = [];
 
   Uint8List? imageBytes;
 
-  // Function to pick multiple images from the gallery
-  Future<void> _pickImagesFromGallery() async {
-    final picker = ImagePicker();
-    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery); // Pick only one image
-
-    if (pickedFile != null) {
-      setState(() {
-        _images = [File(pickedFile.path)]; // Replace the list with the new image
-      });
-      widget.onImagesSelected(_images);
-      _showSingleImageNotification();
-    }
-  }
-
-  // Function to capture a single image using the camera
-  Future<void> _captureImageFromCamera() async {
-    final picker = ImagePicker();
-    final XFile? capturedFile = await picker.pickImage(source: ImageSource.camera);
-
-    if (capturedFile  != null) {
-      setState(() {
-        _images = [File(capturedFile.path)]; // Replace the list with the new captured image
-      });
-      widget.onImagesSelected(_images);
-      _showSingleImageNotification();
-    }
-  }
-
-  // Function to show a SnackBar notifying the user
-  void _showSingleImageNotification() {
-    // Use Future to delay the snackbar to ensure widget is mounted
-    Future.delayed(Duration.zero, () {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("You can only upload one image at a time."),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    });
-  }
-  // Function to delete a selected image
-  void _deleteImage(int index) {
-    setState(() {
-      _images.removeAt(index); // Remove the image at the specified index
-      widget.onImagesSelected(_images); // Update parent with the new list
-      print(widget.onImagesSelected(_images));
-    });
-  }
-
-
-  Future<void> _fetchFileBytesFromServer(String fileUrl) async {
-    try {
-      var response = await http.get(Uri.parse(fileUrl));
-      if(response.statusCode == 200) {
-        setState(() {
-          imageBytes = response.bodyBytes;
-          _showImage();
-        });
-      } else {
-        if(imageBytes == null){
-          showNoImage();
-        }else{
-          print("Unable to load the Image");
-        }
-      }
-    } catch (e) {
-      if(imageBytes == null){
-        showNoImage();
-      }else{
-        print('Exception: $e');
-      }
-    } finally {
-      setState(() {});
-    }
-  }
 
   void showNoImage() {
     Fluttertoast.showToast(
@@ -915,7 +877,7 @@ class _ImageWidgetState extends State<ImageWidget> {
     );
   }
 
-
+// Function to show a dialog with all the saved images in a pageable view
   void _showImage() {
     showModalBottomSheet(
       context: context,
@@ -936,8 +898,7 @@ class _ImageWidgetState extends State<ImageWidget> {
                     ?Container(
                     height: 300,
                     width: 300,
-                    child: Positioned.fill(
-                        child: Image.memory(imageBytes!, fit: BoxFit.contain)))
+                    child: Image.memory(imageBytes!, fit: BoxFit.contain))
                     : showLoading(),
                 SizedBox(height: 10),
                 TextButton(
@@ -954,11 +915,38 @@ class _ImageWidgetState extends State<ImageWidget> {
     );
   }
 
+  Future<void> _fetchFileBytesFromServer(String fileUrl) async {
+    try {
+      var response = await http.get(Uri.parse(fileUrl));
+      if (response.statusCode == 200) {
+        setState(() {
+          imageBytes = response.bodyBytes; // Store image bytes
+          _showImage();
+        });
+      }  else {
+        if(imageBytes == null){
+          showNoImage();
+        }else{
+          print("Unable to load the Image");
+        }
+      }
+    } catch (e) {
+      if(imageBytes == null){
+        showNoImage();
+      }else{
+        print('Exception: $e');
+      }
+
+    } finally {
+      setState(() {});
+    }
+  }
+
   showLoading() {
     return Container(
       height: double.infinity,
       width: double.infinity,
-      color: Colors.black.withOpacity(0.4),
+      color: Colors.transparent,
       child: Center(
         child: CircularProgressIndicator(),
       ),
@@ -981,24 +969,22 @@ class _ImageWidgetState extends State<ImageWidget> {
               ),
               Spacer(),
               TextButton(
-                child:Text("View",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold ,color: Colors.green),
+                child: Text(
+                  "View",
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green),
                 ),
-                onPressed: (){
-                  if(widget.filePath == null){
-                    showNoImage();
-                  }else{
-                  _fetchFileBytesFromServer(widget.filePath!);
-                  }
+                onPressed: () {
+                  setState(() {
+                    if(widget.filePath == null){
+                      showNoImage();
+                    }else{
+                      _fetchFileBytesFromServer(widget.filePath!);
+                    }
+                  });
                 },
-              ),
-              IconButton(
-                icon: widget.cameraIcon,
-                onPressed: _captureImageFromCamera, // Calls the camera function
-              ),
-              IconButton(
-                icon: widget.galleryIcon,
-                onPressed: _pickImagesFromGallery, // Calls the gallery picker function
               ),
             ],
           ),
@@ -1022,19 +1008,13 @@ class _ImageWidgetState extends State<ImageWidget> {
                     height: 100, // Set fixed height for images
                     width: 100, // Set fixed width for images
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8), // Rounded corners
+                      borderRadius:
+                      BorderRadius.circular(8), // Rounded corners
                       child: Image.file(
                         _images[index],
-                        fit: BoxFit.cover, // Ensure the image fits within the container
+                        fit: BoxFit
+                            .cover, // Ensure the image fits within the container
                       ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 0,
-                    right: 0,
-                    child: IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _deleteImage(index), // Delete the selected image
                     ),
                   ),
                 ],
@@ -1042,8 +1022,259 @@ class _ImageWidgetState extends State<ImageWidget> {
             },
           ),
         )
-        : Container(),
+            : Container(),
       ],
     );
   }
 }
+
+
+// class ImageWidget extends StatefulWidget {
+//   final String value;
+//   final Icon cameraIcon;
+//   final Icon galleryIcon;
+//   final String? filePath;
+//   final Function(List<File>) onImagesSelected;
+//
+//   const ImageWidget({
+//     Key? key,
+//     required this.value,
+//     required this.cameraIcon,
+//     required this.galleryIcon,
+//     required this.filePath,
+//     required this.onImagesSelected,
+//   }) : super(key: key);
+//
+//   @override
+//   _ImageWidgetState createState() => _ImageWidgetState();
+// }
+//
+// class _ImageWidgetState extends State<ImageWidget> {
+//
+//   List<File> _images = [];
+//
+//   Uint8List? imageBytes;
+//
+//   // Function to pick multiple images from the gallery
+//   Future<void> _pickImagesFromGallery() async {
+//     final picker = ImagePicker();
+//     final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery); // Pick only one image
+//
+//     if (pickedFile != null) {
+//       setState(() {
+//         _images = [File(pickedFile.path)]; // Replace the list with the new image
+//       });
+//       widget.onImagesSelected(_images);
+//       _showSingleImageNotification();
+//     }
+//   }
+//
+//   // Function to capture a single image using the camera
+//   Future<void> _captureImageFromCamera() async {
+//     final picker = ImagePicker();
+//     final XFile? capturedFile = await picker.pickImage(source: ImageSource.camera);
+//
+//     if (capturedFile  != null) {
+//       setState(() {
+//         _images = [File(capturedFile.path)]; // Replace the list with the new captured image
+//       });
+//       widget.onImagesSelected(_images);
+//       _showSingleImageNotification();
+//     }
+//   }
+//
+//   // Function to show a SnackBar notifying the user
+//   void _showSingleImageNotification() {
+//     // Use Future to delay the snackbar to ensure widget is mounted
+//     Future.delayed(Duration.zero, () {
+//       if (mounted) {
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(
+//             content: Text("You can only upload one image at a time."),
+//             duration: Duration(seconds: 2),
+//           ),
+//         );
+//       }
+//     });
+//   }
+//   // Function to delete a selected image
+//   void _deleteImage(int index) {
+//     setState(() {
+//       _images.removeAt(index); // Remove the image at the specified index
+//       widget.onImagesSelected(_images); // Update parent with the new list
+//       print(widget.onImagesSelected(_images));
+//     });
+//   }
+//
+//
+//   Future<void> _fetchFileBytesFromServer(String fileUrl) async {
+//     try {
+//       var response = await http.get(Uri.parse(fileUrl));
+//       if(response.statusCode == 200) {
+//         setState(() {
+//           imageBytes = response.bodyBytes;
+//           _showImage();
+//         });
+//       } else {
+//         if(imageBytes == null){
+//           showNoImage();
+//         }else{
+//           print("Unable to load the Image");
+//         }
+//       }
+//     } catch (e) {
+//       if(imageBytes == null){
+//         showNoImage();
+//       }else{
+//         print('Exception: $e');
+//       }
+//     } finally {
+//       setState(() {});
+//     }
+//   }
+//
+//   void showNoImage() {
+//     Fluttertoast.showToast(
+//       msg: "No images Found",
+//       toastLength: Toast.LENGTH_SHORT, // Can be LENGTH_SHORT or LENGTH_LONG
+//       gravity: ToastGravity.BOTTOM,    // Position of the toast
+//       backgroundColor: Colors.black,
+//       textColor: Colors.white,
+//       fontSize: 16.0,
+//     );
+//   }
+//
+//
+//   void _showImage() {
+//     showModalBottomSheet(
+//       context: context,
+//       builder: (context) {
+//         return Container(
+//           width: double.infinity,
+//           padding: EdgeInsets.all(16.0),
+//           child: SingleChildScrollView(
+//             child: Column(
+//               mainAxisSize: MainAxisSize.min,
+//               children: [
+//                 Text(
+//                   widget.filePath!.split('/').last,
+//                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+//                 ),
+//                 SizedBox(height: 10),
+//                 imageBytes != null
+//                     ?Container(
+//                     height: 300,
+//                     width: 300,
+//                     child: Positioned.fill(
+//                         child: Image.memory(imageBytes!, fit: BoxFit.contain)))
+//                     : showLoading(),
+//                 SizedBox(height: 10),
+//                 TextButton(
+//                   onPressed: () {
+//                     Navigator.pop(context);
+//                   },
+//                   child: Text("Close"),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         );
+//       },
+//     );
+//   }
+//
+//   showLoading() {
+//     return Container(
+//       height: double.infinity,
+//       width: double.infinity,
+//       color: Colors.black.withOpacity(0.4),
+//       child: Center(
+//         child: CircularProgressIndicator(),
+//       ),
+//     );
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         Padding(
+//           padding: const EdgeInsets.all(8.0),
+//           child: Row(
+//             mainAxisAlignment: MainAxisAlignment.start,
+//             children: [
+//               Text(
+//                 widget.value,
+//                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+//               ),
+//               Spacer(),
+//               TextButton(
+//                 child:Text("View",
+//                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold ,color: Colors.green),
+//                 ),
+//                 onPressed: (){
+//                   if(widget.filePath == null){
+//                     showNoImage();
+//                   }else{
+//                   _fetchFileBytesFromServer(widget.filePath!);
+//                   }
+//                 },
+//               ),
+//               IconButton(
+//                 icon: widget.cameraIcon,
+//                 onPressed: _captureImageFromCamera, // Calls the camera function
+//               ),
+//               IconButton(
+//                 icon: widget.galleryIcon,
+//                 onPressed: _pickImagesFromGallery, // Calls the gallery picker function
+//               ),
+//             ],
+//           ),
+//         ),
+//         _images.isNotEmpty
+//             ? Padding(
+//           padding: const EdgeInsets.all(8.0),
+//           child: GridView.builder(
+//             shrinkWrap: true,
+//             physics: NeverScrollableScrollPhysics(),
+//             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+//               crossAxisCount: 3, // Display 3 images per row
+//               crossAxisSpacing: 4.0,
+//               mainAxisSpacing: 4.0,
+//             ),
+//             itemCount: _images.length,
+//             itemBuilder: (context, index) {
+//               return Stack(
+//                 children: [
+//                   Container(
+//                     height: 100, // Set fixed height for images
+//                     width: 100, // Set fixed width for images
+//                     child: ClipRRect(
+//                       borderRadius: BorderRadius.circular(8), // Rounded corners
+//                       child: Image.file(
+//                         _images[index],
+//                         fit: BoxFit.cover, // Ensure the image fits within the container
+//                       ),
+//                     ),
+//                   ),
+//                   Positioned(
+//                     top: 0,
+//                     right: 0,
+//                     child: IconButton(
+//                       icon: Icon(Icons.delete, color: Colors.red),
+//                       onPressed: () => _deleteImage(index), // Delete the selected image
+//                     ),
+//                   ),
+//                 ],
+//               );
+//             },
+//           ),
+//         )
+//         : Container(),
+//       ],
+//     );
+//   }
+// }
+
+
