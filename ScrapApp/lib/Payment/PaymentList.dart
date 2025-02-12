@@ -77,6 +77,15 @@ class _PaymentListState extends State<PaymentList> {
           var jsonData = json.decode(response.body);
           // Extract the relevant data
           paymentList = List<Map<String, dynamic>>.from(jsonData['saleOrder_paymentList']);
+
+          // Ensure Ids fields are extracted properly
+          for (var item in paymentList) {
+            if (item.containsKey("Ids") && item["Ids"] != null) {
+              item["vendor_id_from_ids"] = item["Ids"]["vendor_id"];
+              item["branch_id_from_ids"] = item["Ids"]["branch_id"];
+            }
+          }
+
           filteredPaymentList = paymentList;
 
         });
@@ -597,6 +606,9 @@ class _PaymentListState extends State<PaymentList> {
                         builder: (context) => View_payment_detail(
                           sale_order_id: index['sale_order_id'],
                           bidder_id: index['bidder_id'],
+                          branch_id_from_ids: index['branch_id_from_ids'], // Extracted from "Ids"
+                          vendor_id_from_ids: index['vendor_id_from_ids'], // Extracted from "Ids"
+
                         ),
                       ),
                     ).then((value) => setState(() {
@@ -611,6 +623,9 @@ class _PaymentListState extends State<PaymentList> {
                       builder: (context) => View_payment_detail(
                         sale_order_id: index['sale_order_id'],
                         bidder_id: index['bidder_id'],
+                        branch_id_from_ids: index['branch_id_from_ids'], // Extracted from "Ids"
+                        vendor_id_from_ids: index['vendor_id_from_ids'], // Extracted from "Ids"
+
                       ),
                     ),
                   ).then((value) => setState(() {

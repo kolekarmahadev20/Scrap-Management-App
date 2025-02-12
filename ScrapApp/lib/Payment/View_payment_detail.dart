@@ -11,10 +11,14 @@ import 'addPaymentToSaleOrder.dart';
 class View_payment_detail extends StatefulWidget {
   final String sale_order_id;
   final String bidder_id;
+  final String branch_id_from_ids;
+  final String vendor_id_from_ids;
 
   View_payment_detail({
     required this.sale_order_id,
     required this.bidder_id,
+    required this.branch_id_from_ids,
+    required this.vendor_id_from_ids,
   });
 
 
@@ -75,8 +79,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
       url,
       headers: {"Accept": "application/json"},
       body: {
-      'user_id': username,
-'uuid':uuid,
+        'user_id': username,
+        'uuid':uuid,
         'user_pass': password,
         'sale_order_id':widget.sale_order_id,
         'bidder_id':widget.bidder_id,
@@ -202,6 +206,9 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     material_name: ViewPaymentData['sale_order_details']?[0]
                     ['material_name'] ??
                         'N/A',
+                    vendor_id_from_ids: widget.vendor_id_from_ids,
+                    branch_id_from_ids: widget.branch_id_from_ids,
+
                   ),
                 ),
               ).then((value) => setState(() {
@@ -578,6 +585,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     MaterialPageRoute(
                       builder: (context) =>
                           View_Payment_Amount(
+                              branch_id_from_ids: widget.branch_id_from_ids,
+                              vendor_id_from_ids: widget.vendor_id_from_ids,
                             sale_order_id: widget.sale_order_id,
                             bidder_id: widget.bidder_id,
                             paymentId: index['payment_id'] ?? 'N/A',
@@ -603,6 +612,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                         View_Payment_Amount(
                           sale_order_id: widget.sale_order_id,
                           bidder_id: widget.bidder_id,
+                            branch_id_from_ids: widget.branch_id_from_ids,
+                            vendor_id_from_ids: widget.vendor_id_from_ids,
                           paymentId: index['payment_id'] ?? 'N/A',
                           paymentType: index['payment_type']?? 'N/A',
                           date1: index['date']?? 'N/A',
@@ -741,6 +752,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     MaterialPageRoute(
                       builder: (context) =>
                           View_Payment_Amount(
+                              branch_id_from_ids: widget.branch_id_from_ids,
+                              vendor_id_from_ids: widget.vendor_id_from_ids,
                             sale_order_id: widget.sale_order_id,
                             bidder_id: widget.bidder_id,
                             paymentId: index['payment_id'] ?? "N/A",
@@ -764,6 +777,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                   MaterialPageRoute(
                     builder: (context) =>
                         View_Payment_Amount(
+                            branch_id_from_ids: widget.branch_id_from_ids,
+                            vendor_id_from_ids: widget.vendor_id_from_ids,
                           sale_order_id: widget.sale_order_id,
                           bidder_id: widget.bidder_id,
                           paymentId: index['payment_id'] ?? "N/A",
@@ -901,6 +916,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => View_Payment_Amount(
+                        branch_id_from_ids: widget.branch_id_from_ids,
+                        vendor_id_from_ids: widget.vendor_id_from_ids,
                       sale_order_id: widget.sale_order_id,
                       bidder_id: widget.bidder_id,
                       paymentId: index['payment_id'] ?? "N/A",
@@ -924,6 +941,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => View_Payment_Amount(
+                      branch_id_from_ids: widget.branch_id_from_ids,
+                      vendor_id_from_ids: widget.vendor_id_from_ids,
                     sale_order_id: widget.sale_order_id,
                     bidder_id: widget.bidder_id,
                     paymentId: index['payment_id'] ?? "N/A",

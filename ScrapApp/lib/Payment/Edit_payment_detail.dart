@@ -136,7 +136,9 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
           Navigator.pop(context);
           Navigator.pop(context);
           Navigator.pushReplacement(context, MaterialPageRoute(
-              builder: (context) => View_payment_detail(sale_order_id: widget.sale_order_id! ,bidder_id: widget.bidder_id!,)));
+              builder: (context) => View_payment_detail(sale_order_id: widget.sale_order_id! ,bidder_id: widget.bidder_id!,
+                branch_id_from_ids: '',
+                vendor_id_from_ids: '',)));
         });
       } else {
         Fluttertoast.showToast(
@@ -174,8 +176,8 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-        'user_id': username,
-'uuid':uuid,
+         'user_id': username,
+          'uuid':uuid,
           'user_pass': password,
           'sale_order_id':widget.sale_order_id,
         },

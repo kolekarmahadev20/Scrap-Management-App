@@ -14,10 +14,14 @@ class addPaymentToSaleOrder extends StatefulWidget {
 
   final String sale_order_id;
   final String material_name;
+  final String branch_id_from_ids;
+  final String vendor_id_from_ids;
 
   addPaymentToSaleOrder({
    required this.sale_order_id,
    required this.material_name,
+    required this.branch_id_from_ids,
+    required this.vendor_id_from_ids,
 });
 
   @override
@@ -89,6 +93,27 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
 
 
   Future<void> addPaymentDetails() async {
+    if (selectedPaymentType == null || selectedPaymentType!.isEmpty) {
+      Fluttertoast.showToast(msg: 'Please select a payment type.');
+      return;
+    }
+    if (dateController1.text.isEmpty) {
+      Fluttertoast.showToast(msg: 'Please enter a payment date.');
+      return;
+    }
+    if (amountController.text.isEmpty) {
+      Fluttertoast.showToast(msg: 'Please enter the amount.');
+      return;
+    }
+    if (typeTransController.text.isEmpty) {
+      Fluttertoast.showToast(msg: 'Please enter the type of transfer.');
+      return;
+    }
+    if (refNoController.text.isEmpty) {
+      Fluttertoast.showToast(msg: 'Please enter the payment reference number.');
+      return;
+    }
+
     try {
       setState(() {
         isLoading = true;
@@ -99,8 +124,8 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-        'user_id': username,
-'uuid':uuid,
+          'user_id': username,
+          'uuid':uuid,
           'user_pass': password,
           'sale_order_id_pay':widget.sale_order_id ?? '',
           'payment_type': selectedPaymentType ?? '',
@@ -158,10 +183,12 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-        'user_id': username,
-'uuid':uuid,
+          'user_id': username,
+          'uuid':uuid,
           'user_pass': password,
           'sale_order_id':widget.sale_order_id,
+          'branch_id':widget.branch_id_from_ids,
+          'vendor_id':widget.vendor_id_from_ids
         },
       );
       if (response.statusCode == 200) {

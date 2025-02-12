@@ -13,6 +13,8 @@ import 'package:http/http.dart' as http;
 import '../URL_CONSTANT.dart';
 
 class View_Payment_Amount extends StatefulWidget {
+  final String branch_id_from_ids;
+  final String vendor_id_from_ids;
   final String? sale_order_id;
   final String? bidder_id;
   final String? paymentId;
@@ -25,6 +27,7 @@ class View_Payment_Amount extends StatefulWidget {
   final String? freezed;
 
   View_Payment_Amount({
+
     required this.sale_order_id,
     required this.bidder_id,
     required this.paymentId,
@@ -34,7 +37,9 @@ class View_Payment_Amount extends StatefulWidget {
     required this.referenceNo,
     required this.typeOfTransfer,
     required this.remark,
-    required this.freezed
+    required this.freezed,
+    required this.branch_id_from_ids,
+    required this.vendor_id_from_ids
   });
 
   @override
@@ -100,10 +105,12 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-        'user_id': username,
-'uuid':uuid,
+          'user_id': username,
+          'uuid':uuid,
           'user_pass': password,
           'sale_order_id':widget.sale_order_id,
+          'branch_id':widget.branch_id_from_ids,
+          'vendor_id':widget.vendor_id_from_ids
         },
       );
       if (response.statusCode == 200) {
