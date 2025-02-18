@@ -69,7 +69,7 @@ class _RefundListState extends State<RefundList> {
         headers: {"Accept": "application/json"},
         body: {
         'user_id': username,
-'uuid':uuid,
+        'uuid':uuid,
           'user_pass': password,
         },
       );
@@ -77,6 +77,14 @@ class _RefundListState extends State<RefundList> {
         setState(() {
           var jsonData = json.decode(response.body);
           refundList = List<Map<String, dynamic>>.from(jsonData['saleOrder_refundList']);
+          // Ensure Ids fields are extracted properly
+          for (var item in refundList) {
+            if (item.containsKey("ids") && item["ids"] != null) {
+              item["vendor_id_from_ids"] = item["ids"]["vendor_id"];
+              item["branch_id_from_ids"] = item["ids"]["branch_id"];
+            }
+          }
+
           filteredRefundList = refundList;
         });
       } else {
@@ -577,6 +585,10 @@ class _RefundListState extends State<RefundList> {
                       MaterialPageRoute(builder: (context) => View_refund_details(
                         sale_order_id: index['sale_order_id'],
                         bidder_id: index['bidder_id'],
+                        branch_id_from_ids: index['branch_id_from_ids'], // Extracted from "Ids"
+                        vendor_id_from_ids: index['vendor_id_from_ids'], // Extracted from "Ids"
+
+
                       )),
                     ).then((value) => setState((){
                       fetchRefundList();
@@ -589,6 +601,8 @@ class _RefundListState extends State<RefundList> {
                     MaterialPageRoute(builder: (context) => View_refund_details(
                       sale_order_id: index['sale_order_id'],
                       bidder_id: index['bidder_id'],
+                      branch_id_from_ids: index['branch_id_from_ids'], // Extracted from "Ids"
+                      vendor_id_from_ids: index['vendor_id_from_ids'], // Extracted from "Ids"
                     )),
                   ).then((value) => setState((){
                     fetchRefundList();

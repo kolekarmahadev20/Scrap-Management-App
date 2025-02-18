@@ -18,6 +18,7 @@ import '../Pages/EmployeeTracker.dart';
 import '../Pages/ForgotPunchOutPage.dart';
 import '../Pages/Search.dart';
 import '../Pages/SummaryReport.dart';
+import '../Pages/kilometer.dart';
 import '../Users/User_list.dart';
 import '../Vendor/Vendor_list.dart';
 
@@ -224,6 +225,21 @@ class _AppDrawerState extends State<AppDrawer> {
                       });
                     },
                   ),
+                  if(userType == 'S')
+                    _buildDrawerItem(
+                      context,
+                      7,
+                      icon: Icons.location_on_outlined,
+                      text: "Kilometer",
+                      onTap: () {
+                        Timer(Duration(milliseconds: 300), () {
+                          Navigator.pop(context); // Close the drawer
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => kilometer(currentPage: 7,)));
+                        });
+                      },
+                    ),
+
+
                 if(userType == 'S')
                     _buildDrawerItem(
                     context,

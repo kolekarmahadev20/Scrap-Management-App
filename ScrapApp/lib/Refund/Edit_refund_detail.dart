@@ -173,7 +173,7 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
           ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("${jsonData['msg']}")));
           Navigator.pop(context);
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => View_refund_details(sale_order_id: widget.sale_order_id , bidder_id: widget.bidder_id!,)));
+          // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => View_refund_details(sale_order_id: widget.sale_order_id , bidder_id: widget.bidder_id!,)));
         });
       }else {
         Fluttertoast.showToast(

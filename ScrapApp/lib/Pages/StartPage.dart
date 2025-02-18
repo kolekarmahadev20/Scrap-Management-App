@@ -31,12 +31,6 @@ class _StartDashBoardPageState extends State<StartPage> {
   // TextEditingController passwordController = TextEditingController();
   bool _obscureText = true; // Variable to manage password visibility
 
-  late Timer _gpsCheckTimer;
-
-
-  final Location _location = Location();
-  LocationData? _previousLocation;
-
 
   void _togglePasswordVisibility() {
     setState(() {
@@ -49,17 +43,10 @@ class _StartDashBoardPageState extends State<StartPage> {
   void initState() {
     super.initState();
     _getDeviceInfo();
-
-    _gpsCheckTimer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
-      getlocation();
-      _updateLocation();
-    });
-
   }
 
   @override
   void dispose() {
-    _gpsCheckTimer.cancel();
     super.dispose();
   }
 
@@ -88,129 +75,6 @@ class _StartDashBoardPageState extends State<StartPage> {
     });
   }
 
-  Location location = new Location();
-  bool _serviceEnabled = true;
-  late PermissionStatus _permissionGranted;
-  late LocationData _locationData;
-
-  Future<dynamic> getlocation() async {
-    _serviceEnabled = await location.serviceEnabled();
-
-    if (!_serviceEnabled) {
-      _serviceEnabled = await location.requestService();
-      _serviceEnabled = await location.serviceEnabled();
-      if (!_serviceEnabled) {
-        _serviceEnabled = await location.requestService();
-        if (!_serviceEnabled) {
-          return;
-        }
-      }
-      _permissionGranted = await location.hasPermission();
-      if (_permissionGranted == PermissionStatus.denied) {
-        _permissionGranted = await location.requestPermission();
-        if (_permissionGranted != PermissionStatus.granted) {
-          return;
-        }
-      }
-    }
-    _locationData = await location.getLocation();
-  }
-
-  // Haversine formula to calculate distance between two coordinates
-  double degToRad(double deg) {
-    return deg * (math.pi / 180);
-  }
-
-  double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-    const int R = 6371000; // Earth radius in meters
-    double dLat = degToRad(lat2 - lat1);
-    double dLon = degToRad(lon2 - lon1);
-    double a = math.pow(math.sin(dLat / 2), 2) +
-        math.cos(degToRad(lat1)) * math.cos(degToRad(lat2)) * math.pow(math.sin(dLon / 2), 2);
-    double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
-    return R * c;
-  }
-
-  Future<void> updateLocation(double latitude, double longitude) async {
-    print("=== Starting updateLocation Function ===");
-    print("Username: ${usernameController.text}");
-    print("Password: ${passwordController.text}");
-    print("Latitude: $latitude");
-    print("Longitude: $longitude");
-
-    try {
-      // Construct the API URL
-      final url = '${URL}update_location';
-      print("API URL: $url");
-
-      // Send the POST request
-      final response = await http.post(
-        Uri.parse(url),
-        body: {
-          'user_id': usernameController.text,
-          'user_pass': passwordController.text,
-          'uuid':_deviceID!??'',
-          'locations[lat]': latitude.toString(),
-          'locations[long]': longitude.toString(),
-        },
-      );
-
-      // Debug response status
-      print("Response Status Code: ${response.statusCode}");
-      print("Response Body: ${response.body}");
-
-      // Handle the response
-      if (response.statusCode == 200) {
-        var responseData = jsonDecode(response.body);
-        print("Decoded Response: $responseData");
-
-        if (responseData['status'] == "1") {
-          print("Success: ${responseData['msg']}");
-        } else {
-          print("Failed: ${responseData['msg']}");
-        }
-      } else {
-        print("Failed to update location. Status code: ${response.statusCode}");
-      }
-    } catch (e) {
-      print("Exception occurred: $e");
-    }
-
-    print("=== End of updateLocation Function ===");
-  }
-
-  void _updateLocation() async {
-    try {
-      if (_locationData != null) {
-        double latitude = _locationData!.latitude!;
-        double longitude = _locationData!.longitude!;
-
-        // Calculate the distance from the previous location, if available
-        if (_previousLocation != null) {
-          double previousLat = _previousLocation!.latitude!;
-          double previousLong = _previousLocation!.longitude!;
-          double distance = calculateDistance(previousLat, previousLong, latitude, longitude);
-
-          // Check if the calculated distance is greater than or equal to the desired threshold
-          if (distance >= 5000) {
-            // Update the location only if the condition is satisfied
-            await updateLocation(latitude, longitude);
-
-            // Update the previous location
-            _previousLocation = _locationData;
-          }
-        } else {
-          // If previous location is not available, update the location
-          await updateLocation(latitude, longitude);
-
-          // Update the previous location
-          _previousLocation = _locationData;
-        }
-      }
-    } catch (e) {
-      print('Error updating location: $e');
-    }
-  }
 
 /*---------------------------------------------------------------------------------------------------------------*/
 // Function to save user data
@@ -405,7 +269,6 @@ class _StartDashBoardPageState extends State<StartPage> {
                   height: 50, // Adjust the height of the button as needed
                   child: ElevatedButton(
                     onPressed: () {
-                      _updateLocation();
 
                       getCredentials();
                     },

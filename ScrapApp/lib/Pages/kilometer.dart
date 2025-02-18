@@ -12,16 +12,16 @@ import '../URL_CONSTANT.dart';
 import 'StartPage.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 
-class EmployeeTrackers extends StatefulWidget {
+class kilometer extends StatefulWidget {
 
   final int currentPage;
-  EmployeeTrackers({required this.currentPage});
+  kilometer({required this.currentPage});
 
   @override
-  State<EmployeeTrackers> createState() => EmployeeTrackersState();
+  State<kilometer> createState() => kilometerState();
 }
 
-class EmployeeTrackersState extends State<EmployeeTrackers> {
+class kilometerState extends State<kilometer> {
   late GoogleMapController mapController;
 
   LatLng _center = const LatLng(19.0829358, 73.000453); // Default center
@@ -35,7 +35,7 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
 
   //Variables for user details
   String? username = '';
- String uuid = '';
+  String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -50,7 +50,7 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
 
   //Fetching user details from sharedpreferences
   Future<void> checkLogin() async {
-     final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     uuid = prefs.getString("uuid")!;
     uuid = prefs.getString("uuid")!;
@@ -65,8 +65,8 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
     final response = await http.post(
       Uri.parse(url),
       body: {
-      'user_id': username,
-'uuid':uuid,
+        'user_id': username,
+        'uuid':uuid,
         'user_pass': password,
       },
     );
@@ -82,13 +82,13 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
           'username': x['uname']?.toString() ?? '', // Use emp_code instead of uname
         }));
       });
-        // setState(() {
-        //   employees = List<Map<String, String>>.from(data['users'].map((x) => {
-        //     'id': x['person_id'] as String, // Correct key
-        //     'full_name': x['person_name'] as String,
-        //     'username': x['uname'] as String,
-        //   }));
-        // });
+      // setState(() {
+      //   employees = List<Map<String, String>>.from(data['users'].map((x) => {
+      //     'id': x['person_id'] as String, // Correct key
+      //     'full_name': x['person_name'] as String,
+      //     'username': x['uname'] as String,
+      //   }));
+      // });
 
     } else {
       throw Exception('Failed to load dropdown data');
@@ -111,8 +111,8 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
     final response = await http.post(
       Uri.parse(url),
       body: {
-      'user_id': username,
-'uuid':uuid,
+        'user_id': username,
+        'uuid':uuid,
         'user_pass': password,
         'date': selectedDate.toIso8601String().split('T')[0],
         'id': selectedEmployeeId,
@@ -300,16 +300,6 @@ class EmployeeTrackersState extends State<EmployeeTrackers> {
 
           ),
 
-          // buildDropdown(
-          //   "Employee Name:",
-          //   selectedEmployeeId,
-          //       (value) {
-          //     setState(() {
-          //       selectedEmployeeId = value!;
-          //     });
-          //   },
-          //   employees, // Pass the list of employees here
-          // ),
           SizedBox(height: 8.0),
           // Date picker
           buildFieldWithDatePicker(

@@ -49,6 +49,7 @@ dependencies:
   url_launcher: ^6.1.10
   flutter_typeahead: ^4.0.1
   device_info_plus:
+  geolocator:
 
 
 

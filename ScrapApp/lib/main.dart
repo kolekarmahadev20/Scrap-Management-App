@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:scrapapp/Pages/StartPage.dart';
 
+import 'LocationService.dart';
 import 'Pages/splashScreen.dart';
 
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Start the LocationService (credentials are loaded and tracking begins)
+  LocationService();
   runApp(MyApp());
 }
 

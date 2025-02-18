@@ -13,10 +13,14 @@ class addRefundToSaleOrder extends StatefulWidget {
 
   final String sale_order_id;
   final String material_name;
+  final String branch_id_from_ids;
+  final String vendor_id_from_ids;
 
   addRefundToSaleOrder({
     required this.sale_order_id,
     required this.material_name,
+    required this.branch_id_from_ids,
+    required this.vendor_id_from_ids,
   });
 
   @override
@@ -108,6 +112,8 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
 'uuid':uuid,
           'user_pass': password,
           'sale_order_id':widget.sale_order_id,
+          'branch_id':widget.branch_id_from_ids,
+          'vendor_id':widget.vendor_id_from_ids
         },
       );
       if (response.statusCode == 200) {

@@ -9,12 +9,16 @@ import '../URL_CONSTANT.dart';
 import 'addRefundToSaleOrder.dart';
 
 class View_refund_details extends StatefulWidget {
+  final String branch_id_from_ids;
+  final String vendor_id_from_ids;
   final String? sale_order_id;
   final String bidder_id;
 
   View_refund_details({
     required this.sale_order_id,
     required this.bidder_id,
+    required this.branch_id_from_ids,
+    required this.vendor_id_from_ids
   });
 
   @override
@@ -68,8 +72,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-        'user_id': username,
-'uuid':uuid,
+          'user_id': username,
+          'uuid':uuid,
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
           'bidder_id': widget.bidder_id,
@@ -195,6 +199,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
                     material_name: ViewRefundData['sale_order_details']?[0]
                     ['material_name'] ??
                         'N/A',
+                    branch_id_from_ids: widget.branch_id_from_ids, // Extracted from "Ids"
+                    vendor_id_from_ids: widget.vendor_id_from_ids, // Extracted from "Ids"
                   ),
                 ),
               ).then((value) => setState(() {

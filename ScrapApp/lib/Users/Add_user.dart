@@ -8,6 +8,7 @@ import '../AppClass/appBar.dart';
 import '../URL_CONSTANT.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'dart:math'; // For Random
+import 'dart:math';
 
 class Add_user extends StatefulWidget {
 
@@ -129,12 +130,49 @@ class _Add_userState extends State<Add_user> {
   }
 
 
+  // String generateRandomPassword() {
+  //   const length = 8; // Length of the password
+  //   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  //   final random = Random();
+  //
+  //   return List.generate(length, (index) => chars[random.nextInt(chars.length)]).join();
+  // }
+
   String generateRandomPassword() {
-    const length = 8; // Length of the password
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const length = 8; // Total length of the password
+
+    // Define character groups
+    const lowerChars   = 'abcdefghijklmnopqrstuvwxyz';
+    const upperChars   = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const digitChars   = '0123456789';
+    const specialChars = '!@#\$%^&*()-_=+[]{};:,.<>?';
+
     final random = Random();
 
-    return List.generate(length, (index) => chars[random.nextInt(chars.length)]).join();
+    // Ensure at least one character from each required group is added:
+    final passwordChars = <String>[
+      // One lowercase letter (optional, you can remove if not required)
+      lowerChars[random.nextInt(lowerChars.length)],
+      // One uppercase letter
+      upperChars[random.nextInt(upperChars.length)],
+      // One digit
+      digitChars[random.nextInt(digitChars.length)],
+      // One special character
+      specialChars[random.nextInt(specialChars.length)],
+    ];
+
+    // Create a pool with all allowed characters
+    final allChars = lowerChars + upperChars + digitChars + specialChars;
+
+    // Fill the rest of the password length with random selections from the full pool
+    for (int i = passwordChars.length; i < length; i++) {
+      passwordChars.add(allChars[random.nextInt(allChars.length)]);
+    }
+
+    // Shuffle the characters so the required ones aren't always in the same position
+    passwordChars.shuffle(random);
+
+    return passwordChars.join();
   }
 
   // Function to generate a random employee code
@@ -170,7 +208,7 @@ class _Add_userState extends State<Add_user> {
         'user_pass': password,
         'uuid': uuid,
         'emp_code': employeeCodeController.text ?? '',
-        'user_type': userType.toString() ?? '',
+        'user_type': selectedUserType.toString() ?? '',
         'uname': usernameController.text ?? '',
         'c_pass': passwordController.text ?? '',
         'is_active': isActiveYes ? 'Y' : 'N',
