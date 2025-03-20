@@ -100,14 +100,16 @@ class _Edit_UserState extends State<Edit_User> {
     super.initState();
 
 
-    print(widget.user.vendorId);
-    print(widget.user.plantId);
+    // print(widget.user.vendorId);
+    // print(widget.user.plantId);
+    print(widget.user.orgID!);
+    print("asasvsa");
 
     print('widget.user.userType');
 
-    print(widget.user.userType);
+    // print(widget.user.userType);
 
-    if(widget.user.userType != 'NA')
+    if(widget.user.userType != 'NA' || widget.user.userType != null)
       selectedUserType = widget.user.userType??'';
 
     employeeCodeController.text = widget.user.empCode??'';
@@ -245,6 +247,10 @@ class _Edit_UserState extends State<Edit_User> {
     print("selectedUserType : $selectedUserType");
     print("selectedUserTypeuserTypes : $UserTypes");
 
+
+    print(_selectedorganizationValues);
+    print("_selectedorganizationValues");
+
     try {
       await checkLogin();
 
@@ -268,13 +274,17 @@ class _Edit_UserState extends State<Edit_User> {
           'acces_refund': isRefundYes ? 'Y' : 'N',
           'vendor_id': vendorIds.join(',')?? '',
           'plant_id': plantIds.join(','),
-          'org_id': organizationIdsString,
+          // 'org_id': organizationIdsString,
+          'org_id': _selectedorganizationValues.join(',')?? '',
           'person_name': fullNameController.text ?? '',
           'email': emailIdController.text ?? '',
           'uuiid': uuIDController.text ?? '',
           'person_id':widget.user.personId,
         },
       );
+
+      print('Request Body: $response');
+
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -370,6 +380,7 @@ class _Edit_UserState extends State<Edit_User> {
 
       print("Final Selected Vendors: $_selectedVendorValues");
       print("Selected Vendor Map: $_selectedVendors");
+
       _fetchPlants(_selectedVendors);
 
       // if (_selectedVendors.isNotEmpty) {
@@ -383,31 +394,36 @@ class _Edit_UserState extends State<Edit_User> {
 
 
   Future<void> _fetchPlants(Map<String, String> selectedVendors) async {
+    print("Debug: _fetchPlants() called");
+    print("Selected Vendors Map: $selectedVendors");
 
-    print(_selectedVendors);
-    print("POOJA");
     final vendorIds = selectedVendors.values.toList();  // Extract IDs
+    print("Debug: Extracted vendor IDs: $vendorIds");
 
-    // Debug: Print the vendor IDs being sent
-    print("Sending vendor IDs: $vendorIds");
     final vendorIdsString = vendorIds.join(',');
+    print("Debug: Concatenated vendor IDs string: $vendorIdsString");
 
     try {
       await checkLogin();
       final url = '${URL}fetch_plant';
 
+      final requestBody = {
+        'user_id': username,
+        'user_pass': password,
+        'uuid': uuid,
+        'vendor_id': vendorIdsString,
+      };
+
+      // Debug: Log the request body before sending
+      print("Debug: Request Body being sent -> $requestBody");
+
       final response = await http.post(
         Uri.parse(url),
-        body: {
-          'user_id': username,
-          'user_pass': password,
-          'uuid': uuid,
-          'vendor_id': vendorIdsString,
-        },
+        body: requestBody,
       );
 
       // Debug: Log the status code and body of the response
-      print("Response Status Code: ${response.statusCode}");
+      print("Debug: Response Status Code: ${response.statusCode}");
 
       setState(() {
         _locationList.clear();
@@ -418,7 +434,7 @@ class _Edit_UserState extends State<Edit_User> {
         final data = json.decode(response.body);
 
         // Debug: Log the response data for inspection
-        print("Response Body1: $data");
+        print("Debug: Response Body (Success) -> $data");
 
         // Check if 'plants' data exists and process it
         if (data != null && data['plants'] != null) {
@@ -436,21 +452,20 @@ class _Edit_UserState extends State<Edit_User> {
             }
           });
 
-          // if (widget.user.plantId != null && widget.user.plantId!.isNotEmpty && widget.user.plantId != 'NA')
-            _prefillSelectedLocations();
+          _prefillSelectedLocations();
 
         } else {
-          print("Response data is null or 'plants' not found.");
+          print("Debug: Response data is null or 'plants' not found.");
         }
       } else {
-        print("Failed to fetch plants. Status code: ${response.statusCode}");
-        // Debug: Log the full response body in case of failure
-        print("Response Body2: ${response.body}");
+        print("Debug: Failed to fetch plants. Status Code: ${response.statusCode}");
+        print("Debug: Response Body (Failure) -> ${response.body}");
       }
     } catch (e) {
-      print("Error fetching plants: $e");
+      print("Debug: Error fetching plants: $e");
     }
   }
+
 
   bool isPrefilled = false; // Add this as a class-level variable
 
@@ -479,7 +494,7 @@ class _Edit_UserState extends State<Edit_User> {
       print("Final Selected Vendors: $_selectedLocationValues");
       print("Selected Vendor Map: $_selectedLocations");
 
-      _fetchPlants(_selectedLocations);
+      // _fetchPlants(_selectedLocations);
       setState(() {}); // Update UI
     }
   }
@@ -529,35 +544,50 @@ class _Edit_UserState extends State<Edit_User> {
 
 
   void _prefillSelectedOrganizations() {
-    if (widget.user.orgID!.isNotEmpty) {
+    if (widget.user.orgID != null && widget.user.orgID!.isNotEmpty) {
       List<String> selectedOrgIds = widget.user.orgID!.split(',');
 
+      print("🔹 Raw orgID from widget.user: ${widget.user.orgID}");
+      print("🔹 Split selectedOrgIds: $selectedOrgIds");
+
       for (var id in selectedOrgIds) {
+        print("➡️ Checking org ID: $id");
+
         final org = _organizationList.firstWhere(
-              (org) => org['id'].toString() == id.trim(),
+              (org) => org['id'].toString().trim() == id.trim(),
           orElse: () => {},
         );
 
         if (org.isNotEmpty) {
+          print("✅ Found matching organization: ${org['name']} (ID: ${org['id']})");
 
-          // Avoid duplicates in selected organization
-          if (!_selectedorganizationValues.contains(org['name'])) {
-            _selectedorganizationValues.add(org['name']!);
-            _selectedOrganization[org['name']!] = org['id']!;
+          // **Store IDs Instead of Names**
+          if (!_selectedorganizationValues.contains(org['id'].toString())) {
+            _selectedorganizationValues.add(org['id'].toString()); // ✅ Use ID instead of name
+          } else {
+            print("⚠️ Duplicate found, skipping: ${org['name']}");
           }
+        } else {
+          print("❌ No matching organization found for ID: $id");
         }
       }
-      setState(() {}); // Update UI
+
+      setState(() {
+        print("🔄 UI Updated with selected organizations: $_selectedorganizationValues");
+      });
+    } else {
+      print("⚠️ widget.user.orgID is null or empty.");
     }
   }
 
 
+
+
   // Function to build a reusable TypeAhead dropdown
-  Widget buildTypeAheadDropdownVendor({
+  Widget buildCheckboxDropdownVendor({
     required String label,
-    required List<String> items,
-    required TextEditingController controller,
-    required List<String> selectedValues,
+    required List<Map<String, String>> items,
+    required Map<String, String> selectedVendors,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -567,56 +597,26 @@ class _Edit_UserState extends State<Edit_User> {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 10),
-        TypeAheadField<String>(
-          textFieldConfiguration: TextFieldConfiguration(
-            controller: controller,
-            decoration: InputDecoration(
-              labelText: label,
-              border: OutlineInputBorder(),
-            ),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(5),
           ),
-          suggestionsCallback: (pattern) {
-            return items
-                .where((item) => item.toLowerCase().contains(pattern.toLowerCase()))
-                .toList();
-          },
-          itemBuilder: (context, suggestion) {
-            return ListTile(
-              title: Text(suggestion),
-            );
-          },
-          onSuggestionSelected: (suggestion) {
-            if (!selectedValues.contains(suggestion)) {
-              setState(() {
-
-                selectedValues.add(suggestion);
-                final vendorId = _vendorList
-                    .firstWhere((vendor) => vendor['name'] == suggestion)['id'];
-                _selectedVendors[suggestion] = vendorId!;
-
-                _fetchPlants(_selectedVendors);
-              });
-            }
-          },
-        ),
-        SizedBox(height: 10),
-        InputDecorator(
-          decoration: InputDecoration(
-            labelText: "$label Selected",
-            border: OutlineInputBorder(),
-          ),
-          child: Wrap(
-            spacing: 8.0,
-            runSpacing: 4.0,
-            children: selectedValues.map((value) {
-              return Chip(
-                label: Text(value),
-                deleteIcon: Icon(Icons.close),
-                onDeleted: () {
+          child: Column(
+            children: items.map((vendor) {
+              final vendorName = vendor['name']!;
+              final vendorId = vendor['id']!;
+              return CheckboxListTile(
+                title: Text(vendorName),
+                value: selectedVendors.containsKey(vendorName),
+                onChanged: (bool? value) {
                   setState(() {
-                    selectedValues.remove(value);
-                    _selectedVendors.remove(value);
-                    _fetchPlants(_selectedVendors);
+                    if (value == true) {
+                      selectedVendors[vendorName] = vendorId;
+                    } else {
+                      selectedVendors.remove(vendorName);
+                    }
+                    _fetchPlants(selectedVendors); // Map<String, String> pass karna hai
                   });
                 },
               );
@@ -628,10 +628,81 @@ class _Edit_UserState extends State<Edit_User> {
     );
   }
 
-  Widget buildTypeAheadDropdownplant({
+  Widget buildCheckboxListPlant({
     required String label,
-    required List<String> items,
-    required TextEditingController controller,
+    required List<Map<String, String>> items, // Location list with name & id
+    required List<String> selectedValues,
+    required Map<String, String> selectedLocations,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10),
+        Container(
+          padding: EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: Column(
+            children: items.map((location) {
+              final locationName = location['name']!;
+              final locationId = location['id']!;
+
+              return CheckboxListTile(
+                title: Text(locationName),
+                value: selectedValues.contains(locationName),
+                onChanged: (bool? isChecked) {
+                  setState(() {
+                    if (isChecked == true) {
+                      selectedValues.add(locationName);
+                      selectedLocations[locationName] = locationId;
+                    } else {
+                      selectedValues.remove(locationName);
+                      selectedLocations.remove(locationName);
+                    }
+                  });
+                },
+              );
+            }).toList(),
+          ),
+        ),
+        // SizedBox(height: 10),
+        // InputDecorator(
+        //   decoration: InputDecoration(
+        //     labelText: "$label Selected",
+        //     border: OutlineInputBorder(),
+        //   ),
+        //   child: Wrap(
+        //     spacing: 8.0,
+        //     runSpacing: 4.0,
+        //     children: selectedValues.map((value) {
+        //       return Chip(
+        //         label: Text(value),
+        //         deleteIcon: Icon(Icons.close),
+        //         onDeleted: () {
+        //           setState(() {
+        //             selectedValues.remove(value);
+        //             selectedLocations.remove(value);
+        //           });
+        //         },
+        //       );
+        //     }).toList(),
+        //   ),
+        // ),
+        SizedBox(height: 20),
+      ],
+    );
+  }
+
+
+  Widget buildCheckboxDropdownOrganization({
+    required String label,
+    required List<Map<String, String>> items,
     required List<String> selectedValues,
   }) {
     return Column(
@@ -642,53 +713,25 @@ class _Edit_UserState extends State<Edit_User> {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 10),
-        TypeAheadField<String>(
-          textFieldConfiguration: TextFieldConfiguration(
-            controller: controller,
-            decoration: InputDecoration(
-              labelText: label,
-              border: OutlineInputBorder(),
-            ),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(5),
           ),
-          suggestionsCallback: (pattern) {
-            return items
-                .where((item) =>
-                item.toLowerCase().contains(pattern.toLowerCase()))
-                .toList();
-          },
-          itemBuilder: (context, suggestion) {
-            return ListTile(
-              title: Text(suggestion),
-            );
-          },
-          onSuggestionSelected: (suggestion) {
-            if (!selectedValues.contains(suggestion)) {
-              setState(() {
-                selectedValues.add(suggestion);
-                final locationId = _locationList
-                    .firstWhere((location) => location['name'] == suggestion)['id'];
-                _selectedLocations[suggestion] = locationId!;
-              });
-            }
-          },
-        ),
-        SizedBox(height: 10),
-        InputDecorator(
-          decoration: InputDecoration(
-            labelText: "$label Selected",
-            border: OutlineInputBorder(),
-          ),
-          child: Wrap(
-            spacing: 8.0,
-            runSpacing: 4.0,
-            children: selectedValues.map((value) {
-              return Chip(
-                label: Text(value),
-                deleteIcon: Icon(Icons.close),
-                onDeleted: () {
+          child: Column(
+            children: items.map((org) {
+              final orgName = org['name']!;
+              final orgId = org['id']!; // ✅ Ensure ID is used
+              return CheckboxListTile(
+                title: Text(orgName),
+                value: selectedValues.contains(orgId), // ✅ Now IDs will match correctly
+                onChanged: (bool? value) {
                   setState(() {
-                    selectedValues.remove(value);
-                    _selectedLocations.remove(value);
+                    if (value == true) {
+                      selectedValues.add(orgId);
+                    } else {
+                      selectedValues.remove(orgId);
+                    }
                   });
                 },
               );
@@ -700,76 +743,7 @@ class _Edit_UserState extends State<Edit_User> {
     );
   }
 
-  Widget buildTypeAheadDropdownorganization({
-    required String label,
-    required List<String> items,
-    required TextEditingController controller,
-    required List<String> selectedValues,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 10),
-        TypeAheadField<String>(
-          textFieldConfiguration: TextFieldConfiguration(
-            controller: controller,
-            decoration: InputDecoration(
-              labelText: label,
-              border: OutlineInputBorder(),
-            ),
-          ),
-          suggestionsCallback: (pattern) {
-            return items
-                .where((item) => item.toLowerCase().contains(pattern.toLowerCase()))
-                .toList();
-          },
-          itemBuilder: (context, suggestion) {
-            return ListTile(
-              title: Text(suggestion),
-            );
-          },
-          onSuggestionSelected: (suggestion) {
-            if (!selectedValues.contains(suggestion)) {
-              setState(() {
-                selectedValues.add(suggestion);
-                final organizationId = _organizationList
-                    .firstWhere((organization) => organization['name'] == suggestion)['id'];
-                _selectedOrganization[suggestion] = organizationId!;
-              });
-            }
-          },
-        ),
-        SizedBox(height: 10),
-        InputDecorator(
-          decoration: InputDecoration(
-            labelText: "$label Selected",
-            border: OutlineInputBorder(),
-          ),
-          child: Wrap(
-            spacing: 8.0,
-            runSpacing: 4.0,
-            children: selectedValues.map((value) {
-              return Chip(
-                label: Text(value),
-                deleteIcon: Icon(Icons.close),
-                onDeleted: () {
-                  setState(() {
-                    selectedValues.remove(value);
-                    _selectedOrganization.remove(value);
-                  });
-                },
-              );
-            }).toList(),
-          ),
-        ),
-        SizedBox(height: 20),
-      ],
-    );
-  }
+
 
 
   Widget _buildTextField(String labelText, TextEditingController controller) {
@@ -1043,29 +1017,46 @@ class _Edit_UserState extends State<Edit_User> {
                 },
                 isMandatory: true,
               ),
-      
-              buildTypeAheadDropdownorganization(
+
+              buildCheckboxDropdownOrganization(
                 label: "Organization",
-                items: _organizationOptions,
-                controller: _organizationController,
+                items: _organizationList,
                 selectedValues: _selectedorganizationValues,
               ),
-      
-              buildTypeAheadDropdownVendor(
+
+              buildCheckboxDropdownVendor(
                 label: "Vendor",
-                items: _vendorOptions,
-                controller: _vendorController,
-                selectedValues: _selectedVendorValues,
+                items: _vendorList,
+                selectedVendors: _selectedVendors, // Pass the correct Map<String, String>
               ),
-      
-              buildTypeAheadDropdownplant(
-                label: "Plant Name",
-                items: _locationOptions,
-                controller: _locationController,
-                selectedValues: _selectedLocationValues,
-              ),
-      
-              _buildTextField('UUID', uuIDController),
+
+              if (_selectedVendors.isNotEmpty)
+                _locationList.isNotEmpty
+                    ? buildCheckboxListPlant(
+                  label: "Plant Name",
+                  items: _locationList,
+                  selectedValues: _selectedLocationValues,
+                  selectedLocations: _selectedLocations,
+                )
+                    : Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Plant Name",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
+                      Text(
+                        "No Plant Found",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ),
+
+
+            _buildTextField('UUID', uuIDController),
       
               const SizedBox(height: 10),
       

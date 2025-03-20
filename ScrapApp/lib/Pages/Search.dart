@@ -124,31 +124,24 @@ class _SearchState extends State<Search> {
         Uri.parse('${URL}get_dropdown'),
         headers: {"Accept": "application/json"},
         body: {
-        'user_id': username,
-'uuid':uuid,
+          'user_id': username,
+          'uuid': uuid,
           'user_pass': password,
         },
       );
 
-      // Check if the response is in JSON format
       if (response.statusCode == 200) {
         try {
           final data = json.decode(response.body);
-          // print(data);
 
-          // Update dropdown data
           setState(() {
-            // Location (PlantName)
-            // PlantName = {
-            //   'Select': 'Select',
-            // };
-
             // Material
             Material = {
               'Select': 'Select',
               ...{
-                for (var item in data['material_list'])
-                  item['material_name']: item['material_id'] ?? '0'
+                for (var item in data['material_list'] ?? [])
+                  item['material_name'] ?? 'Unknown':
+                  (item['material_id'] ?? '0').toString()
               }
             };
 
@@ -156,8 +149,9 @@ class _SearchState extends State<Search> {
             VendorType = {
               'Select': 'Select',
               ...{
-                for (var item in data['vendor_list'])
-                  item['vendor_name']: item['vendor_id'] ?? '0'
+                for (var item in data['vendor_list'] ?? [])
+                  item['vendor_name'] ?? 'Unknown':
+                  (item['vendor_id'] ?? '0').toString()
               }
             };
 
@@ -165,8 +159,9 @@ class _SearchState extends State<Search> {
             Buyer = {
               'Select': 'Select',
               ...{
-                for (var item in data['buyer_list'])
-                  item['buyer_name']: item['buyer_id'] ?? '0'
+                for (var item in data['buyer_list'] ?? [])
+                  item['buyer_name'] ?? 'Unknown':
+                  (item['buyer_id'] ?? '0').toString()
               }
             };
           });
@@ -174,13 +169,13 @@ class _SearchState extends State<Search> {
           print("Error decoding JSON: $e");
         }
       } else {
-        print(
-            'Failed to fetch dropdown data. Status code: ${response.statusCode}');
+        print('Failed to fetch dropdown data. Status code: ${response.statusCode}');
       }
     } catch (e) {
       print('Error fetching data: $e');
     }
   }
+
 
   // Fetch plant data based on the selected vendor
   Future<void> fetchPlantData(String vendorId) async {

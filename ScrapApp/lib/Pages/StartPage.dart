@@ -32,6 +32,9 @@ class _StartDashBoardPageState extends State<StartPage> {
   bool _obscureText = true; // Variable to manage password visibility
 
 
+  var isActive = '';
+  var ismobLogin = '';
+
   void _togglePasswordVisibility() {
     setState(() {
       _obscureText = !_obscureText;
@@ -90,9 +93,12 @@ class _StartDashBoardPageState extends State<StartPage> {
     prefs.setString("uuid", uuid!);
   }
 
+
 /*---------------------------------------------------------------------------------------------------------------*/
   checkLogin(String username , String password , String loginType,String userType,
-      String person_email, String person_name,String uuid)async{
+      String person_email, String person_name,String uuid,
+      String is_active,String mob_login,String acces_sale_order,
+      String acces_dispatch,String acces_refund,String acces_payment)async{
     final login = await SharedPreferences.getInstance();
     await login.setString("username", username);
     await login.setString("password", password);
@@ -101,6 +107,15 @@ class _StartDashBoardPageState extends State<StartPage> {
     await login.setString("person_email", person_email);
     await login.setString("person_name", person_name);
     await login.setString("uuid", uuid!);
+
+    await login.setString("is_active", is_active!);
+    await login.setString("mob_login", mob_login!);
+    await login.setString("acces_sale_order", acces_sale_order!);
+    await login.setString("acces_dispatch", acces_dispatch!);
+    await login.setString("acces_refund", acces_refund!);
+    await login.setString("acces_payment", acces_payment!);
+
+
 
   }
 /*---------------------------------------------------------------------------------------------------------------*/
@@ -139,8 +154,21 @@ class _StartDashBoardPageState extends State<StartPage> {
         var loginType = user_data['login_type']?? "N?A";
         var userType = user_data['user_type']?? "N?A";
 
+        var is_active = user_data['is_active']?? "N?A";
+        var mob_login = user_data['mob_login']?? "N?A";
+        var acces_sale_order = user_data['acces_sale_order']?? "N?A";
+        var acces_dispatch = user_data['acces_dispatch']?? "N?A";
+        var acces_refund = user_data['acces_refund']?? "N?A";
+        var acces_payment = user_data['acces_payment']?? "N?A";
+
+        isActive = user_data['is_active']?? "N?A";
+         ismobLogin = user_data['mob_login']?? "N?A";
+
         await saveUserData(true ,person_name, contact, person_email, emp_code, emp_address,person_id,_deviceID!);
-        await checkLogin(username, password ,loginType ,userType,person_email,person_name,_deviceID!);
+        await checkLogin(username, password ,loginType ,userType,person_email,person_name,_deviceID!,
+            is_active,mob_login,
+            acces_sale_order,acces_dispatch
+        ,acces_refund,acces_payment);
 
         if (userType == "S") {
           Navigator.pushReplacement(
@@ -295,6 +323,7 @@ class _StartDashBoardPageState extends State<StartPage> {
       ),
     );
   }
+
   Widget _buildLoginForm() {
     return Padding(
       padding: const EdgeInsets.all(20.0),

@@ -293,6 +293,11 @@ class _ProfilePageState extends State<ProfilePage> {
       if (logINTimeString == "0000-00-00"  && userType != 'S') {
         // print("Skipping trackadminresponse call because logINTimeString is 0000-00-00");
       } else if (punchINDate != todayDate  && userType != 'S') {
+        print("JASIFHASIOSHFAS");
+
+        print(punchINDate);
+        print(todayDate);
+
         // print("punchINDate $punchINDate is not equal to todayDate $todayDate, calling fasfasf...");
         trackadminresponse();
       }else {
@@ -401,6 +406,16 @@ class _ProfilePageState extends State<ProfilePage> {
           if (adminActivity != null) {
             final adminremarkmsg = adminActivity['remark'] ?? 'No remark found';
             final adminstatus = adminActivity['status'] ?? 'P';
+            final loginTimeString = adminActivity['login_time'];
+
+
+                final DateTime loginDateTime = DateTime.parse(loginTimeString);
+                final String userlastloginTime = "${loginDateTime.year}-${loginDateTime.month.toString().padLeft(2, '0')}-${loginDateTime.day.toString().padLeft(2, '0')}";
+                print(userlastloginTime); // Output: 2025-03-19
+
+
+            DateTime today = DateTime.now();
+            String todayDate = DateFormat('yyyy-MM-dd').format(today);
 
             print(adminstatus);
             print("adminstatus");
@@ -408,11 +423,16 @@ class _ProfilePageState extends State<ProfilePage> {
             setState(() {
               print("Admin remark message: $adminremarkmsg");
 
-              if (adminremarkmsg == "No remark found") {
+              if ((adminremarkmsg == "No remark found") && (userlastloginTime != todayDate) ) {
+                print(userlastloginTime);
+                print(todayDate);
+                print("POKOP");
+
+
                 print("Condition met without status: Showing Late Login Remark Dialog");
                 _showLateLoginRemarkDialog();
               }
-              else if (adminstatus == "P" || adminstatus == "R") {
+              else if ((adminstatus == "P" || adminstatus == "R") && (userlastloginTime != todayDate) ) {
                 print("Condition met with status: Showing Late Login Admin Remark Dialog");
                 _showLateLoginAdminRemarkDialog();
               }

@@ -18,7 +18,6 @@ import '../Pages/EmployeeTracker.dart';
 import '../Pages/ForgotPunchOutPage.dart';
 import '../Pages/Search.dart';
 import '../Pages/SummaryReport.dart';
-import '../Pages/kilometer.dart';
 import '../Users/User_list.dart';
 import '../Vendor/Vendor_list.dart';
 
@@ -46,9 +45,17 @@ class _AppDrawerState extends State<AppDrawer> {
 
   String? person_name = '';
 
+  String? is_active = '';
+  String? mob_login = '';
+  String? acces_sale_order = '';
+  String? acces_dispatch = '';
+  String? acces_refund = '';
+  String? acces_payment = '';
+
   @override
   initState(){
     super.initState();
+    checkLogin();
     checkLogin().then((_) {
       setState(() {});  // Rebuilds the widget after `userType` is updated.
     });
@@ -58,12 +65,18 @@ class _AppDrawerState extends State<AppDrawer> {
      final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     uuid = prefs.getString("uuid")!;
-    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
     person_email = prefs.getString("person_email");
     person_name = prefs.getString("person_name");
+
+     is_active = prefs.getString("is_active")!;
+     mob_login = prefs.getString("mob_login");
+     acces_sale_order = prefs.getString("acces_sale_order");
+     acces_dispatch = prefs.getString("acces_dispatch");
+     acces_refund = prefs.getString("acces_refund");
+     acces_payment = prefs.getString("acces_payment");
   }
 
   Future<void> _logout(BuildContext context) async {
@@ -173,7 +186,7 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
-                  if(userType == 'S' || userType == 'A')
+                  if(userType == 'S' || userType == 'A'|| acces_sale_order == 'Y')
                   _buildDrawerItem(
                     context,
                     3,
@@ -187,33 +200,35 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
-                  _buildDrawerItem(
-                    context,
-                    4,
-                    icon: Icons.payment_rounded,
-                    text: "Payment",
-                    onTap: () {
-                      Timer(Duration(milliseconds: 300), () {
-                        Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentList(currentPage: 4,)));
-                      });
+                  if(acces_payment == 'Y')
+                      _buildDrawerItem(
+                      context,
+                      4,
+                      icon: Icons.payment_rounded,
+                      text: "Payment",
+                      onTap: () {
+                        Timer(Duration(milliseconds: 300), () {
+                          Navigator.pop(context); // Close the drawer
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentList(currentPage: 4,)));
+                        });
 
-                    },
-                  ),
-
-                  _buildDrawerItem(
-                    context,
-                    5,
-                    icon: Icons.local_shipping_outlined,
-                    text: "Dispatch",
-                    onTap: () {
-                      Timer(Duration(milliseconds: 300), () {
-                        Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => DispatchList(currentPage: 5,)));
-                      });
-                    },
-                  ),
-                  _buildDrawerItem(
+                      },
+                    ),
+                  if(acces_dispatch == 'Y')
+                      _buildDrawerItem(
+                      context,
+                      5,
+                      icon: Icons.local_shipping_outlined,
+                      text: "Dispatch",
+                      onTap: () {
+                        Timer(Duration(milliseconds: 300), () {
+                          Navigator.pop(context); // Close the drawer
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => DispatchList(currentPage: 5,)));
+                        });
+                      },
+                    ),
+                  if(acces_refund == 'Y')
+                    _buildDrawerItem(
                     context,
                     6,
                     icon: Icons.money_off_sharp,
@@ -225,21 +240,6 @@ class _AppDrawerState extends State<AppDrawer> {
                       });
                     },
                   ),
-                  if(userType == 'S')
-                    _buildDrawerItem(
-                      context,
-                      7,
-                      icon: Icons.location_on_outlined,
-                      text: "Kilometer",
-                      onTap: () {
-                        Timer(Duration(milliseconds: 300), () {
-                          Navigator.pop(context); // Close the drawer
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => kilometer(currentPage: 7,)));
-                        });
-                      },
-                    ),
-
-
                 if(userType == 'S')
                     _buildDrawerItem(
                     context,

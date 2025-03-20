@@ -32,10 +32,10 @@ class _Add_userState extends State<Add_user> {
   final Map<String, String> _selectedLocations = {}; // Maps location_name to location_id
 
   final TextEditingController _organizationController = TextEditingController();
-  final List<Map<String, String>> _organizationList = []; // Stores location data
-  final List<String> _organizationOptions = []; // Stores location_name for suggestions
+  final List<Map<String, String>> _organizationList = [];
+  final List<String> _organizationOptions = [];
   final List<String> _selectedorganizationValues = [];
-  final Map<String, String> _selectedOrganization= {}; // Maps location_name to location_id
+  final Map<String, String> _selectedOrganization= {};
 
   String? selectedUserType;
 
@@ -195,6 +195,14 @@ class _Add_userState extends State<Add_user> {
     final organizationIds = _selectedOrganization.values.toList();  // Extract IDs
     final organizationIdsString = organizationIds.join(',');
 
+    print(_selectedorganizationValues);
+    print("_selectedorganizationValues");
+
+    print(_selectedVendors);
+    print("_selectedVendors");
+
+    // _selectedorganizationValues
+
     try {
       await checkLogin();
 
@@ -219,7 +227,11 @@ class _Add_userState extends State<Add_user> {
         'acces_refund': isRefundYes ? 'Y' : 'N',
         'vendor_ids': vendorIds.join(',')?? '',
         'plant_id': plantIds.join(',')?? '',
-        'org_id': organizationIds.join('')?? '',
+        // 'org_id': organizationIds.join('')?? '',
+        'org_id': _selectedorganizationValues.join(',')?? '',
+
+
+
         'person_name': fullNameController.text ?? '',
         'email': emailIdController.text ?? '',
         'uuid': uuIDController.text ?? '',
@@ -243,7 +255,9 @@ class _Add_userState extends State<Add_user> {
           'acces_refund': isRefundYes ? 'Y' : 'N',
           'vendor_id': vendorIds.join(',')?? '',
           'plant_id': plantIds.join(','),
-          'org_id': organizationIdsString,
+          // 'org_id': organizationIdsString,
+          'org_id': _selectedorganizationValues.join(',')?? '',
+
           'person_name': fullNameController.text ?? '',
           'email': emailIdController.text ?? '',
           'uuid': uuIDController.text ?? '',
@@ -429,11 +443,10 @@ class _Add_userState extends State<Add_user> {
   }
 
   // Function to build a reusable TypeAhead dropdown
-  Widget buildTypeAheadDropdownVendor({
+  Widget buildCheckboxDropdownVendor({
     required String label,
-    required List<String> items,
-    required TextEditingController controller,
-    required List<String> selectedValues,
+    required List<Map<String, String>> items,
+    required Map<String, String> selectedVendors,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -443,56 +456,26 @@ class _Add_userState extends State<Add_user> {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 10),
-        TypeAheadField<String>(
-          textFieldConfiguration: TextFieldConfiguration(
-            controller: controller,
-            decoration: InputDecoration(
-              labelText: label,
-              border: OutlineInputBorder(),
-            ),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(5),
           ),
-          suggestionsCallback: (pattern) {
-            return items
-                .where((item) => item.toLowerCase().contains(pattern.toLowerCase()))
-                .toList();
-          },
-          itemBuilder: (context, suggestion) {
-            return ListTile(
-              title: Text(suggestion),
-            );
-          },
-          onSuggestionSelected: (suggestion) {
-            if (!selectedValues.contains(suggestion)) {
-              setState(() {
-
-                selectedValues.add(suggestion);
-                final vendorId = _vendorList
-                    .firstWhere((vendor) => vendor['name'] == suggestion)['id'];
-                _selectedVendors[suggestion] = vendorId!;
-
-                _fetchPlants(_selectedVendors);
-              });
-            }
-          },
-        ),
-        SizedBox(height: 10),
-        InputDecorator(
-          decoration: InputDecoration(
-            labelText: "$label Selected",
-            border: OutlineInputBorder(),
-          ),
-          child: Wrap(
-            spacing: 8.0,
-            runSpacing: 4.0,
-            children: selectedValues.map((value) {
-              return Chip(
-                label: Text(value),
-                deleteIcon: Icon(Icons.close),
-                onDeleted: () {
+          child: Column(
+            children: items.map((vendor) {
+              final vendorName = vendor['name']!;
+              final vendorId = vendor['id']!;
+              return CheckboxListTile(
+                title: Text(vendorName),
+                value: selectedVendors.containsKey(vendorName),
+                onChanged: (bool? value) {
                   setState(() {
-                    selectedValues.remove(value);
-                    _selectedVendors.remove(value);
-                    _fetchPlants(_selectedVendors);
+                    if (value == true) {
+                      selectedVendors[vendorName] = vendorId;
+                    } else {
+                      selectedVendors.remove(vendorName);
+                    }
+                    _fetchPlants(selectedVendors); // Map<String, String> pass karna hai
                   });
                 },
               );
@@ -504,10 +487,83 @@ class _Add_userState extends State<Add_user> {
     );
   }
 
-  Widget buildTypeAheadDropdownplant({
+
+
+  Widget buildCheckboxListPlant({
     required String label,
-    required List<String> items,
-    required TextEditingController controller,
+    required List<Map<String, String>> items, // Location list with name & id
+    required List<String> selectedValues,
+    required Map<String, String> selectedLocations,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10),
+        Container(
+          padding: EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: Column(
+            children: items.map((location) {
+              final locationName = location['name']!;
+              final locationId = location['id']!;
+
+              return CheckboxListTile(
+                title: Text(locationName),
+                value: selectedValues.contains(locationName),
+                onChanged: (bool? isChecked) {
+                  setState(() {
+                    if (isChecked == true) {
+                      selectedValues.add(locationName);
+                      selectedLocations[locationName] = locationId;
+                    } else {
+                      selectedValues.remove(locationName);
+                      selectedLocations.remove(locationName);
+                    }
+                  });
+                },
+              );
+            }).toList(),
+          ),
+        ),
+        // SizedBox(height: 10),
+        // InputDecorator(
+        //   decoration: InputDecoration(
+        //     labelText: "$label Selected",
+        //     border: OutlineInputBorder(),
+        //   ),
+        //   child: Wrap(
+        //     spacing: 8.0,
+        //     runSpacing: 4.0,
+        //     children: selectedValues.map((value) {
+        //       return Chip(
+        //         label: Text(value),
+        //         deleteIcon: Icon(Icons.close),
+        //         onDeleted: () {
+        //           setState(() {
+        //             selectedValues.remove(value);
+        //             selectedLocations.remove(value);
+        //           });
+        //         },
+        //       );
+        //     }).toList(),
+        //   ),
+        // ),
+        SizedBox(height: 20),
+      ],
+    );
+  }
+
+
+  Widget buildCheckboxDropdownOrganization({
+    required String label,
+    required List<Map<String, String>> items,
     required List<String> selectedValues,
   }) {
     return Column(
@@ -518,53 +574,25 @@ class _Add_userState extends State<Add_user> {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 10),
-        TypeAheadField<String>(
-          textFieldConfiguration: TextFieldConfiguration(
-            controller: controller,
-            decoration: InputDecoration(
-              labelText: label,
-              border: OutlineInputBorder(),
-            ),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(5),
           ),
-          suggestionsCallback: (pattern) {
-            return items
-                .where((item) =>
-                item.toLowerCase().contains(pattern.toLowerCase()))
-                .toList();
-          },
-          itemBuilder: (context, suggestion) {
-            return ListTile(
-              title: Text(suggestion),
-            );
-          },
-          onSuggestionSelected: (suggestion) {
-            if (!selectedValues.contains(suggestion)) {
-              setState(() {
-                selectedValues.add(suggestion);
-                final locationId = _locationList
-                    .firstWhere((location) => location['name'] == suggestion)['id'];
-                _selectedLocations[suggestion] = locationId!;
-              });
-            }
-          },
-        ),
-        SizedBox(height: 10),
-        InputDecorator(
-          decoration: InputDecoration(
-            labelText: "$label Selected",
-            border: OutlineInputBorder(),
-          ),
-          child: Wrap(
-            spacing: 8.0,
-            runSpacing: 4.0,
-            children: selectedValues.map((value) {
-              return Chip(
-                label: Text(value),
-                deleteIcon: Icon(Icons.close),
-                onDeleted: () {
+          child: Column(
+            children: items.map((org) {
+              final orgName = org['name']!;
+              final orgId = org['id']!;
+              return CheckboxListTile(
+                title: Text(orgName),
+                value: selectedValues.contains(orgId),
+                onChanged: (bool? value) {
                   setState(() {
-                    selectedValues.remove(value);
-                    _selectedLocations.remove(value);
+                    if (value == true) {
+                      selectedValues.add(orgId);
+                    } else {
+                      selectedValues.remove(orgId);
+                    }
                   });
                 },
               );
@@ -576,76 +604,6 @@ class _Add_userState extends State<Add_user> {
     );
   }
 
-  Widget buildTypeAheadDropdownorganization({
-    required String label,
-    required List<String> items,
-    required TextEditingController controller,
-    required List<String> selectedValues,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 10),
-        TypeAheadField<String>(
-          textFieldConfiguration: TextFieldConfiguration(
-            controller: controller,
-            decoration: InputDecoration(
-              labelText: label,
-              border: OutlineInputBorder(),
-            ),
-          ),
-          suggestionsCallback: (pattern) {
-            return items
-                .where((item) => item.toLowerCase().contains(pattern.toLowerCase()))
-                .toList();
-          },
-          itemBuilder: (context, suggestion) {
-            return ListTile(
-              title: Text(suggestion),
-            );
-          },
-          onSuggestionSelected: (suggestion) {
-            if (!selectedValues.contains(suggestion)) {
-              setState(() {
-                selectedValues.add(suggestion);
-                final organizationId = _organizationList
-                    .firstWhere((organization) => organization['name'] == suggestion)['id'];
-                _selectedOrganization[suggestion] = organizationId!;
-              });
-            }
-          },
-        ),
-        SizedBox(height: 10),
-        InputDecorator(
-          decoration: InputDecoration(
-            labelText: "$label Selected",
-            border: OutlineInputBorder(),
-          ),
-          child: Wrap(
-            spacing: 8.0,
-            runSpacing: 4.0,
-            children: selectedValues.map((value) {
-              return Chip(
-                label: Text(value),
-                deleteIcon: Icon(Icons.close),
-                onDeleted: () {
-                  setState(() {
-                    selectedValues.remove(value);
-                    _selectedOrganization.remove(value);
-                  });
-                },
-              );
-            }).toList(),
-          ),
-        ),
-        SizedBox(height: 20),
-      ],
-    );
-  }
 
 
   Widget _buildTextField(String labelText, TextEditingController controller) {
@@ -909,26 +867,50 @@ class _Add_userState extends State<Add_user> {
               isMandatory: true,
             ),
 
-            buildTypeAheadDropdownorganization(
+            buildCheckboxDropdownOrganization(
               label: "Organization",
-              items: _organizationOptions,
-              controller: _organizationController,
+              items: _organizationList,
               selectedValues: _selectedorganizationValues,
             ),
 
-            buildTypeAheadDropdownVendor(
+
+            buildCheckboxDropdownVendor(
               label: "Vendor",
-              items: _vendorOptions,
-              controller: _vendorController,
-              selectedValues: _selectedVendorValues,
+              items: _vendorList,
+              selectedVendors: _selectedVendors, // Pass the correct Map<String, String>
             ),
 
-            buildTypeAheadDropdownplant(
-              label: "Plant Name",
-              items: _locationOptions,
-              controller: _locationController,
-              selectedValues: _selectedLocationValues,
-            ),
+            if (_selectedVendors.isNotEmpty)
+              _locationList.isNotEmpty
+                  ? buildCheckboxListPlant(
+                label: "Plant Name",
+                items: _locationList,
+                selectedValues: _selectedLocationValues,
+                selectedLocations: _selectedLocations,
+              )
+                  : Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Plant Name",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                    ),
+                    Text(
+                      "No Plant Found",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                    ),
+                  ],
+                ),
+              ),
+
+            // buildCheckboxListPlant(
+          //   label: "Plant Name",
+          //   items: _locationList,  // Yeh list API se aayege
+          //   selectedValues: _selectedLocationValues,
+          //   selectedLocations: _selectedLocations,
+          // ),
 
             _buildTextField('UUID', uuIDController),
 

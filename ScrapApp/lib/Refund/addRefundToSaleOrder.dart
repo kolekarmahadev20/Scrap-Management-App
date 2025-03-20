@@ -108,8 +108,8 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-        'user_id': username,
-'uuid':uuid,
+          'user_id': username,
+          'uuid':uuid,
           'user_pass': password,
           'sale_order_id':widget.sale_order_id,
           'branch_id':widget.branch_id_from_ids,
@@ -156,8 +156,8 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-        'user_id': username,
-'uuid':uuid,
+          'user_id': username,
+          'uuid':uuid,
           'user_pass': password,
           'sale_order_id_pay': widget.sale_order_id ?? '',
           'payment_type': selectedPaymentType ?? '',
@@ -179,6 +179,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
+        print("jsonData:$jsonData");
         setState(() {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text("${jsonData['msg']}")));
@@ -396,6 +397,8 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
     // Retrieve the value from the map without casting
     // Ensure we have a String representation of totalAmountValue
     final dynamic totalAmountValue = paymentTypeMap[selectedPaymentType];
+    print("totalAmountValue:$totalAmountValue");
+
     String totalAmountStr;
 
     if (totalAmountValue is int) {
@@ -435,10 +438,17 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
       return;
     }
 
+    // print("totalAmountStr:$totalAmountStr");
+
     int enteredAmount = int.tryParse(amountController.text) ?? 0;
-    int totalAmt = int.tryParse(totalAmountStr) ?? 0;
+    double totalAmt = double.tryParse(totalAmountStr) ?? 0.0;
+
+    // print("totalAmountStr:$totalAmountStr");
+    // print("enteredAmount:$enteredAmount");
+    // print("totalAmt:$totalAmt");
 
     if (enteredAmount > totalAmt) {
+
       Fluttertoast.showToast(
         msg: "Amount: $enteredAmount should not be greater than available amount: $totalAmt",
         toastLength: Toast.LENGTH_SHORT,
