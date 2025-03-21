@@ -51,6 +51,7 @@ class _Add_userState extends State<Add_user> {
 
   // Controllers for the text fields
   final TextEditingController fullNameController = TextEditingController();
+  final TextEditingController adharNumberController = TextEditingController();
   final TextEditingController emailIdController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -121,7 +122,7 @@ class _Add_userState extends State<Add_user> {
 
   void generateUsernameAndPassword(String email) {
     final username = email.split('@').first;
-    final password = generateRandomPassword();
+    final password = generateRandomPassword(email);
 
     setState(() {
       usernameController.text = username;
@@ -138,41 +139,37 @@ class _Add_userState extends State<Add_user> {
   //   return List.generate(length, (index) => chars[random.nextInt(chars.length)]).join();
   // }
 
-  String generateRandomPassword() {
-    const length = 8; // Total length of the password
+
+  String generateRandomPassword(String email) {
+    const int length = 8; // Password length
 
     // Define character groups
-    const lowerChars   = 'abcdefghijklmnopqrstuvwxyz';
-    const upperChars   = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const digitChars   = '0123456789';
-    const specialChars = '!@#\$%^&*()-_=+[]{};:,.<>?';
+    const String upperChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const String digitChars = '0123456789';
+    const String specialChars = '@';
 
-    final random = Random();
+    final Random random = Random();
 
-    // Ensure at least one character from each required group is added:
-    final passwordChars = <String>[
-      // One lowercase letter (optional, you can remove if not required)
-      lowerChars[random.nextInt(lowerChars.length)],
-      // One uppercase letter
-      upperChars[random.nextInt(upperChars.length)],
-      // One digit
-      digitChars[random.nextInt(digitChars.length)],
-      // One special character
-      specialChars[random.nextInt(specialChars.length)],
-    ];
+    // Extract username part from email before '@'
+    String usernamePart = email.split('@').first;
+    usernamePart = usernamePart.length >= 4 ? usernamePart.substring(0, 4) : usernamePart;
 
-    // Create a pool with all allowed characters
-    final allChars = lowerChars + upperChars + digitChars + specialChars;
+    // Ensure required conditions
+    String upper = upperChars[random.nextInt(upperChars.length)]; // At least one uppercase
+    String special = specialChars[random.nextInt(specialChars.length)]; // At least one special
+    String digit = digitChars[random.nextInt(digitChars.length)]; // At least one numeric
 
-    // Fill the rest of the password length with random selections from the full pool
-    for (int i = passwordChars.length; i < length; i++) {
-      passwordChars.add(allChars[random.nextInt(allChars.length)]);
+    // Fill the remaining length with random characters
+    List<String> password = [upper, special, digit, ...usernamePart.split('')];
+
+    while (password.length < length) {
+      password.add(digitChars[random.nextInt(digitChars.length)]); // Add digits if needed
     }
 
-    // Shuffle the characters so the required ones aren't always in the same position
-    passwordChars.shuffle(random);
+    // Shuffle the password for randomness
+    password.shuffle();
 
-    return passwordChars.join();
+    return password.join();
   }
 
   // Function to generate a random employee code
@@ -189,7 +186,46 @@ class _Add_userState extends State<Add_user> {
     return employeeCode;
   }
 
+  Future<bool> checkAadhar() async {
+    try {
+      await checkLogin();  // Ensure user is logged in
+
+      final response = await http.post(
+        Uri.parse('${URL}check_adhar'),
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': username,
+          'user_pass': password,
+          'uuid': uuid,
+          'adhaar_num': adharNumberController.text,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+        if (responseData["status"] == "success") {
+          Fluttertoast.showToast(msg:"This aadhar card number is already registered"); // Show toast message
+          return false; // Stop addUser() from executing
+        } else {
+          return true; // Continue to addUser()
+        }
+      } else {
+        Fluttertoast.showToast(msg: "Server Error: ${response.statusCode}");
+        return false;
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: "Exception: $e");
+      return false;
+    }
+  }
+
   Future<void> _addUsers() async {
+
+    bool shouldProceed = await checkAadhar();
+    if (!shouldProceed) return;  // Stop execution if employee exists
+
+
     final vendorIds = _selectedVendors.values.toList();  // Extract IDs
     final plantIds = _selectedLocations.values.toList();  // Extract IDs
     final organizationIds = _selectedOrganization.values.toList();  // Extract IDs
@@ -229,9 +265,6 @@ class _Add_userState extends State<Add_user> {
         'plant_id': plantIds.join(',')?? '',
         // 'org_id': organizationIds.join('')?? '',
         'org_id': _selectedorganizationValues.join(',')?? '',
-
-
-
         'person_name': fullNameController.text ?? '',
         'email': emailIdController.text ?? '',
         'uuid': uuIDController.text ?? '',
@@ -257,7 +290,7 @@ class _Add_userState extends State<Add_user> {
           'plant_id': plantIds.join(','),
           // 'org_id': organizationIdsString,
           'org_id': _selectedorganizationValues.join(',')?? '',
-
+          'adhar_num':adharNumberController.text ?? '',
           'person_name': fullNameController.text ?? '',
           'email': emailIdController.text ?? '',
           'uuid': uuIDController.text ?? '',
@@ -797,6 +830,8 @@ class _Add_userState extends State<Add_user> {
               });
             }),
             _buildTextField("Full Name", fullNameController),
+            _buildTextField('Aadhaar Number', adharNumberController),
+
             _buildTextField('Email ID', emailIdController),
             _buildTextField('Username', usernameController),
             _buildTextField('Password', passwordController),

@@ -118,6 +118,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
 
     double DMTWeight = ((fullWeight - firstWeight) * moistureWeight)/100;
     DMTWeight = netWeight-DMTWeight;
+
     // Update the net weight controller with the result
     netWeightController.text = netWeight.toStringAsFixed(2);
     quantityController.text = DMTWeight.toStringAsFixed(2);
@@ -242,6 +243,11 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       request.fields['qty'] = quantityController.text;
       request.fields['note'] = noteController.text;
 
+      print("======== Request Fields ========");
+      request.fields.forEach((key, value) {
+        print("$key: $value");
+      });
+
       // Function to add images to the request
       Future<void> addImages(List<File> images, String keyword, http.MultipartRequest request) async {
         for (var image in images) {
@@ -270,10 +276,10 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       if (MaterialFullLoad.isNotEmpty) await addImages(MaterialFullLoad, "Fu", request);
       if (other.isNotEmpty) await addImages(other, "ot", request);
 
-      // print('Fields sent:');
-      // request.fields.forEach((key, value) {
-      //   print('$key: $value');
-      // });
+      print('Fields sent:');
+      request.fields.forEach((key, value) {
+        print('$key: $value');
+      });
 
       // print("**************************************************************");
 

@@ -69,7 +69,12 @@ class _View_payment_detailState extends State<View_payment_detail> {
   }
 
   Future<void> fetchPaymentDetails() async {
-  try {
+
+    print(widget.sale_order_id);
+    print(widget.bidder_id);
+    print("asfasfasf");
+
+    try {
     setState(() {
       isLoading = true;
     });
@@ -346,7 +351,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             buildListTile("Material Name :${ViewPaymentData['sale_order_details']?[0]['material_name']?? 'N/A'}"),
-            buildListTile("Total Qty :${ViewPaymentData['sale_order_details'][0]['totalqty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
+            buildListTile("Total Qty :${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
             if(ViewPaymentData['lifted_quantity'] != null &&
                 ViewPaymentData['lifted_quantity'] is List &&
                 ViewPaymentData['lifted_quantity'].isNotEmpty)
