@@ -4,6 +4,7 @@ import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../Payment/View_payment_detail.dart';
 import '../URL_CONSTANT.dart';
 
 class saleOrderList extends StatefulWidget {
@@ -57,8 +58,8 @@ class saleOrderListState extends State<saleOrderList> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-        'user_id': username,
-         'uuid':uuid,
+          'user_id': username,
+          'uuid':uuid,
           'user_pass': password,
         },
       );
@@ -262,139 +263,169 @@ class saleOrderListState extends State<saleOrderList> {
   Widget buildCustomListTile(BuildContext context, index) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: Offset(0, 3), // changes position of shadow
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(15),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blueGrey[700]!, Colors.blueGrey[500]!],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(15),
-                  topRight: Radius.circular(15),
-                ),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => View_payment_detail(
+                sale_order_id: index['sale_order_id'],
+                bidder_id: index['buyer_id'],
+                branch_id_from_ids: index['branch_id'],
+                vendor_id_from_ids: index['vendor_id'],
               ),
-              child: Row(
-                children: [
-                  // Static Text
-                  RichText(
-                    text: TextSpan(
-                      text: "Material : ",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
+            ),
+          );
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.2),
+                spreadRadius: 2,
+                blurRadius: 5,
+                offset: Offset(0, 3), // changes position of shadow
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(15),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blueGrey[700]!, Colors.blueGrey[500]!],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  // Scrollable Text
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Text(
-                        "${index['description'] ?? 'N/A'}",
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(15),
+                    topRight: Radius.circular(15),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    // Static Text
+                    RichText(
+                      text: TextSpan(
+                        text: "Material : ",
                         style: TextStyle(
-                          color: Colors.white70,
-                          fontWeight: FontWeight.normal,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),
                       ),
                     ),
+                    // Scrollable Text
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Text(
+                          "${index['description'] ?? 'N/A'}",
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.normal,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Material(
+                elevation: 0,
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(15),
+                  bottomRight: Radius.circular(15),
+                ),
+                child: ListTile(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.indigo[800]!,
+                    child:
+                        Icon(Icons.border_outer, size: 22, color: Colors.white),
                   ),
-                ],
-              ),
-            ),
-            Material(
-              elevation: 0,
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(15),
-                bottomRight: Radius.circular(15),
-              ),
-              child: ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                leading: CircleAvatar(
-                  backgroundColor: Colors.indigo[800]!,
-                  child:
-                      Icon(Icons.border_outer, size: 22, color: Colors.white),
-                ),
-                title: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: "Vendor Name : ",
-                            style: TextStyle(
-                              color: Colors.black87,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
+                  title: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "Vendor Name : ",
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
                             ),
-                          ),
-                          TextSpan(
-                            text: "${index['vendor_name'] ?? 'N/A'}",
-                            style: TextStyle(
-                              color: Colors.black54,
-                              fontWeight: FontWeight.normal,
-                              fontSize: 18,
+                            TextSpan(
+                              text: "${index['vendor_name'] ?? 'N/A'}",
+                              style: TextStyle(
+                                color: Colors.black54,
+                                fontWeight: FontWeight.normal,
+                                fontSize: 18,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Divider(thickness: 1, color: Colors.black87),
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: "Buyer : ",
-                            style: TextStyle(
-                              color: Colors.black87,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
+                    ],
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Divider(thickness: 1, color: Colors.black87),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "Buyer : ",
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
                             ),
-                          ),
-                          TextSpan(
-                            text: "${index['bidder_name'] ?? 'N/A'}",
-                            style: TextStyle(
-                              color: Colors.black54,
-                              fontWeight: FontWeight.normal,
-                              fontSize: 18,
+                            TextSpan(
+                              text: "${index['bidder_name'] ?? 'N/A'}",
+                              style: TextStyle(
+                                color: Colors.black54,
+                                fontWeight: FontWeight.normal,
+                                fontSize: 18,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  trailing: Icon(Icons.arrow_forward_ios, color: Colors.black54, size: 20), // Arrow Icon
+                  onTap: () {
+                    // Navigate to ViewPaymentDetail page with required parameters
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => View_payment_detail(
+                          sale_order_id: index['sale_order_id'],
+                          bidder_id: index['buyer_id'],
+                          branch_id_from_ids: index['branch_id'],
+                          vendor_id_from_ids: index['vendor_id'],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
