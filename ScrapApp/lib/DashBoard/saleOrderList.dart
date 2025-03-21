@@ -405,6 +405,28 @@ class saleOrderListState extends State<saleOrderList> {
                           ],
                         ),
                       ),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "Plant : ",
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            TextSpan(
+                              text: "${index['branch_name'] ?? 'N/A'}",
+                              style: TextStyle(
+                                color: Colors.black54,
+                                fontWeight: FontWeight.normal,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                   trailing: Icon(Icons.arrow_forward_ios, color: Colors.black54, size: 20), // Arrow Icon

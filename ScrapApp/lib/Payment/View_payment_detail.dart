@@ -5,6 +5,7 @@ import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Payment/View_Payment_Amount.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../Dispatch/DispatchList.dart';
 import '../URL_CONSTANT.dart';
 import 'addPaymentToSaleOrder.dart';
 
@@ -125,108 +126,124 @@ class _View_payment_detailState extends State<View_payment_detail> {
     );
   }
 
+  int _selectedIndex = 0;
+
+
+
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 4,
-      child: AbsorbPointer(
-        absorbing: isLoading,
-        child: Scaffold(
-          drawer: AppDrawer(currentPage: 4),
-          appBar: CustomAppBar(),
-          body: Stack(
-            children: [
-              isLoading
-                  ? showLoading()
-                  : Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8.0, horizontal: 4.0),
-                        color: Colors.grey[100],
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                "Payment",
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ),
-                            buildRowWithIcon(context),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: buildVendorInfo(),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        color: Colors.white,
-                        child: TabBar(
-                          labelColor: Colors.indigo[800],
-                          unselectedLabelColor: Colors.black54,
-                          indicatorColor: Colors.indigo[800],
-                          tabs: const [
-                            Tab(
-                              text: "Material\nDetails",
-                            ),
-                            Tab(text: "Payment\nDetails"),
-                            Tab(text: "EMD\nDetails"),
-                            Tab(text: "CMD\nDetails"),
-                          ],
-                        ),
-                      ),
-                      // Wrap the TabBarView in a ConstrainedBox with bounded height
-                      Expanded(
-                        child: TabBarView(
-                          children: [
-                            buildMaterialListTab(),
-                            buildScrollableTabContent(
-                                context, buildPaymentDetailListView),
-                            buildScrollableTabContent(
-                                context, buildEmdDetailListView),
-                            buildScrollableTabContent(
-                                context, buildCMDDetailListView),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-            ],
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => addPaymentToSaleOrder(
-                    sale_order_id: widget.sale_order_id,
-                    material_name: ViewPaymentData['sale_order_details']?[0]
-                    ['material_name'] ??
-                        'N/A',
-                    vendor_id_from_ids: widget.vendor_id_from_ids,
-                    branch_id_from_ids: widget.branch_id_from_ids,
 
+    final List<Widget> _pages = [
+      // buildMaterialListTab(),
+      buildScrollableTabContent(context, buildPaymentDetailListView),
+      buildScrollableTabContent(context, buildEmdDetailListView),
+      buildScrollableTabContent(context, buildCMDDetailListView),
+    ];
+
+
+    return AbsorbPointer(
+      absorbing: isLoading,
+      child: Scaffold(
+        drawer: AppDrawer(currentPage: 4),
+        appBar: CustomAppBar(),
+        body: isLoading
+            ? showLoading()
+            : SingleChildScrollView(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      "Payment",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
                   ),
+                  buildRowWithIcon(context),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: buildVendorInfo(),
+                  ),
+                  buildExpansionTile(),
+                  SizedBox(height: 10), // Spacer before content
+                  IndexedStack(
+                    index: _selectedIndex,
+                    children: _pages,
+                  ),
+                ],
+              ),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          selectedItemColor: Colors.indigo[800],
+          unselectedItemColor: Colors.black54,
+          onTap: (index) {
+            setState(() {
+              _selectedIndex = index;
+
+              // Navigate to DispatchList when Dispatch is tapped
+              if (index == 3) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => DispatchList(currentPage: 0,)), // Navigate to DispatchList Page
+                );
+              }
+              
+            });
+          },
+          items: const [
+            // BottomNavigationBarItem(
+            //   icon: Icon(Icons.category),
+            //   label: "Material Details",
+            // ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.payment),
+              label: "Payment Details",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.account_balance),
+              label: "EMD Details",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.security),
+              label: "CMD Details",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.local_shipping), // Dispatch icon
+              label: "Dispatch",
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => addPaymentToSaleOrder(
+                  sale_order_id: widget.sale_order_id,
+                  material_name: ViewPaymentData['sale_order_details']?[0]
+                  ['material_name'] ??
+                      'N/A',
+                  vendor_id_from_ids: widget.vendor_id_from_ids,
+                  branch_id_from_ids: widget.branch_id_from_ids,
+
                 ),
-              ).then((value) => setState(() {
-                fetchPaymentDetails();
-              }));
-            },
-            child: Icon(Icons.add), // FAB icon
-            backgroundColor: Colors.blueGrey[200],
-          ),
+              ),
+            ).then((value) => setState(() {
+              fetchPaymentDetails();
+            }));
+          },
+          child: Icon(Icons.add), // FAB icon
+          backgroundColor: Colors.blueGrey[200],
         ),
       ),
     );
   }
+
 
   Widget buildScrollableTabContent(BuildContext context, Widget Function() listViewBuilder) {
     return SizedBox(
@@ -291,86 +308,95 @@ class _View_payment_detailState extends State<View_payment_detail> {
   }
 
 
-  Widget buildVendorInfo() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        buildVendorInfoText(
-            "Vendor Name : ", ViewPaymentData['vendor_buyer_details']['vendor_name'] ?? 'N/A',false),
-        buildVendorInfoText(
-            "Branch : ", ViewPaymentData['vendor_buyer_details']['branch_name'] ?? 'N/A',false),
-        buildVendorInfoText(
-            "Buyer Name : ", ViewPaymentData['vendor_buyer_details']['bidder_name'] ?? 'N/A',false),
-      ],
-    );
-  }
+    Widget buildVendorInfo() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          buildVendorInfoText(
+              "Vendor Name : ", ViewPaymentData['vendor_buyer_details']['vendor_name'] ?? 'N/A',false),
+          buildVendorInfoText(
+              "Branch : ", ViewPaymentData['vendor_buyer_details']['branch_name'] ?? 'N/A',false),
+          buildVendorInfoText(
+              "Buyer Name : ", ViewPaymentData['vendor_buyer_details']['bidder_name'] ?? 'N/A',false),
+        ],
+      );
+    }
 
-  Widget buildVendorInfoText(String key, String value , bool isRed) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: key, // Key text (e.g., "Vendor Name: ")
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black, // Bold key text
+    Widget buildVendorInfoText(String key, String value , bool isRed) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: key, // Key text (e.g., "Vendor Name: ")
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black, // Bold key text
+                ),
               ),
-            ),
-            (isRed)
-            ?TextSpan(
-              text: value, // Value text (e.g., "XYZ Corp")
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.redAccent, // Normal value text
+              (isRed)
+              ?TextSpan(
+                text: value, // Value text (e.g., "XYZ Corp")
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.redAccent, // Normal value text
+                ),
+              )
+              :TextSpan(
+                text: value, // Value text (e.g., "XYZ Corp")
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.black54, // Normal value text
+                ),
               ),
-            )
-            :TextSpan(
-              text: value, // Value text (e.g., "XYZ Corp")
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.normal,
-                color: Colors.black54, // Normal value text
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
-  Widget buildExpansionTile() {
-    return Material(
-      elevation: 5,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            buildListTile("Material Name :${ViewPaymentData['sale_order_details']?[0]['material_name']?? 'N/A'}"),
-            buildListTile("Total Qty :${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
-            if(ViewPaymentData['lifted_quantity'] != null &&
-                ViewPaymentData['lifted_quantity'] is List &&
-                ViewPaymentData['lifted_quantity'].isNotEmpty)
-            buildListTile("Lifted Qty :${ViewPaymentData['lifted_quantity'][0]['quantity'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
-            buildListTile("Rate :${ViewPaymentData['sale_order_details'][0]['rate'] ?? 'No data'}"),
-            buildListTile("SO Date :${ViewPaymentData['sale_order_details'][0]['sod'] ?? 'No data'}"),
-            buildListTile("SO Validity :${ViewPaymentData['sale_order_details'][0]['sovu'] ?? 'No data'}"),
-            buildTable(),
-          ],
+    Widget buildExpansionTile() {
+      return Material(
+        elevation: 5,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Text(
+                  "Sale Order Details",
+                  style: TextStyle(
+                    fontSize: 22, // Increase font size
+                    fontWeight: FontWeight.bold, // Make it bold
+                  ),
+                ),
+              ),
+              buildListTile("Material Name :${ViewPaymentData['sale_order_details']?[0]['material_name']?? 'N/A'}"),
+              buildListTile("Total Qty :${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
+              if(ViewPaymentData['lifted_quantity'] != null &&
+                  ViewPaymentData['lifted_quantity'] is List &&
+                  ViewPaymentData['lifted_quantity'].isNotEmpty)
+              buildListTile("Lifted Qty :${ViewPaymentData['lifted_quantity'][0]['quantity'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
+              buildListTile("Rate :${ViewPaymentData['sale_order_details'][0]['rate'] ?? 'No data'}"),
+              buildListTile("SO Date :${ViewPaymentData['sale_order_details'][0]['sod'] ?? 'No data'}"),
+              buildListTile("SO Validity :${ViewPaymentData['sale_order_details'][0]['sovu'] ?? 'No data'}"),
+              buildTable(),
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
-  Widget buildListTile(String text) {
-    return ListTile(
-      title: Text(text),
-    );
-  }
+    Widget buildListTile(String text) {
+      return ListTile(
+        title: Text(text),
+      );
+    }
 
   Widget buildTable() {
     return SingleChildScrollView(
@@ -399,6 +425,11 @@ class _View_payment_detailState extends State<View_payment_detail> {
             ),
           ],
           rows: [
+            // Add a TOTAL row at the end
+            DataRow(cells: [
+              DataCell(Text('Basic Amount', /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
+              DataCell(Text('₹${taxAmount['basicTaxAmount']}' , /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
+             ]),
             // Dynamically add rows based on the 'taxes' list
             if (taxes.isNotEmpty)
               ...taxes.map((tax) {
@@ -407,16 +438,12 @@ class _View_payment_detailState extends State<View_payment_detail> {
                   DataCell(Text('${tax['tax_amount'] ?? 'No data'}')),
                 ]);
               }).toList(),
-            // Add a TOTAL row at the end
-            DataRow(cells: [
-              DataCell(Text('Basic Amount', /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
-              DataCell(Text('₹${taxAmount['basicTaxAmount']}' , /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
-             ]),
             DataRow(cells: [
               DataCell(Text('Final Amount', /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
               DataCell(Text('₹${taxAmount['finalTaxAmount']}' , /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
 
-            ])
+            ]),
+
           ],
         ),
       ),
@@ -434,47 +461,129 @@ class _View_payment_detailState extends State<View_payment_detail> {
   }
 
   Widget buildPaymentDetailListView() {
-    if(paymentStatus.length != 0){
-    return ListView.builder(
-      itemCount:paymentStatus.length,
-      itemBuilder: (context, index) {
-        final paymentIdIndex =paymentStatus[index];
-        return buildPaymentDetailListTile(context,paymentIdIndex);
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Payment Details Heading
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+          child: Text(
+            "Payment Details",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+
+        // Payment Details List or No Data Message
+        if (paymentStatus.isNotEmpty)
+          ListView.builder(
+            shrinkWrap: true, // Prevents infinite scroll issue
+            physics: NeverScrollableScrollPhysics(), // Disables separate scrolling
+            itemCount: paymentStatus.length,
+            itemBuilder: (context, index) {
+              final paymentIdIndex = paymentStatus[index];
+              return buildPaymentDetailListTile(context, paymentIdIndex);
+            },
+          )
+        else
+          Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                "No Payment Details Found",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+            ),
+          ),
+      ],
     );
-    }else{
-      return Center(child: Text("No Payment Details Found" ,style: TextStyle(fontWeight:FontWeight.bold , fontSize: 20),));
-    }
   }
 
+
   Widget buildEmdDetailListView() {
-    if(emdStatus.length != 0){
-    return ListView.builder(
-      itemCount: emdStatus.length,
-      itemBuilder: (context, index) {
-        final emdStatusIndex = emdStatus[index];
-        return buildEmdDetailListTile(context,emdStatusIndex);
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // EMD Details Heading
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+          child: Text(
+            "EMD Details",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+
+        // EMD Details List or No Data Message
+        if (emdStatus.isNotEmpty)
+          ListView.builder(
+            shrinkWrap: true, // Prevents infinite scroll issue
+            physics: NeverScrollableScrollPhysics(), // Disables separate scrolling
+            itemCount: emdStatus.length,
+            itemBuilder: (context, index) {
+              final emdStatusIndex = emdStatus[index];
+              return buildEmdDetailListTile(context, emdStatusIndex);
+            },
+          )
+        else
+          Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                "No EMD Details Found",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+            ),
+          ),
+      ],
     );
-    }else{
-      return Center(child: Text("No EMD Details Found" ,style: TextStyle(fontWeight:FontWeight.bold , fontSize: 20),));
-    }
   }
 
   Widget buildCMDDetailListView() {
-    if (cmdStatus.length != 0) {
-      return ListView.builder(
-        itemCount: cmdStatus.length,
-        itemBuilder: (context, index) {
-          final cmdStatusIndex = cmdStatus[index];
-          return buildCMDDetailListTile(context, cmdStatusIndex);
-        },
-      );
-    } else {
-      return Center(child: Text("No CMD Details Found",
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),));
-    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // CMD Details Heading
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+          child: Text(
+            "CMD Details",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+
+        // CMD Details List or No Data Message
+        if (cmdStatus.isNotEmpty)
+          ListView.builder(
+            shrinkWrap: true, // Prevents infinite scroll issue
+            physics: NeverScrollableScrollPhysics(), // Disables separate scrolling
+            itemCount: cmdStatus.length,
+            itemBuilder: (context, index) {
+              final cmdStatusIndex = cmdStatus[index];
+              return buildCMDDetailListTile(context, cmdStatusIndex);
+            },
+          )
+        else
+          Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                "No CMD Details Found",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+            ),
+          ),
+      ],
+    );
   }
+
 
   Widget buildPaymentDetailListTile(BuildContext context , index) {
     if (index['payment_type'] == "Received Payment") {
