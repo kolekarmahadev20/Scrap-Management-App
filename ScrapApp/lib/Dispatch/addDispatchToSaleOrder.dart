@@ -566,13 +566,14 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
             child: Text(
               label,
               style: TextStyle(
-                color: Colors.black54,
+                fontSize: 16,
+                color: Colors.black,
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
           Expanded(
-            flex: 7, // Adjusts text field width
+            flex: 5, // Adjusts text field width
             child: Container(
                decoration: BoxDecoration(
                  borderRadius: BorderRadius.circular(12),
@@ -612,6 +613,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
               ),
             ),
           ),
+          SizedBox(width: 20,)
         ],
       ),
     );

@@ -110,7 +110,7 @@ class _View_dispatch_lifting_detailsState
     material = widget.material ?? 'N/A';
     invoiceNo = widget.invoiceNo ?? 'N/A';
     date = widget.date ?? 'N/A';
-    truckNo = widget.truckNo ?? 'N/A';
+    truckNo = (widget.truckNo?? 'N/A').toUpperCase() ;
     firstWeight = widget.firstWeight ?? "N/A";
     fullWeight = widget.fullWeight ?? "N/A";
     moistureWeight = widget.moistureWeight ?? "N/A";
@@ -336,7 +336,7 @@ class _View_dispatch_lifting_detailsState
                   Expanded(
                     child: ListView(
                       children: [
-                        buildDisplayField("Order ID", selectedOrderId),
+                        // buildDisplayField("Order ID", selectedOrderId),
                         buildDisplayField("Material", material),
                         buildDisplayField("Invoice No", invoiceNo),
                         buildDisplayField("Date", date),
@@ -423,21 +423,23 @@ class _View_dispatch_lifting_detailsState
 
   Widget buildDisplayField(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
         children: [
+          SizedBox(width: 15),
           Expanded(
             flex: 3, // Adjusts label width
             child: Text(
               label,
               style: TextStyle(
-                color: Colors.black54,
+                fontSize: 16,
+                color: Colors.black,
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
           Expanded(
-            flex: 7, // Adjusts text display width
+            flex: 3, // Adjusts text display width
             child: Material(
               elevation: 2,
               borderRadius: BorderRadius.circular(12),
@@ -457,6 +459,7 @@ class _View_dispatch_lifting_detailsState
               ),
             ),
           ),
+          SizedBox(width: 25,)
         ],
       ),
     );

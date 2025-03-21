@@ -117,7 +117,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       materialController.text=widget.material ?? 'N/A';
       invoiceController.text=widget.invoiceNo ?? 'N/A';
       dateController.text=widget.date ?? 'N/A';
-      truckNoController.text=widget.truckNo ?? 'N/A';
+      truckNoController.text=(widget.truckNo ?? 'N/A').toUpperCase();
       firstWeightNoController.text = widget.firstWeight ?? "N/A";
       fullWeightController.text = widget.fullWeight ?? "N/A";
       moistureWeightController.text = widget.moistureWeight ?? "N/A";
@@ -794,13 +794,14 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
             child: Text(
               label,
               style: TextStyle(
-                color: Colors.black54,
+                fontSize: 16,
+                color: Colors.black,
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
           Expanded(
-            flex: 7, // Adjusts text field width
+            flex: 5, // Adjusts text field width
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
@@ -840,6 +841,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
                 ),
               ),
             ),
+          SizedBox(width: 20,)
         ],
       ),
     );

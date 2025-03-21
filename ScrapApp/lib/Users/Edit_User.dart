@@ -110,8 +110,10 @@ class _Edit_UserState extends State<Edit_User> {
 
     // print(widget.user.userType);
 
-    if(widget.user.userType != 'NA' || widget.user.userType != null)
-      selectedUserType = widget.user.userType??'';
+    if (widget.user.userType != 'NA' || widget.user.userType != null) {
+      selectedUserType = widget.user.userType ?? '';
+    }
+
 
     adharNumberController.text = widget.user.adharNum??'';
     employeeCodeController.text = widget.user.empCode??'';
@@ -262,8 +264,8 @@ class _Edit_UserState extends State<Edit_User> {
 
   Future<void> _addUsers() async {
 
-    bool shouldProceed = await checkAadhar();
-    if (!shouldProceed) return;  // Stop execution if employee exists
+    // bool shouldProceed = await checkAadhar();
+    // if (!shouldProceed) return;  // Stop execution if employee exists
 
     final vendorIds = _selectedVendors.values.toList();  // Extract IDs
     final plantIds = _selectedLocations.values.toList();  // Extract IDs
@@ -303,8 +305,8 @@ class _Edit_UserState extends State<Edit_User> {
           'acces_refund': isRefundYes ? 'Y' : 'N',
           'vendor_id': vendorIds.join(',')?? '',
           'plant_id': plantIds.join(','),
-          // 'org_id': organizationIdsString,
-          'org_id': _selectedorganizationValues.join(',')?? '',
+          'org_id': organizationIdsString,
+          // 'org_id': _selectedorganizationValues.join(',')?? '',
           'person_name': fullNameController.text ?? '',
           'email': emailIdController.text ?? '',
           'uuiid': uuIDController.text ?? '',
@@ -368,8 +370,8 @@ class _Edit_UserState extends State<Edit_User> {
             // Process vendor list
             if (vendorList != null) {
               for (var vendor in vendorList) {
-                final vendorName = vendor['vendor_name'];
-                final vendorId = vendor['vendor_id'];
+                final vendorName = vendor['branch_name'];
+                final vendorId = vendor['branch_id'];
                 _vendorList.add({"id": vendorId, "name": vendorName});
                 _vendorOptions.add(vendorName);
               }
@@ -572,43 +574,69 @@ class _Edit_UserState extends State<Edit_User> {
     }
   }
 
-
   void _prefillSelectedOrganizations() {
-    if (widget.user.orgID != null && widget.user.orgID!.isNotEmpty) {
+    if (widget.user.orgID!.isNotEmpty) {
       List<String> selectedOrgIds = widget.user.orgID!.split(',');
 
-      print("🔹 Raw orgID from widget.user: ${widget.user.orgID}");
-      print("🔹 Split selectedOrgIds: $selectedOrgIds");
+      print(widget.user.orgID!);
+      print("asasvsa");
 
       for (var id in selectedOrgIds) {
-        print("➡️ Checking org ID: $id");
-
         final org = _organizationList.firstWhere(
-              (org) => org['id'].toString().trim() == id.trim(),
+              (org) => org['id'].toString() == id.trim(),
           orElse: () => {},
         );
 
         if (org.isNotEmpty) {
-          print("✅ Found matching organization: ${org['name']} (ID: ${org['id']})");
 
-          // **Store IDs Instead of Names**
-          if (!_selectedorganizationValues.contains(org['id'].toString())) {
-            _selectedorganizationValues.add(org['id'].toString()); // ✅ Use ID instead of name
-          } else {
-            print("⚠️ Duplicate found, skipping: ${org['name']}");
+          // Avoid duplicates in selected organization
+          if (!_selectedorganizationValues.contains(org['name'])) {
+            _selectedorganizationValues.add(org['name']!);
+            _selectedOrganization[org['name']!] = org['id']!;
           }
-        } else {
-          print("❌ No matching organization found for ID: $id");
         }
       }
-
-      setState(() {
-        print("🔄 UI Updated with selected organizations: $_selectedorganizationValues");
-      });
-    } else {
-      print("⚠️ widget.user.orgID is null or empty.");
+      setState(() {}); // Update UI
     }
   }
+
+  //
+  // void _prefillSelectedOrganizations() {
+  //   if (widget.user.orgID != null && widget.user.orgID!.isNotEmpty) {
+  //     List<String> selectedOrgIds = widget.user.orgID!.split(',');
+  //
+  //     print("🔹 Raw orgID from widget.user: ${widget.user.orgID}");
+  //     print("🔹 Split selectedOrgIds: $selectedOrgIds");
+  //
+  //     for (var id in selectedOrgIds) {
+  //       print("➡️ Checking org ID: $id");
+  //
+  //       final org = _organizationList.firstWhere(
+  //             (org) => org['id'].toString().trim() == id.trim(),
+  //         orElse: () => {},
+  //       );
+  //
+  //       if (org.isNotEmpty) {
+  //         print("✅ Found matching organization: ${org['name']} (ID: ${org['id']})");
+  //
+  //         // **Store IDs Instead of Names**
+  //         if (!_selectedorganizationValues.contains(org['id'].toString())) {
+  //           _selectedorganizationValues.add(org['id'].toString()); // ✅ Use ID instead of name
+  //         } else {
+  //           print("⚠️ Duplicate found, skipping: ${org['name']}");
+  //         }
+  //       } else {
+  //         print("❌ No matching organization found for ID: $id");
+  //       }
+  //     }
+  //
+  //     setState(() {
+  //       print("🔄 UI Updated with selected organizations: $_selectedorganizationValues");
+  //     });
+  //   } else {
+  //     print("⚠️ widget.user.orgID is null or empty.");
+  //   }
+  // }
 
 
 
@@ -729,10 +757,10 @@ class _Edit_UserState extends State<Edit_User> {
     );
   }
 
-
-  Widget buildCheckboxDropdownOrganization({
+  Widget buildTypeAheadDropdownorganization({
     required String label,
-    required List<Map<String, String>> items,
+    required List<String> items,
+    required TextEditingController controller,
     required List<String> selectedValues,
   }) {
     return Column(
@@ -743,25 +771,52 @@ class _Edit_UserState extends State<Edit_User> {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 10),
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(5),
+        TypeAheadField<String>(
+          textFieldConfiguration: TextFieldConfiguration(
+            controller: controller,
+            decoration: InputDecoration(
+              labelText: label,
+              border: OutlineInputBorder(),
+            ),
           ),
-          child: Column(
-            children: items.map((org) {
-              final orgName = org['name']!;
-              final orgId = org['id']!; // ✅ Ensure ID is used
-              return CheckboxListTile(
-                title: Text(orgName),
-                value: selectedValues.contains(orgId), // ✅ Now IDs will match correctly
-                onChanged: (bool? value) {
+          suggestionsCallback: (pattern) {
+            return items
+                .where((item) => item.toLowerCase().contains(pattern.toLowerCase()))
+                .toList();
+          },
+          itemBuilder: (context, suggestion) {
+            return ListTile(
+              title: Text(suggestion),
+            );
+          },
+          onSuggestionSelected: (suggestion) {
+            if (!selectedValues.contains(suggestion)) {
+              setState(() {
+                selectedValues.add(suggestion);
+                final organizationId = _organizationList
+                    .firstWhere((organization) => organization['name'] == suggestion)['id'];
+                _selectedOrganization[suggestion] = organizationId!;
+              });
+            }
+          },
+        ),
+        SizedBox(height: 10),
+        InputDecorator(
+          decoration: InputDecoration(
+            labelText: "$label Selected",
+            border: OutlineInputBorder(),
+          ),
+          child: Wrap(
+            spacing: 8.0,
+            runSpacing: 4.0,
+            children: selectedValues.map((value) {
+              return Chip(
+                label: Text(value),
+                deleteIcon: Icon(Icons.close),
+                onDeleted: () {
                   setState(() {
-                    if (value == true) {
-                      selectedValues.add(orgId);
-                    } else {
-                      selectedValues.remove(orgId);
-                    }
+                    selectedValues.remove(value);
+                    _selectedOrganization.remove(value);
                   });
                 },
               );
@@ -772,6 +827,49 @@ class _Edit_UserState extends State<Edit_User> {
       ],
     );
   }
+
+  // Widget buildCheckboxDropdownOrganization({
+  //   required String label,
+  //   required List<Map<String, String>> items,
+  //   required List<String> selectedValues,
+  // }) {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       Text(
+  //         label,
+  //         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+  //       ),
+  //       SizedBox(height: 10),
+  //       Container(
+  //         decoration: BoxDecoration(
+  //           border: Border.all(color: Colors.grey),
+  //           borderRadius: BorderRadius.circular(5),
+  //         ),
+  //         child: Column(
+  //           children: items.map((org) {
+  //             final orgName = org['name']!;
+  //             final orgId = org['id']!; // ✅ Ensure ID is used
+  //             return CheckboxListTile(
+  //               title: Text(orgName),
+  //               value: selectedValues.contains(orgId), // ✅ Now IDs will match correctly
+  //               onChanged: (bool? value) {
+  //                 setState(() {
+  //                   if (value == true) {
+  //                     selectedValues.add(orgId);
+  //                   } else {
+  //                     selectedValues.remove(orgId);
+  //                   }
+  //                 });
+  //               },
+  //             );
+  //           }).toList(),
+  //         ),
+  //       ),
+  //       SizedBox(height: 20),
+  //     ],
+  //   );
+  // }
 
 
 
@@ -1049,11 +1147,18 @@ class _Edit_UserState extends State<Edit_User> {
                 isMandatory: true,
               ),
 
-              buildCheckboxDropdownOrganization(
+              buildTypeAheadDropdownorganization(
                 label: "Organization",
-                items: _organizationList,
+                items: _organizationOptions,
+                controller: _organizationController,
                 selectedValues: _selectedorganizationValues,
               ),
+
+              // buildCheckboxDropdownOrganization(
+              //   label: "Organization",
+              //   items: _organizationList,
+              //   selectedValues: _selectedorganizationValues,
+              // ),
 
               buildCheckboxDropdownVendor(
                 label: "Vendor",

@@ -354,7 +354,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
                                   onPressed: () {
                                     validateAndAddRefundDetails();
                                   },
-                                  child: Text("Add"),
+                                  child: Text("Refund"),
                                   style: ElevatedButton.styleFrom(
                                     foregroundColor: Colors.white,
                                     backgroundColor: Colors.indigo[800],

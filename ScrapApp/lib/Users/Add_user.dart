@@ -288,8 +288,8 @@ class _Add_userState extends State<Add_user> {
           'acces_refund': isRefundYes ? 'Y' : 'N',
           'vendor_id': vendorIds.join(',')?? '',
           'plant_id': plantIds.join(','),
-          // 'org_id': organizationIdsString,
-          'org_id': _selectedorganizationValues.join(',')?? '',
+          'org_id': organizationIdsString,
+          // 'org_id': _selectedorganizationValues.join(',')?? '',
           'adhar_num':adharNumberController.text ?? '',
           'person_name': fullNameController.text ?? '',
           'email': emailIdController.text ?? '',
@@ -344,8 +344,8 @@ class _Add_userState extends State<Add_user> {
             // Process vendor list
             if (vendorList != null) {
               for (var vendor in vendorList) {
-                final vendorName = vendor['vendor_name'];
-                final vendorId = vendor['vendor_id'];
+                final vendorName = vendor['branch_name'];
+                final vendorId = vendor['branch_id'];
                 _vendorList.add({"id": vendorId, "name": vendorName});
                 _vendorOptions.add(vendorName);
               }
@@ -593,10 +593,10 @@ class _Add_userState extends State<Add_user> {
     );
   }
 
-
-  Widget buildCheckboxDropdownOrganization({
+  Widget buildTypeAheadDropdownorganization({
     required String label,
-    required List<Map<String, String>> items,
+    required List<String> items,
+    required TextEditingController controller,
     required List<String> selectedValues,
   }) {
     return Column(
@@ -607,25 +607,52 @@ class _Add_userState extends State<Add_user> {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 10),
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(5),
+        TypeAheadField<String>(
+          textFieldConfiguration: TextFieldConfiguration(
+            controller: controller,
+            decoration: InputDecoration(
+              labelText: label,
+              border: OutlineInputBorder(),
+            ),
           ),
-          child: Column(
-            children: items.map((org) {
-              final orgName = org['name']!;
-              final orgId = org['id']!;
-              return CheckboxListTile(
-                title: Text(orgName),
-                value: selectedValues.contains(orgId),
-                onChanged: (bool? value) {
+          suggestionsCallback: (pattern) {
+            return items
+                .where((item) => item.toLowerCase().contains(pattern.toLowerCase()))
+                .toList();
+          },
+          itemBuilder: (context, suggestion) {
+            return ListTile(
+              title: Text(suggestion),
+            );
+          },
+          onSuggestionSelected: (suggestion) {
+            if (!selectedValues.contains(suggestion)) {
+              setState(() {
+                selectedValues.add(suggestion);
+                final organizationId = _organizationList
+                    .firstWhere((organization) => organization['name'] == suggestion)['id'];
+                _selectedOrganization[suggestion] = organizationId!;
+              });
+            }
+          },
+        ),
+        SizedBox(height: 10),
+        InputDecorator(
+          decoration: InputDecoration(
+            labelText: "$label Selected",
+            border: OutlineInputBorder(),
+          ),
+          child: Wrap(
+            spacing: 8.0,
+            runSpacing: 4.0,
+            children: selectedValues.map((value) {
+              return Chip(
+                label: Text(value),
+                deleteIcon: Icon(Icons.close),
+                onDeleted: () {
                   setState(() {
-                    if (value == true) {
-                      selectedValues.add(orgId);
-                    } else {
-                      selectedValues.remove(orgId);
-                    }
+                    selectedValues.remove(value);
+                    _selectedOrganization.remove(value);
                   });
                 },
               );
@@ -636,6 +663,49 @@ class _Add_userState extends State<Add_user> {
       ],
     );
   }
+
+  // Widget buildCheckboxDropdownOrganization({
+  //   required String label,
+  //   required List<Map<String, String>> items,
+  //   required List<String> selectedValues,
+  // }) {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       Text(
+  //         label,
+  //         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+  //       ),
+  //       SizedBox(height: 10),
+  //       Container(
+  //         decoration: BoxDecoration(
+  //           border: Border.all(color: Colors.grey),
+  //           borderRadius: BorderRadius.circular(5),
+  //         ),
+  //         child: Column(
+  //           children: items.map((org) {
+  //             final orgName = org['name']!;
+  //             final orgId = org['id']!;
+  //             return CheckboxListTile(
+  //               title: Text(orgName),
+  //               value: selectedValues.contains(orgId),
+  //               onChanged: (bool? value) {
+  //                 setState(() {
+  //                   if (value == true) {
+  //                     selectedValues.add(orgId);
+  //                   } else {
+  //                     selectedValues.remove(orgId);
+  //                   }
+  //                 });
+  //               },
+  //             );
+  //           }).toList(),
+  //         ),
+  //       ),
+  //       SizedBox(height: 20),
+  //     ],
+  //   );
+  // }
 
 
 
@@ -902,9 +972,16 @@ class _Add_userState extends State<Add_user> {
               isMandatory: true,
             ),
 
-            buildCheckboxDropdownOrganization(
+            // buildCheckboxDropdownOrganization(
+            //   label: "Organization",
+            //   items: _organizationList,
+            //   selectedValues: _selectedorganizationValues,
+            // ),
+
+            buildTypeAheadDropdownorganization(
               label: "Organization",
-              items: _organizationList,
+              items: _organizationOptions,
+              controller: _organizationController,
               selectedValues: _selectedorganizationValues,
             ),
 
