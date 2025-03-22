@@ -267,9 +267,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
 
   Widget buildScrollableTabContent(
       BuildContext context, Widget Function() listViewBuilder) {
-    return Expanded(
-      child: listViewBuilder(),
-    );
+    return listViewBuilder();
   }
 
 
