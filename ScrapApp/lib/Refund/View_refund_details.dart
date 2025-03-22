@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Refund/View_Refund_Amount.dart';
@@ -322,6 +323,18 @@ class _View_refund_detailsState extends State<View_refund_details> {
     );
   }
 
+  String formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) {
+      return 'No data';
+    }
+    try {
+      DateTime parsedDate = DateTime.parse(dateStr);
+      return DateFormat('dd-MM-yyyy').format(parsedDate);
+    } catch (e) {
+      return 'Invalid date';
+    }
+  }
+
   Widget buildVendorInfo() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -472,11 +485,12 @@ class _View_refund_detailsState extends State<View_refund_details> {
                 Icons.attach_money),
             buildDetailTile(
                 "SO Date : ",
-                ViewRefundData['sale_order_details'][0]['sod'] ?? 'No data',
+                formatDate(ViewRefundData['sale_order_details'][0]['sod']),
                 Icons.date_range),
+
             buildDetailTile(
                 "SO Validity : ",
-                ViewRefundData['sale_order_details'][0]['sovu'] ?? 'No data',
+                formatDate(ViewRefundData['sale_order_details'][0]['sovu']),
                 Icons.event_available),
           ],
         ),

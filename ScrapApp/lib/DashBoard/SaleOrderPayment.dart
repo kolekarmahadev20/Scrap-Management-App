@@ -7,17 +7,16 @@ import 'package:scrapapp/Payment/View_Payment_Amount.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Dispatch/View_dispatch_details.dart';
-import '../Refund/View_refund_details.dart';
+import '../Payment/addPaymentToSaleOrder.dart';
 import '../URL_CONSTANT.dart';
-import 'addPaymentToSaleOrder.dart';
 
-class View_payment_detail extends StatefulWidget {
+class View_payment_detailSale extends StatefulWidget {
   final String sale_order_id;
   final String bidder_id;
   final String branch_id_from_ids;
   final String vendor_id_from_ids;
 
-  View_payment_detail({
+  View_payment_detailSale({
     required this.sale_order_id,
     required this.bidder_id,
     required this.branch_id_from_ids,
@@ -25,10 +24,10 @@ class View_payment_detail extends StatefulWidget {
   });
 
   @override
-  State<View_payment_detail> createState() => _View_payment_detailState();
+  State<View_payment_detailSale> createState() => _View_payment_detailSaleState();
 }
 
-class _View_payment_detailState extends State<View_payment_detail> {
+class _View_payment_detailSaleState extends State<View_payment_detailSale> {
   String? username = '';
   String uuid = '';
   String? password = '';
@@ -113,18 +112,6 @@ class _View_payment_detailState extends State<View_payment_detail> {
     }
   }
 
-  String formatDate(String? dateStr) {
-    if (dateStr == null || dateStr.isEmpty) {
-      return 'No data';
-    }
-    try {
-      DateTime parsedDate = DateTime.parse(dateStr);
-      return DateFormat('dd-MM-yyyy').format(parsedDate);
-    } catch (e) {
-      return 'Invalid date';
-    }
-  }
-
   showLoading() {
     return Container(
       height: double.infinity,
@@ -137,6 +124,18 @@ class _View_payment_detailState extends State<View_payment_detail> {
   }
 
   int _selectedIndex = 0;
+
+  String formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) {
+      return 'No data';
+    }
+    try {
+      DateTime parsedDate = DateTime.parse(dateStr);
+      return DateFormat('dd-MM-yyyy').format(parsedDate);
+    } catch (e) {
+      return 'Invalid date';
+    }
+  }
 
   Widget buildBottomNavButtons(
       BuildContext context, int selectedIndex, Function(int) onItemTapped) {
@@ -155,7 +154,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                 selectedIndex, onItemTapped),
             buildNavButton(Icons.security, "CMD \nDetails", 2, selectedIndex,
                 onItemTapped),
-            buildNavButton(Icons.local_shipping, "Refund \nDetails", 3,
+            buildNavButton(Icons.local_shipping, "Dispatch \nDetails", 3,
                 selectedIndex, onItemTapped),
           ],
         ),
@@ -192,6 +191,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
   }
 
 
+
   @override
   Widget build(BuildContext context) {
     final List<Widget> _pages = [
@@ -209,36 +209,36 @@ class _View_payment_detailState extends State<View_payment_detail> {
         body: isLoading
             ? showLoading()
             : SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        "Payment",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                    ),
-                    buildRowWithIcon(context),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: buildVendorInfo(),
-                    ),
-                    buildExpansionTile(),
-                    SizedBox(height: 10), // Spacer before content
-                    IndexedStack(
-                      index: _selectedIndex,
-                      children: _pages,
-                    ),
-                  ],
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Payment",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                    letterSpacing: 1.2,
+                  ),
                 ),
               ),
+              buildRowWithIcon(context),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: buildVendorInfo(),
+              ),
+              buildExpansionTile(),
+              SizedBox(height: 10), // Spacer before content
+              IndexedStack(
+                index: _selectedIndex,
+                children: _pages,
+              ),
+            ],
+          ),
+        ),
         bottomNavigationBar:
-            buildBottomNavButtons(context, _selectedIndex, (index) {
+        buildBottomNavButtons(context, _selectedIndex, (index) {
           setState(() {
             _selectedIndex = index;
             // Navigate to DispatchList when Dispatch is tapped
@@ -246,12 +246,10 @@ class _View_payment_detailState extends State<View_payment_detail> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => View_refund_details(
-                          sale_order_id: widget.sale_order_id,
-                          bidder_id: widget.bidder_id,
-                          branch_id_from_ids: widget.branch_id_from_ids,
-                          vendor_id_from_ids: widget.vendor_id_from_ids,
-                        )), // Navigate to DispatchList Page
+                    builder: (context) => View_dispatch_details(
+                      sale_order_id: widget.sale_order_id,
+                      bidder_id: widget.bidder_id,
+                    )), // Navigate to DispatchList Page
               );
             }
           });
@@ -264,15 +262,15 @@ class _View_payment_detailState extends State<View_payment_detail> {
                 builder: (context) => addPaymentToSaleOrder(
                   sale_order_id: widget.sale_order_id,
                   material_name: ViewPaymentData['sale_order_details']?[0]
-                          ['material_name'] ??
+                  ['material_name'] ??
                       'N/A',
                   vendor_id_from_ids: widget.vendor_id_from_ids,
                   branch_id_from_ids: widget.branch_id_from_ids,
                 ),
               ),
             ).then((value) => setState(() {
-                  fetchPaymentDetails();
-                }));
+              fetchPaymentDetails();
+            }));
           },
           child: Icon(Icons.add), // FAB icon
           backgroundColor: Colors.blueGrey[200],
@@ -605,7 +603,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
           ListView.builder(
             shrinkWrap: true, // Prevents infinite scroll issue
             physics:
-                NeverScrollableScrollPhysics(), // Disables separate scrolling
+            NeverScrollableScrollPhysics(), // Disables separate scrolling
             itemCount: paymentStatus.length,
             itemBuilder: (context, index) {
               final paymentIdIndex = paymentStatus[index];
@@ -647,7 +645,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
           ListView.builder(
             shrinkWrap: true, // Prevents infinite scroll issue
             physics:
-                NeverScrollableScrollPhysics(), // Disables separate scrolling
+            NeverScrollableScrollPhysics(), // Disables separate scrolling
             itemCount: emdStatus.length,
             itemBuilder: (context, index) {
               final emdStatusIndex = emdStatus[index];
@@ -689,7 +687,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
           ListView.builder(
             shrinkWrap: true, // Prevents infinite scroll issue
             physics:
-                NeverScrollableScrollPhysics(), // Disables separate scrolling
+            NeverScrollableScrollPhysics(), // Disables separate scrolling
             itemCount: cmdStatus.length,
             itemBuilder: (context, index) {
               final cmdStatusIndex = cmdStatus[index];
@@ -834,8 +832,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                           freezed: index['freezed'] ?? 'N/A'),
                     ),
                   ).then((value) => setState(() {
-                        fetchPaymentDetails();
-                      }));
+                    fetchPaymentDetails();
+                  }));
                 },
               ),
               onTap: () {
@@ -857,8 +855,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                         freezed: index['freezed'] ?? 'N/A'),
                   ),
                 ).then((value) => setState(() {
-                      fetchPaymentDetails();
-                    }));
+                  fetchPaymentDetails();
+                }));
               },
             ),
           ),
@@ -994,8 +992,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                           freezed: index['freezed'] ?? 'N/A'),
                     ),
                   ).then((value) => setState(() {
-                        fetchPaymentDetails();
-                      }));
+                    fetchPaymentDetails();
+                  }));
                 },
               ),
               onTap: () {
@@ -1017,8 +1015,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                         freezed: index['freezed'] ?? 'N/A'),
                   ),
                 ).then((value) => setState(() {
-                      fetchPaymentDetails();
-                    }));
+                  fetchPaymentDetails();
+                }));
               },
             ),
           ),
@@ -1152,8 +1150,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                         freezed: index['freezed'] ?? 'N/A'),
                   ),
                 ).then((value) => setState(() {
-                      fetchPaymentDetails();
-                    }));
+                  fetchPaymentDetails();
+                }));
               },
             ),
             onTap: () {
@@ -1175,8 +1173,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                       freezed: index['freezed'] ?? 'N/A'),
                 ),
               ).then((value) => setState(() {
-                    fetchPaymentDetails();
-                  }));
+                fetchPaymentDetails();
+              }));
             },
           ),
         ),

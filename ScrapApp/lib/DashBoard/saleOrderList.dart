@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Payment/View_payment_detail.dart';
 import '../URL_CONSTANT.dart';
+import 'SaleOrderPayment.dart';
 
 class saleOrderList extends StatefulWidget {
   final int currentPage;
@@ -435,7 +436,7 @@ class saleOrderListState extends State<saleOrderList> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => View_payment_detail(
+                        builder: (context) => View_payment_detailSale(
                           sale_order_id: index['sale_order_id'],
                           bidder_id: index['buyer_id'],
                           branch_id_from_ids: index['branch_id'],
