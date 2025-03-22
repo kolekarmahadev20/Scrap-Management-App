@@ -22,30 +22,26 @@ class View_payment_detail extends StatefulWidget {
     required this.vendor_id_from_ids,
   });
 
-
   @override
   State<View_payment_detail> createState() => _View_payment_detailState();
 }
 
 class _View_payment_detailState extends State<View_payment_detail> {
-
   String? username = '';
- String uuid = '';
+  String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
-  var checkLiftedQty ;
+  var checkLiftedQty;
   bool isLoading = false;
 
-  Map<String , dynamic> taxAmount = {};
-  Map<String , dynamic> ViewPaymentData = {};
-  List<dynamic> paymentId =[];
-  List<dynamic> paymentStatus =[];
-  List<dynamic> emdStatus =[];
-  List<dynamic> cmdStatus =[];
-  List<dynamic> taxes =[];
-
-
+  Map<String, dynamic> taxAmount = {};
+  Map<String, dynamic> ViewPaymentData = {};
+  List<dynamic> paymentId = [];
+  List<dynamic> paymentStatus = [];
+  List<dynamic> emdStatus = [];
+  List<dynamic> cmdStatus = [];
+  List<dynamic> taxes = [];
 
   @override
   void initState() {
@@ -56,11 +52,10 @@ class _View_payment_detailState extends State<View_payment_detail> {
       setState(() {});
     });
     fetchPaymentDetails();
-
   }
 
   Future<void> checkLogin() async {
-     final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     uuid = prefs.getString("uuid")!;
     uuid = prefs.getString("uuid")!;
@@ -70,76 +65,127 @@ class _View_payment_detailState extends State<View_payment_detail> {
   }
 
   Future<void> fetchPaymentDetails() async {
-
     print(widget.sale_order_id);
     print(widget.bidder_id);
     print("asfasfasf");
 
     try {
-    setState(() {
-      isLoading = true;
-    });
-    await checkLogin();
-    final url = Uri.parse("${URL}payment_details");
-    var response = await http.post(
-      url,
-      headers: {"Accept": "application/json"},
-      body: {
-        'user_id': username,
-        'uuid':uuid,
-        'user_pass': password,
-        'sale_order_id':widget.sale_order_id,
-        'bidder_id':widget.bidder_id,
-      },
-    );
-
-    if (response.statusCode == 200) {
       setState(() {
-        var jsonData = json.decode(response.body);
-        ViewPaymentData = jsonData;
-        paymentId = ViewPaymentData['sale_order_payments'] ?? [];
-        emdStatus =  ViewPaymentData['emd_status'] ?? [];
-        cmdStatus =  ViewPaymentData['cmd_status'] ?? [];
-        paymentStatus =  ViewPaymentData['recieved_payment'] ?? [];
-        checkLiftedQty = ViewPaymentData['lifted_quantity'];
-        taxes = ViewPaymentData['tax_and_rate']['taxes'] ??[];
-        taxAmount = ViewPaymentData['tax_and_rate'] ?? {};
+        isLoading = true;
       });
-    } else {
-      print("Unable to fetch data.");
-    }
-  } catch (e) {
-    print("Server Exception: $e");
-  }finally{
-    setState(() {
-      isLoading = false;
-    });
-  }
-}
+      await checkLogin();
+      final url = Uri.parse("${URL}payment_details");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': username,
+          'uuid': uuid,
+          'user_pass': password,
+          'sale_order_id': widget.sale_order_id,
+          'bidder_id': widget.bidder_id,
+        },
+      );
 
-  showLoading(){
+      if (response.statusCode == 200) {
+        setState(() {
+          var jsonData = json.decode(response.body);
+          ViewPaymentData = jsonData;
+          paymentId = ViewPaymentData['sale_order_payments'] ?? [];
+          emdStatus = ViewPaymentData['emd_status'] ?? [];
+          cmdStatus = ViewPaymentData['cmd_status'] ?? [];
+          paymentStatus = ViewPaymentData['recieved_payment'] ?? [];
+          checkLiftedQty = ViewPaymentData['lifted_quantity'];
+          taxes = ViewPaymentData['tax_and_rate']['taxes'] ?? [];
+          taxAmount = ViewPaymentData['tax_and_rate'] ?? {};
+        });
+      } else {
+        print("Unable to fetch data.");
+      }
+    } catch (e) {
+      print("Server Exception: $e");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  showLoading() {
     return Container(
       height: double.infinity,
       width: double.infinity,
       color: Colors.transparent,
-      child: Center(child: CircularProgressIndicator(),),
+      child: Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 
   int _selectedIndex = 0;
 
+  Widget buildBottomNavButtons(
+      BuildContext context, int selectedIndex, Function(int) onItemTapped) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 10),
+      color: Colors.white,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal, // Allow horizontal scrolling
+        child: Wrap(
+          spacing: 8, // Space between buttons
+          alignment: WrapAlignment.center,
+          children: [
+            buildNavButton(Icons.payment, "Payment \nDetails", 0, selectedIndex,
+                onItemTapped),
+            buildNavButton(Icons.account_balance, "EMD \nDetails", 1,
+                selectedIndex, onItemTapped),
+            buildNavButton(Icons.security, "CMD \nDetails", 2, selectedIndex,
+                onItemTapped),
+            buildNavButton(Icons.local_shipping, "Dispatch \nDetails", 3,
+                selectedIndex, onItemTapped),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Color> buttonColors = [
+    Colors.green,  // Payment Details
+    Colors.orange, // EMD Details
+    Colors.red,    // CMD Details
+    Colors.blue, // Dispatch
+  ];
+
+  Widget buildNavButton(IconData icon, String label, int index,
+      int selectedIndex, Function(int) onItemTapped) {
+    return ElevatedButton.icon(
+      onPressed: () => onItemTapped(index),
+      icon: Icon(icon,
+          size: 18, color: selectedIndex == index ? Colors.white : buttonColors[index]),
+      label: Text(label,
+          style: TextStyle(
+              fontSize: 12,
+              color: selectedIndex == index ? Colors.white : buttonColors[index])),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: selectedIndex == index ? buttonColors[index] : Colors.white,
+        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: buttonColors[index]),
+        ),
+      ),
+    );
+  }
 
 
   @override
   Widget build(BuildContext context) {
-
     final List<Widget> _pages = [
       // buildMaterialListTab(),
       buildScrollableTabContent(context, buildPaymentDetailListView),
       buildScrollableTabContent(context, buildEmdDetailListView),
       buildScrollableTabContent(context, buildCMDDetailListView),
     ];
-
 
     return AbsorbPointer(
       absorbing: isLoading,
@@ -149,77 +195,51 @@ class _View_payment_detailState extends State<View_payment_detail> {
         body: isLoading
             ? showLoading()
             : SingleChildScrollView(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      "Payment",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                        letterSpacing: 1.2,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        "Payment",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          letterSpacing: 1.2,
+                        ),
                       ),
                     ),
-                  ),
-                  buildRowWithIcon(context),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: buildVendorInfo(),
-                  ),
-                  buildExpansionTile(),
-                  SizedBox(height: 10), // Spacer before content
-                  IndexedStack(
-                    index: _selectedIndex,
-                    children: _pages,
-                  ),
-                ],
+                    buildRowWithIcon(context),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: buildVendorInfo(),
+                    ),
+                    buildExpansionTile(),
+                    SizedBox(height: 10), // Spacer before content
+                    IndexedStack(
+                      index: _selectedIndex,
+                      children: _pages,
+                    ),
+                  ],
+                ),
               ),
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _selectedIndex,
-          selectedItemColor: Colors.indigo[800],
-          unselectedItemColor: Colors.black54,
-          onTap: (index) {
-            setState(() {
-              _selectedIndex = index;
-
-              // Navigate to DispatchList when Dispatch is tapped
-              if (index == 3) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => View_dispatch_details(
-                    sale_order_id: widget.sale_order_id,
-                    bidder_id: widget.bidder_id,)), // Navigate to DispatchList Page
-                );
-              }
-              
-            });
-          },
-          items: const [
-            // BottomNavigationBarItem(
-            //   icon: Icon(Icons.category),
-            //   label: "Material Details",
-            // ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.payment),
-              label: "Payment Details",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_balance),
-              label: "EMD Details",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.security),
-              label: "CMD Details",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.local_shipping), // Dispatch icon
-              label: "Dispatch",
-            ),
-          ],
-        ),
+        bottomNavigationBar:
+            buildBottomNavButtons(context, _selectedIndex, (index) {
+          setState(() {
+            _selectedIndex = index;
+            // Navigate to DispatchList when Dispatch is tapped
+            if (index == 3) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => View_dispatch_details(
+                          sale_order_id: widget.sale_order_id,
+                          bidder_id: widget.bidder_id,
+                        )), // Navigate to DispatchList Page
+              );
+            }
+          });
+        }),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             Navigator.push(
@@ -228,16 +248,15 @@ class _View_payment_detailState extends State<View_payment_detail> {
                 builder: (context) => addPaymentToSaleOrder(
                   sale_order_id: widget.sale_order_id,
                   material_name: ViewPaymentData['sale_order_details']?[0]
-                  ['material_name'] ??
+                          ['material_name'] ??
                       'N/A',
                   vendor_id_from_ids: widget.vendor_id_from_ids,
                   branch_id_from_ids: widget.branch_id_from_ids,
-
                 ),
               ),
             ).then((value) => setState(() {
-              fetchPaymentDetails();
-            }));
+                  fetchPaymentDetails();
+                }));
           },
           child: Icon(Icons.add), // FAB icon
           backgroundColor: Colors.blueGrey[200],
@@ -246,21 +265,21 @@ class _View_payment_detailState extends State<View_payment_detail> {
     );
   }
 
-
-  Widget buildScrollableTabContent(BuildContext context, Widget Function() listViewBuilder) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height, // Set the height of the container
+  Widget buildScrollableTabContent(
+      BuildContext context, Widget Function() listViewBuilder) {
+    return Expanded(
       child: listViewBuilder(),
     );
   }
+
+
 
   Widget buildRowWithIcon(BuildContext context) {
     return Material(
       elevation: 2,
       color: Colors.white,
       shape: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.blueGrey[400]!)
-      ),
+          borderSide: BorderSide(color: Colors.blueGrey[400]!)),
       child: Container(
         child: Column(
           children: [
@@ -274,11 +293,11 @@ class _View_payment_detailState extends State<View_payment_detail> {
                   // Static Text
                   RichText(
                     text: TextSpan(
-                      text: "Material Name: ",
+                      text: "Material Name : ",
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
-                        fontSize: 22,
+                        fontSize: 21,
                       ),
                     ),
                   ),
@@ -287,7 +306,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Text(
-                        "${ViewPaymentData['sale_order_details']?[0]['material_name']?? 'N/A'}",
+                        "${ViewPaymentData['sale_order_details']?[0]['material_name'] ?? 'N/A'}",
                         style: TextStyle(
                           color: Colors.red,
                           fontWeight: FontWeight.normal,
@@ -304,148 +323,236 @@ class _View_payment_detailState extends State<View_payment_detail> {
             ),
           ],
         ),
+      ),
+    );
+  }
 
+  Widget buildVendorInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        buildVendorInfoText(
+            "Vendor Name : ",
+            ViewPaymentData['vendor_buyer_details']['vendor_name'] ?? 'N/A',
+            false),
+        buildVendorInfoText(
+            "Branch : ",
+            ViewPaymentData['vendor_buyer_details']['branch_name'] ?? 'N/A',
+            false),
+        buildVendorInfoText(
+            "Buyer Name : ",
+            ViewPaymentData['vendor_buyer_details']['bidder_name'] ?? 'N/A',
+            false),
+      ],
+    );
+  }
+
+  Widget buildVendorInfoText(String key, String value, bool isRed) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Push key left & value right
+        children: [
+          Text(
+            key,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Colors.black, // Bold key text
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: isRed ? FontWeight.bold : FontWeight.normal,
+              color: isRed ? Colors.redAccent : Colors.black54, // Color based on isRed
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildExpansionTile() {
+    return Material(
+      elevation: 5,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Text(
+                "Sale Order Details",
+                style: TextStyle(
+                  fontSize: 21, // Increase font size
+                  fontWeight: FontWeight.bold, // Make it bold
+                ),
+              ),
+            ),
+            buildPaymentDetailsCard(ViewPaymentData),
+
+            // buildListTile(
+            //     "Material Name : ${ViewPaymentData['sale_order_details']?[0]['material_name'] ?? 'N/A'}"),
+            // buildListTile(
+            //     "Total Qty : ${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
+            // if (ViewPaymentData['lifted_quantity'] != null &&
+            //     ViewPaymentData['lifted_quantity'] is List &&
+            //     ViewPaymentData['lifted_quantity'].isNotEmpty)
+            //   buildListTile(
+            //       "Lifted Qty : ${ViewPaymentData['lifted_quantity'][0]['quantity'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
+            // buildListTile(
+            //     "Rate : ${ViewPaymentData['sale_order_details'][0]['rate'] ?? 'No data'}"),
+            // buildListTile(
+            //     "SO Date : ${ViewPaymentData['sale_order_details'][0]['sod'] ?? 'No data'}"),
+            // buildListTile(
+            //     "SO Validity : ${ViewPaymentData['sale_order_details'][0]['sovu'] ?? 'No data'}
+            Divider(),
+            buildTable(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildDetailTile(String title, String value, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.blueGrey),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                title,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                style: const TextStyle(fontSize: 14),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
 
-    Widget buildVendorInfo() {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          buildVendorInfoText(
-              "Vendor Name : ", ViewPaymentData['vendor_buyer_details']['vendor_name'] ?? 'N/A',false),
-          buildVendorInfoText(
-              "Branch : ", ViewPaymentData['vendor_buyer_details']['branch_name'] ?? 'N/A',false),
-          buildVendorInfoText(
-              "Buyer Name : ", ViewPaymentData['vendor_buyer_details']['bidder_name'] ?? 'N/A',false),
-        ],
-      );
-    }
-
-    Widget buildVendorInfoText(String key, String value , bool isRed) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4.0),
-        child: RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: key, // Key text (e.g., "Vendor Name: ")
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black, // Bold key text
-                ),
-              ),
-              (isRed)
-              ?TextSpan(
-                text: value, // Value text (e.g., "XYZ Corp")
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.redAccent, // Normal value text
-                ),
-              )
-              :TextSpan(
-                text: value, // Value text (e.g., "XYZ Corp")
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.black54, // Normal value text
-                ),
-              ),
-            ],
-          ),
+  Widget buildPaymentDetailsCard(Map<String, dynamic> ViewPaymentData) {
+    return Container(
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            buildDetailTile(
+                "Material Name : ",
+                ViewPaymentData['sale_order_details']?[0]['material_name'] ?? 'N/A',
+                Icons.category),
+            buildDetailTile(
+                "Total Qty : ",
+                "${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}",
+                Icons.inventory),
+            if (ViewPaymentData['lifted_quantity'] != null &&
+                ViewPaymentData['lifted_quantity'] is List &&
+                ViewPaymentData['lifted_quantity'].isNotEmpty)
+              buildDetailTile(
+                  "Lifted Qty : ",
+                  "${ViewPaymentData['lifted_quantity'][0]['quantity'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}",
+                  Icons.local_shipping),
+            buildDetailTile(
+                "Rate : ",
+                ViewPaymentData['sale_order_details'][0]['rate']?.toString() ?? 'No data',
+                Icons.attach_money),
+            buildDetailTile(
+                "SO Date : ",
+                ViewPaymentData['sale_order_details'][0]['sod'] ?? 'No data',
+                Icons.date_range),
+            buildDetailTile(
+                "SO Validity : ",
+                ViewPaymentData['sale_order_details'][0]['sovu'] ?? 'No data',
+                Icons.event_available),
+          ],
         ),
-      );
-    }
+      ),
+    );
+  }
 
-    Widget buildExpansionTile() {
-      return Material(
-        elevation: 5,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Text(
-                  "Sale Order Details",
-                  style: TextStyle(
-                    fontSize: 22, // Increase font size
-                    fontWeight: FontWeight.bold, // Make it bold
-                  ),
-                ),
-              ),
-              buildListTile("Material Name :${ViewPaymentData['sale_order_details']?[0]['material_name']?? 'N/A'}"),
-              buildListTile("Total Qty :${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
-              if(ViewPaymentData['lifted_quantity'] != null &&
-                  ViewPaymentData['lifted_quantity'] is List &&
-                  ViewPaymentData['lifted_quantity'].isNotEmpty)
-              buildListTile("Lifted Qty :${ViewPaymentData['lifted_quantity'][0]['quantity'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
-              buildListTile("Rate :${ViewPaymentData['sale_order_details'][0]['rate'] ?? 'No data'}"),
-              buildListTile("SO Date :${ViewPaymentData['sale_order_details'][0]['sod'] ?? 'No data'}"),
-              buildListTile("SO Validity :${ViewPaymentData['sale_order_details'][0]['sovu'] ?? 'No data'}"),
-              buildTable(),
-            ],
-          ),
-        ),
-      );
-    }
 
-    Widget buildListTile(String text) {
-      return ListTile(
-        title: Text(text),
-      );
-    }
 
   Widget buildTable() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Container(
         width: 400,
+        padding: EdgeInsets.all(8),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey), // Add a border around the table
-          borderRadius: BorderRadius.circular(8.0),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 6,
+              spreadRadius: 2,
+              offset: Offset(0, 3),
+            ),
+          ],
         ),
         child: DataTable(
-          columnSpacing: 16.0,
-          border: TableBorder.all(color: Colors.grey), // Add borders to table cells
+          columnSpacing: 20,
+          headingRowHeight: 48,
+          dataRowHeight: 44,
+          border: TableBorder.symmetric(
+            inside: BorderSide(color: Colors.grey.shade300),
+          ),
           columns: [
             DataColumn(
               label: Text(
                 'Tax',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
               ),
             ),
             DataColumn(
               label: Text(
                 'Amount',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
               ),
             ),
           ],
           rows: [
-            // Add a TOTAL row at the end
-            DataRow(cells: [
-              DataCell(Text('Basic Amount', /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
-              DataCell(Text('₹${taxAmount['basicTaxAmount']}' , /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
-             ]),
-            // Dynamically add rows based on the 'taxes' list
+            DataRow(
+              color: MaterialStateProperty.all(Colors.grey.shade200),
+              cells: [
+                DataCell(Text('Basic Amount', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text('₹${taxAmount['basicTaxAmount']}', style: TextStyle(fontWeight: FontWeight.bold))),
+              ],
+            ),
             if (taxes.isNotEmpty)
               ...taxes.map((tax) {
-                return DataRow(cells: [
-                  DataCell(Text(tax['tax_name'] ?? 'No data')),
-                  DataCell(Text('${tax['tax_amount'] ?? 'No data'}')),
-                ]);
+                return DataRow(
+                  cells: [
+                    DataCell(Text(tax['tax_name'] ?? 'No data')),
+                    DataCell(Text('₹${tax['tax_amount'] ?? 'No data'}')),
+                  ],
+                );
               }).toList(),
-            DataRow(cells: [
-              DataCell(Text('Final Amount', /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
-              DataCell(Text('₹${taxAmount['finalTaxAmount']}' , /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
-
-            ]),
-
+            DataRow(
+              color: MaterialStateProperty.all(Colors.grey.shade200),
+              cells: [
+                DataCell(Text('Final Amount', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text('₹${taxAmount['finalTaxAmount']}', style: TextStyle(fontWeight: FontWeight.bold))),
+              ],
+            ),
           ],
         ),
       ),
@@ -482,7 +589,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
         if (paymentStatus.isNotEmpty)
           ListView.builder(
             shrinkWrap: true, // Prevents infinite scroll issue
-            physics: NeverScrollableScrollPhysics(), // Disables separate scrolling
+            physics:
+                NeverScrollableScrollPhysics(), // Disables separate scrolling
             itemCount: paymentStatus.length,
             itemBuilder: (context, index) {
               final paymentIdIndex = paymentStatus[index];
@@ -495,14 +603,13 @@ class _View_payment_detailState extends State<View_payment_detail> {
               padding: EdgeInsets.symmetric(vertical: 8.0),
               child: Text(
                 "No Payment Details Found",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18,color: Colors.grey),
               ),
             ),
           ),
       ],
     );
   }
-
 
   Widget buildEmdDetailListView() {
     return Column(
@@ -524,7 +631,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
         if (emdStatus.isNotEmpty)
           ListView.builder(
             shrinkWrap: true, // Prevents infinite scroll issue
-            physics: NeverScrollableScrollPhysics(), // Disables separate scrolling
+            physics:
+                NeverScrollableScrollPhysics(), // Disables separate scrolling
             itemCount: emdStatus.length,
             itemBuilder: (context, index) {
               final emdStatusIndex = emdStatus[index];
@@ -537,7 +645,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
               padding: EdgeInsets.symmetric(vertical: 8.0),
               child: Text(
                 "No EMD Details Found",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18,color: Colors.grey),
               ),
             ),
           ),
@@ -565,7 +673,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
         if (cmdStatus.isNotEmpty)
           ListView.builder(
             shrinkWrap: true, // Prevents infinite scroll issue
-            physics: NeverScrollableScrollPhysics(), // Disables separate scrolling
+            physics:
+                NeverScrollableScrollPhysics(), // Disables separate scrolling
             itemCount: cmdStatus.length,
             itemBuilder: (context, index) {
               final cmdStatusIndex = cmdStatus[index];
@@ -578,7 +687,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
               padding: EdgeInsets.symmetric(vertical: 8.0),
               child: Text(
                 "No CMD Details Found",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18,color: Colors.grey),
               ),
             ),
           ),
@@ -586,8 +695,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
     );
   }
 
-
-  Widget buildPaymentDetailListTile(BuildContext context , index) {
+  Widget buildPaymentDetailListTile(BuildContext context, index) {
     if (index['payment_type'] == "Received Payment") {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -634,7 +742,6 @@ class _View_payment_detailState extends State<View_payment_detail> {
                         color: Colors.green,
                         fontWeight: FontWeight.normal, // Normal value
                         fontSize: 20,
-
                       ),
                     ),
                   ],
@@ -660,7 +767,6 @@ class _View_payment_detailState extends State<View_payment_detail> {
                             color: Colors.black54,
                             fontWeight: FontWeight.normal, // Normal value
                             fontSize: 16,
-
                           ),
                         ),
                       ],
@@ -683,7 +789,6 @@ class _View_payment_detailState extends State<View_payment_detail> {
                             color: Colors.black54,
                             fontWeight: FontWeight.normal, // Normal value
                             fontSize: 16,
-
                           ),
                         ),
                       ],
@@ -699,61 +804,57 @@ class _View_payment_detailState extends State<View_payment_detail> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          View_Payment_Amount(
-                              branch_id_from_ids: widget.branch_id_from_ids,
-                              vendor_id_from_ids: widget.vendor_id_from_ids,
-                            sale_order_id: widget.sale_order_id,
-                            bidder_id: widget.bidder_id,
-                            paymentId: index['payment_id'] ?? 'N/A',
-                            paymentType: index['payment_type']?? 'N/A',
-                            date1: index['date']?? 'N/A',
-                            amount: index['amt']?? 'N/A',
-                            referenceNo: index['pay_ref_no']?? 'N/A',
-                            typeOfTransfer: index['typeoftransfer']?? 'N/A',
-                            remark : index['narration'] ?? 'N/A',
-                            freezed : index['freezed'] ?? 'N/A'
-                          ),
+                      builder: (context) => View_Payment_Amount(
+                          branch_id_from_ids: widget.branch_id_from_ids,
+                          vendor_id_from_ids: widget.vendor_id_from_ids,
+                          sale_order_id: widget.sale_order_id,
+                          bidder_id: widget.bidder_id,
+                          paymentId: index['payment_id'] ?? 'N/A',
+                          paymentType: index['payment_type'] ?? 'N/A',
+                          date1: index['date'] ?? 'N/A',
+                          amount: index['amt'] ?? 'N/A',
+                          referenceNo: index['pay_ref_no'] ?? 'N/A',
+                          typeOfTransfer: index['typeoftransfer'] ?? 'N/A',
+                          remark: index['narration'] ?? 'N/A',
+                          freezed: index['freezed'] ?? 'N/A'),
                     ),
-                  ).then((value) => setState((){
-                    fetchPaymentDetails();
-                  }));
+                  ).then((value) => setState(() {
+                        fetchPaymentDetails();
+                      }));
                 },
               ),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        View_Payment_Amount(
-                          sale_order_id: widget.sale_order_id,
-                          bidder_id: widget.bidder_id,
-                            branch_id_from_ids: widget.branch_id_from_ids,
-                            vendor_id_from_ids: widget.vendor_id_from_ids,
-                          paymentId: index['payment_id'] ?? 'N/A',
-                          paymentType: index['payment_type']?? 'N/A',
-                          date1: index['date']?? 'N/A',
-                          amount: index['amt']?? 'N/A',
-                          referenceNo: index['pay_ref_no']?? 'N/A',
-                          typeOfTransfer: index['typeoftransfer']?? 'N/A',
-                          remark : index['narration'] ?? 'N/A',
-                            freezed : index['freezed'] ?? 'N/A'
-                        ),
+                    builder: (context) => View_Payment_Amount(
+                        sale_order_id: widget.sale_order_id,
+                        bidder_id: widget.bidder_id,
+                        branch_id_from_ids: widget.branch_id_from_ids,
+                        vendor_id_from_ids: widget.vendor_id_from_ids,
+                        paymentId: index['payment_id'] ?? 'N/A',
+                        paymentType: index['payment_type'] ?? 'N/A',
+                        date1: index['date'] ?? 'N/A',
+                        amount: index['amt'] ?? 'N/A',
+                        referenceNo: index['pay_ref_no'] ?? 'N/A',
+                        typeOfTransfer: index['typeoftransfer'] ?? 'N/A',
+                        remark: index['narration'] ?? 'N/A',
+                        freezed: index['freezed'] ?? 'N/A'),
                   ),
-                ).then((value) => setState((){
-                  fetchPaymentDetails();
-                }));
+                ).then((value) => setState(() {
+                      fetchPaymentDetails();
+                    }));
               },
             ),
           ),
         ),
       );
-    }else{
+    } else {
       return Container();
     }
   }
 
-  Widget buildEmdDetailListTile(BuildContext context , index) {
+  Widget buildEmdDetailListTile(BuildContext context, index) {
     if (index['payment_type'] == "Received EMD") {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -781,8 +882,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
               contentPadding: const EdgeInsets.all(12.0),
               leading: CircleAvatar(
                 backgroundColor: Colors.indigo[800],
-                child: Icon(Icons.account_balance_wallet_rounded, size: 24,
-                    color: Colors.white),
+                child: Icon(Icons.account_balance_wallet_rounded,
+                    size: 24, color: Colors.white),
               ),
               title: RichText(
                 text: TextSpan(
@@ -801,7 +902,6 @@ class _View_payment_detailState extends State<View_payment_detail> {
                         color: Colors.green,
                         fontWeight: FontWeight.normal, // Normal value
                         fontSize: 20,
-
                       ),
                     ),
                   ],
@@ -827,7 +927,6 @@ class _View_payment_detailState extends State<View_payment_detail> {
                             color: Colors.black54,
                             fontWeight: FontWeight.normal, // Normal value
                             fontSize: 16,
-
                           ),
                         ),
                       ],
@@ -850,7 +949,6 @@ class _View_payment_detailState extends State<View_payment_detail> {
                             color: Colors.black54,
                             fontWeight: FontWeight.normal, // Normal value
                             fontSize: 16,
-
                           ),
                         ),
                       ],
@@ -866,35 +964,9 @@ class _View_payment_detailState extends State<View_payment_detail> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          View_Payment_Amount(
-                              branch_id_from_ids: widget.branch_id_from_ids,
-                              vendor_id_from_ids: widget.vendor_id_from_ids,
-                            sale_order_id: widget.sale_order_id,
-                            bidder_id: widget.bidder_id,
-                            paymentId: index['payment_id'] ?? "N/A",
-                            paymentType: index['payment_type'] ?? "N/A",
-                            date1: index['date'] ?? "N/A",
-                            amount: index['amt'] ?? "N/A",
-                            referenceNo: index['pay_ref_no'] ?? "N/A",
-                            typeOfTransfer: index['typeoftransfer'] ?? "N/A",
-                            remark : index['narration'] ?? 'N/A',
-                              freezed : index['freezed'] ?? 'N/A'
-                          ),
-                    ),
-                  ).then((value) => setState((){
-                    fetchPaymentDetails();
-                  }));
-                },
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        View_Payment_Amount(
-                            branch_id_from_ids: widget.branch_id_from_ids,
-                            vendor_id_from_ids: widget.vendor_id_from_ids,
+                      builder: (context) => View_Payment_Amount(
+                          branch_id_from_ids: widget.branch_id_from_ids,
+                          vendor_id_from_ids: widget.vendor_id_from_ids,
                           sale_order_id: widget.sale_order_id,
                           bidder_id: widget.bidder_id,
                           paymentId: index['payment_id'] ?? "N/A",
@@ -903,25 +975,46 @@ class _View_payment_detailState extends State<View_payment_detail> {
                           amount: index['amt'] ?? "N/A",
                           referenceNo: index['pay_ref_no'] ?? "N/A",
                           typeOfTransfer: index['typeoftransfer'] ?? "N/A",
-                          remark : index['narration'] ?? 'N/A',
-                          freezed : index['freezed'] ?? 'N/A'
-
-                        ),
+                          remark: index['narration'] ?? 'N/A',
+                          freezed: index['freezed'] ?? 'N/A'),
+                    ),
+                  ).then((value) => setState(() {
+                        fetchPaymentDetails();
+                      }));
+                },
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => View_Payment_Amount(
+                        branch_id_from_ids: widget.branch_id_from_ids,
+                        vendor_id_from_ids: widget.vendor_id_from_ids,
+                        sale_order_id: widget.sale_order_id,
+                        bidder_id: widget.bidder_id,
+                        paymentId: index['payment_id'] ?? "N/A",
+                        paymentType: index['payment_type'] ?? "N/A",
+                        date1: index['date'] ?? "N/A",
+                        amount: index['amt'] ?? "N/A",
+                        referenceNo: index['pay_ref_no'] ?? "N/A",
+                        typeOfTransfer: index['typeoftransfer'] ?? "N/A",
+                        remark: index['narration'] ?? 'N/A',
+                        freezed: index['freezed'] ?? 'N/A'),
                   ),
-                ).then((value) => setState((){
-                  fetchPaymentDetails();
-                }));
+                ).then((value) => setState(() {
+                      fetchPaymentDetails();
+                    }));
               },
             ),
           ),
         ),
       );
-    }else{
+    } else {
       return Container();
     }
   }
 
-  Widget buildCMDDetailListTile(BuildContext context , index) {
+  Widget buildCMDDetailListTile(BuildContext context, index) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
@@ -948,7 +1041,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
             contentPadding: const EdgeInsets.all(12.0),
             leading: CircleAvatar(
               backgroundColor: Colors.indigo[800],
-              child: Icon(Icons.account_balance_wallet_rounded, size: 24, color: Colors.white),
+              child: Icon(Icons.account_balance_wallet_rounded,
+                  size: 24, color: Colors.white),
             ),
             title: RichText(
               text: TextSpan(
@@ -967,7 +1061,6 @@ class _View_payment_detailState extends State<View_payment_detail> {
                       color: Colors.green,
                       fontWeight: FontWeight.normal, // Normal value
                       fontSize: 20,
-
                     ),
                   ),
                 ],
@@ -993,7 +1086,6 @@ class _View_payment_detailState extends State<View_payment_detail> {
                           color: Colors.black54,
                           fontWeight: FontWeight.normal, // Normal value
                           fontSize: 16,
-
                         ),
                       ),
                     ],
@@ -1016,7 +1108,6 @@ class _View_payment_detailState extends State<View_payment_detail> {
                           color: Colors.black54,
                           fontWeight: FontWeight.normal, // Normal value
                           fontSize: 16,
-
                         ),
                       ),
                     ],
@@ -1034,22 +1125,20 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     builder: (context) => View_Payment_Amount(
                         branch_id_from_ids: widget.branch_id_from_ids,
                         vendor_id_from_ids: widget.vendor_id_from_ids,
-                      sale_order_id: widget.sale_order_id,
-                      bidder_id: widget.bidder_id,
-                      paymentId: index['payment_id'] ?? "N/A",
-                      paymentType: index['payment_type'] ?? "N/A",
-                      date1: index['date'] ?? "N/A",
-                      amount: index['amt'] ?? "N/A",
-                      referenceNo: index['pay_ref_no'] ?? "N/A",
-                      typeOfTransfer: index['typeoftransfer'] ?? "N/A",
-                      remark : index['narration'] ?? 'N/A',
-                      freezed : index['freezed'] ?? 'N/A'
-
-                    ),
+                        sale_order_id: widget.sale_order_id,
+                        bidder_id: widget.bidder_id,
+                        paymentId: index['payment_id'] ?? "N/A",
+                        paymentType: index['payment_type'] ?? "N/A",
+                        date1: index['date'] ?? "N/A",
+                        amount: index['amt'] ?? "N/A",
+                        referenceNo: index['pay_ref_no'] ?? "N/A",
+                        typeOfTransfer: index['typeoftransfer'] ?? "N/A",
+                        remark: index['narration'] ?? 'N/A',
+                        freezed: index['freezed'] ?? 'N/A'),
                   ),
-                ).then((value) => setState((){
-                  fetchPaymentDetails();
-                }));
+                ).then((value) => setState(() {
+                      fetchPaymentDetails();
+                    }));
               },
             ),
             onTap: () {
@@ -1059,26 +1148,24 @@ class _View_payment_detailState extends State<View_payment_detail> {
                   builder: (context) => View_Payment_Amount(
                       branch_id_from_ids: widget.branch_id_from_ids,
                       vendor_id_from_ids: widget.vendor_id_from_ids,
-                    sale_order_id: widget.sale_order_id,
-                    bidder_id: widget.bidder_id,
-                    paymentId: index['payment_id'] ?? "N/A",
-                    paymentType: index['payment_type'] ?? "N/A",
-                    date1: index['date'] ?? "N/A",
-                    amount: index['amt'] ?? "N/A",
-                    referenceNo: index['pay_ref_no'] ?? "N/A",
-                    typeOfTransfer: index['typeoftransfer'] ?? "N/A",
-                    remark : index['narration'] ?? 'N/A',
-                    freezed : index['freezed'] ?? 'N/A'
-                  ),
+                      sale_order_id: widget.sale_order_id,
+                      bidder_id: widget.bidder_id,
+                      paymentId: index['payment_id'] ?? "N/A",
+                      paymentType: index['payment_type'] ?? "N/A",
+                      date1: index['date'] ?? "N/A",
+                      amount: index['amt'] ?? "N/A",
+                      referenceNo: index['pay_ref_no'] ?? "N/A",
+                      typeOfTransfer: index['typeoftransfer'] ?? "N/A",
+                      remark: index['narration'] ?? 'N/A',
+                      freezed: index['freezed'] ?? 'N/A'),
                 ),
-              ).then((value) => setState((){
-                fetchPaymentDetails();
-              }));
+              ).then((value) => setState(() {
+                    fetchPaymentDetails();
+                  }));
             },
           ),
         ),
       ),
     );
   }
-
 }
