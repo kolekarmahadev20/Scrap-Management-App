@@ -286,7 +286,6 @@ class _PaymentListState extends State<PaymentList> {
     );
   }
 
-
   showLoading(){
     return Container(
       height: double.infinity,
@@ -356,63 +355,6 @@ class _PaymentListState extends State<PaymentList> {
                   ),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Material(
-                  elevation: 2,
-                  color: Colors.white,
-                  shape: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blueGrey[400]!)
-                  ),
-                  child: Container(
-                    width:double.infinity,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Spacer(),
-                        Text(
-                          "Vendor, Plant",
-                          style: TextStyle(
-                            fontSize: 18, // Slightly larger font size
-                            color: Colors.black54,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Spacer(),
-                        Opacity(
-                          opacity:0.0, // Change opacity based on userType
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.add_box_outlined,
-                              size: 28, // Slightly smaller but prominent icon
-                              color: Colors.indigo[800],
-                            ),
-                            onPressed: null, // Disable the button when userType doesn't match
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              // Padding(
-              //   padding: const EdgeInsets.all(8.0),
-              //   child: TextField(
-              //     controller: searchController,
-              //     onChanged: (value) {
-              //       filterSearchResults(value); // Call function to filter results
-              //     },
-              //     decoration: InputDecoration(
-              //       labelText: "Search Order ID ",
-              //       prefixIcon: Icon(Icons.search),
-              //       border: OutlineInputBorder(
-              //         borderRadius: BorderRadius.circular(12),
-              //       ),
-              //       filled: true,
-              //       fillColor: Colors.white,
-              //     ),
-              //   ),
-              // ),
               SizedBox(height:20),
               Expanded(
                 child:

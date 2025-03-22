@@ -18,6 +18,9 @@ import 'View_dispatch_details.dart';
 
 class addDispatchToSaleOrder extends StatefulWidget {
 
+  // 'sale_order_id':widget.sale_order_id,
+  //         'bidder_id':widget.bidder_id,
+
   final String sale_order_id;
   final String material_name;
   final String bidder_id;

@@ -5,7 +5,7 @@ import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Payment/View_Payment_Amount.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../Dispatch/DispatchList.dart';
+import '../Dispatch/View_dispatch_details.dart';
 import '../URL_CONSTANT.dart';
 import 'addPaymentToSaleOrder.dart';
 
@@ -189,7 +189,9 @@ class _View_payment_detailState extends State<View_payment_detail> {
               if (index == 3) {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => DispatchList(currentPage: 0,)), // Navigate to DispatchList Page
+                  MaterialPageRoute(builder: (context) => View_dispatch_details(
+                    sale_order_id: widget.sale_order_id,
+                    bidder_id: widget.bidder_id,)), // Navigate to DispatchList Page
                 );
               }
               

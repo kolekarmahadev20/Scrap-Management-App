@@ -113,103 +113,103 @@ class _View_refund_detailsState extends State<View_refund_details> {
     );
   }
 
+  int _selectedIndex = 0;
+
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 4,
-      child: AbsorbPointer(
-        absorbing: isLoading,
-        child: Scaffold(
-          drawer: AppDrawer(currentPage: 6),
-          appBar: CustomAppBar(),
-          body: Stack(
+
+    final List<Widget> _pages = [
+      // buildMaterialListTab(),
+      buildScrollableTabContent(context, buildPaymentListView),
+      buildScrollableTabContent(context, buildEmdListView),
+      buildScrollableTabContent(context, buildCMDDetailListView),
+    ];
+
+    return AbsorbPointer(
+      absorbing: isLoading,
+      child: Scaffold(
+        drawer: AppDrawer(currentPage: 6),
+        appBar: CustomAppBar(),
+        body: isLoading
+            ? showLoading()
+            : SingleChildScrollView(
+          child: Column(
             children: [
-              isLoading
-                  ? showLoading()
-                  : Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8.0, horizontal: 4.0),
-                        color: Colors.grey[100],
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                "Refund",
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ),
-                            buildRowWithIcon(context),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: buildVendorInfo(),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        color: Colors.white,
-                        child: TabBar(
-                          labelColor: Colors.indigo[800],
-                          unselectedLabelColor: Colors.black54,
-                          indicatorColor: Colors.indigo[800],
-                          tabs: const [
-                            Tab(text: "Material\nDetails"),
-                            Tab(text: "Payment\nDetails"),
-                            Tab(text: "EMD\nDetails"),
-                            Tab(text: "CMD\nDetails"),
-                          ],
-                        ),
-                      ),
-                      // Constrained TabBarView for bounded height
-                      Expanded(
-                        child: Container(
-                          child: TabBarView(
-                            children: [
-                              buildMaterialListTab(),
-                              buildScrollableTabContent(
-                                  context, buildPaymentListView),
-                              buildScrollableTabContent(
-                                  context, buildEmdListView),
-                              buildScrollableTabContent(
-                                  context, buildCMDDetailListView),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-            ],
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => addRefundToSaleOrder(
-                    sale_order_id: widget.sale_order_id!,
-                    material_name: ViewRefundData['sale_order_details']?[0]
-                    ['material_name'] ??
-                        'N/A',
-                    branch_id_from_ids: widget.branch_id_from_ids, // Extracted from "Ids"
-                    vendor_id_from_ids: widget.vendor_id_from_ids, // Extracted from "Ids"
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Refund",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                    letterSpacing: 1.2,
                   ),
                 ),
-              ).then((value) => setState(() {
-                fetchRefundDetails();
-              }));
-            },
-            child: Icon(Icons.add), // FAB icon
-            backgroundColor: Colors.blueGrey[200],
+              ),
+              buildRowWithIcon(context),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: buildVendorInfo(),
+              ),
+              buildExpansionTile(),
+              SizedBox(height: 10), // Spacer before content
+              IndexedStack(
+                index: _selectedIndex,
+                children: _pages,
+              ),
+            ],
           ),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          selectedItemColor: Colors.indigo[800],
+          unselectedItemColor: Colors.black54,
+          onTap: (index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+          items: const [
+            // BottomNavigationBarItem(
+            //   icon: Icon(Icons.category),
+            //   label: "Material Details",
+            // ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.payment),
+              label: "Payment Details",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.account_balance),
+              label: "EMD Details",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.security),
+              label: "CMD Details",
+            ),
+          ],
+        ),
+
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => addRefundToSaleOrder(
+                  sale_order_id: widget.sale_order_id!,
+                  material_name: ViewRefundData['sale_order_details']?[0]
+                  ['material_name'] ??
+                      'N/A',
+                  branch_id_from_ids: widget.branch_id_from_ids, // Extracted from "Ids"
+                  vendor_id_from_ids: widget.vendor_id_from_ids, // Extracted from "Ids"
+                ),
+              ),
+            ).then((value) => setState(() {
+              fetchRefundDetails();
+            }));
+          },
+          child: Icon(Icons.add), // FAB icon
+          backgroundColor: Colors.blueGrey[200],
         ),
       ),
     );
@@ -345,6 +345,15 @@ class _View_refund_detailsState extends State<View_refund_details> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Center(
+              child: Text(
+                "Sale Order Details",
+                style: TextStyle(
+                  fontSize: 22, // Increase font size
+                  fontWeight: FontWeight.bold, // Make it bold
+                ),
+              ),
+            ),
             buildListTile(
                 "Material Name : ${ViewRefundData['sale_order_details']?[0]['material_name']?? 'N/A'}"),
             buildListTile(
@@ -400,6 +409,12 @@ class _View_refund_detailsState extends State<View_refund_details> {
             ),
           ],
           rows: [
+
+            // Add a TOTAL row at the end
+            DataRow(cells: [
+              DataCell(Text('Basic Amount', /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
+              DataCell(Text('₹${taxAmount['basicTaxAmount']}' , /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
+            ]),
             // Dynamically add rows based on the 'taxes' list
             if (taxes.isNotEmpty)
               ...taxes.map((tax) {
@@ -408,16 +423,12 @@ class _View_refund_detailsState extends State<View_refund_details> {
                   DataCell(Text('${tax['tax_amount'] ?? 'No data'}')),
                 ]);
               }).toList(),
-            // Add a TOTAL row at the end
-            DataRow(cells: [
-              DataCell(Text('Basic Amount', /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
-              DataCell(Text('₹${taxAmount['basicTaxAmount']}' , /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
-            ]),
             DataRow(cells: [
               DataCell(Text('Final Amount', /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
               DataCell(Text('₹${taxAmount['finalTaxAmount']}' , /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
+            ]),
 
-            ])
+
           ],
         ),
       ),
@@ -427,78 +438,127 @@ class _View_refund_detailsState extends State<View_refund_details> {
   Widget buildPaymentListView() {
     // Filter the list based on the allowed payment types
     final filteredPayments = refundStatus.where((payment) =>
-        payment['payment_type'] == "Penalty" ||
+    payment['payment_type'] == "Penalty" ||
         payment['payment_type'] == "Refund All" ||
         payment['payment_type'] == "Refund Amount").toList();
 
-
-
-    // If there are no matching items, display the "No Payment Details Found" message
-    if (filteredPayments.isEmpty) {
-      return Center(
-        child: Text(
-          "No Payment Details Found",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+    return Column(
+      children: [
+        // Heading at the top
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            "Payment Details",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
         ),
-      );
-    }
 
-    // Otherwise, build the ListView with filtered items
-    return ListView.builder(
-      itemCount: filteredPayments.length,
-      itemBuilder: (context, index) {
-        final payment = filteredPayments[index];
-        return buildPaymentStatusListTile(context, payment);
-      },
+        // If there are no matching items, display the "No Payment Details Found" message
+        if (filteredPayments.isEmpty)
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child: Text(
+                "No Payment Details Found",
+                style: TextStyle( fontSize: 18),
+              ),
+            ),
+          )
+        else
+          Expanded(
+            child: ListView.builder(
+              itemCount: filteredPayments.length,
+              itemBuilder: (context, index) {
+                final payment = filteredPayments[index];
+                return buildPaymentStatusListTile(context, payment);
+              },
+            ),
+          ),
+      ],
     );
   }
+
 
   Widget buildEmdListView() {
     // Filter the list to only include items with "Refund EMD"
     final filteredEmdStatus = emdStatus.where((status) => status['payment_type'] == "Refund EMD").toList();
 
-    // If there are no matching items, display the "No EMD Details Found" message
-    if (filteredEmdStatus.isEmpty) {
-      return Center(
-        child: Text(
-          "No EMD Details Found",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+    return Column(
+      children: [
+        // Heading at the top
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            "EMD Details",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
         ),
-      );
-    }
 
-    // Build the ListView with filtered items
-    return ListView.builder(
-      itemCount: filteredEmdStatus.length,
-      itemBuilder: (context, index) {
-        final emdStatusIndex = filteredEmdStatus[index];
-        return buildEmdStatusListTile(context, emdStatusIndex);
-      },
+        // If there are no matching items, display the "No EMD Details Found" message
+        if (filteredEmdStatus.isEmpty)
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child: Text(
+                "No EMD Details Found",
+                style: TextStyle( fontSize: 18),
+              ),
+            ),
+          )
+        else
+          Expanded(
+            child: ListView.builder(
+              itemCount: filteredEmdStatus.length,
+              itemBuilder: (context, index) {
+                final emdStatusIndex = filteredEmdStatus[index];
+                return buildEmdStatusListTile(context, emdStatusIndex);
+              },
+            ),
+          ),
+      ],
     );
   }
 
   Widget buildCMDDetailListView() {
     final filteredCmdStatus = cmdStatus.where((status) => status['payment_type'] == "Refund CMD").toList();
 
-    // If there are no matching items, display the "No EMD Details Found" message
-    if (filteredCmdStatus.isEmpty) {
-      return Center(
-        child: Text(
-          "No CMD Details Found",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+    return Column(
+      children: [
+        // Heading at the top
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            "CMD Details",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
         ),
-      );
-    }
 
-    // Build the ListView with filtered items
-    return ListView.builder(
-      itemCount: filteredCmdStatus.length,
-      itemBuilder: (context, index) {
-        final cmdStatusIndex = filteredCmdStatus[index];
-        return buildEmdStatusListTile(context, cmdStatusIndex);
-      },
+        // If there are no matching items, display the "No CMD Details Found" message
+        if (filteredCmdStatus.isEmpty)
+
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child: Text(
+                "No CMD Details Found",
+                style: TextStyle( fontSize: 18),
+              ),
+            ),
+          )
+        else
+          Expanded(
+            child: ListView.builder(
+              itemCount: filteredCmdStatus.length,
+              itemBuilder: (context, index) {
+                final cmdStatusIndex = filteredCmdStatus[index];
+                return buildEmdStatusListTile(context, cmdStatusIndex);
+              },
+            ),
+          ),
+      ],
     );
   }
+
 
   Widget buildPaymentStatusListTile(BuildContext context, index) {
       return Padding(

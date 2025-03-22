@@ -403,44 +403,44 @@ class _DispatchListState extends State<DispatchList> {
                           ],
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Material(
-                          elevation: 2,
-                          color: Colors.white,
-                          shape: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.blueGrey[400]!)
-                          ),
-                          child: Container(
-                            width:double.infinity,
-                            child: Row(
-                              children: [
-                                Spacer(),
-                                Text(
-                                  "Vendor, Plant",
-                                  style: TextStyle(
-                                    fontSize: 18, // Slightly larger font size
-                                    color: Colors.black54,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                Spacer(),
-                                Opacity(
-                                  opacity:0.0, // Change opacity based on userType
-                                  child: IconButton(
-                                    icon: Icon(
-                                      Icons.add_box_outlined,
-                                      size: 28, // Slightly smaller but prominent icon
-                                      color: Colors.indigo[800],
-                                    ),
-                                    onPressed: null, // Disable the button when userType doesn't match
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                      // Padding(
+                      //   padding: const EdgeInsets.all(8.0),
+                      //   child: Material(
+                      //     elevation: 2,
+                      //     color: Colors.white,
+                      //     shape: OutlineInputBorder(
+                      //         borderSide: BorderSide(color: Colors.blueGrey[400]!)
+                      //     ),
+                      //     child: Container(
+                      //       width:double.infinity,
+                      //       child: Row(
+                      //         children: [
+                      //           Spacer(),
+                      //           Text(
+                      //             "Vendor, Plant",
+                      //             style: TextStyle(
+                      //               fontSize: 18, // Slightly larger font size
+                      //               color: Colors.black54,
+                      //               fontWeight: FontWeight.w500,
+                      //             ),
+                      //           ),
+                      //           Spacer(),
+                      //           Opacity(
+                      //             opacity:0.0, // Change opacity based on userType
+                      //             child: IconButton(
+                      //               icon: Icon(
+                      //                 Icons.add_box_outlined,
+                      //                 size: 28, // Slightly smaller but prominent icon
+                      //                 color: Colors.indigo[800],
+                      //               ),
+                      //               onPressed: null, // Disable the button when userType doesn't match
+                      //             ),
+                      //           ),
+                      //         ],
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                       SizedBox(height: 20,),
                       Expanded(
                         child:
