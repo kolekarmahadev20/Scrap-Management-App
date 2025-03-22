@@ -428,7 +428,12 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   }
 
   Future<void> fetchImageList() async {
+    print("sale_order_id");
+    print(widget.sale_order_id);
+    print(widget.invoiceNo);
     try {
+
+
       setState(() {
         isLoading = true;
       });
@@ -438,8 +443,8 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-        'user_id': username,
-'uuid':uuid,
+          'user_id': username,
+          'uuid':uuid,
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
           'invoice_no': widget.invoiceNo,
@@ -449,6 +454,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       if (response.statusCode == 200) {
         setState(() {
           var jsonData = json.decode(response.body);
+
 
           // Check if the response is empty
           if (jsonData.isEmpty) {
@@ -467,6 +473,11 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
             materialHalfLoad = jsonData['Ha'] != null ? '${Image_URL}${jsonData['Ha']}' : "";
             materialFullLoad = jsonData['Fu'] != null ? '${Image_URL}${jsonData['Fu']}' : "";
             otherImg = jsonData['ot'] != null ? '${Image_URL}${jsonData['ot']}' : "";
+            print("otherImg");
+
+
+            print(otherImg);
+
           } else if (jsonData is List) {
             // Handle the case if the response is a list (unexpected)
             print("API returned a list instead of a map. List: $jsonData");
@@ -600,42 +611,43 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
                       buildTextField("Moisture Weight", moistureWeightController, true,false ,Colors.white, context),
                       buildTextField("DMT/Quantity Weight", quantityController, true,false , Colors.white,context),
                       buildTextField("Note", noteController, true,false , Colors.white,context),
-                      SizedBox(height: 100,),
-                      Container(
+                      SizedBox(height: 25,),
+                      if( otherImg!= null ||  otherImg!.isNotEmpty)
+                        Container(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                "View Images",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 24),
-                              ),
-                            ),
+                            // Padding(
+                            //   padding: const EdgeInsets.all(8.0),
+                            //   child: Text(
+                            //     "View Images",
+                            //     style: TextStyle(
+                            //         fontWeight: FontWeight.bold,
+                            //         fontSize: 24),
+                            //   ),
+                            // ),
+                            // ImageWidget(
+                            //   value: '1) Vehicle Front',
+                            //   filePath: frontVehicle!,
+                            // ),
+                            // ImageWidget(
+                            //   value: '2) Vehicle Back',
+                            //   filePath: backVehicle!,
+                            // ),
+                            // ImageWidget(
+                            //   value: '3) Material',
+                            //   filePath: materialImg!,
+                            // ),
+                            // ImageWidget(
+                            //   value: '4) Material Half Load',
+                            //   filePath: materialHalfLoad!,
+                            // ),
+                            // ImageWidget(
+                            //   value: '5) Material Full Load',
+                            //   filePath: materialFullLoad!,
+                            // ),
                             ImageWidget(
-                              value: '1) Vehicle Front',
-                              filePath: frontVehicle!,
-                            ),
-                            ImageWidget(
-                              value: '2) Vehicle Back',
-                              filePath: backVehicle!,
-                            ),
-                            ImageWidget(
-                              value: '3) Material',
-                              filePath: materialImg!,
-                            ),
-                            ImageWidget(
-                              value: '4) Material Half Load',
-                              filePath: materialHalfLoad!,
-                            ),
-                            ImageWidget(
-                              value: '5) Material Full Load',
-                              filePath: materialFullLoad!,
-                            ),
-                            ImageWidget(
-                              value: '6) Other',
+                              value: 'View Images',
                               filePath: otherImg!,
                             ),
                           ],
@@ -970,24 +982,37 @@ class _ImageWidgetState extends State<ImageWidget> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Spacer(),
-              TextButton(
-                child: Text(
-                  "View",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green),
-                ),
+              IconButton(
+                icon: Icon(Icons.photo, color: Colors.blue, size: 30), // ✅ Camera Icon
                 onPressed: () {
                   setState(() {
-                    if(widget.filePath == null){
+                    if (widget.filePath == null) {
                       showNoImage();
-                    }else{
+                    } else {
                       _fetchFileBytesFromServer(widget.filePath!);
                     }
                   });
                 },
               ),
+
+              // TextButton(
+              //   child: Text(
+              //     "View",
+              //     style: TextStyle(
+              //         fontSize: 18,
+              //         fontWeight: FontWeight.bold,
+              //         color: Colors.green),
+              //   ),
+              //   onPressed: () {
+              //     setState(() {
+              //       if(widget.filePath == null){
+              //         showNoImage();
+              //       }else{
+              //         _fetchFileBytesFromServer(widget.filePath!);
+              //       }
+              //     });
+              //   },
+              // ),
             ],
           ),
         ),

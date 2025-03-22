@@ -17,10 +17,6 @@ import 'package:path/path.dart' as path;
 import 'View_dispatch_details.dart';
 
 class addDispatchToSaleOrder extends StatefulWidget {
-
-  // 'sale_order_id':widget.sale_order_id,
-  //         'bidder_id':widget.bidder_id,
-
   final String sale_order_id;
   final String material_name;
   final String bidder_id;
@@ -432,58 +428,58 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
                                   child: Text("Upload Images" , style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
                                 ),
                                 Divider(thickness: 1.5,color: Colors.black54),
+                                // ImageWidget(
+                                //     value: '1) Vehicle Front',
+                                //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                //     onImagesSelected: (images) { // Handle selected images
+                                //       setState(() {
+                                //         vehicleFront.addAll(images); // Store uploaded images
+                                //       });
+                                //     }
+                                // ),
+                                // ImageWidget(
+                                //     value: '2) Vehicle Back',
+                                //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                //     onImagesSelected: (images) { // Handle selected images
+                                //       setState(() {
+                                //         vehicleBack.addAll(images); // Store uploaded images
+                                //       });
+                                //     }
+                                // ),
+                                // ImageWidget(
+                                //     value: '3) Material',
+                                //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                //     onImagesSelected: (images) { // Handle selected images
+                                //       setState(() {
+                                //         Material.addAll(images); // Store uploaded images
+                                //       });
+                                //     }
+                                // ),
+                                // ImageWidget(
+                                //     value: '4) Material Half Load',
+                                //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                //     onImagesSelected: (images) { // Handle selected images
+                                //       setState(() {
+                                //         MaterialHalfLoad.addAll(images); // Store uploaded images
+                                //       });
+                                //     }
+                                // ),
+                                // ImageWidget(
+                                //     value: '5) Material Full Load',
+                                //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                //     onImagesSelected: (images) { // Handle selected images
+                                //       setState(() {
+                                //         MaterialFullLoad.addAll(images); // Store uploaded images
+                                //       });
+                                //     }
+                                // ),
                                 ImageWidget(
-                                    value: '1) Vehicle Front',
-                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                    onImagesSelected: (images) { // Handle selected images
-                                      setState(() {
-                                        vehicleFront.addAll(images); // Store uploaded images
-                                      });
-                                    }
-                                ),
-                                ImageWidget(
-                                    value: '2) Vehicle Back',
-                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                    onImagesSelected: (images) { // Handle selected images
-                                      setState(() {
-                                        vehicleBack.addAll(images); // Store uploaded images
-                                      });
-                                    }
-                                ),
-                                ImageWidget(
-                                    value: '3) Material',
-                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                    onImagesSelected: (images) { // Handle selected images
-                                      setState(() {
-                                        Material.addAll(images); // Store uploaded images
-                                      });
-                                    }
-                                ),
-                                ImageWidget(
-                                    value: '4) Material Half Load',
-                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                    onImagesSelected: (images) { // Handle selected images
-                                      setState(() {
-                                        MaterialHalfLoad.addAll(images); // Store uploaded images
-                                      });
-                                    }
-                                ),
-                                ImageWidget(
-                                    value: '5) Material Full Load',
-                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                    onImagesSelected: (images) { // Handle selected images
-                                      setState(() {
-                                        MaterialFullLoad.addAll(images); // Store uploaded images
-                                      });
-                                    }
-                                ),
-                                ImageWidget(
-                                    value: '6) Other',
+                                    value: 'Add Images',
                                     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
                                     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
                                     onImagesSelected: (images) { // Handle selected images
@@ -644,17 +640,24 @@ class ImageWidget extends StatefulWidget {
 class _ImageWidgetState extends State<ImageWidget> {
   List<File> _images = [];
 
+
   // Function to pick multiple images from the gallery
   Future<void> _pickImagesFromGallery() async {
     final picker = ImagePicker();
-    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery); // Pick only one image
+    // final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery); // Pick only one image
+    List<XFile>? pickedFile = await ImagePicker().pickMultiImage();
 
     if (pickedFile != null) {
+
+      for (var pickedImage in pickedFile) {
+        _images.add(File(pickedImage.path)); // Append images instead of overwriting
+      }
+
       setState(() {
-        _images = [File(pickedFile.path)]; // Replace the list with the new image
+        // _images = [File(pickedFile.path)]; // Replace the list with the new image
       });
       widget.onImagesSelected(_images);
-      _showSingleImageNotification();
+      // _showSingleImageNotification();
     }
   }
 
@@ -665,10 +668,11 @@ class _ImageWidgetState extends State<ImageWidget> {
 
     if (capturedFile  != null) {
       setState(() {
-        _images = [File(capturedFile.path)]; // Replace the list with the new captured image
+        _images.add(File(capturedFile.path));
+        // _images = [File(capturedFile.path)]; // Replace the list with the new captured image
       });
       widget.onImagesSelected(_images);
-      _showSingleImageNotification();
+      // _showSingleImageNotification();
     }
   }
 
