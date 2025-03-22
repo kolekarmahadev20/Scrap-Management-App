@@ -115,6 +115,56 @@ class _View_refund_detailsState extends State<View_refund_details> {
 
   int _selectedIndex = 0;
 
+  Widget buildBottomNavButtons(
+      BuildContext context, int selectedIndex, Function(int) onItemTapped) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 10),
+      color: Colors.white,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal, // Allow horizontal scrolling
+        child: Wrap(
+          spacing: 8, // Space between buttons
+          alignment: WrapAlignment.center,
+          children: [
+            buildNavButton(Icons.payment, "Payment Details", 0, selectedIndex,
+                onItemTapped),
+            buildNavButton(Icons.account_balance, "EMD Details", 1,
+                selectedIndex, onItemTapped),
+            buildNavButton(Icons.security, "CMD Details", 2, selectedIndex,
+                onItemTapped),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Color> buttonColors = [
+    Colors.green,  // Payment Details
+    Colors.orange, // EMD Details
+    Colors.blue,    // CMD Details
+  ];
+
+  Widget buildNavButton(IconData icon, String label, int index,
+      int selectedIndex, Function(int) onItemTapped) {
+    return ElevatedButton.icon(
+      onPressed: () => onItemTapped(index),
+      icon: Icon(icon,
+          size: 18, color: selectedIndex == index ? Colors.white : buttonColors[index]),
+      label: Text(label,
+          style: TextStyle(
+              fontSize: 12,
+              color: selectedIndex == index ? Colors.white : buttonColors[index])),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: selectedIndex == index ? buttonColors[index] : Colors.white,
+        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: buttonColors[index]),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -161,35 +211,23 @@ class _View_refund_detailsState extends State<View_refund_details> {
             ],
           ),
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _selectedIndex,
-          selectedItemColor: Colors.indigo[800],
-          unselectedItemColor: Colors.black54,
-          onTap: (index) {
-            setState(() {
-              _selectedIndex = index;
-            });
-          },
-          items: const [
-            // BottomNavigationBarItem(
-            //   icon: Icon(Icons.category),
-            //   label: "Material Details",
-            // ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.payment),
-              label: "Payment Details",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_balance),
-              label: "EMD Details",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.security),
-              label: "CMD Details",
-            ),
-          ],
-        ),
-
+        bottomNavigationBar:
+        buildBottomNavButtons(context, _selectedIndex, (index) {
+          setState(() {
+            _selectedIndex = index;
+            // Navigate to DispatchList when Dispatch is tapped
+            // if (index == 3) {
+            //   Navigator.push(
+            //     context,
+            //     MaterialPageRoute(
+            //         builder: (context) => View_dispatch_details(
+            //           sale_order_id: widget.sale_order_id,
+            //           bidder_id: widget.bidder_id,
+            //         )), // Navigate to DispatchList Page
+            //   );
+            // }
+          });
+        }),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             Navigator.push(
@@ -225,11 +263,9 @@ class _View_refund_detailsState extends State<View_refund_details> {
     );
   }
 
-  Widget buildScrollableTabContent(BuildContext context, Widget Function() listViewBuilder) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height, // Set the height of the container
-      child: listViewBuilder(),
-    );
+  Widget buildScrollableTabContent(
+      BuildContext context, Widget Function() listViewBuilder) {
+    return listViewBuilder();
   }
 
   Widget buildRowWithIcon(BuildContext context) {
@@ -256,7 +292,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
-                        fontSize: 22,
+                        fontSize: 21,
                       ),
                     ),
                   ),
@@ -291,48 +327,45 @@ class _View_refund_detailsState extends State<View_refund_details> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         buildVendorInfoText(
-            "Vendor Name: ", ViewRefundData['vendor_buyer_details']['vendor_name'] ?? 'N/A' ,false),
+            "Vendor Name : ",
+            ViewRefundData['vendor_buyer_details']['vendor_name'] ?? 'N/A',
+            false),
         buildVendorInfoText(
-            "Branch: ", ViewRefundData['vendor_buyer_details']['branch_name'] ?? 'N/A',false),
+            "Branch : ",
+            ViewRefundData['vendor_buyer_details']['branch_name'] ?? 'N/A',
+            false),
         buildVendorInfoText(
-            "Buyer Name: ", ViewRefundData['vendor_buyer_details']['bidder_name'] ?? 'N/A',false),
+            "Buyer Name : ",
+            ViewRefundData['vendor_buyer_details']['bidder_name'] ?? 'N/A',
+            false),
       ],
     );
   }
 
-  Widget buildVendorInfoText(String key, String value , bool isRed) {
+
+  Widget buildVendorInfoText(String key, String value, bool isRed) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: key, // Key text (e.g., "Vendor Name: ")
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black, // Bold key text
-              ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Push key left & value right
+        children: [
+          Text(
+            key,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Colors.black, // Bold key text
             ),
-            (isRed)
-                ?TextSpan(
-              text: value, // Value text (e.g., "XYZ Corp")
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.redAccent, // Normal value text
-              ),
-            )
-                :TextSpan(
-              text: value, // Value text (e.g., "XYZ Corp")
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.normal,
-                color: Colors.black54, // Normal value text
-              ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: isRed ? FontWeight.bold : FontWeight.normal,
+              color: isRed ? Colors.redAccent : Colors.black54, // Color based on isRed
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -349,32 +382,108 @@ class _View_refund_detailsState extends State<View_refund_details> {
               child: Text(
                 "Sale Order Details",
                 style: TextStyle(
-                  fontSize: 22, // Increase font size
+                  fontSize: 21, // Increase font size
                   fontWeight: FontWeight.bold, // Make it bold
                 ),
               ),
             ),
-            buildListTile(
-                "Material Name : ${ViewRefundData['sale_order_details']?[0]['material_name']?? 'N/A'}"),
-            buildListTile(
-                "Total Qty :${ViewRefundData['sale_order_details'][0]['totalqty'] ?? "N/A"} ${ViewRefundData['sale_order_details'][0]['totunit'] ?? ""}"),
-            if(ViewRefundData['lifted_quantity'] != null &&
-                ViewRefundData['lifted_quantity'] is List &&
-                ViewRefundData['lifted_quantity'].isNotEmpty)
-            buildListTile(
-                "Lifted Qty :${ViewRefundData['lifted_quantity'][0]['quantity'] ?? "N/A"} ${ViewRefundData['sale_order_details'][0]['totunit'] ?? ""}"),
-            buildListTile(
-                "Rate :${ViewRefundData['sale_order_details'][0]['rate'] ?? "N/A"}"),
-            buildListTile(
-                "SO Date :${ViewRefundData['sale_order_details'][0]['sod'] ?? "N/A"}"),
-            buildListTile(
-                "SO Validity :${ViewRefundData['sale_order_details'][0]['sovu'] ?? "N/A"}"),
+            buildPaymentDetailsCard(ViewRefundData),
+
+            // buildListTile(
+            //     "Material Name : ${ViewRefundData['sale_order_details']?[0]['material_name']?? 'N/A'}"),
+            // buildListTile(
+            //     "Total Qty :${ViewRefundData['sale_order_details'][0]['totalqty'] ?? "N/A"} ${ViewRefundData['sale_order_details'][0]['totunit'] ?? ""}"),
+            // if(ViewRefundData['lifted_quantity'] != null &&
+            //     ViewRefundData['lifted_quantity'] is List &&
+            //     ViewRefundData['lifted_quantity'].isNotEmpty)
+            // buildListTile(
+            //     "Lifted Qty :${ViewRefundData['lifted_quantity'][0]['quantity'] ?? "N/A"} ${ViewRefundData['sale_order_details'][0]['totunit'] ?? ""}"),
+            // buildListTile(
+            //     "Rate :${ViewRefundData['sale_order_details'][0]['rate'] ?? "N/A"}"),
+            // buildListTile(
+            //     "SO Date :${ViewRefundData['sale_order_details'][0]['sod'] ?? "N/A"}"),
+            // buildListTile(
+            //     "SO Validity :${ViewRefundData['sale_order_details'][0]['sovu'] ?? "N/A"}"),
+            //
+            Divider(),
             buildTable(),
           ],
         ),
       ),
     );
   }
+
+  Widget buildDetailTile(String title, String value, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.blueGrey),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                title,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                style: const TextStyle(fontSize: 14),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildPaymentDetailsCard(Map<String, dynamic> ViewRefundData) {
+    return Container(
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            buildDetailTile(
+                "Material Name : ",
+                ViewRefundData['sale_order_details']?[0]['material_name'] ?? 'N/A',
+                Icons.category),
+            buildDetailTile(
+                "Total Qty : ",
+                "${ViewRefundData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewRefundData['sale_order_details'][0]['totunit'] ?? ''}",
+                Icons.inventory),
+            if (ViewRefundData['lifted_quantity'] != null &&
+                ViewRefundData['lifted_quantity'] is List &&
+                ViewRefundData['lifted_quantity'].isNotEmpty)
+              buildDetailTile(
+                  "Lifted Qty : ",
+                  "${ViewRefundData['lifted_quantity'][0]['quantity'] ?? 'No data'} ${ViewRefundData['sale_order_details'][0]['totunit'] ?? ''}",
+                  Icons.local_shipping),
+            buildDetailTile(
+                "Rate : ",
+                ViewRefundData['sale_order_details'][0]['rate']?.toString() ?? 'No data',
+                Icons.attach_money),
+            buildDetailTile(
+                "SO Date : ",
+                ViewRefundData['sale_order_details'][0]['sod'] ?? 'No data',
+                Icons.date_range),
+            buildDetailTile(
+                "SO Validity : ",
+                ViewRefundData['sale_order_details'][0]['sovu'] ?? 'No data',
+                Icons.event_available),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   Widget buildListTile(String text) {
     return ListTile(
@@ -387,48 +496,64 @@ class _View_refund_detailsState extends State<View_refund_details> {
       scrollDirection: Axis.horizontal,
       child: Container(
         width: 400,
+        padding: EdgeInsets.all(8),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey), // Add a border around the table
-          borderRadius: BorderRadius.circular(8.0),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 6,
+              spreadRadius: 2,
+              offset: Offset(0, 3),
+            ),
+          ],
         ),
         child: DataTable(
-          columnSpacing: 16.0,
-          border: TableBorder.all(color: Colors.grey), // Add borders to table cells
+          columnSpacing: 20,
+          headingRowHeight: 48,
+          dataRowHeight: 44,
+          border: TableBorder.symmetric(
+            inside: BorderSide(color: Colors.grey.shade300),
+          ),
           columns: [
             DataColumn(
               label: Text(
                 'Tax',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
               ),
             ),
             DataColumn(
               label: Text(
                 'Amount',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
               ),
             ),
           ],
           rows: [
-
-            // Add a TOTAL row at the end
-            DataRow(cells: [
-              DataCell(Text('Basic Amount', /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
-              DataCell(Text('₹${taxAmount['basicTaxAmount']}' , /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
-            ]),
-            // Dynamically add rows based on the 'taxes' list
+            DataRow(
+              color: MaterialStateProperty.all(Colors.grey.shade200),
+              cells: [
+                DataCell(Text('Basic Amount', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text('₹${taxAmount['basicTaxAmount']}', style: TextStyle(fontWeight: FontWeight.bold))),
+              ],
+            ),
             if (taxes.isNotEmpty)
               ...taxes.map((tax) {
-                return DataRow(cells: [
-                  DataCell(Text(tax['tax_name'] ?? 'No data')),
-                  DataCell(Text('${tax['tax_amount'] ?? 'No data'}')),
-                ]);
+                return DataRow(
+                  cells: [
+                    DataCell(Text(tax['tax_name'] ?? 'No data')),
+                    DataCell(Text('₹${tax['tax_amount'] ?? 'No data'}')),
+                  ],
+                );
               }).toList(),
-            DataRow(cells: [
-              DataCell(Text('Final Amount', /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
-              DataCell(Text('₹${taxAmount['finalTaxAmount']}' , /*style: TextStyle(fontWeight: FontWeight.bold)*/)),
-            ]),
-
-
+            DataRow(
+              color: MaterialStateProperty.all(Colors.grey.shade200),
+              cells: [
+                DataCell(Text('Final Amount', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text('₹${taxAmount['finalTaxAmount']}', style: TextStyle(fontWeight: FontWeight.bold))),
+              ],
+            ),
           ],
         ),
       ),
@@ -443,24 +568,27 @@ class _View_refund_detailsState extends State<View_refund_details> {
         payment['payment_type'] == "Refund Amount").toList();
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+
       children: [
+
         // Heading at the top
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
             "Payment Details",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),
 
         // If there are no matching items, display the "No Payment Details Found" message
         if (filteredPayments.isEmpty)
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Center(
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
               child: Text(
                 "No Payment Details Found",
-                style: TextStyle( fontSize: 18),
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18,color: Colors.grey),
               ),
             ),
           )
@@ -484,13 +612,15 @@ class _View_refund_detailsState extends State<View_refund_details> {
     final filteredEmdStatus = emdStatus.where((status) => status['payment_type'] == "Refund EMD").toList();
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+
       children: [
         // Heading at the top
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
             "EMD Details",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),
 
@@ -501,7 +631,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
             child: Center(
               child: Text(
                 "No EMD Details Found",
-                style: TextStyle( fontSize: 18),
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18,color: Colors.grey),
               ),
             ),
           )
@@ -523,13 +653,15 @@ class _View_refund_detailsState extends State<View_refund_details> {
     final filteredCmdStatus = cmdStatus.where((status) => status['payment_type'] == "Refund CMD").toList();
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+
       children: [
         // Heading at the top
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
             "CMD Details",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),
 
@@ -541,7 +673,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
             child: Center(
               child: Text(
                 "No CMD Details Found",
-                style: TextStyle( fontSize: 18),
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18,color: Colors.grey),
               ),
             ),
           )
