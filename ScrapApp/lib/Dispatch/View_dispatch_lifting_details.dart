@@ -890,7 +890,7 @@ class _View_dispatch_lifting_detailsState
 
 class ImageWidget extends StatefulWidget {
   final String value;
-  final List<String>? filePaths; // Accept multiple file URLs
+  final List<String>? filePaths;
 
   const ImageWidget({
     Key? key,
@@ -903,7 +903,7 @@ class ImageWidget extends StatefulWidget {
 }
 
 class _ImageWidgetState extends State<ImageWidget> {
-  List<Uint8List> imageBytesList = []; // List to store image bytes
+  List<Uint8List> imageBytesList = [];
 
   void showNoImage() {
     Fluttertoast.showToast(
@@ -916,11 +916,9 @@ class _ImageWidgetState extends State<ImageWidget> {
     );
   }
 
-  // Fetch images from the server
   Future<void> _fetchFileBytesFromServer(List<String> fileUrls) async {
     try {
       List<Uint8List> loadedImages = [];
-
       for (String fileUrl in fileUrls) {
         var response = await http.get(Uri.parse(fileUrl));
         if (response.statusCode == 200) {
@@ -929,10 +927,12 @@ class _ImageWidgetState extends State<ImageWidget> {
       }
 
       if (loadedImages.isNotEmpty) {
-        setState(() {
-          imageBytesList = loadedImages; // Store multiple images
-        });
-        _showImage();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ImagePreviewScreen(images: loadedImages),
+          ),
+        );
       } else {
         showNoImage();
       }
@@ -940,65 +940,6 @@ class _ImageWidgetState extends State<ImageWidget> {
       showNoImage();
       print('Exception: $e');
     }
-  }
-
-  // Show multiple images in a modal bottom sheet
-  void _showImage() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "Images",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 10),
-              imageBytesList.isNotEmpty
-                  ? GridView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3, // 3 images per row
-                  crossAxisSpacing: 4.0,
-                  mainAxisSpacing: 4.0,
-                ),
-                itemCount: imageBytesList.length,
-                itemBuilder: (context, index) {
-                  return Container(
-                    height: 100,
-                    width: 100,
-                    child: Image.memory(
-                        imageBytesList[index], fit: BoxFit.cover),
-                  );
-                },
-              )
-                  : showLoading(),
-              SizedBox(height: 10),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text("Close"),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget showLoading() {
-    return Container(
-      height: 200,
-      child: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
   }
 
   @override
@@ -1018,7 +959,6 @@ class _ImageWidgetState extends State<ImageWidget> {
               Spacer(),
               IconButton(
                 icon: Icon(Icons.photo, color: Colors.blue, size: 30),
-                // Image Icon
                 onPressed: () {
                   if (widget.filePaths == null || widget.filePaths!.isEmpty) {
                     showNoImage();
@@ -1034,3 +974,71 @@ class _ImageWidgetState extends State<ImageWidget> {
     );
   }
 }
+
+// New Page for Image Preview with Slider
+class ImagePreviewScreen extends StatefulWidget {
+  final List<Uint8List> images;
+
+  const ImagePreviewScreen({Key? key, required this.images}) : super(key: key);
+
+  @override
+  _ImagePreviewScreenState createState() => _ImagePreviewScreenState();
+}
+
+class _ImagePreviewScreenState extends State<ImagePreviewScreen> {
+  int currentIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor:Colors.blueGrey[700],
+        title: Text(
+          "Image Preview",
+          style: TextStyle(color: Colors.white),
+        ),
+        elevation: 2,
+        shadowColor: Colors.black,
+        shape: OutlineInputBorder(
+
+            borderSide: BorderSide(style: BorderStyle.solid ,color: Colors.white60)
+        ),
+
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: PageView.builder(
+                itemCount: widget.images.length,
+                onPageChanged: (index) {
+                  setState(() {
+                    currentIndex = index;
+                  });
+                },
+                itemBuilder: (context, index) {
+                  return Center(
+                    child: Image.memory(
+                      widget.images[index],
+                      fit: BoxFit.contain,
+                    ),
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Text(
+                "${currentIndex + 1} / ${widget.images.length}",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
