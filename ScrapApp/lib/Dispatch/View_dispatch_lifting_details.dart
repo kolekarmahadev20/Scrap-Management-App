@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Dispatch/Edit_dispatch_details.dart';
@@ -436,16 +437,28 @@ class _View_dispatch_lifting_detailsState
                 Icons.attach_money),
             buildDetailTile(
                 "SO Date : ",
-                ViewPaymentData['sale_order_details'][0]['sod'] ?? 'No data',
+                formatDate(ViewPaymentData['sale_order_details'][0]['sod']),
                 Icons.date_range),
             buildDetailTile(
                 "SO Validity : ",
-                ViewPaymentData['sale_order_details'][0]['sovu'] ?? 'No data',
+                formatDate(ViewPaymentData['sale_order_details'][0]['sovu']),
                 Icons.event_available),
           ],
         ),
       ),
     );
+  }
+
+  String formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) {
+      return 'No data';
+    }
+    try {
+      DateTime parsedDate = DateTime.parse(dateStr);
+      return DateFormat('dd-MM-yyyy').format(parsedDate);
+    } catch (e) {
+      return 'Invalid date';
+    }
   }
 
   Widget buildDetailTile(String title, String value, IconData icon) {
