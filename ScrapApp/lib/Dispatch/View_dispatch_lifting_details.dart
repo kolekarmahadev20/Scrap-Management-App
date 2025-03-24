@@ -134,6 +134,9 @@ class _View_dispatch_lifting_detailsState
   }
 
 
+  List<Map<String, dynamic>> taxDetailsList = [];
+
+
   Map<String , dynamic> taxAmount = {};
   Map<String , dynamic> ViewPaymentData = {};
   List<dynamic> paymentId =[];
@@ -266,6 +269,9 @@ class _View_dispatch_lifting_detailsState
           liftedQuantity = List<Map<String, dynamic>>.from(data['lifted_quantity']);
 
 
+          taxDetailsList = List<Map<String, dynamic>>.from(data['taxDetails'] ?? []);
+          balanceQty = data['balance_qty'];
+          totalBalance = data['total_balance'];
         });
       } else {
         print("Unable to fetch data.");
@@ -549,9 +555,10 @@ class _View_dispatch_lifting_detailsState
   }
 
   List<Map<String, dynamic>> materialLiftingDetails = [];
-  double totalMaterialLiftedAmount = 0.0;
   List<dynamic> liftedQuantity = [];
-
+  double balanceQty = 0.0;
+  double totalBalance = 0.0;
+  double totalMaterialLiftedAmount = 0.0;
 
   TableRow buildTableRows(List<String> labels, List<String?> values, int index) {
     assert(labels.length == values.length);
@@ -611,12 +618,25 @@ class _View_dispatch_lifting_detailsState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          buildSummaryRow("Lifted Quantity:", "8.12 TO", "309,677.31"),
-          buildSummaryRow("Balance:", "121.880 TO", "4,648,210.69"),
+          buildSummaryRow(
+              "Lifted Quantity:",
+          liftedQuantity.isNotEmpty
+              ? "${liftedQuantity[0]['quantity']} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ""}"
+              : "N/A",
+              totalMaterialLiftedAmount != null ? totalMaterialLiftedAmount.toStringAsFixed(2) : "N/A"
+          ),
+          buildSummaryRow(
+              "Balance:",
+              balanceQty != null
+                  ? "${balanceQty} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ""}"
+                  : "N/A",
+              totalBalance != null ? totalBalance.toStringAsFixed(2) : "N/A"
+          ),
         ],
       ),
     );
   }
+
 
   Widget buildSummaryRow(String title, String qty, String amount) {
     return Padding(
@@ -752,7 +772,31 @@ class _View_dispatch_lifting_detailsState
                     padding: const EdgeInsets.all(12.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: materialLiftingDetails.map((item) {
+                      children: materialLiftingDetails.asMap().entries.map((entry) {
+                        int index = entry.key;
+                        var item = entry.value;
+
+                        // Get tax details for the current invoice based on index
+                        List<Map<String, dynamic>> taxDetails = (ViewPaymentData['taxDetails'] as List<dynamic>?)
+                            ?.map((taxItem) => Map<String, dynamic>.from(taxItem))
+                            .toList() ?? [];
+
+                        // Ensure taxDetails length matches invoice count
+                        Map<String, dynamic> currentTax = (index < taxDetails.length) ? taxDetails[index] : {};
+
+                        print("Invoice: ${item['invoice_no']}");
+                        print("Tax Details for this invoice: $currentTax");
+
+                        List<String> taxNames = [];
+                        List<String> taxAmounts = [];
+
+                        if (currentTax.isNotEmpty) {
+                          currentTax.forEach((key, value) {
+                            taxNames.add(key); // Tax Name (e.g., IGST-18, TCS)
+                            taxAmounts.add(value.toString()); // Corresponding tax amount
+                          });
+                        }
+
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -760,10 +804,7 @@ class _View_dispatch_lifting_detailsState
                             Center(
                               child: Text(
                                 "Invoice Details - ${item['invoice_no']}",
-                                style: TextStyle(
-                                  fontSize: 21, // Increase font size
-                                  fontWeight: FontWeight.bold, // Make it bold
-                                ),
+                                style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
                               ),
                             ),
                             SizedBox(height: 5),
@@ -776,8 +817,21 @@ class _View_dispatch_lifting_detailsState
                               },
                               children: [
                                 buildTableRows(['INVOICE NO', 'DATE'], [item['invoice_no'], item['date_time']], 1),
-                                buildTableRows(['MATERIAL NAME', 'TRUCK NO'], [item['material_name'], item['truck_no']], 0),
-                                buildTableRows(['QTY', 'Amount'], [item['qty'], item['total_amt'].toString()], 1),
+                                buildTableRows(
+                                    ['MATERIAL NAME', 'TRUCK NO'],
+                                    [item['material_name'], item['truck_no'].toString().toUpperCase()],
+                                    0
+                                ),
+                                buildTableRows(
+                                    ['QTY', 'Amount'],
+                                    [
+                                      "${item['qty']} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ""}",
+                                      item['total_amt'].toString()
+                                    ],
+                                    1
+                                ),
+                                for (int i = 0; i < taxNames.length; i++)
+                                  buildTableRows([taxNames[i], 'Amount'], [taxNames[i], taxAmounts[i]], i % 2 == 0 ? 0 : 1),
                               ],
                             ),
                           ],
@@ -785,6 +839,7 @@ class _View_dispatch_lifting_detailsState
                       }).toList(),
                     ),
                   ),
+
 
                   Divider(),
 

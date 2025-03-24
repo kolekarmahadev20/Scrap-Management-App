@@ -11,50 +11,54 @@ import 'dart:math'; // For Random
 import 'dart:math';
 
 class Add_user extends StatefulWidget {
-
   @override
   State<Add_user> createState() => _Add_userState();
 }
 
 class _Add_userState extends State<Add_user> {
-
   final TextEditingController _vendorController = TextEditingController();
   final List<Map<String, String>> _vendorList = []; // Stores vendor data
   final List<String> _vendorOptions = []; // Stores vendor_name for suggestions
   final List<String> _selectedVendorValues = [];
-  final Map<String, String> _selectedVendors = {}; // Maps vendor_name to vendor_id
-
+  final Map<String, String> _selectedVendors =
+      {}; // Maps vendor_name to vendor_id
 
   final TextEditingController _locationController = TextEditingController();
   final List<Map<String, String>> _locationList = []; // Stores location data
-  final List<String> _locationOptions = []; // Stores location_name for suggestions
+  final List<String> _locationOptions =
+      []; // Stores location_name for suggestions
   final List<String> _selectedLocationValues = [];
-  final Map<String, String> _selectedLocations = {}; // Maps location_name to location_id
+  final Map<String, String> _selectedLocations =
+      {}; // Maps location_name to location_id
 
   final TextEditingController _organizationController = TextEditingController();
   final List<Map<String, String>> _organizationList = [];
   final List<String> _organizationOptions = [];
   final List<String> _selectedorganizationValues = [];
-  final Map<String, String> _selectedOrganization= {};
+  final Map<String, String> _selectedOrganization = {};
 
   String? selectedUserType;
 
   // Data for dropdowns
   Map<String, String> UserTypes = {
-    '':'Select',
+    '': 'Select',
     'S': 'Super Admin',
     'A': 'Admin',
     'U': 'User'
   };
 
-
+  String selectedEmployeeId = '';
+  List<Map<String, String>> employees = []; // List to store dropdown data
+  Map<String, String>? employeeDetails;
 
   // Controllers for the text fields
+  final TextEditingController _employeeController = TextEditingController();
   final TextEditingController fullNameController = TextEditingController();
   final TextEditingController adharNumberController = TextEditingController();
   final TextEditingController emailIdController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController personID = TextEditingController();
   final TextEditingController uuIDController = TextEditingController();
   final employeeCodeController = TextEditingController();
 
@@ -80,7 +84,6 @@ class _Add_userState extends State<Add_user> {
   String? loginType = '';
   String? userType = '';
 
-
   @override
   void dispose() {
     super.dispose();
@@ -88,9 +91,7 @@ class _Add_userState extends State<Add_user> {
     usernameController.dispose();
     passwordController.dispose();
     employeeCodeController.dispose();
-
   }
-
 
   @override
   void initState() {
@@ -98,20 +99,18 @@ class _Add_userState extends State<Add_user> {
     checkLogin();
     _fetchOrganizations();
     _fetchVendors();
-    generateEmployeeCode();
-    emailIdController.addListener(() {
-      final email = emailIdController.text.trim();
-      if (email.isNotEmpty && email.contains("@")) {
-        generateUsernameAndPassword(email);
-      }
-    });
-
+    // generateEmployeeCode();
+    // emailIdController.addListener(() {
+    //   final email = emailIdController.text.trim();
+    //   if (email.isNotEmpty && email.contains("@")) {
+    //     generateUsernameAndPassword(email);
+    //   }
+    // });
   }
-
 
   //Fetching user details from sharedpreferences
   Future<void> checkLogin() async {
-     final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
@@ -130,16 +129,6 @@ class _Add_userState extends State<Add_user> {
     });
   }
 
-
-  // String generateRandomPassword() {
-  //   const length = 8; // Length of the password
-  //   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  //   final random = Random();
-  //
-  //   return List.generate(length, (index) => chars[random.nextInt(chars.length)]).join();
-  // }
-
-
   String generateRandomPassword(String email) {
     const int length = 8; // Password length
 
@@ -152,18 +141,23 @@ class _Add_userState extends State<Add_user> {
 
     // Extract username part from email before '@'
     String usernamePart = email.split('@').first;
-    usernamePart = usernamePart.length >= 4 ? usernamePart.substring(0, 4) : usernamePart;
+    usernamePart =
+        usernamePart.length >= 4 ? usernamePart.substring(0, 4) : usernamePart;
 
     // Ensure required conditions
-    String upper = upperChars[random.nextInt(upperChars.length)]; // At least one uppercase
-    String special = specialChars[random.nextInt(specialChars.length)]; // At least one special
-    String digit = digitChars[random.nextInt(digitChars.length)]; // At least one numeric
+    String upper =
+        upperChars[random.nextInt(upperChars.length)]; // At least one uppercase
+    String special = specialChars[
+        random.nextInt(specialChars.length)]; // At least one special
+    String digit =
+        digitChars[random.nextInt(digitChars.length)]; // At least one numeric
 
     // Fill the remaining length with random characters
     List<String> password = [upper, special, digit, ...usernamePart.split('')];
 
     while (password.length < length) {
-      password.add(digitChars[random.nextInt(digitChars.length)]); // Add digits if needed
+      password.add(digitChars[
+          random.nextInt(digitChars.length)]); // Add digits if needed
     }
 
     // Shuffle the password for randomness
@@ -173,22 +167,22 @@ class _Add_userState extends State<Add_user> {
   }
 
   // Function to generate a random employee code
-  String generateEmployeeCode() {
-    const prefix = "EMP"; // Prefix for employee codes
-    final random = Random();
-    final suffix = random.nextInt(9000) + 1000; // Generate a 4-digit random number
-    final employeeCode = '$prefix$suffix';
-
-    setState(() {
-      employeeCodeController.text = employeeCode; // Set the employee code in the field
-    });
-
-    return employeeCode;
-  }
+  // String generateEmployeeCode() {
+  //   const prefix = "EMP"; // Prefix for employee codes
+  //   final random = Random();
+  //   final suffix = random.nextInt(9000) + 1000; // Generate a 4-digit random number
+  //   final employeeCode = '$prefix$suffix';
+  //
+  //   setState(() {
+  //     employeeCodeController.text = employeeCode; // Set the employee code in the field
+  //   });
+  //
+  //   return employeeCode;
+  // }
 
   Future<bool> checkAadhar() async {
     try {
-      await checkLogin();  // Ensure user is logged in
+      await checkLogin(); // Ensure user is logged in
 
       final response = await http.post(
         Uri.parse('${URL}check_adhar'),
@@ -205,7 +199,9 @@ class _Add_userState extends State<Add_user> {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
 
         if (responseData["status"] == "success") {
-          Fluttertoast.showToast(msg:"This aadhar card number is already registered"); // Show toast message
+          Fluttertoast.showToast(
+              msg:
+                  "This aadhar card number is already registered"); // Show toast message
           return false; // Stop addUser() from executing
         } else {
           return true; // Continue to addUser()
@@ -220,15 +216,62 @@ class _Add_userState extends State<Add_user> {
     }
   }
 
+  Future<void> fetchEmployeeDetails(String personId) async {
+    try {
+      print("Fetching details for person ID: $personId");
+      await checkLogin(); // Ensure user is logged in
+
+      final response = await http.post(
+        Uri.parse('${URL}fetchEmpDetails'),
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': username,
+          'user_pass': password,
+          'uuid': uuid,
+          "person_id": personId,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print("Response Data: $data"); // Debugging purpose
+
+        if (data["details"] != null) {
+          setState(() {
+            employeeCodeController.text = data["details"]["emp_code"] ?? "N/A";
+            emailIdController.text = data["details"]["emp_email"] ?? "N/A";
+            adharNumberController.text =
+                data["details"]["adhar_num"] ?? "N/A"; // Fixed key
+            fullNameController.text = data["details"]["person_name"] ?? "N/A";
+            usernameController.text = data["details"]["uname"] ?? "N/A";
+            passwordController.text = data["details"]["c_pass"] ?? "N/A";
+            personID.text = data["details"]["person_id"] ?? "N/A";
+          });
+        } else {
+          print("No details found for the given person ID.");
+        }
+      } else {
+        print("Failed to fetch details. Status Code: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching employee details: $e");
+    }
+  }
+
   Future<void> _addUsers() async {
+    // bool shouldProceed = await checkAadhar();
+    // if (!shouldProceed) return;  // Stop execution if employee exists
 
-    bool shouldProceed = await checkAadhar();
-    if (!shouldProceed) return;  // Stop execution if employee exists
-
-
-    final vendorIds = _selectedVendors.values.toList();  // Extract IDs
-    final plantIds = _selectedLocations.values.toList();  // Extract IDs
-    final organizationIds = _selectedOrganization.values.toList();  // Extract IDs
+    if (selectedUserType == null || selectedUserType.toString().isEmpty) {
+      Fluttertoast.showToast(
+        msg: "Please select a User Type",
+      );
+      return; // Stop execution if user type is not selected
+    }
+    final vendorIds = _selectedVendors.values.toList(); // Extract IDs
+    final plantIds = _selectedLocations.values.toList(); // Extract IDs
+    final organizationIds =
+        _selectedOrganization.values.toList(); // Extract IDs
     final organizationIdsString = organizationIds.join(',');
 
     print(_selectedorganizationValues);
@@ -242,7 +285,8 @@ class _Add_userState extends State<Add_user> {
     try {
       await checkLogin();
 
-      final url = '${URL}add_user';
+      // final url = '${URL}add_user';
+      final url = '${URL}edit_user';
 
       // Debug: Print URL and the request body data before making the API call
       print("Making POST request to URL: $url");
@@ -261,13 +305,17 @@ class _Add_userState extends State<Add_user> {
         'acces_dispatch': isDispatchYes ? 'Y' : 'N',
         'acces_payment': isPaymentYes ? 'Y' : 'N',
         'acces_refund': isRefundYes ? 'Y' : 'N',
-        'vendor_ids': vendorIds.join(',')?? '',
-        'plant_id': plantIds.join(',')?? '',
+        'vendor_ids': vendorIds.join(',') ?? '',
+        'plant_id': plantIds.join(',') ?? '',
         // 'org_id': organizationIds.join('')?? '',
-        'org_id': _selectedorganizationValues.join(',')?? '',
+        'org_id': _selectedorganizationValues.join(',') ?? '',
         'person_name': fullNameController.text ?? '',
         'email': emailIdController.text ?? '',
         'uuid': uuIDController.text ?? '',
+
+        'is_mobile': isMobileLoginYes ? 'Y' : 'N',
+        'is_desktop': isActiveYes ? 'Y' : 'N',
+        'is_all': (isMobileLoginYes == 'N' && isActiveYes == 'N') ? 'Y' : 'N',
       });
 
       final response = await http.post(
@@ -277,7 +325,7 @@ class _Add_userState extends State<Add_user> {
           'user_pass': password,
           'uuid': uuid,
           'emp_code': employeeCodeController.text ?? '',
-          'user_type': userType.toString() ?? '',
+          'user_type': selectedUserType.toString() ?? '',
           'uname': usernameController.text ?? '',
           'c_pass': passwordController.text ?? '',
           'is_active': isActiveYes ? 'Y' : 'N',
@@ -286,14 +334,18 @@ class _Add_userState extends State<Add_user> {
           'acces_dispatch': isDispatchYes ? 'Y' : 'N',
           'acces_payment': isPaymentYes ? 'Y' : 'N',
           'acces_refund': isRefundYes ? 'Y' : 'N',
-          'vendor_id': vendorIds.join(',')?? '',
-          'plant_id': plantIds.join(','),
-          'org_id': organizationIdsString,
-          // 'org_id': _selectedorganizationValues.join(',')?? '',
-          'adhar_num':adharNumberController.text ?? '',
+          'vendor_ids': vendorIds.join(',') ?? '',
+          'plant_id': plantIds.join(',') ?? '',
+          // 'org_id': organizationIds.join('')?? '',
+          'org_id': _selectedorganizationValues.join(',') ?? '',
           'person_name': fullNameController.text ?? '',
           'email': emailIdController.text ?? '',
           'uuid': uuIDController.text ?? '',
+
+          'is_mobile': isMobileLoginYes ? 'Y' : 'N',
+          'is_desktop': isActiveYes ? 'Y' : 'N',
+          'is_all': (isMobileLoginYes == 'N' && isActiveYes == 'N') ? 'Y' : 'N',
+          'is_all': (isMobileLoginYes == 'N' && isActiveYes == 'N') ? 'Y' : 'N',
         },
       );
 
@@ -317,7 +369,6 @@ class _Add_userState extends State<Add_user> {
       print("Error adding user: $e");
     }
   }
-
 
   Future<void> _fetchVendors() async {
     try {
@@ -344,12 +395,22 @@ class _Add_userState extends State<Add_user> {
             // Process vendor list
             if (vendorList != null) {
               for (var vendor in vendorList) {
-                final vendorName = vendor['branch_name'];
-                final vendorId = vendor['branch_id'];
+                final vendorName = vendor['vendor_name'];
+                final vendorId = vendor['vendor_id'];
                 _vendorList.add({"id": vendorId, "name": vendorName});
                 _vendorOptions.add(vendorName);
               }
             }
+
+            employees =
+                List<Map<String, String>>.from(data['users'].map((x) => {
+                      'id': x['person_id']?.toString() ??
+                          '', // Handle null safely
+                      'full_name': x['person_name']?.toString() ??
+                          '', // Handle null safely
+                      'username': x['uname']?.toString() ??
+                          '', // Use emp_code instead of uname
+                    }));
 
             // Process location list
             // if (locationList != null) {
@@ -373,7 +434,7 @@ class _Add_userState extends State<Add_user> {
   }
 
   Future<void> _fetchPlants(Map<String, String> selectedVendors) async {
-    final vendorIds = selectedVendors.values.toList();  // Extract IDs
+    final vendorIds = selectedVendors.values.toList(); // Extract IDs
 
     // Debug: Print the vendor IDs being sent
     print("Sending vendor IDs: $vendorIds");
@@ -435,19 +496,13 @@ class _Add_userState extends State<Add_user> {
     }
   }
 
-
-
   Future<void> _fetchOrganizations() async {
     try {
       await checkLogin();
       final url = '${URL}organiazation_list';
       final response = await http.post(
         Uri.parse(url),
-        body: {
-          'user_id': username,
-          'user_pass': password,
-          'uuid':uuid
-        },
+        body: {'user_id': username, 'user_pass': password, 'uuid': uuid},
       );
 
       if (response.statusCode == 200) {
@@ -468,7 +523,8 @@ class _Add_userState extends State<Add_user> {
           print("Invalid response format or empty data.");
         }
       } else {
-        print("Failed to fetch organizations. Status code: ${response.statusCode}");
+        print(
+            "Failed to fetch organizations. Status code: ${response.statusCode}");
       }
     } catch (e) {
       print("Error fetching organizations: $e");
@@ -508,7 +564,8 @@ class _Add_userState extends State<Add_user> {
                     } else {
                       selectedVendors.remove(vendorName);
                     }
-                    _fetchPlants(selectedVendors); // Map<String, String> pass karna hai
+                    _fetchPlants(
+                        selectedVendors); // Map<String, String> pass karna hai
                   });
                 },
               );
@@ -519,8 +576,6 @@ class _Add_userState extends State<Add_user> {
       ],
     );
   }
-
-
 
   Widget buildCheckboxListPlant({
     required String label,
@@ -600,66 +655,89 @@ class _Add_userState extends State<Add_user> {
     required List<String> selectedValues,
   }) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 10),
-        TypeAheadField<String>(
-          textFieldConfiguration: TextFieldConfiguration(
-            controller: controller,
-            decoration: InputDecoration(
-              labelText: label,
-              border: OutlineInputBorder(),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              flex: 1, // Label ke liye kam space
+              child: Text(
+                label,
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                textAlign: TextAlign.left,
+              ),
             ),
-          ),
-          suggestionsCallback: (pattern) {
-            return items
-                .where((item) => item.toLowerCase().contains(pattern.toLowerCase()))
-                .toList();
-          },
-          itemBuilder: (context, suggestion) {
-            return ListTile(
-              title: Text(suggestion),
-            );
-          },
-          onSuggestionSelected: (suggestion) {
-            if (!selectedValues.contains(suggestion)) {
-              setState(() {
-                selectedValues.add(suggestion);
-                final organizationId = _organizationList
-                    .firstWhere((organization) => organization['name'] == suggestion)['id'];
-                _selectedOrganization[suggestion] = organizationId!;
-              });
-            }
-          },
+            Expanded(
+              flex: 2, // Dropdown ke liye zyada space
+              child: Padding(
+                padding: EdgeInsets.only(
+                    right: 8), // Adjust left padding to shift left
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TypeAheadField<String>(
+                      textFieldConfiguration: TextFieldConfiguration(
+                        controller: controller,
+                        decoration: InputDecoration(
+                          hintText: "Search...",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding:
+                              EdgeInsets.symmetric(vertical: 7, horizontal: 12),
+                        ),
+                      ),
+                      suggestionsCallback: (pattern) {
+                        return items
+                            .where((item) => item
+                                .toLowerCase()
+                                .contains(pattern.toLowerCase()))
+                            .toList();
+                      },
+                      itemBuilder: (context, suggestion) {
+                        return ListTile(
+                          title:
+                              Text(suggestion, style: TextStyle(fontSize: 14)),
+                          dense: true,
+                        );
+                      },
+                      onSuggestionSelected: (suggestion) {
+                        if (!selectedValues.contains(suggestion)) {
+                          setState(() {
+                            selectedValues.add(suggestion);
+                            final organizationId = _organizationList.firstWhere(
+                                (organization) =>
+                                    organization['name'] == suggestion)['id'];
+                            _selectedOrganization[suggestion] = organizationId!;
+                          });
+                        }
+                      },
+                    ),
+                    SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6.0,
+                      runSpacing: 2.0,
+                      children: selectedValues.map((value) {
+                        return Chip(
+                          label: Text(value, style: TextStyle(fontSize: 12)),
+                          deleteIcon: Icon(Icons.close, size: 18),
+                          visualDensity: VisualDensity.compact,
+                          onDeleted: () {
+                            setState(() {
+                              selectedValues.remove(value);
+                              _selectedOrganization.remove(value);
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-        SizedBox(height: 10),
-        InputDecorator(
-          decoration: InputDecoration(
-            labelText: "$label Selected",
-            border: OutlineInputBorder(),
-          ),
-          child: Wrap(
-            spacing: 8.0,
-            runSpacing: 4.0,
-            children: selectedValues.map((value) {
-              return Chip(
-                label: Text(value),
-                deleteIcon: Icon(Icons.close),
-                onDeleted: () {
-                  setState(() {
-                    selectedValues.remove(value);
-                    _selectedOrganization.remove(value);
-                  });
-                },
-              );
-            }).toList(),
-          ),
-        ),
-        SizedBox(height: 20),
+        SizedBox(height: 16),
       ],
     );
   }
@@ -707,15 +785,13 @@ class _Add_userState extends State<Add_user> {
   //   );
   // }
 
-
-
   Widget _buildTextField(String labelText, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
         children: [
           Expanded(
-            flex: 3,// Fixed width for the label, adjust as needed
+            flex: 3, // Fixed width for the label, adjust as needed
             child: Text(
               labelText,
               style: TextStyle(
@@ -741,7 +817,8 @@ class _Add_userState extends State<Add_user> {
     );
   }
 
-  Widget buildDropdown(String label, Map<String, String> options, ValueChanged<String?> onChanged) {
+  Widget buildDropdown(String label, Map<String, String> options,
+      ValueChanged<String?> onChanged) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
@@ -766,10 +843,13 @@ class _Add_userState extends State<Add_user> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              value: selectedUserType ?? options.keys.first, // Use the selected value or the first option
+              value: selectedUserType ??
+                  options
+                      .keys.first, // Use the selected value or the first option
               items: options.entries.map((entry) {
                 return DropdownMenuItem<String>(
-                  value: entry.key, // Set the correct value for each dropdown item
+                  value:
+                      entry.key, // Set the correct value for each dropdown item
                   child: Text(entry.value),
                 );
               }).toList(),
@@ -781,7 +861,9 @@ class _Add_userState extends State<Add_user> {
     );
   }
 
-  Widget _buildCheckboxWithOptions(String label, bool yesValue, bool noValue, Function(bool?) onChanged, {bool isMandatory = false}) {
+  Widget _buildCheckboxWithOptions(
+      String label, bool yesValue, bool noValue, Function(bool?) onChanged,
+      {bool isMandatory = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
@@ -789,7 +871,7 @@ class _Add_userState extends State<Add_user> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            flex: 3,// Fixed width for the label, adjust as needed
+            flex: 3, // Fixed width for the label, adjust as needed
             child: Text(
               label,
               style: TextStyle(
@@ -798,7 +880,6 @@ class _Add_userState extends State<Add_user> {
               ),
             ),
           ),
-
           Row(
             children: [
               Row(
@@ -833,11 +914,92 @@ class _Add_userState extends State<Add_user> {
     );
   }
 
+  Widget buildSearchableDropdown(
+    String label,
+    String? value,
+    Function(String) onChanged,
+    List<Map<String, String>> employees,
+    TextEditingController controller,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.all(7.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 100, // Adjust width as needed
+            child: Text(
+              label,
+            ),
+          ),
+          Expanded(
+            child: TypeAheadFormField<Map<String, String>>(
+              textFieldConfiguration: TextFieldConfiguration(
+                controller: controller,
+                decoration: InputDecoration(
+                  hintText: 'Select an employee',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  suffixIcon: IconButton(
+                    icon: Icon(Icons.cancel),
+                    onPressed: () {
+                      controller.clear();
+                      onChanged('');
 
+                      employeeCodeController.clear();
+                      emailIdController.clear();
+                      adharNumberController.clear();
+                      fullNameController.clear();
+                      usernameController.clear();
+                      passwordController.clear();
+                    },
+                  ),
+                ),
+              ),
+              suggestionsCallback: (pattern) {
+                final suggestions = employees.where((employee) {
+                  return employee['full_name']!
+                          .toLowerCase()
+                          .contains(pattern.toLowerCase()) ||
+                      employee['username']!
+                          .toLowerCase()
+                          .contains(pattern.toLowerCase());
+                }).toList();
+                return suggestions;
+              },
+              itemBuilder: (context, Map<String, String> suggestion) {
+                if (suggestion['id'] == 'cancel') {
+                  return ListTile(
+                    leading: Icon(Icons.cancel),
+                    title: Text(suggestion['full_name']!),
+                  );
+                }
+                return ListTile(
+                  title: Text(
+                      '${suggestion['full_name']} - (${suggestion['username']})'),
+                );
+              },
+              onSuggestionSelected: (Map<String, String> suggestion) {
+                if (suggestion['id'] == 'cancel') {
+                  controller.clear();
+                  onChanged('');
+                } else {
+                  controller.text =
+                      '${suggestion['full_name']} - (${suggestion['username']})';
+                  onChanged(suggestion['id']!);
+                }
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       drawer: AppDrawer(currentPage: 0),
       appBar: CustomAppBar(),
@@ -863,49 +1025,108 @@ class _Add_userState extends State<Add_user> {
               ],
             ),
             SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 3,// Fixed width for the label, adjust as needed
-                    child: Text(
-                      "Employee Code",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 7,
-                    child:  TextField(
-                      controller: employeeCodeController,
-                      decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.all(10),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      readOnly: true,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+            //   child: Row(
+            //     children: [
+            //       Expanded(
+            //         flex: 3,// Fixed width for the label, adjust as needed
+            //         child: Text(
+            //           "Employee Code",
+            //           style: TextStyle(
+            //             color: Colors.black,
+            //             fontWeight: FontWeight.w500,
+            //           ),
+            //         ),
+            //       ),
+            //       Expanded(
+            //         flex: 7,
+            //         child:  TextField(
+            //           controller: employeeCodeController,
+            //           decoration: InputDecoration(
+            //             contentPadding: const EdgeInsets.all(10),
+            //             border: OutlineInputBorder(
+            //               borderRadius: BorderRadius.circular(12),
+            //             ),
+            //           ),
+            //           readOnly: true,
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
 
             buildDropdown("User Type", UserTypes, (value) {
               setState(() {
                 selectedUserType = value;
               });
             }),
-            _buildTextField("Full Name", fullNameController),
+            buildSearchableDropdown(
+              "Full Name",
+              selectedEmployeeId,
+              (value) {
+                setState(() {
+                  selectedEmployeeId = value;
+                  fetchEmployeeDetails(selectedEmployeeId);
+                });
+              },
+              employees, // Pass the list of employees
+              _employeeController, // Pass the controller to the widget.
+            ),
+            SizedBox(height: 6),
+            buildTypeAheadDropdownorganization(
+              label: "Organization",
+              items: _organizationOptions,
+              controller: _organizationController,
+              selectedValues: _selectedorganizationValues,
+            ),
+
+            buildCheckboxDropdownVendor(
+              label: "Vendor",
+              items: _vendorList,
+              selectedVendors:
+                  _selectedVendors, // Pass the correct Map<String, String>
+            ),
+
+            if (_selectedVendors.isNotEmpty)
+              _locationList.isNotEmpty
+                  ? buildCheckboxListPlant(
+                      label: "Plant Name",
+                      items: _locationList,
+                      selectedValues: _selectedLocationValues,
+                      selectedLocations: _selectedLocations,
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Plant Name",
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
+                          ),
+                          Text(
+                            "No Plant Found",
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
+                          ),
+                        ],
+                      ),
+                    ),
+
+            // _buildTextField("Full Name", fullNameController),
             _buildTextField('Aadhaar Number', adharNumberController),
 
-            _buildTextField('Email ID', emailIdController),
+            // _buildTextField('Email ID', emailIdController),
             _buildTextField('Username', usernameController),
             _buildTextField('Password', passwordController),
-            _buildCheckboxWithOptions('Active?', isActiveYes, isActiveNo, (bool? yesChecked) {
+            _buildCheckboxWithOptions('Website Login?', isActiveYes, isActiveNo,
+                (bool? yesChecked) {
               setState(() {
                 isActiveYes = yesChecked ?? false;
                 isActiveNo = !yesChecked! ?? true;
@@ -915,7 +1136,7 @@ class _Add_userState extends State<Add_user> {
               'Mobile Login?',
               isMobileLoginYes,
               isMobileLoginNo,
-                  (bool? yesChecked) {
+              (bool? yesChecked) {
                 setState(() {
                   isMobileLoginYes = yesChecked ?? false;
                   isMobileLoginNo = !yesChecked! ?? true;
@@ -927,7 +1148,7 @@ class _Add_userState extends State<Add_user> {
               'Access Sale Order?',
               hasAccessSaleOrderDataYes,
               hasAccessSaleOrderDataNo,
-                  (bool? yesChecked) {
+              (bool? yesChecked) {
                 setState(() {
                   hasAccessSaleOrderDataYes = yesChecked ?? false;
                   hasAccessSaleOrderDataNo = !(yesChecked ?? true);
@@ -939,7 +1160,7 @@ class _Add_userState extends State<Add_user> {
               'Access Dispatch?',
               isDispatchYes,
               isDispatchNo,
-                  (bool? yesChecked) {
+              (bool? yesChecked) {
                 setState(() {
                   isDispatchYes = yesChecked ?? false;
                   isDispatchNo = !yesChecked! ?? true;
@@ -951,7 +1172,7 @@ class _Add_userState extends State<Add_user> {
               'Access Refund?',
               isRefundYes,
               isRefundNo,
-                  (bool? yesChecked) {
+              (bool? yesChecked) {
                 setState(() {
                   isRefundYes = yesChecked ?? false;
                   isRefundNo = !yesChecked! ?? true;
@@ -963,7 +1184,7 @@ class _Add_userState extends State<Add_user> {
               'Access Payment?',
               isPaymentYes,
               isPaymentNo,
-                  (bool? yesChecked) {
+              (bool? yesChecked) {
                 setState(() {
                   isPaymentYes = yesChecked ?? false;
                   isPaymentNo = !yesChecked! ?? true;
@@ -978,51 +1199,12 @@ class _Add_userState extends State<Add_user> {
             //   selectedValues: _selectedorganizationValues,
             // ),
 
-            buildTypeAheadDropdownorganization(
-              label: "Organization",
-              items: _organizationOptions,
-              controller: _organizationController,
-              selectedValues: _selectedorganizationValues,
-            ),
-
-
-            buildCheckboxDropdownVendor(
-              label: "Vendor",
-              items: _vendorList,
-              selectedVendors: _selectedVendors, // Pass the correct Map<String, String>
-            ),
-
-            if (_selectedVendors.isNotEmpty)
-              _locationList.isNotEmpty
-                  ? buildCheckboxListPlant(
-                label: "Plant Name",
-                items: _locationList,
-                selectedValues: _selectedLocationValues,
-                selectedLocations: _selectedLocations,
-              )
-                  : Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Plant Name",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-                    ),
-                    Text(
-                      "No Plant Found",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-                    ),
-                  ],
-                ),
-              ),
-
             // buildCheckboxListPlant(
-          //   label: "Plant Name",
-          //   items: _locationList,  // Yeh list API se aayege
-          //   selectedValues: _selectedLocationValues,
-          //   selectedLocations: _selectedLocations,
-          // ),
+            //   label: "Plant Name",
+            //   items: _locationList,  // Yeh list API se aayege
+            //   selectedValues: _selectedLocationValues,
+            //   selectedLocations: _selectedLocations,
+            // ),
 
             _buildTextField('UUID', uuIDController),
 
@@ -1031,7 +1213,7 @@ class _Add_userState extends State<Add_user> {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                   _addUsers();
+                  _addUsers();
                   // print(_selectedVendors);
                   // print("_selectedVendors");
                 },
@@ -1042,7 +1224,8 @@ class _Add_userState extends State<Add_user> {
                     borderRadius: BorderRadius.circular(12), // Rounded corners
                   ),
                   elevation: 5,
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Consistent padding
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 8), // Consistent padding
                 ),
                 child: Text('Submit'),
               ),
@@ -1052,12 +1235,4 @@ class _Add_userState extends State<Add_user> {
       ),
     );
   }
-
-
-
-
-
-
-
-
 }

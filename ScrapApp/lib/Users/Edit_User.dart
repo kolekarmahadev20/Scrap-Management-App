@@ -123,22 +123,19 @@ class _Edit_UserState extends State<Edit_User> {
     passwordController.text = widget.user.cPass??'';
     uuIDController.text = widget.user.uuid??'';
 
-     isActiveYes = widget.user.isActive == 'Y';
-     isActiveNo = widget.user.isActive != 'Y';
-     isMobileLoginYes = widget.user.isMobile == 'Y';
-     isMobileLoginNo =  widget.user.isMobile != 'Y';
-     hasAccessSaleOrderDataYes = widget.user.accesSaleOrder == 'Y';
-     hasAccessSaleOrderDataNo = widget.user.accesSaleOrder != 'Y';
-     isRefundYes = widget.user.accesRefund == 'Y';
-     isRefundNo = widget.user.accesRefund != 'Y';
-     isPaymentYes = widget.user.accesPayment == 'Y';
-     isPaymentNo = widget.user.accesPayment != 'Y';
-     isDispatchYes =widget.user.accesDispatch == 'Y';
-     isDispatchNo = widget.user.accesDispatch != 'Y';
-
-
-
-
+    isActiveYes = widget.user.isActive == 'Y';
+    isActiveNo = widget.user.isActive != 'Y';
+    isMobileLoginYes = widget.user.isMobile == 'Y';
+    isMobileLoginNo =  widget.user.isMobile != 'Y';
+    hasAccessSaleOrderDataYes = widget.user.accesSaleOrder == 'Y';
+    hasAccessSaleOrderDataNo = widget.user.accesSaleOrder != 'Y';
+    isRefundYes = widget.user.accesRefund == 'Y';
+    isRefundNo = widget.user.accesRefund != 'Y';
+    isPaymentYes = widget.user.accesPayment == 'Y';
+    isPaymentNo = widget.user.accesPayment != 'Y';
+    isDispatchYes =widget.user.accesDispatch == 'Y';
+    isDispatchNo = widget.user.accesDispatch != 'Y';
+    
     checkLogin();
     _fetchOrganizations();
     _fetchVendors();
@@ -211,7 +208,7 @@ class _Edit_UserState extends State<Edit_User> {
 
     return password.join();
   }
-  
+
   // Function to generate a random employee code
   String generateEmployeeCode() {
     const prefix = "EMP"; // Prefix for employee codes
@@ -264,6 +261,13 @@ class _Edit_UserState extends State<Edit_User> {
 
   Future<void> _addUsers() async {
 
+    if (selectedUserType == null || selectedUserType.toString().isEmpty) {
+      Fluttertoast.showToast(
+        msg: "Please select a User Type",
+      );
+      return; // Stop execution if user type is not selected
+    }
+
     // bool shouldProceed = await checkAadhar();
     // if (!shouldProceed) return;  // Stop execution if employee exists
 
@@ -312,6 +316,10 @@ class _Edit_UserState extends State<Edit_User> {
           'uuiid': uuIDController.text ?? '',
           'person_id':widget.user.personId,
           'adhar_num':adharNumberController.text ?? '',
+
+          'is_mobile':isMobileLoginYes ? 'Y' : 'N',
+          'is_desktop': isActiveYes ? 'Y' : 'N',
+          'is_all': (isMobileLoginYes == 'N' && isActiveYes == 'N') ? 'Y' : 'N',
         },
       );
 
@@ -370,14 +378,14 @@ class _Edit_UserState extends State<Edit_User> {
             // Process vendor list
             if (vendorList != null) {
               for (var vendor in vendorList) {
-                final vendorName = vendor['branch_name'];
-                final vendorId = vendor['branch_id'];
+                final vendorName = vendor['vendor_name'];
+                final vendorId = vendor['vendor_id'];
                 _vendorList.add({"id": vendorId, "name": vendorName});
                 _vendorOptions.add(vendorName);
               }
             }
             // if (widget.user.vendorId != null && widget.user.vendorId!.isNotEmpty && widget.user.vendorId != 'NA')
-              _prefillSelectedVendors();
+            _prefillSelectedVendors();
 
           });
         } else {
@@ -559,7 +567,7 @@ class _Edit_UserState extends State<Edit_User> {
               _organizationOptions.add(orgName);
 
               // if (widget.user.orgID != null && widget.user.orgID!.isNotEmpty && widget.user.orgID != 'NA')
-                _prefillSelectedOrganizations();
+              _prefillSelectedOrganizations();
 
             }
           });
@@ -764,66 +772,84 @@ class _Edit_UserState extends State<Edit_User> {
     required List<String> selectedValues,
   }) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 10),
-        TypeAheadField<String>(
-          textFieldConfiguration: TextFieldConfiguration(
-            controller: controller,
-            decoration: InputDecoration(
-              labelText: label,
-              border: OutlineInputBorder(),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              flex: 1, // Label ke liye kam space
+              child: Text(
+                label,
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                textAlign: TextAlign.left,
+              ),
             ),
-          ),
-          suggestionsCallback: (pattern) {
-            return items
-                .where((item) => item.toLowerCase().contains(pattern.toLowerCase()))
-                .toList();
-          },
-          itemBuilder: (context, suggestion) {
-            return ListTile(
-              title: Text(suggestion),
-            );
-          },
-          onSuggestionSelected: (suggestion) {
-            if (!selectedValues.contains(suggestion)) {
-              setState(() {
-                selectedValues.add(suggestion);
-                final organizationId = _organizationList
-                    .firstWhere((organization) => organization['name'] == suggestion)['id'];
-                _selectedOrganization[suggestion] = organizationId!;
-              });
-            }
-          },
+            Expanded(
+              flex: 2, // Dropdown ke liye zyada space
+              child: Padding(
+                padding: EdgeInsets.only(right: 8), // Adjust left padding to shift left
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TypeAheadField<String>(
+                      textFieldConfiguration: TextFieldConfiguration(
+                        controller: controller,
+                        decoration: InputDecoration(
+                          hintText: "Search...",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+
+                          ),
+                          contentPadding: EdgeInsets.symmetric(vertical: 7, horizontal: 12),
+                        ),
+                      ),
+                      suggestionsCallback: (pattern) {
+                        return items
+                            .where((item) => item.toLowerCase().contains(pattern.toLowerCase()))
+                            .toList();
+                      },
+                      itemBuilder: (context, suggestion) {
+                        return ListTile(
+                          title: Text(suggestion, style: TextStyle(fontSize: 14)),
+                          dense: true,
+                        );
+                      },
+                      onSuggestionSelected: (suggestion) {
+                        if (!selectedValues.contains(suggestion)) {
+                          setState(() {
+                            selectedValues.add(suggestion);
+                            final organizationId = _organizationList
+                                .firstWhere((organization) => organization['name'] == suggestion)['id'];
+                            _selectedOrganization[suggestion] = organizationId!;
+                          });
+                        }
+                      },
+                    ),
+                    SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6.0,
+                      runSpacing: 2.0,
+                      children: selectedValues.map((value) {
+                        return Chip(
+                          label: Text(value, style: TextStyle(fontSize: 12)),
+                          deleteIcon: Icon(Icons.close, size: 18),
+                          visualDensity: VisualDensity.compact,
+                          onDeleted: () {
+                            setState(() {
+                              selectedValues.remove(value);
+                              _selectedOrganization.remove(value);
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-        SizedBox(height: 10),
-        InputDecorator(
-          decoration: InputDecoration(
-            labelText: "$label Selected",
-            border: OutlineInputBorder(),
-          ),
-          child: Wrap(
-            spacing: 8.0,
-            runSpacing: 4.0,
-            children: selectedValues.map((value) {
-              return Chip(
-                label: Text(value),
-                deleteIcon: Icon(Icons.close),
-                onDeleted: () {
-                  setState(() {
-                    selectedValues.remove(value);
-                    _selectedOrganization.remove(value);
-                  });
-                },
-              );
-            }).toList(),
-          ),
-        ),
-        SizedBox(height: 20),
+        SizedBox(height: 16),
       ],
     );
   }
@@ -1039,48 +1065,87 @@ class _Edit_UserState extends State<Edit_User> {
                 ],
               ),
               SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 3,// Fixed width for the label, adjust as needed
-                      child: Text(
-                        "Employee Code",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 7,
-                      child:  TextField(
-                        controller: employeeCodeController,
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.all(10),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        readOnly: true,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-      
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+              //   child: Row(
+              //     children: [
+              //       Expanded(
+              //         flex: 3,// Fixed width for the label, adjust as needed
+              //         child: Text(
+              //           "Employee Code",
+              //           style: TextStyle(
+              //             color: Colors.black,
+              //             fontWeight: FontWeight.w500,
+              //           ),
+              //         ),
+              //       ),
+              //       Expanded(
+              //         flex: 7,
+              //         child:  TextField(
+              //           controller: employeeCodeController,
+              //           decoration: InputDecoration(
+              //             contentPadding: const EdgeInsets.all(10),
+              //             border: OutlineInputBorder(
+              //               borderRadius: BorderRadius.circular(12),
+              //             ),
+              //           ),
+              //           readOnly: true,
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
+
               buildDropdown("User Type", UserTypes, (value) {
                 setState(() {
                   selectedUserType = value;
                 });
               }),
               _buildTextField("Full Name", fullNameController),
+              SizedBox(height:6),
+              buildTypeAheadDropdownorganization(
+                label: "Organization",
+                items: _organizationOptions,
+                controller: _organizationController,
+                selectedValues: _selectedorganizationValues,
+              ),
+
+              buildCheckboxDropdownVendor(
+                label: "Vendor",
+                items: _vendorList,
+                selectedVendors: _selectedVendors, // Pass the correct Map<String, String>
+              ),
+
+              if (_selectedVendors.isNotEmpty)
+                _locationList.isNotEmpty
+                    ? buildCheckboxListPlant(
+                  label: "Plant Name",
+                  items: _locationList,
+                  selectedValues: _selectedLocationValues,
+                  selectedLocations: _selectedLocations,
+                )
+                    : Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Plant Name",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
+                      Text(
+                        "No Plant Found",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ),
+
               _buildTextField('Aadhaar Number', adharNumberController),
-              _buildTextField('Email ID', emailIdController),
+              // _buildTextField('Email ID', emailIdController),
               _buildTextField('Username', usernameController),
               _buildTextField('Password', passwordController),
-              _buildCheckboxWithOptions('Active?', isActiveYes, isActiveNo, (bool? yesChecked) {
+              _buildCheckboxWithOptions('Website Login?', isActiveYes, isActiveNo, (bool? yesChecked) {
                 setState(() {
                   isActiveYes = yesChecked ?? false;
                   isActiveNo = !yesChecked! ?? true;
@@ -1147,12 +1212,7 @@ class _Edit_UserState extends State<Edit_User> {
                 isMandatory: true,
               ),
 
-              buildTypeAheadDropdownorganization(
-                label: "Organization",
-                items: _organizationOptions,
-                controller: _organizationController,
-                selectedValues: _selectedorganizationValues,
-              ),
+
 
               // buildCheckboxDropdownOrganization(
               //   label: "Organization",
@@ -1160,42 +1220,13 @@ class _Edit_UserState extends State<Edit_User> {
               //   selectedValues: _selectedorganizationValues,
               // ),
 
-              buildCheckboxDropdownVendor(
-                label: "Vendor",
-                items: _vendorList,
-                selectedVendors: _selectedVendors, // Pass the correct Map<String, String>
-              ),
-
-              if (_selectedVendors.isNotEmpty)
-                _locationList.isNotEmpty
-                    ? buildCheckboxListPlant(
-                  label: "Plant Name",
-                  items: _locationList,
-                  selectedValues: _selectedLocationValues,
-                  selectedLocations: _selectedLocations,
-                )
-                    : Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Plant Name",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-                      ),
-                      Text(
-                        "No Plant Found",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-                      ),
-                    ],
-                  ),
-                ),
 
 
-            _buildTextField('UUID', uuIDController),
-      
+
+              _buildTextField('UUID', uuIDController),
+
               const SizedBox(height: 10),
-      
+
               Center(
                 child: ElevatedButton(
                   onPressed: () {
@@ -1221,12 +1252,4 @@ class _Edit_UserState extends State<Edit_User> {
       ),
     );
   }
-
-
-
-
-
-
-
-
 }

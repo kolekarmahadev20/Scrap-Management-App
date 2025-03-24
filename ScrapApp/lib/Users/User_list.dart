@@ -540,14 +540,14 @@ class UserCard extends StatelessWidget {
                 style: TextStyle(fontSize: 24, color: Colors.blue),
               ),
               SizedBox(height: 10),
-              Text(
-                'Email',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                user.empEmail,
-                style: TextStyle(color: Colors.orange),
-              ),
+              // Text(
+              //   'Email',
+              //   style: TextStyle(fontWeight: FontWeight.bold),
+              // ),
+              // Text(
+              //   user.empEmail,
+              //   style: TextStyle(color: Colors.orange),
+              // ),
               Align(
                 alignment: Alignment.topRight,
                 child: Container(
@@ -663,6 +663,7 @@ class _SubDetailsState extends State<SubDetails> {
   }
 
 
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -681,11 +682,11 @@ class _SubDetailsState extends State<SubDetails> {
                 [widget.user.username, widget.user.cPass],
                 1,
               ),
-              buildTableRow('Email ID', widget.user.empEmail,0),
+              // buildTableRow('Email ID', widget.user.empEmail,0),
               buildTableRows(
                 ['User Type', 'UUID'],
                 [widget.user.userType, widget.user.uuid],
-                1,
+                0,
               ),
               // buildTableRows(
               //   ['Organization', 'Active'],

@@ -150,8 +150,8 @@ class _SearchState extends State<Search> {
               'Select': 'Select',
               ...{
                 for (var item in data['vendor_list'] ?? [])
-                  item['branch_name'] ?? 'Unknown':
-                  (item['branch_id'] ?? '0').toString()
+                  item['vendor_name'] ?? 'Unknown':
+                  (item['vendor_id'] ?? '0').toString()
               }
             };
 

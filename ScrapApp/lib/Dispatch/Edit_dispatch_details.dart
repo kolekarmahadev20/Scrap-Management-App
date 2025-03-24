@@ -89,6 +89,10 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   String? materialHalfLoad;
   String? materialFullLoad;
   String? otherImg;
+
+
+  List<String> otherImgs = [];
+
   Uint8List? imageBytes;
 
   String advancePayment = '';
@@ -428,12 +432,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   }
 
   Future<void> fetchImageList() async {
-    print("sale_order_id");
-    print(widget.sale_order_id);
-    print(widget.invoiceNo);
     try {
-
-
       setState(() {
         isLoading = true;
       });
@@ -444,7 +443,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
         headers: {"Accept": "application/json"},
         body: {
           'user_id': username,
-          'uuid':uuid,
+          'uuid': uuid,
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
           'invoice_no': widget.invoiceNo,
@@ -455,6 +454,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
         setState(() {
           var jsonData = json.decode(response.body);
 
+          print("Response Data: $jsonData");
 
           // Check if the response is empty
           if (jsonData.isEmpty) {
@@ -464,7 +464,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
             materialImg = "";
             materialHalfLoad = "";
             materialFullLoad = "";
-            otherImg = "N/A";
+            otherImgs = [];
           } else if (jsonData is Map<String, dynamic>) {
             // Handle the valid map response
             frontVehicle = jsonData['Fr'] != null ? '${Image_URL}${jsonData['Fr']}' : "";
@@ -472,21 +472,15 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
             materialImg = jsonData['Ma'] != null ? '${Image_URL}${jsonData['Ma']}' : "";
             materialHalfLoad = jsonData['Ha'] != null ? '${Image_URL}${jsonData['Ha']}' : "";
             materialFullLoad = jsonData['Fu'] != null ? '${Image_URL}${jsonData['Fu']}' : "";
-            otherImg = jsonData['ot'] != null ? '${Image_URL}${jsonData['ot']}' : "";
-            print("otherImg");
 
-
-            print(otherImg);
-
-          } else if (jsonData is List) {
-            // Handle the case if the response is a list (unexpected)
-            print("API returned a list instead of a map. List: $jsonData");
-            frontVehicle = "";
-            backVehicle = "";
-            materialImg = "";
-            materialHalfLoad = "";
-            materialFullLoad = "";
-            otherImg = "";
+            // Handling 'ot' as a list
+            if (jsonData['ot'] != null && jsonData['ot'] is List) {
+              otherImgs = (jsonData['ot'] as List)
+                  .map((img) => '${Image_URL}$img')
+                  .toList();
+            } else {
+              otherImgs = [];
+            }
           } else {
             print("Unexpected data structure: $jsonData");
           }
@@ -612,7 +606,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
                       buildTextField("DMT/Quantity Weight", quantityController, true,false , Colors.white,context),
                       buildTextField("Note", noteController, true,false , Colors.white,context),
                       SizedBox(height: 25,),
-                      if( otherImg!= null ||  otherImg!.isNotEmpty)
+                      if( otherImgs!= null ||  otherImgs!.isNotEmpty)
                         Container(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -646,10 +640,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
                             //   value: '5) Material Full Load',
                             //   filePath: materialFullLoad!,
                             // ),
-                            ImageWidget(
-                              value: 'View Images',
-                              filePath: otherImg!,
-                            ),
+                            ImageWidget(value: 'View Images', filePaths: otherImgs),
                           ],
                         ),
                       ),
@@ -862,12 +853,12 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
 
 class ImageWidget extends StatefulWidget {
   final String value;
-  final String? filePath;
+  final List<String>? filePaths;
 
   const ImageWidget({
     Key? key,
     required this.value,
-    required this.filePath,
+    required this.filePaths,
   }) : super(key: key);
 
   @override
@@ -875,96 +866,43 @@ class ImageWidget extends StatefulWidget {
 }
 
 class _ImageWidgetState extends State<ImageWidget> {
-  List<File> _images = [];
-
-  Uint8List? imageBytes;
-
+  List<Uint8List> imageBytesList = [];
 
   void showNoImage() {
     Fluttertoast.showToast(
       msg: "No images Found",
-      toastLength: Toast.LENGTH_SHORT, // Can be LENGTH_SHORT or LENGTH_LONG
-      gravity: ToastGravity.BOTTOM,    // Position of the toast
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
       backgroundColor: Colors.black,
       textColor: Colors.white,
       fontSize: 16.0,
     );
   }
 
-// Function to show a dialog with all the saved images in a pageable view
-  void _showImage() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  widget.filePath!.split('/').last,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 10),
-                imageBytes != null
-                    ?Container(
-                    height: 300,
-                    width: 300,
-                    child: Image.memory(imageBytes!, fit: BoxFit.contain))
-                    : showLoading(),
-                SizedBox(height: 10),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text("Close"),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _fetchFileBytesFromServer(String fileUrl) async {
+  Future<void> _fetchFileBytesFromServer(List<String> fileUrls) async {
     try {
-      var response = await http.get(Uri.parse(fileUrl));
-      if (response.statusCode == 200) {
-        setState(() {
-          imageBytes = response.bodyBytes; // Store image bytes
-          _showImage();
-        });
-      }  else {
-        if(imageBytes == null){
-          showNoImage();
-        }else{
-          print("Unable to load the Image");
+      List<Uint8List> loadedImages = [];
+      for (String fileUrl in fileUrls) {
+        var response = await http.get(Uri.parse(fileUrl));
+        if (response.statusCode == 200) {
+          loadedImages.add(response.bodyBytes);
         }
       }
-    } catch (e) {
-      if(imageBytes == null){
+
+      if (loadedImages.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ImagePreviewScreen(images: loadedImages),
+          ),
+        );
+      } else {
         showNoImage();
-      }else{
-        print('Exception: $e');
       }
-
-    } finally {
-      setState(() {});
+    } catch (e) {
+      showNoImage();
+      print('Exception: $e');
     }
-  }
-
-  showLoading() {
-    return Container(
-      height: double.infinity,
-      width: double.infinity,
-      color: Colors.transparent,
-      child: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
   }
 
   @override
@@ -983,77 +921,90 @@ class _ImageWidgetState extends State<ImageWidget> {
               ),
               Spacer(),
               IconButton(
-                icon: Icon(Icons.photo, color: Colors.blue, size: 30), // ✅ Camera Icon
+                icon: Icon(Icons.photo, color: Colors.blue, size: 30),
                 onPressed: () {
-                  setState(() {
-                    if (widget.filePath == null) {
-                      showNoImage();
-                    } else {
-                      _fetchFileBytesFromServer(widget.filePath!);
-                    }
-                  });
+                  if (widget.filePaths == null || widget.filePaths!.isEmpty) {
+                    showNoImage();
+                  } else {
+                    _fetchFileBytesFromServer(widget.filePaths!);
+                  }
                 },
               ),
-
-              // TextButton(
-              //   child: Text(
-              //     "View",
-              //     style: TextStyle(
-              //         fontSize: 18,
-              //         fontWeight: FontWeight.bold,
-              //         color: Colors.green),
-              //   ),
-              //   onPressed: () {
-              //     setState(() {
-              //       if(widget.filePath == null){
-              //         showNoImage();
-              //       }else{
-              //         _fetchFileBytesFromServer(widget.filePath!);
-              //       }
-              //     });
-              //   },
-              // ),
             ],
           ),
         ),
-        _images.isNotEmpty
-            ? Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: GridView.builder(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3, // Display 3 images per row
-              crossAxisSpacing: 4.0,
-              mainAxisSpacing: 4.0,
-            ),
-            itemCount: _images.length,
-            itemBuilder: (context, index) {
-              return Stack(
-                children: [
-                  Container(
-                    height: 100, // Set fixed height for images
-                    width: 100, // Set fixed width for images
-                    child: ClipRRect(
-                      borderRadius:
-                      BorderRadius.circular(8), // Rounded corners
-                      child: Image.file(
-                        _images[index],
-                        fit: BoxFit
-                            .cover, // Ensure the image fits within the container
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        )
-            : Container(),
       ],
     );
   }
 }
+
+// New Page for Image Preview with Slider
+class ImagePreviewScreen extends StatefulWidget {
+  final List<Uint8List> images;
+
+  const ImagePreviewScreen({Key? key, required this.images}) : super(key: key);
+
+  @override
+  _ImagePreviewScreenState createState() => _ImagePreviewScreenState();
+}
+
+class _ImagePreviewScreenState extends State<ImagePreviewScreen> {
+  int currentIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor:Colors.blueGrey[700],
+        title: Text(
+          "Image Preview",
+          style: TextStyle(color: Colors.white),
+        ),
+        elevation: 2,
+        shadowColor: Colors.black,
+        shape: OutlineInputBorder(
+
+            borderSide: BorderSide(style: BorderStyle.solid ,color: Colors.white60)
+        ),
+
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: PageView.builder(
+                itemCount: widget.images.length,
+                onPageChanged: (index) {
+                  setState(() {
+                    currentIndex = index;
+                  });
+                },
+                itemBuilder: (context, index) {
+                  return Center(
+                    child: Image.memory(
+                      widget.images[index],
+                      fit: BoxFit.contain,
+                    ),
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Text(
+                "${currentIndex + 1} / ${widget.images.length}",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 
 
 // class ImageWidget extends StatefulWidget {
