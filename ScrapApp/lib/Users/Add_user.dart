@@ -120,65 +120,37 @@ class _Add_userState extends State<Add_user> {
   }
 
   void generateUsernameAndPassword(String email) {
-    final username = email.split('@').first;
-    final password = generateRandomPassword(email);
+    if (usernameController.text == "N/A" && passwordController.text == "N/A") {
+      final username = generateUsername(email);
+      final password = generatePassword(username);
 
-    setState(() {
-      usernameController.text = username;
-      passwordController.text = password;
-    });
+      setState(() {
+        usernameController.text = username;
+        passwordController.text = password;
+      });
+    }
   }
 
-  String generateRandomPassword(String email) {
-    const int length = 8; // Password length
-
-    // Define character groups
-    const String upperChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const String digitChars = '0123456789';
-    const String specialChars = '@';
+  String generateUsername(String email) {
+    String namePart = email.split('@').first; // Extract name before '@'
+    namePart = namePart.length >= 4 ? namePart.substring(0, 4) : namePart;
 
     final Random random = Random();
+    int randomNumber = random.nextInt(9000) + 1000; // 4-digit number (1000-9999)
 
-    // Extract username part from email before '@'
-    String usernamePart = email.split('@').first;
-    usernamePart =
-        usernamePart.length >= 4 ? usernamePart.substring(0, 4) : usernamePart;
-
-    // Ensure required conditions
-    String upper =
-        upperChars[random.nextInt(upperChars.length)]; // At least one uppercase
-    String special = specialChars[
-        random.nextInt(specialChars.length)]; // At least one special
-    String digit =
-        digitChars[random.nextInt(digitChars.length)]; // At least one numeric
-
-    // Fill the remaining length with random characters
-    List<String> password = [upper, special, digit, ...usernamePart.split('')];
-
-    while (password.length < length) {
-      password.add(digitChars[
-          random.nextInt(digitChars.length)]); // Add digits if needed
-    }
-
-    // Shuffle the password for randomness
-    password.shuffle();
-
-    return password.join();
+    return '$namePart$randomNumber';
   }
 
-  // Function to generate a random employee code
-  // String generateEmployeeCode() {
-  //   const prefix = "EMP"; // Prefix for employee codes
-  //   final random = Random();
-  //   final suffix = random.nextInt(9000) + 1000; // Generate a 4-digit random number
-  //   final employeeCode = '$prefix$suffix';
-  //
-  //   setState(() {
-  //     employeeCodeController.text = employeeCode; // Set the employee code in the field
-  //   });
-  //
-  //   return employeeCode;
-  // }
+  String generatePassword(String username) {
+    String namePart = username.substring(0, 4); // Extract first 4 characters
+    String numberPart = username.substring(4); // Extract last 4-digit number
+
+    return '${capitalize(namePart)}@$numberPart';
+  }
+
+  String capitalize(String text) {
+    return text[0].toUpperCase() + text.substring(1);
+  }
 
   Future<bool> checkAadhar() async {
     try {
@@ -246,6 +218,8 @@ class _Add_userState extends State<Add_user> {
             usernameController.text = data["details"]["uname"] ?? "N/A";
             passwordController.text = data["details"]["c_pass"] ?? "N/A";
             personID.text = data["details"]["person_id"] ?? "N/A";
+
+            generateUsernameAndPassword(emailIdController.text);
           });
         } else {
           print("No details found for the given person ID.");

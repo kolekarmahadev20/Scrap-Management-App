@@ -235,7 +235,7 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
                   buildDisplay("Total Payment", (totalPayment.isNotEmpty) ? totalPayment  :'0'),
                   buildDisplay("Total EMD", totalEmd ?? '0'),
                   buildDisplay("Total CMD", totalCmd ?? '0'),
-                  buildDisplay("Total Amount Including EMD/CMD", totalEmdCmd),
+                  buildDisplay("Total EMD And CMD", totalEmdCmd),
                   buildDisplay("Payment Type", paymentType),
                   buildDisplay("Freezed", freezed == 'Y' ? 'Yes' : 'No'),
                   buildDisplay("Date", date1),

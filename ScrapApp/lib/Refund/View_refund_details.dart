@@ -370,12 +370,14 @@ class _View_refund_detailsState extends State<View_refund_details> {
               color: Colors.black, // Bold key text
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: isRed ? FontWeight.bold : FontWeight.normal,
-              color: isRed ? Colors.redAccent : Colors.black54, // Color based on isRed
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: isRed ? FontWeight.bold : FontWeight.normal,
+                color: isRed ? Colors.redAccent : Colors.black54, // Color based on isRed
+              ),
             ),
           ),
         ],

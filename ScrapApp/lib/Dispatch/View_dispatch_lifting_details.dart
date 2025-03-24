@@ -353,12 +353,14 @@ class _View_dispatch_lifting_detailsState
               color: Colors.black, // Bold key text
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: isRed ? FontWeight.bold : FontWeight.normal,
-              color: isRed ? Colors.redAccent : Colors.black54, // Color based on isRed
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: isRed ? FontWeight.bold : FontWeight.normal,
+                color: isRed ? Colors.redAccent : Colors.black54, // Color based on isRed
+              ),
             ),
           ),
         ],
@@ -455,7 +457,8 @@ class _View_dispatch_lifting_detailsState
     }
     try {
       DateTime parsedDate = DateTime.parse(dateStr);
-      return DateFormat('dd-MM-yyyy').format(parsedDate);
+      return
+        DateFormat('dd-MM-yyyy').format(parsedDate);
     } catch (e) {
       return 'Invalid date';
     }
