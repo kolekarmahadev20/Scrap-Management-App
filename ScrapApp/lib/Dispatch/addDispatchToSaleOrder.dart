@@ -13,6 +13,7 @@ import '../URL_CONSTANT.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io'; // Import for File
 import 'package:path/path.dart' as path;
+import 'package:crypto/crypto.dart';
 
 import 'View_dispatch_details.dart';
 
@@ -249,20 +250,29 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
 
       // Function to add images to the request
       Future<void> addImages(List<File> images, String keyword, http.MultipartRequest request) async {
+        Set<String> addedHashes = {}; // To track unique image hashes
+
         for (var image in images) {
-          // Compress the image before uploading
           File? compressedImage = await compressImage(image);
 
           if (compressedImage != null) {
-            var stream = http.ByteStream(compressedImage.openRead());
-            var length = await compressedImage.length();
-            var multipartFile = http.MultipartFile(
-              'certifications[]',
-              stream,
-              length,
-              filename: '$keyword${compressedImage.path.split('/').last}',
-            );
-            request.files.add(multipartFile);
+            // Generate a unique hash for the image content
+            String imageHash = await computeFileHash(compressedImage);
+
+            if (!addedHashes.contains(imageHash)) {
+              String fileName = '$keyword${compressedImage.path.split('/').last}';
+              var stream = http.ByteStream(compressedImage.openRead());
+              var length = await compressedImage.length();
+              var multipartFile = http.MultipartFile(
+                'certifications[]',
+                stream,
+                length,
+                filename: fileName,
+              );
+
+              request.files.add(multipartFile);
+              addedHashes.add(imageHash); // Track added image hash
+            }
           }
         }
       }
@@ -328,6 +338,12 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
         isLoading = false;
       });
     }
+  }
+
+  // Function to compute the hash of a file's contents
+  Future<String> computeFileHash(File file) async {
+    var bytes = await file.readAsBytes();
+    return md5.convert(bytes).toString(); // Using MD5 hash
   }
 
   showLoading(){
