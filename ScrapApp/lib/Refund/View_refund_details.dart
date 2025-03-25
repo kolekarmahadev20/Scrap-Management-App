@@ -613,14 +613,15 @@ class _View_refund_detailsState extends State<View_refund_details> {
             ),
           )
         else
-          Expanded(
-            child: ListView.builder(
-              itemCount: filteredPayments.length,
-              itemBuilder: (context, index) {
-                final payment = filteredPayments[index];
-                return buildPaymentStatusListTile(context, payment);
-              },
-            ),
+          ListView.builder(
+            shrinkWrap: true, // Prevents infinite scroll issue
+            physics:
+            NeverScrollableScrollPhysics(),
+            itemCount: filteredPayments.length,
+            itemBuilder: (context, index) {
+              final payment = filteredPayments[index];
+              return buildPaymentStatusListTile(context, payment);
+            },
           ),
       ],
     );
@@ -656,14 +657,15 @@ class _View_refund_detailsState extends State<View_refund_details> {
             ),
           )
         else
-          Expanded(
-            child: ListView.builder(
-              itemCount: filteredEmdStatus.length,
-              itemBuilder: (context, index) {
-                final emdStatusIndex = filteredEmdStatus[index];
-                return buildEmdStatusListTile(context, emdStatusIndex);
-              },
-            ),
+          ListView.builder(
+            shrinkWrap: true, // Prevents infinite scroll issue
+            physics:
+            NeverScrollableScrollPhysics(),
+            itemCount: filteredEmdStatus.length,
+            itemBuilder: (context, index) {
+              final emdStatusIndex = filteredEmdStatus[index];
+              return buildEmdStatusListTile(context, emdStatusIndex);
+            },
           ),
       ],
     );
@@ -698,14 +700,15 @@ class _View_refund_detailsState extends State<View_refund_details> {
             ),
           )
         else
-          Expanded(
-            child: ListView.builder(
-              itemCount: filteredCmdStatus.length,
-              itemBuilder: (context, index) {
-                final cmdStatusIndex = filteredCmdStatus[index];
-                return buildEmdStatusListTile(context, cmdStatusIndex);
-              },
-            ),
+          ListView.builder(
+            shrinkWrap: true, // Prevents infinite scroll issue
+            physics:
+            NeverScrollableScrollPhysics(),
+            itemCount: filteredCmdStatus.length,
+            itemBuilder: (context, index) {
+              final cmdStatusIndex = filteredCmdStatus[index];
+              return buildEmdStatusListTile(context, cmdStatusIndex);
+            },
           ),
       ],
     );
