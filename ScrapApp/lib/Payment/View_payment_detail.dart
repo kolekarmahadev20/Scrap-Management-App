@@ -479,6 +479,10 @@ class _View_payment_detailState extends State<View_payment_detail> {
                 "Total Qty : ",
                 "${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}",
                 Icons.inventory),
+            buildDetailTile(
+                "Balance Qty : ",
+                "${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}",
+                Icons.inventory),
             if (ViewPaymentData['lifted_quantity'] != null &&
                 ViewPaymentData['lifted_quantity'] is List &&
                 ViewPaymentData['lifted_quantity'].isNotEmpty)

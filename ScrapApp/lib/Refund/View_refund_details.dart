@@ -474,6 +474,10 @@ class _View_refund_detailsState extends State<View_refund_details> {
                 "Total Qty : ",
                 "${ViewRefundData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewRefundData['sale_order_details'][0]['totunit'] ?? ''}",
                 Icons.inventory),
+            buildDetailTile(
+                "Balance Qty : ",
+                "${ViewRefundData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewRefundData['sale_order_details'][0]['totunit'] ?? ''}",
+                Icons.inventory),
             if (ViewRefundData['lifted_quantity'] != null &&
                 ViewRefundData['lifted_quantity'] is List &&
                 ViewRefundData['lifted_quantity'].isNotEmpty)
