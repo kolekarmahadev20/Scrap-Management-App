@@ -288,13 +288,19 @@ class _Add_userState extends State<Add_user> {
         'uuid': uuIDController.text ?? '',
 
         'is_mobile': isMobileLoginYes ? 'Y' : 'N',
-        'is_desktop': isActiveYes ? 'Y' : 'N',
-        'is_all': (isMobileLoginYes == 'N' && isActiveYes == 'N') ? 'Y' : 'N',
+
+        // 'is_desktop': isActiveYes ? 'Y' : 'N',
+        'is_desktop': (selectedUserType == 'S' || selectedUserType == 'A') ? 'Y' : 'N',
+
+        // 'is_all': (isMobileLoginYes == 'N' && isActiveYes == 'N') ? 'Y' : 'N',
+        'is_all': (isMobileLoginYes == 'N') ? 'Y' : 'N',
+
       });
 
       final response = await http.post(
         Uri.parse(url),
         body: {
+
           'user_id': username,
           'user_pass': password,
           'uuid': uuid,
@@ -308,18 +314,23 @@ class _Add_userState extends State<Add_user> {
           'acces_dispatch': isDispatchYes ? 'Y' : 'N',
           'acces_payment': isPaymentYes ? 'Y' : 'N',
           'acces_refund': isRefundYes ? 'Y' : 'N',
-          'vendor_ids': vendorIds.join(',') ?? '',
-          'plant_id': plantIds.join(',') ?? '',
-          // 'org_id': organizationIds.join('')?? '',
-          'org_id': _selectedorganizationValues.join(',') ?? '',
+          'vendor_id': vendorIds.join(',')?? '',
+          'plant_id': plantIds.join(','),
+          'org_id': organizationIdsString,
+          // 'org_id': _selectedorganizationValues.join(',')?? '',
           'person_name': fullNameController.text ?? '',
           'email': emailIdController.text ?? '',
-          'uuid': uuIDController.text ?? '',
+          'uuiid': uuIDController.text ?? '',
+          'person_id':personID.text??'',
+          'adhar_num':adharNumberController.text ?? '',
 
           'is_mobile': isMobileLoginYes ? 'Y' : 'N',
-          'is_desktop': isActiveYes ? 'Y' : 'N',
-          'is_all': (isMobileLoginYes == 'N' && isActiveYes == 'N') ? 'Y' : 'N',
-          'is_all': (isMobileLoginYes == 'N' && isActiveYes == 'N') ? 'Y' : 'N',
+
+          // 'is_desktop': isActiveYes ? 'Y' : 'N',
+          'is_desktop': (selectedUserType == 'S' || selectedUserType == 'A') ? 'Y' : 'N',
+
+          // 'is_all': (isMobileLoginYes == 'N' && isActiveYes == 'N') ? 'Y' : 'N',
+          'is_all': (isMobileLoginYes == 'N') ? 'Y' : 'N',
         },
       );
 
@@ -528,18 +539,18 @@ class _Add_userState extends State<Add_user> {
             children: items.map((vendor) {
               final vendorName = vendor['name']!;
               final vendorId = vendor['id']!;
+
               return CheckboxListTile(
                 title: Text(vendorName),
-                value: selectedVendors.containsKey(vendorName),
+                value: selectedVendors.isNotEmpty &&
+                    selectedVendors.containsKey(vendorName),
                 onChanged: (bool? value) {
                   setState(() {
+                    selectedVendors.clear(); // Pehle se selected vendor remove karein
                     if (value == true) {
                       selectedVendors[vendorName] = vendorId;
-                    } else {
-                      selectedVendors.remove(vendorName);
                     }
-                    _fetchPlants(
-                        selectedVendors); // Map<String, String> pass karna hai
+                    _fetchPlants(selectedVendors);
                   });
                 },
               );
@@ -550,6 +561,51 @@ class _Add_userState extends State<Add_user> {
       ],
     );
   }
+
+  // Widget buildCheckboxDropdownVendor({
+  //   required String label,
+  //   required List<Map<String, String>> items,
+  //   required Map<String, String> selectedVendors,
+  // }) {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       Text(
+  //         label,
+  //         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+  //       ),
+  //       SizedBox(height: 10),
+  //       Container(
+  //         decoration: BoxDecoration(
+  //           border: Border.all(color: Colors.grey),
+  //           borderRadius: BorderRadius.circular(5),
+  //         ),
+  //         child: Column(
+  //           children: items.map((vendor) {
+  //             final vendorName = vendor['name']!;
+  //             final vendorId = vendor['id']!;
+  //             return CheckboxListTile(
+  //               title: Text(vendorName),
+  //               value: selectedVendors.containsKey(vendorName),
+  //               onChanged: (bool? value) {
+  //                 setState(() {
+  //                   if (value == true) {
+  //                     selectedVendors[vendorName] = vendorId;
+  //                   } else {
+  //                     selectedVendors.remove(vendorName);
+  //                   }
+  //                   _fetchPlants(
+  //                       selectedVendors); // Map<String, String> pass karna hai
+  //                 });
+  //               },
+  //             );
+  //           }).toList(),
+  //         ),
+  //       ),
+  //       SizedBox(height: 20),
+  //     ],
+  //   );
+  // }
 
   Widget buildCheckboxListPlant({
     required String label,
@@ -1099,7 +1155,14 @@ class _Add_userState extends State<Add_user> {
             // _buildTextField('Email ID', emailIdController),
             _buildTextField('Username', usernameController),
             _buildTextField('Password', passwordController),
-            _buildCheckboxWithOptions('Website Login?', isActiveYes, isActiveNo,
+            // _buildCheckboxWithOptions('Website Login?', isActiveYes, isActiveNo,
+            //     (bool? yesChecked) {
+            //   setState(() {
+            //     isActiveYes = yesChecked ?? false;
+            //     isActiveNo = !yesChecked! ?? true;
+            //   });
+            // }, isMandatory: true),
+            _buildCheckboxWithOptions('Active?', isActiveYes, isActiveNo,
                 (bool? yesChecked) {
               setState(() {
                 isActiveYes = yesChecked ?? false;

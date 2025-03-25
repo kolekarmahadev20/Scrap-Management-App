@@ -195,8 +195,8 @@ class _view_userState extends State<view_user> {
     final response = await http.post(
       Uri.parse('${URL}user_list_details'),
       body: {
-       'uuid':uuid,
-      'user_id': username,
+        'uuid':uuid,
+        'user_id': username,
         'user_pass': password,
       },
     );
@@ -219,8 +219,22 @@ class _view_userState extends State<view_user> {
   }
 
 
-
-
+  // Future<List<User>> _getUsers(String searchText) async {
+  //   List<User> allUsers = await futureUsers;
+  //
+  //   if (searchText.isEmpty) {
+  //     return _filterUsers(allUsers);
+  //   }
+  //
+  //   // Filter users by username or fullname containing the search text
+  //   List<User> filteredUsers = allUsers.where((user) =>
+  //   (user.username!.toLowerCase().contains(searchText.toLowerCase()) ||
+  //       user.personName.toLowerCase().contains(searchText.toLowerCase())) &&
+  //       (_showActiveUsers == null || (_showActiveUsers! ? user.isActive.toLowerCase() == 'y' : true))
+  //   ).toList();
+  //
+  //   return filteredUsers;
+  // }
 
 
   Future<List<User>> _getUsers(String searchText) async {

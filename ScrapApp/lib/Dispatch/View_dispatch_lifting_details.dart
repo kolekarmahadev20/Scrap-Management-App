@@ -161,6 +161,12 @@ class _View_dispatch_lifting_detailsState
 
 
   Future<void> fetchImageList() async {
+    print("BAHSFHASF");
+
+    print(widget.sale_order_id);
+    print( widget.invoiceNo);
+
+
     try {
       setState(() {
         isLoading = true;
