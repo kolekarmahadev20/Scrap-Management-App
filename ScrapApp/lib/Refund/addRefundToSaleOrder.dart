@@ -382,7 +382,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
 
   void validateAndAddRefundDetails() {
     // Map selectedPaymentType to the corresponding total amount controller
-    int? enteramt = int.tryParse(amountController.text.toString());
+    double? enteramt = double.tryParse(amountController.text.toString());
 
     print("Type of enteramt: ${enteramt.runtimeType}");
 
