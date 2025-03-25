@@ -231,7 +231,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
-                        fontSize: 22,
+                        fontSize: 21,
                       ),
                     ),
                   ),
@@ -285,36 +285,28 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
   Widget buildVendorInfoText(String key, String value, bool isRed) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: key, // Key text (e.g., "Vendor Name: ")
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Push key left & value right
+        children: [
+          Text(
+            key,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Colors.black, // Bold key text
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
               style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black, // Bold key text
+                fontSize: 16,
+                fontWeight: isRed ? FontWeight.bold : FontWeight.normal,
+                color: isRed ? Colors.redAccent : Colors.black54, // Color based on isRed
               ),
             ),
-            (isRed)
-                ? TextSpan(
-                    text: value, // Value text (e.g., "XYZ Corp")
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.redAccent, // Normal value text
-                    ),
-                  )
-                : TextSpan(
-                    text: value, // Value text (e.g., "XYZ Corp")
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.black54, // Normal value text
-                    ),
-                  ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
