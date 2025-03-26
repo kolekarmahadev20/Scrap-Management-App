@@ -125,10 +125,10 @@ class _PaymentListState extends State<PaymentList> {
       }).toList();
     }
 
-    // Apply Bidder filter
+    // Apply Plant filter
     if (searchBidderController.text.isNotEmpty) {
       searchResults = searchResults.where((order) {
-        return order['bidder_name']
+        return order['branch_name']
             .toString()
             .toLowerCase()
             .contains(searchBidderController.text.toLowerCase());
@@ -191,7 +191,7 @@ class _PaymentListState extends State<PaymentList> {
                     SizedBox(height: 10),
                     _buildSearchField(
                       controller: searchBidderController,
-                      hintText: "Enter Bidder Name",
+                      hintText: "Enter Plant Name",
                     ),
                     SizedBox(height: 20),
                     Row(
@@ -536,6 +536,29 @@ class _PaymentListState extends State<PaymentList> {
                         ],
                       ),
                     ),
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "Plant : ",
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          TextSpan(
+                            text: "${index['branch_name'] ?? 'N/A'}",
+                            style: TextStyle(
+                              color: Colors.black54,
+                              fontWeight: FontWeight.normal,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                   ],
                 ),
                 trailing: IconButton(

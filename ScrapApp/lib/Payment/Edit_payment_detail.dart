@@ -305,7 +305,7 @@ class _Edit_payment_detailState extends State<Edit_payment_detail> {
                       }),
                       buildTextField("Date", dateController1,false, true, Colors.white,context), // Modified here for DatePicker
                       buildTextField("Amount", amountController,false, false,Colors.white, context),
-                      buildTextField("Ref/Rv No", refNoController,false, false, Colors.white,context),
+                      buildTextField("NFA No.", refNoController,false, false, Colors.white,context),
                       buildTextField("Type Of Transfer", typeTransController, false,false, Colors.white,context),
                       buildTextField("Remark", remarkController, false,false, Colors.white,context),
                       SizedBox(height: 40,),

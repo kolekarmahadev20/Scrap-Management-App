@@ -214,32 +214,32 @@ class _AppDrawerState extends State<AppDrawer> {
 
                       },
                     ),
-                  if(acces_dispatch == 'Y')
-                      _buildDrawerItem(
-                      context,
-                      5,
-                      icon: Icons.local_shipping_outlined,
-                      text: "Dispatch",
-                      onTap: () {
-                        Timer(Duration(milliseconds: 300), () {
-                          Navigator.pop(context); // Close the drawer
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => DispatchList(currentPage: 5,)));
-                        });
-                      },
-                    ),
-                  if(acces_refund == 'Y')
-                    _buildDrawerItem(
-                    context,
-                    6,
-                    icon: Icons.money_off_sharp,
-                    text: "Refund",
-                    onTap: () {
-                      Timer(Duration(milliseconds: 300), () {
-                        Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => RefundList(currentPage: 6,)));
-                      });
-                    },
-                  ),
+                  // if(acces_dispatch == 'Y')
+                  //     _buildDrawerItem(
+                  //     context,
+                  //     5,
+                  //     icon: Icons.local_shipping_outlined,
+                  //     text: "Dispatch",
+                  //     onTap: () {
+                  //       Timer(Duration(milliseconds: 300), () {
+                  //         Navigator.pop(context); // Close the drawer
+                  //         Navigator.push(context, MaterialPageRoute(builder: (context) => DispatchList(currentPage: 5,)));
+                  //       });
+                  //     },
+                  //   ),
+                  // if(acces_refund == 'Y')
+                  //   _buildDrawerItem(
+                  //   context,
+                  //   6,
+                  //   icon: Icons.money_off_sharp,
+                  //   text: "Refund",
+                  //   onTap: () {
+                  //     Timer(Duration(milliseconds: 300), () {
+                  //       Navigator.pop(context); // Close the drawer
+                  //       Navigator.push(context, MaterialPageRoute(builder: (context) => RefundList(currentPage: 6,)));
+                  //     });
+                  //   },
+                  // ),
                 if(userType == 'S')
                     _buildDrawerItem(
                     context,

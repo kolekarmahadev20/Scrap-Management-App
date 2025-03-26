@@ -142,22 +142,13 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 10),
       color: Colors.white,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal, // Allow horizontal scrolling
-        child: Wrap(
-          spacing: 8, // Space between buttons
-          alignment: WrapAlignment.center,
-          children: [
-            buildNavButton(Icons.payment, "Payment \nDetails", 0, selectedIndex,
-                onItemTapped),
-            buildNavButton(Icons.account_balance, "EMD \nDetails", 1,
-                selectedIndex, onItemTapped),
-            buildNavButton(Icons.security, "CMD \nDetails", 2, selectedIndex,
-                onItemTapped),
-            buildNavButton(Icons.local_shipping, "Dispatch \nDetails", 3,
-                selectedIndex, onItemTapped),
-          ],
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center, // Center buttons
+        children: [
+          buildNavButton(Icons.payment, "Payment \nDetails", 0, selectedIndex, onItemTapped),
+          SizedBox(width: 20), // Space between buttons
+          buildNavButton(Icons.local_shipping, "Dispatch \nDetails", 3, selectedIndex, onItemTapped),
+        ],
       ),
     );
   }
@@ -166,29 +157,42 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
     Colors.green,  // Payment Details
     Colors.orange, // EMD Details
     Colors.red,    // CMD Details
-    Colors.blue, // Dispatch
+    Colors.blue,   // Dispatch Details
   ];
 
   Widget buildNavButton(IconData icon, String label, int index,
       int selectedIndex, Function(int) onItemTapped) {
-    return ElevatedButton.icon(
-      onPressed: () => onItemTapped(index),
-      icon: Icon(icon,
-          size: 18, color: selectedIndex == index ? Colors.white : buttonColors[index]),
-      label: Text(label,
+    return SizedBox(
+      width: 140, // Ensuring both buttons are equal width
+      height: 50,
+      child: ElevatedButton.icon(
+        onPressed: () => onItemTapped(index),
+        icon: Icon(
+          icon,
+          size: 18,
+          color: selectedIndex == index ? Colors.white : buttonColors[index],
+        ),
+        label: Text(
+          label,
+          textAlign: TextAlign.center,
           style: TextStyle(
-              fontSize: 12,
-              color: selectedIndex == index ? Colors.white : buttonColors[index])),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: selectedIndex == index ? buttonColors[index] : Colors.white,
-        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: buttonColors[index]),
+            fontSize: 12,
+            color: selectedIndex == index ? Colors.white : buttonColors[index],
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: selectedIndex == index ? buttonColors[index] : Colors.white,
+          padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(color: buttonColors[index]),
+          ),
         ),
       ),
     );
   }
+
+
 
 
 
@@ -197,8 +201,8 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
     final List<Widget> _pages = [
       // buildMaterialListTab(),
       buildScrollableTabContent(context, buildPaymentDetailListView),
-      buildScrollableTabContent(context, buildEmdDetailListView),
-      buildScrollableTabContent(context, buildCMDDetailListView),
+      // buildScrollableTabContent(context, buildEmdDetailListView),
+      // buildScrollableTabContent(context, buildCMDDetailListView),
     ];
 
     return AbsorbPointer(
@@ -214,7 +218,7 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  "Payment",
+                  "Sale Order",
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -400,30 +404,32 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
               child: Text(
                 "Sale Order Details",
                 style: TextStyle(
-                  fontSize: 21, // Increase font size
-                  fontWeight: FontWeight.bold, // Make it bold
+                  fontSize: 21,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
             buildPaymentDetailsCard(ViewPaymentData),
 
-            // buildListTile(
-            //     "Material Name : ${ViewPaymentData['sale_order_details']?[0]['material_name'] ?? 'N/A'}"),
-            // buildListTile(
-            //     "Total Qty : ${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
-            // if (ViewPaymentData['lifted_quantity'] != null &&
-            //     ViewPaymentData['lifted_quantity'] is List &&
-            //     ViewPaymentData['lifted_quantity'].isNotEmpty)
-            //   buildListTile(
-            //       "Lifted Qty : ${ViewPaymentData['lifted_quantity'][0]['quantity'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
-            // buildListTile(
-            //     "Rate : ${ViewPaymentData['sale_order_details'][0]['rate'] ?? 'No data'}"),
-            // buildListTile(
-            //     "SO Date : ${ViewPaymentData['sale_order_details'][0]['sod'] ?? 'No data'}"),
-            // buildListTile(
-            //     "SO Validity : ${ViewPaymentData['sale_order_details'][0]['sovu'] ?? 'No data'}
             Divider(),
             buildTable(),
+            SizedBox(height: 10), // Spacing between sections
+
+            /// EMD Details ListView
+            // Text(
+            //   "EMD Details",
+            //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            // ),
+            buildEmdDetailListView(),  // ❌ `context` hata diya
+
+            SizedBox(height: 10), // Spacing
+
+            /// CMD Details ListView
+            // Text(
+            //   "CMD Details",
+            //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            // ),
+            buildCMDDetailListView(),  // ❌ `context` hata diya
           ],
         ),
       ),
@@ -510,6 +516,17 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
 
 
   Widget buildTable() {
+    // Use a Set to keep track of unique tax names
+    Set<String> uniqueTaxNames = {};
+    List<Map<String, dynamic>> uniqueTaxes = [];
+
+    for (var tax in taxes) {
+      if (!uniqueTaxNames.contains(tax['tax_name'])) {
+        uniqueTaxNames.add(tax['tax_name']);
+        uniqueTaxes.add(tax);
+      }
+    }
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Container(
@@ -556,8 +573,8 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
                 DataCell(Text('₹${taxAmount['basicTaxAmount']}', style: TextStyle(fontWeight: FontWeight.bold))),
               ],
             ),
-            if (taxes.isNotEmpty)
-              ...taxes.map((tax) {
+            if (uniqueTaxes.isNotEmpty)
+              ...uniqueTaxes.map((tax) {
                 return DataRow(
                   cells: [
                     DataCell(Text(tax['tax_name'] ?? 'No data')),
@@ -568,7 +585,7 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
             DataRow(
               color: MaterialStateProperty.all(Colors.grey.shade200),
               cells: [
-                DataCell(Text('Final Amount', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text('Final SO Amount', style: TextStyle(fontWeight: FontWeight.bold))),
                 DataCell(Text('₹${taxAmount['finalTaxAmount']}', style: TextStyle(fontWeight: FontWeight.bold))),
               ],
             ),
@@ -803,7 +820,7 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
                           ),
                         ),
                         TextSpan(
-                          text: "${index['date'] ?? 'N/A'}",
+                          text: formatDate(index['date'] ?? 'N/A'),
                           style: TextStyle(
                             color: Colors.black54,
                             fontWeight: FontWeight.normal, // Normal value
@@ -963,7 +980,7 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
                           ),
                         ),
                         TextSpan(
-                          text: "${index['date'] ?? 'N/A'}",
+                          text: formatDate(index['date'] ?? 'N/A'),
                           style: TextStyle(
                             color: Colors.black54,
                             fontWeight: FontWeight.normal, // Normal value
@@ -1122,7 +1139,7 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
                         ),
                       ),
                       TextSpan(
-                        text: "${index['date'] ?? 'N/A'}",
+                        text: formatDate(index['date'] ?? 'N/A'),
                         style: TextStyle(
                           color: Colors.black54,
                           fontWeight: FontWeight.normal, // Normal value
