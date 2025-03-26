@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Dispatch/Add_dispatch_details.dart';
@@ -24,7 +25,7 @@ class View_dispatch_details extends StatefulWidget {
 
 class _View_dispatch_detailsState extends State<View_dispatch_details> {
   String? username = '';
- String uuid = '';
+  String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -35,7 +36,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
   @override
   void initState() {
     super.initState();
-    checkLogin().then((_){
+    checkLogin().then((_) {
       setState(() {});
     });
     print(widget.sale_order_id);
@@ -45,13 +46,28 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
   }
 
   Future<void> checkLogin() async {
-     final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
   }
+
+  List<dynamic> liftedQuantity = [];
+  double balanceQty = 0.0;
+  double totalBalance = 0.0;
+  double totalMaterialLiftedAmount = 0.0;
+  Map<String, dynamic> taxAmount = {};
+  Map<String, dynamic> ViewPaymentData = {};
+  List<Map<String, dynamic>> taxDetailsList = [];
+  List<dynamic> paymentId = [];
+  List<dynamic> paymentStatus = [];
+  List<dynamic> emdStatus = [];
+  List<dynamic> cmdStatus = [];
+  List<dynamic> taxes = [];
+  var checkLiftedQty;
+  var netAmount;
 
   Future<void> fetchDispatchDetails() async {
     try {
@@ -68,16 +84,18 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-        'user_id': username,
-        'uuid':uuid,
+          'user_id': username,
+          'uuid': uuid,
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
-          'bidder_id':widget.bidder_id,
+          'bidder_id': widget.bidder_id,
         },
       );
       if (response.statusCode == 200) {
         setState(() {
           var jsonData = json.decode(response.body);
+          final data = json.decode(response.body);
+
           ViewDispatchData = jsonData;
           var materialLiftingDetails =
               ViewDispatchData['material_lifting_details'];
@@ -87,8 +105,27 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                 .map((entry) => entry.value)
                 .toList();
           }
+
+          ViewPaymentData = jsonData;
+          paymentId = ViewPaymentData['sale_order_payments'] ?? [];
+          emdStatus = ViewPaymentData['emd_status'] ?? [];
+          cmdStatus = ViewPaymentData['cmd_status'] ?? [];
+          paymentStatus = ViewPaymentData['recieved_payment'] ?? [];
+          checkLiftedQty = ViewPaymentData['lifted_quantity'];
+          taxes = ViewPaymentData['tax_and_rate']['taxes'] ?? [];
+          taxAmount = ViewPaymentData['tax_and_rate'] ?? {};
+
+          totalMaterialLiftedAmount = data['total_material_lifted_amount'];
+          liftedQuantity =
+              List<Map<String, dynamic>>.from(data['lifted_quantity']);
+
+          taxDetailsList =
+              List<Map<String, dynamic>>.from(data['taxDetails'] ?? []);
+          balanceQty = data['balance_qty'];
+          totalBalance = data['total_balance'];
         });
-      } else {
+      }
+      else {
         print("Unable to fetch data.");
       }
     } catch (e) {
@@ -111,18 +148,283 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
     );
   }
 
+  Widget buildExpansionTile() {
+    return Material(
+      elevation: 5,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Text(
+                "Sale Order Details",
+                style: TextStyle(
+                  fontSize: 21, // Increase font size
+                  fontWeight: FontWeight.bold, // Make it bold
+                ),
+              ),
+            ),
+            buildPaymentDetailsCard(ViewPaymentData),
+            buildSummary(),
+
+            // buildListTile(
+            //     "Material Name : ${ViewPaymentData['sale_order_details']?[0]['material_name'] ?? 'N/A'}"),
+            // buildListTile(
+            //     "Total Qty : ${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
+            // if (ViewPaymentData['lifted_quantity'] != null &&
+            //     ViewPaymentData['lifted_quantity'] is List &&
+            //     ViewPaymentData['lifted_quantity'].isNotEmpty)
+            //   buildListTile(
+            //       "Lifted Qty : ${ViewPaymentData['lifted_quantity'][0]['quantity'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
+            // buildListTile(
+            //     "Rate : ${ViewPaymentData['sale_order_details'][0]['rate'] ?? 'No data'}"),
+            // buildListTile(
+            //     "SO Date : ${ViewPaymentData['sale_order_details'][0]['sod'] ?? 'No data'}"),
+            // buildListTile(
+            //     "SO Validity : ${ViewPaymentData['sale_order_details'][0]['sovu'] ?? 'No data'}
+            Divider(),
+            buildTable(),
+            Divider(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildPaymentDetailsCard(Map<String, dynamic> ViewPaymentData) {
+    return Container(
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            buildDetailTile(
+                "Material Name : ",
+                ViewPaymentData['sale_order_details']?[0]['material_name'] ??
+                    'N/A',
+                Icons.category),
+            buildDetailTile(
+                "Total Qty : ",
+                "${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}",
+                Icons.inventory),
+            // buildDetailTile(
+            //     "Balance Qty : ",
+            //     "${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}",
+            //     Icons.inventory),
+            if (ViewPaymentData['lifted_quantity'] != null &&
+                ViewPaymentData['lifted_quantity'] is List &&
+                ViewPaymentData['lifted_quantity'].isNotEmpty)
+              buildDetailTile(
+                  "Lifted Qty : ",
+                  "${ViewPaymentData['lifted_quantity'][0]['quantity'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}",
+                  Icons.local_shipping),
+            buildDetailTile(
+                "Rate : ",
+                ViewPaymentData['sale_order_details'][0]['rate']?.toString() ??
+                    'No data',
+                Icons.attach_money),
+            buildDetailTile(
+                "SO Date : ",
+                formatDate(ViewPaymentData['sale_order_details'][0]['sod']),
+                Icons.date_range),
+            buildDetailTile(
+                "SO Validity : ",
+                formatDate(ViewPaymentData['sale_order_details'][0]['sovu']),
+                Icons.event_available),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) {
+      return 'No data';
+    }
+    try {
+      DateTime parsedDate = DateTime.parse(dateStr);
+      return DateFormat('dd-MM-yyyy').format(parsedDate);
+    } catch (e) {
+      return 'Invalid date';
+    }
+  }
+
+  Widget buildTable() {
+    // Use a Set to keep track of unique tax names
+    Set<String> uniqueTaxNames = {};
+    List<Map<String, dynamic>> uniqueTaxes = [];
+
+    for (var tax in taxes) {
+      if (!uniqueTaxNames.contains(tax['tax_name'])) {
+        uniqueTaxNames.add(tax['tax_name']);
+        uniqueTaxes.add(tax);
+      }
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Container(
+        width: 400,
+        padding: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 6,
+              spreadRadius: 2,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: DataTable(
+          columnSpacing: 20,
+          headingRowHeight: 48,
+          dataRowHeight: 44,
+          border: TableBorder.symmetric(
+            inside: BorderSide(color: Colors.grey.shade300),
+          ),
+          columns: [
+            DataColumn(
+              label: Text(
+                'Tax',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87),
+              ),
+            ),
+            DataColumn(
+              label: Text(
+                'Amount',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87),
+              ),
+            ),
+          ],
+          rows: [
+            DataRow(
+              color: MaterialStateProperty.all(Colors.grey.shade200),
+              cells: [
+                DataCell(Text('Basic Amount',
+                    style: TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text('₹${taxAmount['basicTaxAmount']}',
+                    style: TextStyle(fontWeight: FontWeight.bold))),
+              ],
+            ),
+            if (uniqueTaxes.isNotEmpty)
+              ...uniqueTaxes.map((tax) {
+                return DataRow(
+                  cells: [
+                    DataCell(Text(tax['tax_name'] ?? 'No data')),
+                    DataCell(Text('₹${tax['tax_amount'] ?? 'No data'}')),
+                  ],
+                );
+              }).toList(),
+            DataRow(
+              color: MaterialStateProperty.all(Colors.grey.shade200),
+              cells: [
+                DataCell(Text('Final SO Amount',
+                    style: TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text('₹${taxAmount['finalTaxAmount']}',
+                    style: TextStyle(fontWeight: FontWeight.bold))),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildDetailTile(String title, String value, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.blueGrey),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                title,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                style: const TextStyle(fontSize: 14),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSummary() {
+    return Container(
+      color: Colors.white, // Set background color to white
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          buildSummaryRow(
+              "Lifted Quantity:",
+              liftedQuantity.isNotEmpty
+                  ? "${liftedQuantity[0]['quantity']} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ""}"
+                  : "N/A",
+              totalMaterialLiftedAmount != null
+                  ? totalMaterialLiftedAmount.toStringAsFixed(2)
+                  : "N/A"),
+          buildSummaryRow(
+              "SO Balance Qty:",
+              balanceQty != null
+                  ? "${balanceQty} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ""}"
+                  : "N/A",
+              totalBalance != null ? totalBalance.toStringAsFixed(2) : "N/A"),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSummaryRow(String title, String qty, String amount) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+          SizedBox(width: 20),
+          Text(qty),
+          SizedBox(width: 20),
+          Text(amount),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: AppDrawer(currentPage: 5),
       appBar: CustomAppBar(),
-      body: Stack(children: [
-        isLoading
-            ? showLoading()
-            : Container(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 8.0, horizontal: 4.0), // Match previous padding
-                color: Colors.grey[100],
+      body: isLoading
+          ? showLoading()
+          : Container(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              color: Colors.grey[100],
+              child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -131,62 +433,47 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                       child: Text(
                         "Dispatch",
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 28,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
-                          letterSpacing: 1.2,
+                          letterSpacing: 1.5,
                         ),
                       ),
                     ),
-                    buildRowWithIcon(context),
                     Padding(
-                      padding: const EdgeInsets.all(
-                          8.0), // Match padding from previous code
+                      padding: const EdgeInsets.all(8.0),
                       child: buildVendorInfo(),
                     ),
-                    if (liftingDetails.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          "Lifting Details",
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                      ),
-                    Expanded(
+                    buildExpansionTile(),
+                    SizedBox(height: 16),
+
+                    /// Wrap `ListView.builder` inside `Expanded`
+
+                    SizedBox(
+                      height: 300, // Adjust the height as needed
+
                       child: liftingDetails.isNotEmpty
                           ? ListView.builder(
-                        itemCount: liftingDetails.length,
-                        itemBuilder: (context, index) {
-                          final liftingDetailsIndex = liftingDetails[index];
-                          return buildInvoiceListTile(context, liftingDetailsIndex);
-                        },
-                      )
+                              itemCount: liftingDetails.length,
+                              itemBuilder: (context, index) {
+                                final liftingDetailsIndex =
+                                    liftingDetails[index];
+                                return buildInvoiceListTile(
+                                    context, liftingDetailsIndex);
+                              },
+                            )
                           : Center(
-                            child: Text(
-                              "No Lifting Details Found.",
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                              child: Text(
+                                "No Lifting Details Found.",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 20),
+                              ),
                             ),
-                      ),
                     ),
-                    // Expanded(
-                    //   child: SingleChildScrollView(
-                    //     child: Column(
-                    //       children: [
-                    //         buildScrollableContainerWithListView(
-                    //             "Lifting Details", buildInvoiceListView),
-                    //       ],
-                    //     ),
-                    //   ),
-                    // ),
                   ],
                 ),
               ),
-      ]),
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Action when FAB is pressed
@@ -194,9 +481,12 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
             context,
             MaterialPageRoute(
               builder: (context) => addDispatchToSaleOrder(
-                  sale_order_id: widget.sale_order_id,
-                  material_name: ViewDispatchData['sale_order_details']?[0]['material_name']?? 'N/A',
-                bidder_id: widget.bidder_id,),
+                sale_order_id: widget.sale_order_id,
+                material_name: ViewDispatchData['sale_order_details']?[0]
+                        ['material_name'] ??
+                    'N/A',
+                bidder_id: widget.bidder_id,
+              ),
             ),
           ).then((value) => setState(() {
                 fetchDispatchDetails();
@@ -240,7 +530,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Text(
-                        "${ViewDispatchData['sale_order_details']?[0]['material_name']?? 'N/A'}",
+                        "${ViewDispatchData['sale_order_details']?[0]['material_name'] ?? 'N/A'}",
                         style: TextStyle(
                           color: Colors.red,
                           fontWeight: FontWeight.normal,
@@ -265,7 +555,6 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
         buildVendorInfoText(
             "Vendor Name: ",
             ViewDispatchData['vendor_buyer_details']['vendor_name'] ?? 'N/A',
@@ -286,7 +575,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Push key left & value right
+        mainAxisAlignment:
+            MainAxisAlignment.spaceBetween, // Push key left & value right
         children: [
           Text(
             key,
@@ -302,7 +592,9 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: isRed ? FontWeight.bold : FontWeight.normal,
-                color: isRed ? Colors.redAccent : Colors.black54, // Color based on isRed
+                color: isRed
+                    ? Colors.redAccent
+                    : Colors.black54, // Color based on isRed
               ),
             ),
           ),
@@ -372,6 +664,9 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
   }
 
   Widget buildInvoiceListTile(BuildContext context, index) {
+    print(index);
+    print("index");
+
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: Card(
@@ -453,6 +748,28 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                   ],
                 ),
               ),
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "Status: ",
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold, // Bold key
+                        fontSize: 16,
+                      ),
+                    ),
+                    TextSpan(
+                      text: "${index['date_time']}",
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.normal, // Normal value
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
           trailing: IconButton(
@@ -466,7 +783,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                             sale_order_id: widget.sale_order_id,
                             bidder_id: widget.bidder_id,
                             lift_id: index['lift_id'],
-                            selectedOrderId: ViewDispatchData['sale_order']['sale_order_code'],
+                            selectedOrderId: ViewDispatchData['sale_order']
+                                ['sale_order_code'],
                             material: index['material_name'],
                             invoiceNo: index['invoice_no'],
                             firstWeight: index['truck_weight'],

@@ -47,18 +47,18 @@ class View_dispatch_lifting_details extends StatefulWidget {
   });
 
   @override
-  State<View_dispatch_lifting_details> createState() => _View_dispatch_lifting_detailsState();
+  State<View_dispatch_lifting_details> createState() =>
+      _View_dispatch_lifting_detailsState();
 }
 
 class _View_dispatch_lifting_detailsState
     extends State<View_dispatch_lifting_details> {
   String? username = '';
- String uuid = '';
+  String uuid = '';
 
   String? password = '';
   String? loginType = '';
   String? userType = '';
-
 
   String selectedOrderId = '';
 
@@ -70,7 +70,7 @@ class _View_dispatch_lifting_detailsState
 
   String truckNo = '';
 
-  String firstWeight= '';
+  String firstWeight = '';
 
   String fullWeight = '';
 
@@ -96,7 +96,7 @@ class _View_dispatch_lifting_detailsState
   @override
   void initState() {
     super.initState();
-    checkLogin().then((_){
+    checkLogin().then((_) {
       setState(() {});
     });
     fetchPaymentDetails();
@@ -105,32 +105,24 @@ class _View_dispatch_lifting_detailsState
     print("Hello");
     print(widget.bidder_id);
     print("Hello");
-
   }
 
-
-  getData(){
-
-
-    print("GM : ${widget.netWeight}");
-
-
+  getData() {
     selectedOrderId = widget.selectedOrderId ?? "N/A";
     material = widget.material ?? 'N/A';
     invoiceNo = widget.invoiceNo ?? 'N/A';
     date = widget.date ?? 'N/A';
-    truckNo = (widget.truckNo?? 'N/A').toUpperCase() ;
+    truckNo = (widget.truckNo ?? 'N/A').toUpperCase();
     firstWeight = widget.firstWeight ?? "N/A";
     fullWeight = widget.fullWeight ?? "N/A";
     moistureWeight = widget.moistureWeight ?? "N/A";
     netWeight = widget.netWeight ?? "N/A";
     quantity = widget.quantity ?? 'N/A';
     note = widget.note ?? 'N/A';
-
   }
 
   Future<void> checkLogin() async {
-     final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     uuid = prefs.getString("uuid")!;
     uuid = prefs.getString("uuid")!;
@@ -139,18 +131,16 @@ class _View_dispatch_lifting_detailsState
     userType = prefs.getString("userType");
   }
 
-
   List<Map<String, dynamic>> taxDetailsList = [];
 
-
-  Map<String , dynamic> taxAmount = {};
-  Map<String , dynamic> ViewPaymentData = {};
-  List<dynamic> paymentId =[];
-  List<dynamic> paymentStatus =[];
-  List<dynamic> emdStatus =[];
-  List<dynamic> cmdStatus =[];
-  List<dynamic> taxes =[];
-  var checkLiftedQty ;
+  Map<String, dynamic> taxAmount = {};
+  Map<String, dynamic> ViewPaymentData = {};
+  List<dynamic> paymentId = [];
+  List<dynamic> paymentStatus = [];
+  List<dynamic> emdStatus = [];
+  List<dynamic> cmdStatus = [];
+  List<dynamic> taxes = [];
+  var checkLiftedQty;
   var netAmount;
 
   showLoading() {
@@ -164,13 +154,11 @@ class _View_dispatch_lifting_detailsState
     );
   }
 
-
   Future<void> fetchImageList() async {
     print("BAHSFHASF");
 
     print(widget.sale_order_id);
-    print( widget.invoiceNo);
-
+    print(widget.invoiceNo);
 
     try {
       setState(() {
@@ -207,11 +195,16 @@ class _View_dispatch_lifting_detailsState
             otherImg = [];
           } else if (jsonData is Map<String, dynamic>) {
             // Handle the valid map response
-            frontVehicle = jsonData['Fr'] != null ? '${Image_URL}${jsonData['Fr']}' : "";
-            backVehicle = jsonData['Ba'] != null ? '${Image_URL}${jsonData['Ba']}' : "";
-            materialImg = jsonData['Ma'] != null ? '${Image_URL}${jsonData['Ma']}' : "";
-            materialHalfLoad = jsonData['Ha'] != null ? '${Image_URL}${jsonData['Ha']}' : "";
-            materialFullLoad = jsonData['Fu'] != null ? '${Image_URL}${jsonData['Fu']}' : "";
+            frontVehicle =
+                jsonData['Fr'] != null ? '${Image_URL}${jsonData['Fr']}' : "";
+            backVehicle =
+                jsonData['Ba'] != null ? '${Image_URL}${jsonData['Ba']}' : "";
+            materialImg =
+                jsonData['Ma'] != null ? '${Image_URL}${jsonData['Ma']}' : "";
+            materialHalfLoad =
+                jsonData['Ha'] != null ? '${Image_URL}${jsonData['Ha']}' : "";
+            materialFullLoad =
+                jsonData['Fu'] != null ? '${Image_URL}${jsonData['Fu']}' : "";
 
             // Handling 'ot' as a list
             if (jsonData['ot'] != null && jsonData['ot'] is List) {
@@ -237,9 +230,7 @@ class _View_dispatch_lifting_detailsState
     }
   }
 
-
   Future<void> fetchPaymentDetails() async {
-
     print(widget.sale_order_id);
     print(widget.bidder_id);
     print("asfasfasf");
@@ -255,10 +246,10 @@ class _View_dispatch_lifting_detailsState
         headers: {"Accept": "application/json"},
         body: {
           'user_id': username,
-          'uuid':uuid,
+          'uuid': uuid,
           'user_pass': password,
-          'sale_order_id':widget.sale_order_id,
-          'bidder_id':widget.bidder_id,
+          'sale_order_id': widget.sale_order_id,
+          'bidder_id': widget.bidder_id,
         },
       );
 
@@ -268,20 +259,22 @@ class _View_dispatch_lifting_detailsState
           var jsonData = json.decode(response.body);
           ViewPaymentData = jsonData;
           paymentId = ViewPaymentData['sale_order_payments'] ?? [];
-          emdStatus =  ViewPaymentData['emd_status'] ?? [];
-          cmdStatus =  ViewPaymentData['cmd_status'] ?? [];
-          paymentStatus =  ViewPaymentData['recieved_payment'] ?? [];
+          emdStatus = ViewPaymentData['emd_status'] ?? [];
+          cmdStatus = ViewPaymentData['cmd_status'] ?? [];
+          paymentStatus = ViewPaymentData['recieved_payment'] ?? [];
           checkLiftedQty = ViewPaymentData['lifted_quantity'];
-          taxes = ViewPaymentData['tax_and_rate']['taxes'] ??[];
+          taxes = ViewPaymentData['tax_and_rate']['taxes'] ?? [];
           taxAmount = ViewPaymentData['tax_and_rate'] ?? {};
 
           // Update your variables with the fetched data
-          materialLiftingDetails = List<Map<String, dynamic>>.from(data['material_lifting_details'].values);
+          materialLiftingDetails = List<Map<String, dynamic>>.from(
+              data['material_lifting_details'].values);
           totalMaterialLiftedAmount = data['total_material_lifted_amount'];
-          liftedQuantity = List<Map<String, dynamic>>.from(data['lifted_quantity']);
+          liftedQuantity =
+              List<Map<String, dynamic>>.from(data['lifted_quantity']);
 
-
-          taxDetailsList = List<Map<String, dynamic>>.from(data['taxDetails'] ?? []);
+          taxDetailsList =
+              List<Map<String, dynamic>>.from(data['taxDetails'] ?? []);
           balanceQty = data['balance_qty'];
           totalBalance = data['total_balance'];
         });
@@ -290,13 +283,12 @@ class _View_dispatch_lifting_detailsState
       }
     } catch (e) {
       print("Server Exception: $e");
-    }finally{
+    } finally {
       setState(() {
         isLoading = false;
       });
     }
   }
-
 
   // Future<void> downloadFile(String url, String fileName) async {
   //
@@ -354,7 +346,8 @@ class _View_dispatch_lifting_detailsState
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Push key left & value right
+        mainAxisAlignment:
+            MainAxisAlignment.spaceBetween, // Push key left & value right
         children: [
           Text(
             key,
@@ -370,53 +363,13 @@ class _View_dispatch_lifting_detailsState
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: isRed ? FontWeight.bold : FontWeight.normal,
-                color: isRed ? Colors.redAccent : Colors.black54, // Color based on isRed
+                color: isRed
+                    ? Colors.redAccent
+                    : Colors.black54, // Color based on isRed
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget buildExpansionTile() {
-    return Material(
-      elevation: 5,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Text(
-                "Sale Order Details",
-                style: TextStyle(
-                  fontSize: 21, // Increase font size
-                  fontWeight: FontWeight.bold, // Make it bold
-                ),
-              ),
-            ),
-            buildPaymentDetailsCard(ViewPaymentData),
-
-            // buildListTile(
-            //     "Material Name : ${ViewPaymentData['sale_order_details']?[0]['material_name'] ?? 'N/A'}"),
-            // buildListTile(
-            //     "Total Qty : ${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
-            // if (ViewPaymentData['lifted_quantity'] != null &&
-            //     ViewPaymentData['lifted_quantity'] is List &&
-            //     ViewPaymentData['lifted_quantity'].isNotEmpty)
-            //   buildListTile(
-            //       "Lifted Qty : ${ViewPaymentData['lifted_quantity'][0]['quantity'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}"),
-            // buildListTile(
-            //     "Rate : ${ViewPaymentData['sale_order_details'][0]['rate'] ?? 'No data'}"),
-            // buildListTile(
-            //     "SO Date : ${ViewPaymentData['sale_order_details'][0]['sod'] ?? 'No data'}"),
-            // buildListTile(
-            //     "SO Validity : ${ViewPaymentData['sale_order_details'][0]['sovu'] ?? 'No data'}
-            Divider(),
-            buildTable(),
-          ],
-        ),
       ),
     );
   }
@@ -431,7 +384,8 @@ class _View_dispatch_lifting_detailsState
           children: [
             buildDetailTile(
                 "Material Name : ",
-                ViewPaymentData['sale_order_details']?[0]['material_name'] ?? 'N/A',
+                ViewPaymentData['sale_order_details']?[0]['material_name'] ??
+                    'N/A',
                 Icons.category),
             buildDetailTile(
                 "Total Qty : ",
@@ -450,7 +404,8 @@ class _View_dispatch_lifting_detailsState
                   Icons.local_shipping),
             buildDetailTile(
                 "Rate : ",
-                ViewPaymentData['sale_order_details'][0]['rate']?.toString() ?? 'No data',
+                ViewPaymentData['sale_order_details'][0]['rate']?.toString() ??
+                    'No data',
                 Icons.attach_money),
             buildDetailTile(
                 "SO Date : ",
@@ -472,8 +427,7 @@ class _View_dispatch_lifting_detailsState
     }
     try {
       DateTime parsedDate = DateTime.parse(dateStr);
-      return
-        DateFormat('dd-MM-yyyy').format(parsedDate);
+      return DateFormat('dd-MM-yyyy').format(parsedDate);
     } catch (e) {
       return 'Invalid date';
     }
@@ -491,7 +445,8 @@ class _View_dispatch_lifting_detailsState
               alignment: Alignment.centerLeft,
               child: Text(
                 title,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
             ),
           ),
@@ -545,13 +500,19 @@ class _View_dispatch_lifting_detailsState
             DataColumn(
               label: Text(
                 'Tax',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87),
               ),
             ),
             DataColumn(
               label: Text(
                 'Amount',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87),
               ),
             ),
           ],
@@ -559,8 +520,10 @@ class _View_dispatch_lifting_detailsState
             DataRow(
               color: MaterialStateProperty.all(Colors.grey.shade200),
               cells: [
-                DataCell(Text('Basic Amount', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataCell(Text('₹${taxAmount['basicTaxAmount']}', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text('Basic Amount',
+                    style: TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text('₹${taxAmount['basicTaxAmount']}',
+                    style: TextStyle(fontWeight: FontWeight.bold))),
               ],
             ),
             if (taxes.isNotEmpty)
@@ -575,8 +538,10 @@ class _View_dispatch_lifting_detailsState
             DataRow(
               color: MaterialStateProperty.all(Colors.grey.shade200),
               cells: [
-                DataCell(Text('Final Amount', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataCell(Text('₹${taxAmount['finalTaxAmount']}', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text('Final Amount',
+                    style: TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text('₹${taxAmount['finalTaxAmount']}',
+                    style: TextStyle(fontWeight: FontWeight.bold))),
               ],
             ),
           ],
@@ -591,7 +556,8 @@ class _View_dispatch_lifting_detailsState
   double totalBalance = 0.0;
   double totalMaterialLiftedAmount = 0.0;
 
-  TableRow buildTableRows(List<String> labels, List<String?> values, int index) {
+  TableRow buildTableRows(
+      List<String> labels, List<String?> values, int index) {
     assert(labels.length == values.length);
 
     return TableRow(
@@ -618,72 +584,7 @@ class _View_dispatch_lifting_detailsState
     );
   }
 
-  TableRow buildTableRow(String label, String? value,int index) {
-    return TableRow(
-      decoration: BoxDecoration(
-        color: index % 2 == 0 ? Colors.white : Colors.grey[200],
-      ),
-      children: [
-        TableCell(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              label,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-        TableCell(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(value.toString()),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget buildSummary() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          buildSummaryRow(
-              "Lifted Quantity:",
-          liftedQuantity.isNotEmpty
-              ? "${liftedQuantity[0]['quantity']} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ""}"
-              : "N/A",
-              totalMaterialLiftedAmount != null ? totalMaterialLiftedAmount.toStringAsFixed(2) : "N/A"
-          ),
-          buildSummaryRow(
-              "Balance:",
-              balanceQty != null
-                  ? "${balanceQty} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ""}"
-                  : "N/A",
-              totalBalance != null ? totalBalance.toStringAsFixed(2) : "N/A"
-          ),
-        ],
-      ),
-    );
-  }
-
-
-  Widget buildSummaryRow(String title, String qty, String amount) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-          SizedBox(width: 20),
-          Text(qty),
-          SizedBox(width: 20),
-          Text(amount),
-        ],
-      ),
-    );
-  }
+  bool isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -693,245 +594,323 @@ class _View_dispatch_lifting_detailsState
       body: isLoading
           ? showLoading()
           : Container(
-        padding: const EdgeInsets.symmetric(vertical: 4.0),
-        color: Colors.grey[100],
-        child: SingleChildScrollView( // Wrap Column inside this
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Dispatch",
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: Colors.blueGrey[400]!),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 4,
-                        offset: Offset(2, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Spacer(),
-                      Text(
-                        "VIEW MATERIAL LIFTING DETAIL",
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              color: Colors.grey[100],
+              child: SingleChildScrollView(
+                // Wrap Column inside this
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        "Dispatch",
                         style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.black54,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          letterSpacing: 1.5,
                         ),
                       ),
-                      Spacer(),
-                      Opacity(
-                        opacity: 1.0,
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.edit,
-                            size: 30,
-                            color: Colors.indigo[800],
-                          ),
-                          onPressed: (userType == 'S' || userType == 'A' || userType == 'U')
-                              ? () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Edit_dispatch_details(
-                                  sale_order_id: widget.sale_order_id,
-                                  bidder_id: widget.bidder_id,
-                                  lift_id: widget.lift_id,
-                                  material: material,
-                                  invoiceNo: invoiceNo,
-                                  truckNo: truckNo,
-                                  firstWeight: firstWeight,
-                                  fullWeight: fullWeight,
-                                  moistureWeight: moistureWeight,
-                                  netWeight: netWeight,
-                                  note: note,
-                                  quantity: quantity,
-                                  selectedOrderId: selectedOrderId,
-                                  date: date,
-                                ),
-                              ),
-                            );
-                          }
-                              : null,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: buildVendorInfo(),
-              ),
-              buildExpansionTile(),
-              SizedBox(height: 16),
-              ListView(
-                shrinkWrap: true, // Important to avoid infinite height issue
-                physics: NeverScrollableScrollPhysics(), // Prevent nested scrolling
-                children: [
-                  buildDisplayField("Material", material),
-                  buildDisplayField("Invoice No", invoiceNo),
-                  buildDisplayField("Date", date),
-                  buildDisplayField("Truck No", truckNo),
-                  buildDisplayField("First Weight", firstWeight),
-                  buildDisplayField("Full Weight", fullWeight),
-                  buildDisplayField("Moisture Weight", moistureWeight),
-                  buildDisplayField("Net Weight", netWeight),
-                  buildDisplayField("Quantity", quantity),
-                  buildDisplayField("Note", note),
-
-                  SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: materialLiftingDetails.asMap().entries.map((entry) {
-                        int index = entry.key;
-                        var item = entry.value;
-
-                        // Get tax details for the current invoice based on index
-                        List<Map<String, dynamic>> taxDetails = (ViewPaymentData['taxDetails'] as List<dynamic>?)
-                            ?.map((taxItem) => Map<String, dynamic>.from(taxItem))
-                            .toList() ?? [];
-
-                        // Ensure taxDetails length matches invoice count
-                        Map<String, dynamic> currentTax = (index < taxDetails.length) ? taxDetails[index] : {};
-
-                        print("Invoice: ${item['invoice_no']}");
-                        print("Tax Details for this invoice: $currentTax");
-
-                        List<String> taxNames = [];
-                        List<String> taxAmounts = [];
-
-                        if (currentTax.isNotEmpty) {
-                          currentTax.forEach((key, value) {
-                            taxNames.add(key); // Tax Name (e.g., IGST-18, TCS)
-                            taxAmounts.add(value.toString()); // Corresponding tax amount
-                          });
-                        }
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Divider(),
-                            Center(
-                              child: Text(
-                                "Invoice Details - ${item['invoice_no']}",
-                                style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Table(
-                              border: TableBorder.symmetric(
-                                inside: BorderSide(color: Colors.grey.shade300),
-                              ),
-                              columnWidths: {
-                                0: FixedColumnWidth(150),
-                              },
-                              children: [
-                                buildTableRows(['INVOICE NO', 'DATE'], [item['invoice_no'], item['date_time']], 1),
-                                buildTableRows(
-                                    ['MATERIAL NAME', 'TRUCK NO'],
-                                    [item['material_name'], item['truck_no'].toString().toUpperCase()],
-                                    0
-                                ),
-                                buildTableRows(
-                                    ['QTY', 'Amount'],
-                                    [
-                                      "${item['qty']} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ""}",
-                                      item['total_amt'].toString()
-                                    ],
-                                    1
-                                ),
-                                for (int i = 0; i < taxNames.length; i++)
-                                  buildTableRows([taxNames[i], 'Amount'], [taxNames[i], taxAmounts[i]], i % 2 == 0 ? 0 : 1),
-                              ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: Colors.blueGrey[400]!),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 4,
+                              offset: Offset(2, 2),
                             ),
                           ],
-                        );
-                      }).toList(),
-                    ),
-                  ),
-
-
-                  Divider(),
-
-                  SizedBox(height: 5),
-                  buildSummary(),
-
-                  SizedBox(height: 50),
-                  if( otherImg!= null ||  otherImg!.isNotEmpty)
-                     Container(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Padding(
-                        //   padding: const EdgeInsets.all(8.0),
-                        //   child: Text(
-                        //     "View Images",
-                        //     style: TextStyle(
-                        //         fontWeight: FontWeight.bold, fontSize: 24),
-                        //   ),
-                        // ),
-                        // ImageWidget(value: '1) Vehicle Front', filePath: frontVehicle!),
-                        // ImageWidget(value: '2) Vehicle Back', filePath: backVehicle!),
-                        // ImageWidget(value: '3) Material', filePath: materialImg!),
-                        // ImageWidget(value: '4) Material Half Load', filePath: materialHalfLoad!),
-                        // ImageWidget(value: '5) Material Full Load', filePath: materialFullLoad!),
-                        ImageWidget(value: 'View Images', filePaths: otherImg),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 60),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text("Back"),
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.indigo[800],
-                        padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Spacer(),
+                            Text(
+                              "VIEW MATERIAL LIFTING DETAIL",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black54,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Spacer(),
+                            Opacity(
+                              opacity: 1.0,
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.edit,
+                                  size: 30,
+                                  color: Colors.indigo[800],
+                                ),
+                                onPressed: (userType == 'S' ||
+                                        userType == 'A' ||
+                                        userType == 'U')
+                                    ? () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                Edit_dispatch_details(
+                                              sale_order_id:
+                                                  widget.sale_order_id,
+                                              bidder_id: widget.bidder_id,
+                                              lift_id: widget.lift_id,
+                                              material: material,
+                                              invoiceNo: invoiceNo,
+                                              truckNo: truckNo,
+                                              firstWeight: firstWeight,
+                                              fullWeight: fullWeight,
+                                              moistureWeight: moistureWeight,
+                                              netWeight: netWeight,
+                                              note: note,
+                                              quantity: quantity,
+                                              selectedOrderId: selectedOrderId,
+                                              date: date,
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    : null,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 16),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: buildVendorInfo(),
+                    ),
+                    SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: materialLiftingDetails.map((item) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (item['invoice_no'] == widget.invoiceNo)
 
+                                Container(
+                                padding: EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border:
+                                      Border.all(color: Colors.grey.shade300),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.1),
+                                      blurRadius: 4,
+                                      spreadRadius: 1,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Invoice No: ${item['invoice_no']}",
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    SizedBox(height: 6),
+                                    Divider(),
+                                    SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.local_shipping,
+                                            color: Colors.grey[700], size: 18),
+                                        SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            "Truck No: ${item['truck_no'].toString().toUpperCase()}",
+                                            style: TextStyle(fontSize: 14),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 5),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.category,
+                                            color: Colors.grey[700], size: 18),
+                                        SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            "Material: ${item['material_name']}",
+                                            style: TextStyle(fontSize: 14),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 10),
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            isExpanded = !isExpanded;
+                                          });
+                                        },
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.blue,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                          ),
+                                        ),
+                                        child: Text("View More →"),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 12), // Spacing between items
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    if (isExpanded == true)
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Table(
+                          border: TableBorder.symmetric(
+                            inside: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          columnWidths: {
+                            0: FixedColumnWidth(150),
+                          },
+                          children: [
+                            buildTableRows(['Material', 'Invoice No'],
+                                [material, invoiceNo], 1),
+                            buildTableRows(['Date', 'Truck No'],
+                                [date, truckNo.toString().toUpperCase()], 0),
+                            buildTableRows(['First Weight', 'Full Weight'],
+                                [firstWeight, fullWeight], 1),
+                            buildTableRows(['Moisture Weight', 'Net Weight'],
+                                [moistureWeight, netWeight], 0),
+                            buildTableRows(
+                                ['Quantity', 'Note'], [quantity, note], 1),
+                          ],
+                        ),
+                      ),
+                    if (isExpanded == true)
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: materialLiftingDetails
+                              .where((item) => item['invoice_no'] == widget.invoiceNo) // Filter matching invoice
+                              .map((item) {
+                            int index = materialLiftingDetails.indexWhere(
+                                    (element) => element['invoice_no'] == widget.invoiceNo);
+
+                            // Get tax details for the current invoice based on index
+                            List<Map<String, dynamic>> taxDetails =
+                                (ViewPaymentData['taxDetails'] as List<dynamic>?)
+                                    ?.map((taxItem) => Map<String, dynamic>.from(taxItem))
+                                    .toList() ??
+                                    [];
+
+                            // Ensure taxDetails length matches invoice count
+                            Map<String, dynamic> currentTax =
+                            (index < taxDetails.length) ? taxDetails[index] : {};
+
+                            print("Invoice: ${item['invoice_no']}");
+                            print("Tax Details for this invoice: $currentTax");
+
+                            List<String> taxNames = [];
+                            List<String> taxAmounts = [];
+
+                            if (currentTax.isNotEmpty) {
+                              currentTax.forEach((key, value) {
+                                taxNames.add(key); // Tax Name (e.g., IGST-18, TCS)
+                                taxAmounts.add(value.toString()); // Corresponding tax amount
+                              });
+                            }
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Divider(),
+                                Center(
+                                  child: Text(
+                                    "Invoice Details - ${item['invoice_no']}",
+                                    style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                SizedBox(height: 5),
+                                Table(
+                                  border: TableBorder.symmetric(
+                                    inside: BorderSide(color: Colors.grey.shade300),
+                                  ),
+                                  columnWidths: {
+                                    0: FixedColumnWidth(150),
+                                  },
+                                  children: [
+                                    buildTableRows(['INVOICE NO', 'DATE'],
+                                        [item['invoice_no'], item['date_time']], 1),
+                                    buildTableRows(['MATERIAL NAME', 'TRUCK NO'],
+                                        [item['material_name'], item['truck_no'].toString().toUpperCase()], 0),
+                                    buildTableRows(['QTY', 'Amount'],
+                                        ["${item['qty']} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ""}",
+                                          item['total_amt'].toString()], 1),
+                                    for (int i = 0; i < taxNames.length; i++)
+                                      buildTableRows(
+                                          [taxNames[i], 'Amount'],
+                                          [taxNames[i], taxAmounts[i]],
+                                          i % 2 == 0 ? 0 : 1),
+                                  ],
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    if (isExpanded == true)
+                      Container(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Padding(
+                            //   padding: const EdgeInsets.all(8.0),
+                            //   child: Text(
+                            //     "View Images",
+                            //     style: TextStyle(
+                            //         fontWeight: FontWeight.bold, fontSize: 24),
+                            //   ),
+                            // ),
+                            // ImageWidget(value: '1) Vehicle Front', filePath: frontVehicle!),
+                            // ImageWidget(value: '2) Vehicle Back', filePath: backVehicle!),
+                            // ImageWidget(value: '3) Material', filePath: materialImg!),
+                            // ImageWidget(value: '4) Material Half Load', filePath: materialHalfLoad!),
+                            // ImageWidget(value: '5) Material Full Load', filePath: materialFullLoad!),
+                            ImageWidget(
+                                value: 'View Images', filePaths: otherImg),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 
   Widget buildDisplayField(String label, String value) {
     return Padding(
-       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
         children: [
           SizedBox(width: 15),
@@ -967,7 +946,9 @@ class _View_dispatch_lifting_detailsState
               ),
             ),
           ),
-          SizedBox(width: 25,)
+          SizedBox(
+            width: 25,
+          )
         ],
       ),
     );
@@ -1079,7 +1060,7 @@ class _ImagePreviewScreenState extends State<ImagePreviewScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor:Colors.blueGrey[700],
+        backgroundColor: Colors.blueGrey[700],
         title: Text(
           "Image Preview",
           style: TextStyle(color: Colors.white),
@@ -1087,10 +1068,8 @@ class _ImagePreviewScreenState extends State<ImagePreviewScreen> {
         elevation: 2,
         shadowColor: Colors.black,
         shape: OutlineInputBorder(
-
-            borderSide: BorderSide(style: BorderStyle.solid ,color: Colors.white60)
-        ),
-
+            borderSide:
+                BorderSide(style: BorderStyle.solid, color: Colors.white60)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -1127,4 +1106,3 @@ class _ImagePreviewScreenState extends State<ImagePreviewScreen> {
     );
   }
 }
-

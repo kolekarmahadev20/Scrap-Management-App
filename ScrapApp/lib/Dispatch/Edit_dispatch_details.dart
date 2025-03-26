@@ -16,6 +16,7 @@ import 'package:scrapapp/Dispatch/View_dispatch_details.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart'; // Import for File
+import 'package:crypto/crypto.dart';
 
 
 class Edit_dispatch_details extends StatefulWidget {
@@ -143,15 +144,21 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   void calculateNetWeight() {
     double firstWeight = double.tryParse(firstWeightNoController.text) ?? 0.0;
     double fullWeight = double.tryParse(fullWeightController.text) ?? 0.0;
-    double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
+    double moistureWeight =
+        double.tryParse(moistureWeightController.text) ?? 0.0;
 
     double netWeight = (fullWeight - firstWeight);
+    netWeight = double.parse(
+        netWeight.toStringAsFixed(3)); // Rounding to 3 decimal places
 
-    double DMTWeight = ((fullWeight - firstWeight) * moistureWeight)/100;
-    DMTWeight = netWeight-DMTWeight;
+    double DMTWeight = ((fullWeight - firstWeight) * moistureWeight) / 100;
+    DMTWeight = netWeight - DMTWeight;
+    DMTWeight = double.parse(
+        DMTWeight.toStringAsFixed(3)); // Rounding to 3 decimal places
+
     // Update the net weight controller with the result
-    netWeightController.text = netWeight.toStringAsFixed(2);
-    quantityController.text = DMTWeight.toStringAsFixed(2);
+    netWeightController.text = netWeight.toStringAsFixed(3);
+    quantityController.text = DMTWeight.toStringAsFixed(3);
   }
 
   void clearFields(){
@@ -254,6 +261,12 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   }
 
 
+  // Function to compute the hash of a file's contents
+  Future<String> computeFileHash(File file) async {
+    var bytes = await file.readAsBytes();
+    return md5.convert(bytes).toString(); // Using MD5 hash
+  }
+
   Future<void> editDispatchDetails() async {
     try {
       setState(() {
@@ -285,19 +298,32 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       request.fields['note'] = noteController.text;
 
       // Add images to the request
-      Future<void> addImages(List<File> images, String keyword, http.MultipartRequest request) async {
+      Future<void> addImages(List<File> images, String keyword,
+          http.MultipartRequest request) async {
+        Set<String> addedHashes = {}; // To track unique image hashes
+
         for (var image in images) {
           File? compressedImage = await compressImage(image);
+
           if (compressedImage != null) {
-            var stream = http.ByteStream(compressedImage.openRead());
-            var length = await compressedImage.length();
-            var multipartFile = http.MultipartFile(
-              'certifications[]',
-              stream,
-              length,
-              filename: '$keyword${compressedImage.path.split('/').last}',
-            );
-            request.files.add(multipartFile);
+            // Generate a unique hash for the image content
+            String imageHash = await computeFileHash(compressedImage);
+
+            if (!addedHashes.contains(imageHash)) {
+              String fileName =
+                  '$keyword${compressedImage.path.split('/').last}';
+              var stream = http.ByteStream(compressedImage.openRead());
+              var length = await compressedImage.length();
+              var multipartFile = http.MultipartFile(
+                'certifications[]',
+                stream,
+                length,
+                filename: fileName,
+              );
+
+              request.files.add(multipartFile);
+              addedHashes.add(imageHash); // Track added image hash
+            }
           }
         }
       }
@@ -596,13 +622,13 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
                   child: ListView(
                     children: [
                       buildTextField("Material", materialController,true, false , Colors.white,context),
-                      buildTextField("Invoice No", invoiceController , true,false ,Colors.white, context),
+                      buildTextField("Invoice No", invoiceController , false,false ,Colors.white, context),
                       buildTextField("Date", dateController, true,false , Colors.white,context),
                       buildTextField("Truck No", truckNoController, true,false ,Colors.white, context),
                       buildTextField("First Weight", firstWeightNoController, false,false ,Colors.white, context),
                       buildTextField("Gross Weight", fullWeightController, false,false , Colors.white,context),
                       buildTextField("Net", netWeightController, true,false ,Colors.grey[400]!, context),
-                      buildTextField("Moisture Weight", moistureWeightController, true,false ,Colors.white, context),
+                      buildTextField("Moisture Weight", moistureWeightController, false,false ,Colors.white, context),
                       buildTextField("DMT/Quantity Weight", quantityController, true,false , Colors.white,context),
                       buildTextField("Note", noteController, true,false , Colors.white,context),
                       SizedBox(height: 25,),
@@ -644,106 +670,105 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
                           ],
                         ),
                       ),
-                      // Container(
-                      //
-                      //   child: Column(
-                      //     crossAxisAlignment: CrossAxisAlignment.start,
-                      //     children: [
-                      //       Padding(
-                      //         padding: const EdgeInsets.all(8.0),
-                      //         child: Text("Edit Images" , style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
-                      //       ),
-                      //       ImageWidget(
-                      //           value: '1) Vehicle Front',
-                      //           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                      //           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                      //           filePath: frontVehicle!,
-                      //           onImagesSelected: (images) { // Handle selected images
-                      //             setState(() {
-                      //               vehicleFront.addAll(images); // Store uploaded images
-                      //               print(vehicleFront);
-                      //             });
-                      //           }
-                      //       ),
-                      //       ImageWidget(
-                      //           value: '2) Vehicle Back',
-                      //           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                      //           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                      //           filePath: backVehicle!,
-                      //           onImagesSelected: (images) { // Handle selected images
-                      //             setState(() {
-                      //               vehicleBack.addAll(images); // Store uploaded images
-                      //             });
-                      //           }
-                      //       ),
-                      //       ImageWidget(
-                      //           value: '3) Material',
-                      //           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                      //           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                      //           filePath: materialImg!,
-                      //           onImagesSelected: (images) { // Handle selected images
-                      //             setState(() {
-                      //               Material.addAll(images); // Store uploaded images
-                      //             });
-                      //           }
-                      //       ),
-                      //       ImageWidget(
-                      //           value: '4) Material Half Load',
-                      //           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                      //           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                      //           filePath: materialHalfLoad!,
-                      //           onImagesSelected: (images) { // Handle selected images
-                      //             setState(() {
-                      //               MaterialHalfLoad.addAll(images); // Store uploaded images
-                      //             });
-                      //           }
-                      //       ),
-                      //       ImageWidget(
-                      //           value: '5) Material Full Load',
-                      //           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                      //           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                      //           filePath: materialFullLoad!,
-                      //           onImagesSelected: (images) { // Handle selected images
-                      //             setState(() {
-                      //               MaterialFullLoad.addAll(images); // Store uploaded images
-                      //             });
-                      //           }
-                      //       ),
-                      //       ImageWidget(
-                      //           value: '6) Other',
-                      //           cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                      //           galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                      //           filePath: otherImg!,
-                      //           onImagesSelected: (images) { // Handle selected images
-                      //             setState(() {
-                      //               other.addAll(images); // Store uploaded images
-                      //             });
-                      //           }
-                      //       ),
-                      //     ],
-                      //   ),
-                      // ),
+                      Container(
+
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text("Edit Images" , style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
+                            ),
+                            // ImageWidget(
+                            //     value: '1) Vehicle Front',
+                            //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                            //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                            //     filePath: frontVehicle!,
+                            //     onImagesSelected: (images) { // Handle selected images
+                            //       setState(() {
+                            //         vehicleFront.addAll(images); // Store uploaded images
+                            //         print(vehicleFront);
+                            //       });
+                            //     }
+                            // ),
+                            // ImageWidget(
+                            //     value: '2) Vehicle Back',
+                            //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                            //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                            //     filePath: backVehicle!,
+                            //     onImagesSelected: (images) { // Handle selected images
+                            //       setState(() {
+                            //         vehicleBack.addAll(images); // Store uploaded images
+                            //       });
+                            //     }
+                            // ),
+                            // ImageWidget(
+                            //     value: '3) Material',
+                            //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                            //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                            //     filePath: materialImg!,
+                            //     onImagesSelected: (images) { // Handle selected images
+                            //       setState(() {
+                            //         Material.addAll(images); // Store uploaded images
+                            //       });
+                            //     }
+                            // ),
+                            // ImageWidget(
+                            //     value: '4) Material Half Load',
+                            //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                            //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                            //     filePath: materialHalfLoad!,
+                            //     onImagesSelected: (images) { // Handle selected images
+                            //       setState(() {
+                            //         MaterialHalfLoad.addAll(images); // Store uploaded images
+                            //       });
+                            //     }
+                            // ),
+                            // ImageWidget(
+                            //     value: '5) Material Full Load',
+                            //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                            //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                            //     filePath: materialFullLoad!,
+                            //     onImagesSelected: (images) { // Handle selected images
+                            //       setState(() {
+                            //         MaterialFullLoad.addAll(images); // Store uploaded images
+                            //       });
+                            //     }
+                            // ),
+                            EditImageWidget(
+                                value: 'Add Images',
+                                cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                onImagesSelected: (images) { // Handle selected images
+                                  setState(() {
+                                    other.addAll(images); // Store uploaded images
+                                  });
+                                }
+                            ),
+                          ],
+                        ),
+                      ),
                       SizedBox(height: 60,),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            ElevatedButton(
-                              onPressed: () {
-                                clearFields();
-                                Navigator.of(context).pop();
-                              },
-                              child: Text("Back"),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.indigo[800],
-                                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
+                            // ElevatedButton(
+                            //   onPressed: () {
+                            //     clearFields();
+                            //     Navigator.of(context).pop();
+                            //   },
+                            //   child: Text("Back"),
+                            //   style: ElevatedButton.styleFrom(
+                            //     foregroundColor: Colors.white,
+                            //     backgroundColor: Colors.indigo[800],
+                            //     padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                            //     shape: RoundedRectangleBorder(
+                            //       borderRadius: BorderRadius.circular(12),
+                            //     ),
+                            //   ),
+                            // ),
                             ElevatedButton(
                               onPressed: () {
                                 editDispatchDetails();
@@ -850,6 +875,167 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
     );
   }
 }
+
+
+class EditImageWidget extends StatefulWidget {
+  final String value;
+  final Icon cameraIcon;
+  final Icon galleryIcon;
+  final Function(List<File>) onImagesSelected;
+
+  const EditImageWidget({
+    Key? key,
+    required this.value,
+    required this.cameraIcon,
+    required this.galleryIcon,
+    required this.onImagesSelected,
+  }) : super(key: key);
+
+  @override
+  _EditImageWidgetState createState() => _EditImageWidgetState();
+}
+
+class _EditImageWidgetState extends State<EditImageWidget> {
+  List<File> _images = [];
+
+  // Function to pick multiple images from the gallery
+  Future<void> _pickImagesFromGallery() async {
+    final picker = ImagePicker();
+    // final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery); // Pick only one image
+    List<XFile>? pickedFile = await ImagePicker().pickMultiImage();
+
+    if (pickedFile != null) {
+      for (var pickedImage in pickedFile) {
+        _images.add(
+            File(pickedImage.path)); // Append images instead of overwriting
+      }
+
+      setState(() {
+        // _images = [File(pickedFile.path)]; // Replace the list with the new image
+      });
+      widget.onImagesSelected(_images);
+      // _showSingleImageNotification();
+    }
+  }
+
+  // Function to capture a single image using the camera
+  Future<void> _captureImageFromCamera() async {
+    final picker = ImagePicker();
+    final XFile? capturedFile =
+    await picker.pickImage(source: ImageSource.camera);
+
+    if (capturedFile != null) {
+      setState(() {
+        _images.add(File(capturedFile.path));
+        // _images = [File(capturedFile.path)]; // Replace the list with the new captured image
+      });
+      widget.onImagesSelected(_images);
+      // _showSingleImageNotification();
+    }
+  }
+
+  void _showSingleImageNotification() {
+    // Use Future to delay the snackbar to ensure widget is mounted
+    Future.delayed(Duration.zero, () {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("You can only upload one image at a time."),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    });
+  }
+
+  // Function to delete a selected image
+  void _deleteImage(int index) {
+    setState(() {
+      _images.removeAt(index); // Remove the image at the specified index
+      widget.onImagesSelected(_images); // Update parent with the new list
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                widget.value,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Spacer(),
+              IconButton(
+                icon: widget.cameraIcon,
+                onPressed: _captureImageFromCamera, // Calls the camera function
+              ),
+              IconButton(
+                icon: widget.galleryIcon,
+                onPressed:
+                _pickImagesFromGallery, // Calls the gallery picker function
+              ),
+            ],
+          ),
+        ),
+        _images.isNotEmpty
+            ? GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3, // Display 3 images per row
+            crossAxisSpacing: 4.0,
+            mainAxisSpacing: 4.0,
+          ),
+          itemCount: _images.length,
+          itemBuilder: (context, index) {
+            return Stack(
+              children: [
+                Container(
+                  height: 100, // Set fixed height for images
+                  width: 100, // Set fixed width for images
+                  child: ClipRRect(
+                    borderRadius:
+                    BorderRadius.circular(8), // Rounded corners
+                    child: Image.file(
+                      _images[index],
+                      fit: BoxFit
+                          .cover, // Ensure the image fits within the container
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () =>
+                        _deleteImage(index), // Delete the selected image
+                  ),
+                ),
+              ],
+            );
+          },
+        )
+            : Container(),
+      ],
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
 
 class ImageWidget extends StatefulWidget {
   final String value;
