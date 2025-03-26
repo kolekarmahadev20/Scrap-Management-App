@@ -110,6 +110,11 @@ class _View_dispatch_lifting_detailsState
 
 
   getData(){
+
+
+    print("GM : ${widget.netWeight}");
+
+
     selectedOrderId = widget.selectedOrderId ?? "N/A";
     material = widget.material ?? 'N/A';
     invoiceNo = widget.invoiceNo ?? 'N/A';
@@ -432,10 +437,10 @@ class _View_dispatch_lifting_detailsState
                 "Total Qty : ",
                 "${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}",
                 Icons.inventory),
-            buildDetailTile(
-                "Balance Qty : ",
-                "${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}",
-                Icons.inventory),
+            // buildDetailTile(
+            //     "Balance Qty : ",
+            //     "${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}",
+            //     Icons.inventory),
             if (ViewPaymentData['lifted_quantity'] != null &&
                 ViewPaymentData['lifted_quantity'] is List &&
                 ViewPaymentData['lifted_quantity'].isNotEmpty)

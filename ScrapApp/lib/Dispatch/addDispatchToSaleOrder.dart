@@ -115,14 +115,33 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
 
     double netWeight = (fullWeight - firstWeight);
+    netWeight = double.parse(netWeight.toStringAsFixed(3)); // Rounding to 3 decimal places
 
-    double DMTWeight = ((fullWeight - firstWeight) * moistureWeight)/100;
-    DMTWeight = netWeight-DMTWeight;
+    double DMTWeight = ((fullWeight - firstWeight) * moistureWeight) / 100;
+    DMTWeight = netWeight - DMTWeight;
+    DMTWeight = double.parse(DMTWeight.toStringAsFixed(3)); // Rounding to 3 decimal places
 
     // Update the net weight controller with the result
-    netWeightController.text = netWeight.toStringAsFixed(2);
-    quantityController.text = DMTWeight.toStringAsFixed(2);
+    netWeightController.text = netWeight.toStringAsFixed(3);
+    quantityController.text = DMTWeight.toStringAsFixed(3);
   }
+
+
+
+  // void calculateNetWeight() {
+  //   double firstWeight = double.tryParse(firstWeightNoController.text) ?? 0.0;
+  //   double fullWeight = double.tryParse(fullWeightController.text) ?? 0.0;
+  //   double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
+  //
+  //   double netWeight = (fullWeight - firstWeight);
+  //
+  //   double DMTWeight = ((fullWeight - firstWeight) * moistureWeight)/100;
+  //   DMTWeight = netWeight-DMTWeight;
+  //
+  //   // Update the net weight controller with the result
+  //   netWeightController.text = netWeight.toStringAsFixed(2);
+  //   quantityController.text = DMTWeight.toStringAsFixed(2);
+  // }
 
   Future<void> materialNameId() async {
     try {

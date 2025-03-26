@@ -66,9 +66,9 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
   }
 
   Future<void> fetchPaymentDetails() async {
-    print(widget.sale_order_id);
-    print(widget.bidder_id);
     print("asfasfasf");
+    print("Sale Order ID: ${widget.sale_order_id}");
+    print("Bidder ID: ${widget.bidder_id}");
 
     try {
       setState(() {
@@ -477,10 +477,10 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
                 "Total Qty : ",
                 "${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}",
                 Icons.inventory),
-            buildDetailTile(
-                "Balance Qty : ",
-                "${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}",
-                Icons.inventory),
+            // buildDetailTile(
+            //     "Balance Qty : ",
+            //     "${ViewPaymentData['sale_order_details'][0]['qty'] ?? 'No data'} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ''}",
+            //     Icons.inventory),
             if (ViewPaymentData['lifted_quantity'] != null &&
                 ViewPaymentData['lifted_quantity'] is List &&
                 ViewPaymentData['lifted_quantity'].isNotEmpty)
