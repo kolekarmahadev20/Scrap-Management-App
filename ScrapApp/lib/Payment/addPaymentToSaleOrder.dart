@@ -364,24 +364,24 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 8.0),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      clearFields();
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text("Back"),
-                                    style: ElevatedButton.styleFrom(
-                                      foregroundColor: Colors.white,
-                                      backgroundColor: Colors.indigo[800],
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 50, vertical: 12),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  ),
+                                  // ElevatedButton(
+                                  //   onPressed: () {
+                                  //     clearFields();
+                                  //     Navigator.of(context).pop();
+                                  //   },
+                                  //   child: Text("Back"),
+                                  //   style: ElevatedButton.styleFrom(
+                                  //     foregroundColor: Colors.white,
+                                  //     backgroundColor: Colors.indigo[800],
+                                  //     padding: EdgeInsets.symmetric(
+                                  //         horizontal: 50, vertical: 12),
+                                  //     shape: RoundedRectangleBorder(
+                                  //       borderRadius: BorderRadius.circular(12),
+                                  //     ),
+                                  //   ),
+                                  // ),
                                   ElevatedButton(
                                     onPressed: () {
                                       addPaymentDetails();

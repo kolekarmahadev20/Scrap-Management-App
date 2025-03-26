@@ -512,6 +512,17 @@ class _View_refund_detailsState extends State<View_refund_details> {
   }
 
   Widget buildTable() {
+    // Use a Set to keep track of unique tax names
+    Set<String> uniqueTaxNames = {};
+    List<Map<String, dynamic>> uniqueTaxes = [];
+
+    for (var tax in taxes) {
+      if (!uniqueTaxNames.contains(tax['tax_name'])) {
+        uniqueTaxNames.add(tax['tax_name']);
+        uniqueTaxes.add(tax);
+      }
+    }
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Container(
@@ -558,8 +569,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
                 DataCell(Text('₹${taxAmount['basicTaxAmount']}', style: TextStyle(fontWeight: FontWeight.bold))),
               ],
             ),
-            if (taxes.isNotEmpty)
-              ...taxes.map((tax) {
+            if (uniqueTaxes.isNotEmpty)
+              ...uniqueTaxes.map((tax) {
                 return DataRow(
                   cells: [
                     DataCell(Text(tax['tax_name'] ?? 'No data')),
@@ -570,7 +581,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
             DataRow(
               color: MaterialStateProperty.all(Colors.grey.shade200),
               cells: [
-                DataCell(Text('Final Amount', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text('Final SO Amount', style: TextStyle(fontWeight: FontWeight.bold))),
                 DataCell(Text('₹${taxAmount['finalTaxAmount']}', style: TextStyle(fontWeight: FontWeight.bold))),
               ],
             ),
@@ -805,7 +816,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                           ),
                         ),
                         TextSpan(
-                          text: "${index['date'] ?? 'N/A'}",
+                          text: formatDate(index['date'] ?? 'N/A'),
                           style: TextStyle(
                             color: Colors.black54,
                             fontWeight: FontWeight.normal, // Normal value
@@ -973,7 +984,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                           ),
                         ),
                         TextSpan(
-                          text: "${index['date'] ?? 'N/A'}",
+                          text: formatDate(index['date'] ?? 'N/A'),
                           style: TextStyle(
                             color: Colors.black54,
                             fontWeight: FontWeight.normal, // Normal value
@@ -1139,7 +1150,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                         ),
                       ),
                       TextSpan(
-                        text: "${index['date'] ?? 'N/A'}",
+                        text: formatDate(index['date'] ?? 'N/A'),
                         style: TextStyle(
                           color: Colors.black54,
                           fontWeight: FontWeight.normal, // Normal value

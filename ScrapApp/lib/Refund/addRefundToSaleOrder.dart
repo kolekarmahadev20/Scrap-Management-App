@@ -321,7 +321,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
                             buildTextField("Date", dateController1, false,true ,Colors.white, context),
                           ]else ...[
                             buildTextField("Amount", amountController, false,false ,Colors.white, context),
-                            buildTextField("Ref/RV No.", refNoController, false,false , Colors.white,context),
+                            buildTextField("NFA No.", refNoController, false,false , Colors.white,context),
                             buildTextField("Date", dateController1, false,true , Colors.white,context),
                             buildTextField("Remark", noteController, false,false , Colors.white,context),
 
@@ -332,24 +332,24 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8.0),
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                ElevatedButton(
-                                  onPressed: () {
-                                    clearFields();
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text("Back"),
-                                  style: ElevatedButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    backgroundColor: Colors.indigo[800],
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: 50, vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                ),
+                                // ElevatedButton(
+                                //   onPressed: () {
+                                //     clearFields();
+                                //     Navigator.of(context).pop();
+                                //   },
+                                //   child: Text("Back"),
+                                //   style: ElevatedButton.styleFrom(
+                                //     foregroundColor: Colors.white,
+                                //     backgroundColor: Colors.indigo[800],
+                                //     padding: EdgeInsets.symmetric(
+                                //         horizontal: 50, vertical: 12),
+                                //     shape: RoundedRectangleBorder(
+                                //       borderRadius: BorderRadius.circular(12),
+                                //     ),
+                                //   ),
+                                // ),
                                 ElevatedButton(
                                   onPressed: () {
                                     validateAndAddRefundDetails();
