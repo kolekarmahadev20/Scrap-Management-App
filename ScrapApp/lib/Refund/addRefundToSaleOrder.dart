@@ -306,7 +306,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
                           }),
                           if (selectedPaymentType == "R") ...[
                             buildTextField("Amount", amountController, false ,false , Colors.white,context),
-                            buildTextField("NFA No.", nfaController, false,false ,Colors.white, context),
+                            buildTextField("RV No.", nfaController, false,false ,Colors.white, context),
                             buildTextField("Date", dateController1, false,true ,Colors.white, context),
                           ] else if (selectedPaymentType == "RE" || selectedPaymentType == "Rc") ...[
                             buildTextField("Amount", amountController, false,false ,Colors.white, context),

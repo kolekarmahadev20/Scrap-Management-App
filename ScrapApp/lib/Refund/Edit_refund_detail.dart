@@ -311,7 +311,7 @@ class _Edit_refund_detailState extends State<Edit_refund_detail> {
                         // buildTextField("Total EMD", totalEmdController, true,false , Colors.white,context),
                         // buildTextField("Total Amount Including EMD", totalAmountEmdController, true,false ,Colors.white, context),
                         buildTextField("Note", noteController, false,false , Colors.white,context),
-                        buildTextField("NFA No.", refNoController, false,false , Colors.white,context),
+                        buildTextField("RV No.", refNoController, false,false , Colors.white,context),
                         // buildTextField("RV No.", rvNoController, false,false , Colors.white,context),
                         buildTextField("RV Date", dateController2, false,true ,Colors.white, context),
                       ],

@@ -240,7 +240,7 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
                   buildDisplay("Freezed", freezed == 'Y' ? 'Yes' : 'No'),
                   buildDisplay("Date", date1),
                   buildDisplay("Amount", amount),
-                  buildDisplay("Ref/RV No.", referenceNo),
+                  buildDisplay("NFA No.", referenceNo),
                   buildDisplay("Type Of Transfer", typeOfTransfer),
                   buildDisplay("Remark", remark),
                   SizedBox(height: 40,),
