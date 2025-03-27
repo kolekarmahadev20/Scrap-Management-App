@@ -37,6 +37,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
 
   Map<String , dynamic> taxAmount = {};
   Map<String, dynamic> ViewRefundData = {};
+  double totalBalance = 0.0;
   List<dynamic> refundId = [];
   List<dynamic> refundStatus =[];
   List<dynamic> emdStatus = [];
@@ -50,6 +51,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
       setState(() {});
     });
     fetchRefundDetails();
+    fetchPaymentDetails();
   }
 
   Future<void> checkLogin() async {
@@ -63,6 +65,11 @@ class _View_refund_detailsState extends State<View_refund_details> {
   }
 
   Future<void> fetchRefundDetails() async {
+
+    print("POAFSF");
+    print(widget.sale_order_id);
+    print(widget.bidder_id);
+
     try {
       setState(() {
         isLoading = true;
@@ -97,6 +104,45 @@ class _View_refund_detailsState extends State<View_refund_details> {
     } catch (e) {
       print("Server Exception: $e");
     }finally{
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> fetchPaymentDetails() async {
+
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      await checkLogin();
+      final url = Uri.parse("${URL}payment_details");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': username,
+          'uuid': uuid,
+          'user_pass': password,
+          'sale_order_id': widget.sale_order_id,
+          'bidder_id': widget.bidder_id,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          final data = json.decode(response.body);
+          var jsonData = json.decode(response.body);
+          totalBalance = (data['total_balance'] as num).toDouble();
+
+        });
+      } else {
+        print("Unable to fetch data.");
+      }
+    } catch (e) {
+      print("Server Exception: $e");
+    } finally {
       setState(() {
         isLoading = false;
       });
@@ -498,6 +544,12 @@ class _View_refund_detailsState extends State<View_refund_details> {
                 "SO Validity : ",
                 formatDate(ViewRefundData['sale_order_details'][0]['sovu']),
                 Icons.event_available),
+
+            buildDetailTile(
+              "Balance\nAdvance Amount : ",
+              totalBalance.toString(),
+              Icons.account_balance_wallet,
+            ),
           ],
         ),
       ),

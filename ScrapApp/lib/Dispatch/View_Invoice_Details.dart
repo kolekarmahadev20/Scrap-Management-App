@@ -244,6 +244,8 @@ class _InvoicePageState extends State<InvoicePage> {
     );
   }
 
+  TextEditingController finalAmountController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
 
@@ -273,6 +275,8 @@ class _InvoicePageState extends State<InvoicePage> {
                         int index = entry.key;
                         var item = entry.value;
 
+                        finalAmountController.text = item["total_amt"].toString();
+
                         return [
                           buildTableRows(
                             ['INVOICE NO', 'DATE'],
@@ -285,10 +289,14 @@ class _InvoicePageState extends State<InvoicePage> {
                             0,
                           ),
                           buildTableRows(
-                            ['QTY', 'Amount'],
-                            [item["qty"], item["total_amt"].toString()],
+                            ['QTY', 'Basic Amount'],
+                            [
+                              item["qty"],
+                              (double.parse(item["rate"]) * double.parse(item["qty"])).toStringAsFixed(2) // Ensure 2 decimal places
+                            ],
                             1,
                           ),
+
                           // Extra row for spacing
                           TableRow(children: [
                             Container(height: 25), // Adjust height as needed
@@ -303,22 +311,22 @@ class _InvoicePageState extends State<InvoicePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text("Sub Total: ${invoiceData!["sub_total"]}",
-                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          // Text("Sub Total: ${invoiceData!["sub_total"]}",
+                          //     style: TextStyle(fontWeight: FontWeight.bold)),
 
                           // Tax Details Show Karne Ke Liye
                           if (materialLiftingDetails.isNotEmpty && materialLiftingDetails.first["tax_details"] != null)
                             ...materialLiftingDetails.first["tax_details"].map<Widget>((tax) {
                               return Text(
-                                "${tax["tax_name"]}: ${tax["tax_value"]}",
+                                "${tax["tax_name"]} - ${tax["tax_rate"]} % : ${tax["tax_value"]}",
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               );
                             }).toList(),
 
                           SizedBox(height: 10),
-                          Text("Balance Due: RS ${invoiceData!["balance_due"]}",
+                          Text("FINAL AMOUNT	: ${finalAmountController.text}",
                               style: TextStyle(
-                                  color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold)),
+                                  color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),
