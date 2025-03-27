@@ -1,119 +1,361 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../AppClass/AppDrawer.dart';
+import '../AppClass/appBar.dart';
+import '../ImageViewer.dart';
+import '../URL_CONSTANT.dart';
 
 class InvoicePage extends StatefulWidget {
+  final String sale_order_id;
+  final String bidder_id;
+  final String? invoiceNo;
+
+  InvoicePage({
+    required this.sale_order_id,
+    required this.bidder_id,
+    required this.invoiceNo,
+  });
+
   @override
   State<InvoicePage> createState() => _InvoicePageState();
 }
 
 class _InvoicePageState extends State<InvoicePage> {
+  Map<String, dynamic>? invoiceData;
+  List<dynamic> materialLiftingDetails = [];
+  List<String> imageList = [];
+
+  String? username = '';
+  String uuid = '';
+  String? password = '';
+  String? loginType = '';
+  String? userType = '';
+
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Invoice"),
-        backgroundColor: Colors.blueAccent,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
+  void initState() {
+    super.initState();
+    fetchInvoiceData();
+    fetchImageList();
+  }
+
+  Future<void> checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString("username");
+    uuid = prefs.getString("uuid")!;
+    uuid = prefs.getString("uuid")!;
+    password = prefs.getString("password");
+    loginType = prefs.getString("loginType");
+    userType = prefs.getString("userType");
+  }
+
+  Future<void> fetchImageList() async {
+    await checkLogin();
+    final url = Uri.parse("${URL}check_url");
+
+    var response = await http.post(
+      url,
+      headers: {"Accept": "application/json"},
+      body: {
+        'user_id': username,
+        'uuid': uuid,
+        'user_pass': password,
+        'sale_order_id': widget.sale_order_id,
+        'invoice_no': widget.invoiceNo,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+
+      if (data.containsKey("images") && data["images"] is Map) {
+        List<String> imageUrls = [];
+
+        // Define base URL
+        String baseUrl = "${URL}";
+
+        // Extract URLs from "ot" key
+        if (data["images"].containsKey("ot") && data["images"]["ot"] is List) {
+          imageUrls = data["images"]["ot"].map<String>((path) => baseUrl + path).toList();
+        }
+
+        setState(() {
+          imageList = imageUrls;
+          print("ASFASFASF:$imageList");
+        });
+      }
+    } else {
+      print("Failed to load invoice data");
+    }
+  }
+  List<String> taxNames = [];
+  List<String> taxRates = [];
+  List<String> taxValues = [];
+
+  Future<void> fetchInvoiceData() async {
+    await checkLogin();
+    final url = Uri.parse("${URL}payment_details");
+    var response = await http.post(
+      url,
+      headers: {"Accept": "application/json"},
+      body: {
+        'user_id': username,
+        'uuid': uuid,
+        'user_pass': password,
+        'sale_order_id': widget.sale_order_id,
+        'bidder_id': widget.bidder_id,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      setState(() {
+        invoiceData = data;
+        if (invoiceData!["material_lifting_details"] is Map) {
+          // Sirf us invoice ka data filter karna
+          materialLiftingDetails = invoiceData!["material_lifting_details"]
+              .values
+              .where((item) => item["invoice_no"] == widget.invoiceNo)
+              .toList();
+
+          if (materialLiftingDetails.isNotEmpty) {
+            var selectedInvoice = materialLiftingDetails.first;
+
+            // Agar tax_details exist karta hai to fetch karein
+            if (selectedInvoice["tax_details"] != null && selectedInvoice["tax_details"] is List) {
+              List<Map<String, dynamic>> taxDetails = List<Map<String, dynamic>>.from(selectedInvoice["tax_details"]);
+
+              // Tax details ko alag variables me store karna
+              taxNames = taxDetails.map((tax) => tax["tax_name"].toString()).toList();
+              taxRates = taxDetails.map((tax) => tax["tax_rate"].toString()).toList();
+              taxValues = taxDetails.map((tax) => tax["tax_value"].toString()).toList();
+
+              print("Tax Names: $taxNames");
+              print("Tax Rates: $taxRates");
+              print("Tax Values: $taxValues");
+            } else {
+              print("No tax details available for this invoice.");
+            }
+          } else {
+            print("No matching invoice found.");
+          }
+        }
+      });
+    } else {
+      print("Failed to load invoice data");
+    }
+  }
+
+
+  Widget _buildInvoiceHeader() {
+    if (invoiceData == null) {
+      return Center(child: Text("Invoice data not available"));
+    }
+
+    var saleOrder = invoiceData!['sale_order'] ?? {};
+    var liftingDetails = invoiceData!["material_lifting_details"]
+        .values
+        .firstWhere(
+            (item) => item["invoice_no"] == widget.invoiceNo,
+        orElse: () => {});
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text("TAX INVOICE", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        SizedBox(height: 8),
-                        Text("Balance Due: RS 54,000", style: TextStyle(color: Colors.red, fontSize: 16)),
-                        SizedBox(height: 10),
-                        Text("Invoice Date: 24/6/2025"),
-                        Text("Start: Due on receive"),
-                        Text("End Date: 12/3/2025"),
-                        Text("POD: 34344343"),
-                      ],
+                  Text(
+                    "Invoice No: ${liftingDetails['invoice_no'] ?? 'N/A'}",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
                   ),
+                  SizedBox(width: 10),
+                  IconButton(
+                    onPressed: imageList.isNotEmpty
+                        ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ImageViewer(imgUrls: imageList),
+                        ),
+                      );
+                    }
+                        : null, // Disable button if no images
+                    icon: Icon(
+                      imageList.isNotEmpty ? Icons.image : Icons.image_not_supported, // Change icon if empty
+                      size: 24,
+                      color: imageList.isNotEmpty ? Colors.blue : Colors.grey, // Change color if empty
+                    ),
+                  )
                 ],
               ),
-              SizedBox(height: 20),
-              Text("Bill To:", style: TextStyle(fontWeight: FontWeight.bold)),
-              Text("Mishra Traders"),
-              Text("35, Asha Colony, Coimbatore, Chennai"),
-              Text("GSTIN: 4545454544"),
-              SizedBox(height: 20),
-              Table(
-                border: TableBorder.all(),
-                columnWidths: {
-                  0: FlexColumnWidth(2),
-                  1: FlexColumnWidth(1),
-                  2: FlexColumnWidth(1),
-                  3: FlexColumnWidth(1),
-                  4: FlexColumnWidth(1),
-                  5: FlexColumnWidth(1),
-                  6: FlexColumnWidth(1),
-                },
-                children: [
-                  TableRow(
-                    decoration: BoxDecoration(color: Colors.grey[300]),
-                    children: [
-                      tableCell("Items & Description"),
-                      tableCell("MGN & SRC"),
-                      tableCell("HRS"),
-                      tableCell("Rate"),
-                      tableCell("CGST"),
-                      tableCell("SGST"),
-                      tableCell("Amount"),
-                    ],
-                  ),
-                  tableRow("Structure Design", "992", "1.00", "2323", "5454", "7878", "50,000"),
-                  tableRow("Responsive Design", "456", "3.00", "5323", "5554", "7578", "80,000"),
-                  tableRow("Startofand Design", "456", "3.00", "5323", "5554", "7578", "80,000"),
-                ],
-              ),
-              SizedBox(height: 20),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text("Sub Total: 53,000", style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text("CGST: 6,3600", style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text("SGST: 6,3600", style: TextStyle(fontWeight: FontWeight.bold)),
-                    SizedBox(height: 10),
-                    Text("Balance Due: RS 45,000", style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ),
+              Divider(),
+              SizedBox(height: 18),
+              Text("Invoice No: ${liftingDetails['invoice_no'] ?? 'N/A'}"),
+              Text("Material: ${liftingDetails['material_name'] ?? 'N/A'}"),
+              Text("Truck No: ${liftingDetails['truck_no'] ?? 'N/A'}"),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget tableCell(String text) {
-    return Padding(
-      padding: EdgeInsets.all(8.0),
-      child: Text(text, style: TextStyle(fontWeight: FontWeight.bold)),
-    );
-  }
-
-  TableRow tableRow(String item, String mgn, String hrs, String rate, String cgst, String sgst, String amount) {
-    return TableRow(
-      children: [
-        tableCell(item),
-        tableCell(mgn),
-        tableCell(hrs),
-        tableCell(rate),
-        tableCell(cgst),
-        tableCell(sgst),
-        tableCell(amount),
       ],
     );
   }
+
+  Widget _buildBillToSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+            "Vendor Name : ${invoiceData!['vendor_buyer_details']['vendor_name']}"),
+        Text(
+            "Buyer Name : ${invoiceData!['vendor_buyer_details']['bidder_name']}"),
+        Text("Branch: ${invoiceData!['vendor_buyer_details']['branch_name']}"),
+      ],
+    );
+  }
+
+  TableRow buildTableRow(String label, String? value) {
+    return TableRow(
+      decoration: BoxDecoration(color: Colors.grey[200]),
+      children: [
+        TableCell(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ),
+        TableCell(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(value ?? ""),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    print("POHH:$invoiceData");
+
+    return Scaffold(
+      // drawer: AppDrawer(currentPage: 5),
+      appBar: CustomAppBar(),
+      body: invoiceData == null
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInvoiceHeader(),
+                    SizedBox(height: 20),
+                    _buildBillToSection(),
+                    SizedBox(height: 20),
+                    Table(
+                      border: TableBorder.all(color: Colors.white),
+                      columnWidths: {
+                        0: FixedColumnWidth(150),
+                      },
+                      children: materialLiftingDetails.asMap().entries.expand((entry) {
+                        int index = entry.key;
+                        var item = entry.value;
+
+                        return [
+                          buildTableRows(
+                            ['INVOICE NO', 'DATE'],
+                            [item["invoice_no"], item["date_time"]],
+                            1,
+                          ),
+                          buildTableRows(
+                            ['MATERIAL NAME', 'TRUCK NO'],
+                            [item["material_name"], item["truck_no"]],
+                            0,
+                          ),
+                          buildTableRows(
+                            ['QTY', 'Amount'],
+                            [item["qty"], item["total_amt"].toString()],
+                            1,
+                          ),
+                          // Extra row for spacing
+                          TableRow(children: [
+                            Container(height: 25), // Adjust height as needed
+                            Container(height: 20),
+                          ]),
+                        ];
+                      }).toList(),
+                    ),
+                    SizedBox(height: 20),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text("Sub Total: ${invoiceData!["sub_total"]}",
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+
+                          // Tax Details Show Karne Ke Liye
+                          if (materialLiftingDetails.isNotEmpty && materialLiftingDetails.first["tax_details"] != null)
+                            ...materialLiftingDetails.first["tax_details"].map<Widget>((tax) {
+                              return Text(
+                                "${tax["tax_name"]}: ${tax["tax_value"]}",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              );
+                            }).toList(),
+
+                          SizedBox(height: 10),
+                          Text("Balance Due: RS ${invoiceData!["balance_due"]}",
+                              style: TextStyle(
+                                  color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+
+  TableRow buildTableRows(List<String> labels, List<String?> values, int index) {
+    assert(labels.length == values.length);
+
+    return TableRow(
+      decoration: BoxDecoration(
+        color: index % 2 == 0 ? Colors.white : Colors.grey[200],
+      ),
+      children: List.generate(labels.length, (idx) {
+        return TableCell(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  labels[idx],
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(values[idx] ?? ''),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
 }
 

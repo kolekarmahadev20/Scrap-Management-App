@@ -671,9 +671,6 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
   }
 
   Widget buildInvoiceListTile(BuildContext context, index) {
-    print(index);
-    print("index");
-
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: Card(
@@ -688,25 +685,36 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
             backgroundColor: Colors.indigo[800],
             child: Icon(Icons.receipt_long, size: 24, color: Colors.white),
           ),
-          title: RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: "Invoice: ",
-                  style: TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.bold, // Bold key
-                      fontSize: 20),
+          title: Row(
+            children: [
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "Invoice: ",
+                      style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold, // Bold key
+                          fontSize: 20),
+                    ),
+                    TextSpan(
+                      text: "${index['invoice_no']}",
+                      style: TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.normal, // Normal value
+                          fontSize: 20),
+                    ),
+                  ],
                 ),
-                TextSpan(
-                  text: "${index['invoice_no']}",
-                  style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.normal, // Normal value
-                      fontSize: 20),
-                ),
-              ],
-            ),
+              ),
+              Spacer(),
+              IconButton(
+                icon: Icon(Icons.edit, color: Colors.red), // Edit icon
+                onPressed: () {
+                  // Add your functionality here
+                },
+              ),
+            ],
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -788,7 +796,12 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
               // Navigate to TargetPage
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => InvoicePage()),
+                MaterialPageRoute(builder: (context) => InvoicePage(
+                                sale_order_id: widget.sale_order_id,
+                                invoiceNo: index['invoice_no'],
+                                bidder_id: widget.bidder_id,
+
+                )),
               );
 
               // Navigator.push(

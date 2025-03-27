@@ -10,7 +10,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
 
 class DispatchList extends StatefulWidget {
-
   final int currentPage;
   DispatchList({required this.currentPage});
 
@@ -19,12 +18,14 @@ class DispatchList extends StatefulWidget {
 }
 
 class _DispatchListState extends State<DispatchList> {
-
-  TextEditingController searchMaterialController = TextEditingController(); // Controller for search input
-  TextEditingController searchVendorController = TextEditingController(); // Controller for search input
-  TextEditingController searchBidderController = TextEditingController(); // Controller for search input
+  TextEditingController searchMaterialController =
+      TextEditingController(); // Controller for search input
+  TextEditingController searchVendorController =
+      TextEditingController(); // Controller for search input
+  TextEditingController searchBidderController =
+      TextEditingController(); // Controller for search input
   String? username = '';
- String uuid = '';
+  String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -32,19 +33,17 @@ class _DispatchListState extends State<DispatchList> {
   List<Map<String, dynamic>> dispatchList = [];
   List<dynamic> filteredDispatchList = []; // For filtered search results
 
-
-
   @override
   void initState() {
     super.initState();
     checkLogin().then((_) {
-      setState(() {});  // Rebuilds the widget after `userType` is updated.
+      setState(() {}); // Rebuilds the widget after `userType` is updated.
     });
     fetchDispatchList();
   }
 
   Future<void> checkLogin() async {
-     final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     uuid = prefs.getString("uuid")!;
     uuid = prefs.getString("uuid")!;
@@ -63,20 +62,15 @@ class _DispatchListState extends State<DispatchList> {
 
       await checkLogin();
       print("Login check completed.");
-    print(username);
-          print(password);
-
+      print(username);
+      print(password);
 
       await checkLogin();
       final url = Uri.parse('${URL}ajax_sale_order_dispatch_list');
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
-        body: {
-          'user_id':username,
-          'user_pass':password,
-          'uuid':uuid
-        },
+        body: {'user_id': username, 'user_pass': password, 'uuid': uuid},
       );
       print("Request URL: $url");
 
@@ -88,7 +82,8 @@ class _DispatchListState extends State<DispatchList> {
 
         setState(() {
           if (jsonData.containsKey('saleOrder_dispatchList')) {
-            dispatchList = List<Map<String, dynamic>>.from(jsonData['saleOrder_dispatchList']);
+            dispatchList = List<Map<String, dynamic>>.from(
+                jsonData['saleOrder_dispatchList']);
             filteredDispatchList = dispatchList;
             print("Dispatch List Fetched: ${dispatchList.length} items");
           } else {
@@ -109,7 +104,6 @@ class _DispatchListState extends State<DispatchList> {
       print("Fetching completed. isLoading set to false.");
     }
   }
-
 
   // Future<void> fetchDispatchList() async {
   //   try {
@@ -330,29 +324,28 @@ class _DispatchListState extends State<DispatchList> {
     );
   }
 
-  showLoading(){
+  showLoading() {
     return Container(
       height: double.infinity,
       width: double.infinity,
       color: Colors.transparent,
-      child: Center(child: CircularProgressIndicator(),),
+      child: Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
-
-
 
   @override
   Widget build(BuildContext context) {
     return AbsorbPointer(
       absorbing: isLoading,
       child: Scaffold(
-        drawer: AppDrawer(currentPage:widget.currentPage),
+        drawer: AppDrawer(currentPage: widget.currentPage),
         appBar: CustomAppBar(),
-        body: Stack(
-          children: [
-            isLoading
-            ?showLoading()
-            :Container(
+        body: Stack(children: [
+          isLoading
+              ? showLoading()
+              : Container(
                   height: double.infinity,
                   width: double.infinity,
                   color: Colors.grey[200], // Slightly lighter background color
@@ -389,10 +382,11 @@ class _DispatchListState extends State<DispatchList> {
                               label: Text("Filter"),
                               style: ElevatedButton.styleFrom(
                                 foregroundColor: Colors.white,
-                                backgroundColor: Colors.blueGrey[400], // Button color
+                                backgroundColor:
+                                    Colors.blueGrey[400], // Button color
                                 shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(12), // Rounded corners
+                                  borderRadius: BorderRadius.circular(
+                                      12), // Rounded corners
                                 ),
                                 elevation: 5,
                                 padding: EdgeInsets.symmetric(
@@ -441,32 +435,42 @@ class _DispatchListState extends State<DispatchList> {
                       //     ),
                       //   ),
                       // ),
-                      SizedBox(height: 20,),
+                      SizedBox(
+                        height: 20,
+                      ),
                       Expanded(
-                        child:
-                        (filteredDispatchList.length != 0)
-                        ?ListView.separated(
-                          itemCount:filteredDispatchList.length, // Number of items in the list
-                          itemBuilder: (context, index) {
-                            final paymentIndex = filteredDispatchList[index];
-                            if(filteredDispatchList.length !=0) {
-                              return buildCustomListTile(context, paymentIndex);
-                            }else{
-                              return Text("No data");
-                            }
-                          },
-                          separatorBuilder: (context, index) => Divider(
-                            color: Color(0xFF6482AD), // Custom color for the separator
-                            thickness: 1, // Thickness of the divider
-                            indent: 12, // Indentation before the divider
-                            endIndent: 12, // Indentation after the divider
-                          ),
-                        )
-                        :Center(child: Text("No data", style: TextStyle(fontWeight: FontWeight.bold , fontSize: 20))),
+                        child: (filteredDispatchList.length != 0)
+                            ? ListView.separated(
+                                itemCount: filteredDispatchList
+                                    .length, // Number of items in the list
+                                itemBuilder: (context, index) {
+                                  final paymentIndex =
+                                      filteredDispatchList[index];
+                                  if (filteredDispatchList.length != 0) {
+                                    return buildCustomListTile(
+                                        context, paymentIndex);
+                                  } else {
+                                    return Text("No data");
+                                  }
+                                },
+                                separatorBuilder: (context, index) => Divider(
+                                  color: Color(
+                                      0xFF6482AD), // Custom color for the separator
+                                  thickness: 1, // Thickness of the divider
+                                  indent: 12, // Indentation before the divider
+                                  endIndent:
+                                      12, // Indentation after the divider
+                                ),
+                              )
+                            : Center(
+                                child: Text("No data",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20))),
                       )
                     ],
                   ),
-            ),
+                ),
         ]),
       ),
     );
@@ -543,10 +547,12 @@ class _DispatchListState extends State<DispatchList> {
                 bottomRight: Radius.circular(15),
               ),
               child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                 leading: CircleAvatar(
                   backgroundColor: Colors.indigo[800]!,
-                  child: Icon(Icons.border_outer, size: 22, color: Colors.white),
+                  child:
+                      Icon(Icons.border_outer, size: 22, color: Colors.white),
                 ),
                 title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -632,25 +638,27 @@ class _DispatchListState extends State<DispatchList> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => View_dispatch_details(
-                        sale_order_id: index['sale_order_id'],
-                        bidder_id: index['bidder_id'],
-                      )),
-                    ).then((value) => setState((){
-                      fetchDispatchList();
-                    }));
+                      MaterialPageRoute(
+                          builder: (context) => View_dispatch_details(
+                                sale_order_id: index['sale_order_id'],
+                                bidder_id: index['bidder_id'],
+                              )),
+                    ).then((value) => setState(() {
+                          fetchDispatchList();
+                        }));
                   },
                 ),
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => View_dispatch_details(
-                      sale_order_id: index['sale_order_id'],
-                      bidder_id: index['bidder_id'],
-                    )),
-                  ).then((value) => setState((){
-                    fetchDispatchList();
-                  }));
+                    MaterialPageRoute(
+                        builder: (context) => View_dispatch_details(
+                              sale_order_id: index['sale_order_id'],
+                              bidder_id: index['bidder_id'],
+                            )),
+                  ).then((value) => setState(() {
+                        fetchDispatchList();
+                      }));
                 },
               ),
             ),
