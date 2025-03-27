@@ -103,9 +103,12 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
           }
 
           ViewDispatchData = jsonData;
-          var materialLiftingDetails = ViewDispatchData?['material_lifting_details'];
+          var materialLiftingDetails =
+              ViewDispatchData?['material_lifting_details'];
           if (materialLiftingDetails != null && materialLiftingDetails is Map) {
-            liftingDetails = materialLiftingDetails.entries.map((entry) => entry.value).toList();
+            liftingDetails = materialLiftingDetails.entries
+                .map((entry) => entry.value)
+                .toList();
           } else {
             liftingDetails = [];
           }
@@ -119,7 +122,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
           taxes = ViewPaymentData?['tax_and_rate']?['taxes'] ?? [];
           taxAmount = ViewPaymentData?['tax_and_rate'] ?? {};
 
-          totalMaterialLiftedAmount = jsonData['total_material_lifted_amount'] ?? 0;
+          totalMaterialLiftedAmount =
+              jsonData['total_material_lifted_amount'] ?? 0;
           liftedQuantity = jsonData['lifted_quantity'] != null
               ? List<Map<String, dynamic>>.from(jsonData['lifted_quantity'])
               : [];
@@ -142,7 +146,6 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
       });
     }
   }
-
 
   showLoading() {
     return Container(
@@ -672,163 +675,187 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
 
   Widget buildInvoiceListTile(BuildContext context, index) {
     return Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: Card(
-        elevation: 1,
-        margin: const EdgeInsets.symmetric(vertical: 4.0),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.all(12.0),
-          leading: CircleAvatar(
-            backgroundColor: Colors.indigo[800],
-            child: Icon(Icons.receipt_long, size: 24, color: Colors.white),
+      padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 10.0),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => InvoicePage(
+                sale_order_id: widget.sale_order_id,
+                invoiceNo: index['invoice_no'],
+                bidder_id: widget.bidder_id,
+              ),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12), // Optional for ripple effect
+        child: Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
-          title: Row(
-            children: [
-              RichText(
-                text: TextSpan(
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Invoice Details UI
+                Row(
                   children: [
-                    TextSpan(
-                      text: "Invoice: ",
-                      style: TextStyle(
+                    Icon(Icons.receipt_long, color: Colors.indigo[800], size: 28),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "Invoice: ${index['invoice_no']}",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
                           color: Colors.black87,
-                          fontWeight: FontWeight.bold, // Bold key
-                          fontSize: 20),
+                        ),
+                      ),
                     ),
-                    TextSpan(
-                      text: "${index['invoice_no']}",
-                      style: TextStyle(
-                          color: Colors.blue,
-                          fontWeight: FontWeight.normal, // Normal value
-                          fontSize: 20),
+                    ElevatedButton(
+                        onPressed: (
+                            userType == 'S' ||
+                            userType == 'A' ||
+                            userType == 'U'
+                        )
+                            ? () {
+                          // Navigator.push(
+                          //   context,
+                            // MaterialPageRoute(
+                            //   builder: (context) =>
+                            //       Edit_dispatch_details(
+                            //         sale_order_id:
+                            //         widget.sale_order_id,
+                            //         bidder_id: widget.bidder_id,
+                            //         lift_id: widget.lift_id,
+                            //         material: material,
+                            //         invoiceNo: invoiceNo,
+                            //         truckNo: truckNo,
+                            //         firstWeight: firstWeight,
+                            //         fullWeight: fullWeight,
+                            //         moistureWeight: moistureWeight,
+                            //         netWeight: netWeight,
+                            //         note: note,
+                            //         quantity: quantity,
+                            //         selectedOrderId: selectedOrderId,
+                            //         date: date,
+                            //       ),
+                            // ),
+                          // );
+                        }
+                            : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit, size: 18, color: Colors.white),
+                          SizedBox(width: 6),
+                          Text("Edit", style: TextStyle(fontSize: 16)),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-              Spacer(),
-              IconButton(
-                icon: Icon(Icons.edit, color: Colors.red), // Edit icon
-                onPressed: () {
-                  // Add your functionality here
-                },
-              ),
-            ],
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              RichText(
-                text: TextSpan(
+
+                Row(
                   children: [
-                    TextSpan(
-                      text: "Material: ",
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.bold, // Bold key
-                        fontSize: 16,
-                      ),
-                    ),
-                    TextSpan(
-                      text: "${index['material_name']}",
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontWeight: FontWeight.normal, // Normal value
-                        fontSize: 16,
+                    Icon(Icons.category, color: Colors.indigo[800], size: 25),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "Material: ${index['material_name']}",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              RichText(
-                text: TextSpan(
+
+                Row(
                   children: [
-                    TextSpan(
-                      text: "Date: ",
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.bold, // Bold key
-                        fontSize: 16,
-                      ),
-                    ),
-                    TextSpan(
-                      text: "${index['date_time']}",
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontWeight: FontWeight.normal, // Normal value
-                        fontSize: 16,
+                    Icon(Icons.date_range, color: Colors.indigo[800], size: 25),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "Date: ${formatDate(index['date_time'])}",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              RichText(
-                text: TextSpan(
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    TextSpan(
-                      text: "Status: ",
+                    Text(
+                      "Status:",
                       style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                         color: Colors.black54,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
                       ),
                     ),
-                    TextSpan(
-                      text: index['status'] == 'Pending' ? "Dispatch Pending" : "Dispatch Completed",
+                    Text(
+                      index['status'] == 'Pending'
+                          ? "Dispatch Pending"
+                          : "Dispatch Completed",
                       style: TextStyle(
-                        color: index['status'] == 'Pending' ? Colors.red : Colors.green,
-                        fontWeight: FontWeight.normal,
                         fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: index['status'] == 'Pending'
+                            ? Colors.red
+                            : Colors.green.shade600,
                       ),
                     ),
+                    Icon(Icons.arrow_forward_ios, size: 20, color: Colors.grey[600]),
                   ],
                 ),
-              )
-
-            ],
-          ),
-          trailing: IconButton(
-            icon: Icon(Icons.arrow_forward_ios, size: 16),
-            color: Colors.grey[600],
-            onPressed: () {
-
-              // Navigate to TargetPage
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => InvoicePage(
-                                sale_order_id: widget.sale_order_id,
-                                invoiceNo: index['invoice_no'],
-                                bidder_id: widget.bidder_id,
-
-                )),
-              );
-
-              // Navigator.push(
-              //     context,
-              //     MaterialPageRoute(
-              //         builder: (context) => View_dispatch_lifting_details(
-              //               sale_order_id: widget.sale_order_id,
-              //               bidder_id: widget.bidder_id,
-              //               lift_id: index['lift_id'],
-              //               selectedOrderId: ViewDispatchData['sale_order']
-              //                   ['sale_order_code'],
-              //               material: index['material_name'],
-              //               invoiceNo: index['invoice_no'],
-              //               firstWeight: index['truck_weight'],
-              //               fullWeight: index['full_weight'],
-              //               moistureWeight: index['mois_weight'],
-              //               netWeight: index['net_weight'],
-              //               date: index['date_time'],
-              //               truckNo: index['truck_no'],
-              //               quantity: index['qty'],
-              //               note: index['note'],
-              //             ))).then((value) => setState(() {
-              //       fetchDispatchDetails();
-              //     }));
-            },
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+// Helper Widget for Details
+  Widget buildDetailItem(String label, String value) {
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: "$label: ",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          TextSpan(
+            text: value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: Colors.black54,
+            ),
+          ),
+        ],
       ),
     );
   }
