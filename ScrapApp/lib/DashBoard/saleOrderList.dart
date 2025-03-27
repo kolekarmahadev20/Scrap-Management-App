@@ -29,6 +29,11 @@ class saleOrderListState extends State<saleOrderList> {
   TextEditingController searchController =
       TextEditingController(); // Controller for search input
 
+  TextEditingController searchMaterialController = TextEditingController(); // Controller for search input
+  TextEditingController searchVendorController = TextEditingController(); // Controller for search input
+  TextEditingController searchBidderController = TextEditingController(); // Controller for search input
+
+
   @override
   void initState() {
     super.initState();
@@ -124,6 +129,191 @@ class saleOrderListState extends State<saleOrderList> {
     }
   }
 
+
+  void filterResults() {
+    List<dynamic> searchResults = saleOrderList;
+
+    // Apply Material filter
+    if (searchMaterialController.text.isNotEmpty) {
+      searchResults = searchResults.where((order) {
+        return order['description']
+            .toString()
+            .toLowerCase()
+            .contains(searchMaterialController.text.toLowerCase());
+      }).toList();
+    }
+
+    // Apply Vendor filter
+    if (searchVendorController.text.isNotEmpty) {
+      searchResults = searchResults.where((order) {
+        return order['vendor_name']
+            .toString()
+            .toLowerCase()
+            .contains(searchVendorController.text.toLowerCase());
+      }).toList();
+    }
+
+    // Apply Plant filter
+    if (searchBidderController.text.isNotEmpty) {
+      searchResults = searchResults.where((order) {
+        return order['branch_name']
+            .toString()
+            .toLowerCase()
+            .contains(searchBidderController.text.toLowerCase());
+      }).toList();
+    }
+
+    setState(() {
+      filteredSaleOrderList = searchResults;
+    });
+  }
+
+  Future showFilterDialog() {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Dialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Search Sale Orders",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.close, color: Colors.black54),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    _buildSearchField(
+                      controller: searchMaterialController,
+                      hintText: "Enter Material Name",
+                    ),
+                    SizedBox(height: 10),
+                    _buildSearchField(
+                      controller: searchVendorController,
+                      hintText: "Enter Vendor Name",
+                    ),
+                    SizedBox(height: 10),
+                    _buildSearchField(
+                      controller: searchBidderController,
+                      hintText: "Enter Plant Name",
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  searchMaterialController.clear();
+                                  searchVendorController.clear();
+                                  searchBidderController.clear();
+                                  fetchSaleOrderList();
+                                });
+                                Navigator.pop(context); // Close dialog
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red[400],
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 25, vertical: 15),
+                                elevation: 5,
+                              ),
+                              child: Text(
+                                "Reset",
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  filterResults();
+                                });
+                                Navigator.pop(context); // Close dialog
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green[400],
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 25, vertical: 15),
+                                elevation: 5,
+                              ),
+                              child: Text(
+                                "Apply",
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSearchField({
+    required TextEditingController controller,
+    required String hintText,
+  }) {
+    return TextField(
+      controller: controller,
+      style: TextStyle(fontSize: 18),
+      decoration: InputDecoration(
+        hintText: hintText,
+        prefixIcon: Icon(Icons.search, color: Colors.grey),
+        filled: true,
+        fillColor: Colors.grey[100],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Colors.indigo),
+        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AbsorbPointer(
@@ -158,73 +348,34 @@ class saleOrderListState extends State<saleOrderList> {
                                 ),
                               ),
                             ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  setState(() {
+                                    showFilterDialog();
+                                  });
+                                },
+                                icon: Icon(
+                                  Icons.filter_list_alt,
+                                  color: Colors.white,
+                                  size: 20, // Consistent icon size
+                                ),
+                                label: Text("Filter"),
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: Colors.blueGrey[400], // Text color
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12), // Rounded corners
+                                  ),
+                                  elevation: 5,
+                                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Consistent padding
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ],
-                    ),
-                    // Padding(
-                    //   padding: const EdgeInsets.all(8.0),
-                    //   child: Container(
-                    //     width:double.infinity,
-                    //     child: Column(
-                    //       children: [
-                    //         SizedBox(height: 8,),
-                    //         Padding(
-                    //           padding: const EdgeInsets.all(8.0),
-                    //           child: Material(
-                    //             elevation: 2,
-                    //             color: Colors.white,
-                    //             shape: OutlineInputBorder(
-                    //                 borderSide: BorderSide(color: Colors.blueGrey[400]!)
-                    //             ),
-                    //             child: Container(
-                    //               child: Column(
-                    //                 children: [
-                    //                   SizedBox(height: 8,),
-                    //                   Row(
-                    //                     mainAxisSize: MainAxisSize.min,
-                    //                     children: [
-                    //                       Spacer(),
-                    //                       Text(
-                    //                         "Vendor, Plant",
-                    //                         style: TextStyle(
-                    //                           fontSize: 18,
-                    //                           color: Colors.black54,
-                    //                           fontWeight: FontWeight.w500,
-                    //                         ),
-                    //                       ),
-                    //                       Spacer(),
-                    //                     ],
-                    //                   ),
-                    //                   SizedBox(height: 8,),
-                    //                 ],
-                    //               ),
-                    //             ),
-                    //           ),
-                    //         ),
-                    //         SizedBox(height: 8,),
-                    //       ],
-                    //     ),
-                    //   ),
-                    // ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TextField(
-                        controller: searchController,
-                        onChanged: (value) {
-                          filterSearchResults(
-                              value); // Call function to filter results
-                        },
-                        decoration: InputDecoration(
-                          labelText: "Search",
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                        ),
-                      ),
                     ),
                     SizedBox(
                       height: 20,
