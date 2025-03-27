@@ -697,7 +697,6 @@ class _View_dispatch_lifting_detailsState
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               if (item['invoice_no'] == widget.invoiceNo)
-
                                 Container(
                                 padding: EdgeInsets.all(12),
                                 decoration: BoxDecoration(
@@ -782,29 +781,45 @@ class _View_dispatch_lifting_detailsState
                       ),
                     ),
                     if (isExpanded == true)
-                      Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Table(
-                          border: TableBorder.symmetric(
-                            inside: BorderSide(color: Colors.grey.shade300),
-                          ),
-                          columnWidths: {
-                            0: FixedColumnWidth(150),
-                          },
-                          children: [
-                            buildTableRows(['Material', 'Invoice No'],
-                                [material, invoiceNo], 1),
-                            buildTableRows(['Date', 'Truck No'],
-                                [date, truckNo.toString().toUpperCase()], 0),
-                            buildTableRows(['First Weight', 'Full Weight'],
-                                [firstWeight, fullWeight], 1),
-                            buildTableRows(['Moisture Weight', 'Net Weight'],
-                                [moistureWeight, netWeight], 0),
-                            buildTableRows(
-                                ['Quantity', 'Note'], [quantity, note], 1),
-                          ],
-                        ),
+                      ListView(
+                        shrinkWrap: true, // Important to avoid infinite height issue
+                        physics: NeverScrollableScrollPhysics(), // Prevent nested scrolling
+                        children: [
+                          buildDisplayField("Material", material),
+                          buildDisplayField("Invoice No", invoiceNo),
+                          buildDisplayField("Date", date),
+                          buildDisplayField("Truck No", truckNo),
+                          buildDisplayField("First Weight", firstWeight),
+                          buildDisplayField("Full Weight", fullWeight),
+                          buildDisplayField("Moisture Weight", moistureWeight),
+                          buildDisplayField("Net Weight", netWeight),
+                          buildDisplayField("Quantity", quantity),
+                          buildDisplayField("Note", note),
+                        ],
                       ),
+                      // Padding(
+                      //   padding: const EdgeInsets.all(12.0),
+                      //   child: Table(
+                      //     border: TableBorder.symmetric(
+                      //       inside: BorderSide(color: Colors.grey.shade300),
+                      //     ),
+                      //     columnWidths: {
+                      //       0: FixedColumnWidth(150),
+                      //     },
+                      //     children: [
+                      //       buildTableRows(['Material', 'Invoice No'],
+                      //           [material, invoiceNo], 1),
+                      //       buildTableRows(['Date', 'Truck No'],
+                      //           [date, truckNo.toString().toUpperCase()], 0),
+                      //       buildTableRows(['First Weight', 'Full Weight'],
+                      //           [firstWeight, fullWeight], 1),
+                      //       buildTableRows(['Moisture Weight', 'Net Weight'],
+                      //           [moistureWeight, netWeight], 0),
+                      //       buildTableRows(
+                      //           ['Quantity', 'Note'], [quantity, note], 1),
+                      //     ],
+                      //   ),
+                      // ),
                     if (isExpanded == true)
                       Padding(
                         padding: const EdgeInsets.all(12.0),

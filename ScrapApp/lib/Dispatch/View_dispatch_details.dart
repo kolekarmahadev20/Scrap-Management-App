@@ -8,6 +8,7 @@ import 'package:scrapapp/Dispatch/View_dispatch_lifting_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../URL_CONSTANT.dart';
+import 'View_Invoice_Details.dart';
 import 'addDispatchToSaleOrder.dart';
 
 class View_dispatch_details extends StatefulWidget {
@@ -78,6 +79,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
       setState(() {
         isLoading = true;
       });
+
       await checkLogin();
       final url = Uri.parse("${URL}payment_details");
       var response = await http.post(
@@ -91,41 +93,45 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
           'bidder_id': widget.bidder_id,
         },
       );
+
       if (response.statusCode == 200) {
         setState(() {
           var jsonData = json.decode(response.body);
-          final data = json.decode(response.body);
+          if (jsonData == null) {
+            print("Error: Received null response.");
+            return;
+          }
 
           ViewDispatchData = jsonData;
-          var materialLiftingDetails =
-              ViewDispatchData['material_lifting_details'];
-          if (materialLiftingDetails != null) {
-            // Convert dynamic keys into a list and access the corresponding data
-            liftingDetails = materialLiftingDetails.entries
-                .map((entry) => entry.value)
-                .toList();
+          var materialLiftingDetails = ViewDispatchData?['material_lifting_details'];
+          if (materialLiftingDetails != null && materialLiftingDetails is Map) {
+            liftingDetails = materialLiftingDetails.entries.map((entry) => entry.value).toList();
+          } else {
+            liftingDetails = [];
           }
 
           ViewPaymentData = jsonData;
-          paymentId = ViewPaymentData['sale_order_payments'] ?? [];
-          emdStatus = ViewPaymentData['emd_status'] ?? [];
-          cmdStatus = ViewPaymentData['cmd_status'] ?? [];
-          paymentStatus = ViewPaymentData['recieved_payment'] ?? [];
-          checkLiftedQty = ViewPaymentData['lifted_quantity'];
-          taxes = ViewPaymentData['tax_and_rate']['taxes'] ?? [];
-          taxAmount = ViewPaymentData['tax_and_rate'] ?? {};
+          paymentId = ViewPaymentData?['sale_order_payments'] ?? [];
+          emdStatus = ViewPaymentData?['emd_status'] ?? [];
+          cmdStatus = ViewPaymentData?['cmd_status'] ?? [];
+          paymentStatus = ViewPaymentData?['recieved_payment'] ?? [];
+          checkLiftedQty = ViewPaymentData?['lifted_quantity'];
+          taxes = ViewPaymentData?['tax_and_rate']?['taxes'] ?? [];
+          taxAmount = ViewPaymentData?['tax_and_rate'] ?? {};
 
-          totalMaterialLiftedAmount = data['total_material_lifted_amount'];
-          liftedQuantity =
-              List<Map<String, dynamic>>.from(data['lifted_quantity']);
+          totalMaterialLiftedAmount = jsonData['total_material_lifted_amount'] ?? 0;
+          liftedQuantity = jsonData['lifted_quantity'] != null
+              ? List<Map<String, dynamic>>.from(jsonData['lifted_quantity'])
+              : [];
 
-          taxDetailsList =
-              List<Map<String, dynamic>>.from(data['taxDetails'] ?? []);
-          balanceQty = data['balance_qty'];
-          totalBalance = data['total_balance'];
+          taxDetailsList = jsonData['taxDetails'] != null
+              ? List<Map<String, dynamic>>.from(jsonData['taxDetails'])
+              : [];
+
+          balanceQty = jsonData['balance_qty'] ?? 0;
+          totalBalance = jsonData['total_balance'] ?? 0;
         });
-      }
-      else {
+      } else {
         print("Unable to fetch data.");
       }
     } catch (e) {
@@ -136,6 +142,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
       });
     }
   }
+
 
   showLoading() {
     return Container(
@@ -754,50 +761,58 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                     TextSpan(
                       text: "Status: ",
                       style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold, // Bold key
+                        color: Colors.black54,
+                        fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
                     TextSpan(
-                      text: "${index['date_time']}",
+                      text: index['status'] == 'Pending' ? "Dispatch Pending" : "Dispatch Completed",
                       style: TextStyle(
-                        color: Colors.black54,
-                        fontWeight: FontWeight.normal, // Normal value
+                        color: index['status'] == 'Pending' ? Colors.red : Colors.green,
+                        fontWeight: FontWeight.normal,
                         fontSize: 16,
                       ),
                     ),
                   ],
                 ),
-              ),
+              )
+
             ],
           ),
           trailing: IconButton(
             icon: Icon(Icons.arrow_forward_ios, size: 16),
             color: Colors.grey[600],
             onPressed: () {
+
+              // Navigate to TargetPage
               Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => View_dispatch_lifting_details(
-                            sale_order_id: widget.sale_order_id,
-                            bidder_id: widget.bidder_id,
-                            lift_id: index['lift_id'],
-                            selectedOrderId: ViewDispatchData['sale_order']
-                                ['sale_order_code'],
-                            material: index['material_name'],
-                            invoiceNo: index['invoice_no'],
-                            firstWeight: index['truck_weight'],
-                            fullWeight: index['full_weight'],
-                            moistureWeight: index['mois_weight'],
-                            netWeight: index['net_weight'],
-                            date: index['date_time'],
-                            truckNo: index['truck_no'],
-                            quantity: index['qty'],
-                            note: index['note'],
-                          ))).then((value) => setState(() {
-                    fetchDispatchDetails();
-                  }));
+                context,
+                MaterialPageRoute(builder: (context) => InvoicePage()),
+              );
+
+              // Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //         builder: (context) => View_dispatch_lifting_details(
+              //               sale_order_id: widget.sale_order_id,
+              //               bidder_id: widget.bidder_id,
+              //               lift_id: index['lift_id'],
+              //               selectedOrderId: ViewDispatchData['sale_order']
+              //                   ['sale_order_code'],
+              //               material: index['material_name'],
+              //               invoiceNo: index['invoice_no'],
+              //               firstWeight: index['truck_weight'],
+              //               fullWeight: index['full_weight'],
+              //               moistureWeight: index['mois_weight'],
+              //               netWeight: index['net_weight'],
+              //               date: index['date_time'],
+              //               truckNo: index['truck_no'],
+              //               quantity: index['qty'],
+              //               note: index['note'],
+              //             ))).then((value) => setState(() {
+              //       fetchDispatchDetails();
+              //     }));
             },
           ),
         ),
