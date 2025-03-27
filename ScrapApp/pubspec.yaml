@@ -50,6 +50,8 @@ dependencies:
   flutter_typeahead: ^4.0.1
   device_info_plus:
   geolocator:
+  dots_indicator: ^2.0.0
+
 
 
 
