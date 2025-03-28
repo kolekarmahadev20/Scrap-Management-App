@@ -328,15 +328,21 @@ class _View_dispatch_lifting_detailsState
       children: [
         buildVendorInfoText(
             "Vendor Name : ",
-            ViewPaymentData['vendor_buyer_details']['vendor_name'] ?? 'N/A',
+            (ViewPaymentData['vendor_buyer_details']['vendor_name'] ?? 'N/A')
+                .toString()
+                .toUpperCase(),
             false),
         buildVendorInfoText(
             "Branch : ",
-            ViewPaymentData['vendor_buyer_details']['branch_name'] ?? 'N/A',
+            (ViewPaymentData['vendor_buyer_details']['branch_name'] ?? 'N/A')
+                .toString()
+                .toUpperCase(),
             false),
         buildVendorInfoText(
             "Buyer Name : ",
-            ViewPaymentData['vendor_buyer_details']['bidder_name'] ?? 'N/A',
+            (ViewPaymentData['vendor_buyer_details']['bidder_name'] ?? 'N/A')
+                .toString()
+                .toUpperCase(),
             false),
       ],
     );

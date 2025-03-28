@@ -173,6 +173,10 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
   }
 
   Future<void> fetchPaymentDetails() async {
+    print(widget.sale_order_id);
+    print(widget.branch_id_from_ids);
+    print(widget.vendor_id_from_ids);
+
     try {
       setState(() {
         isLoading = true;

@@ -51,6 +51,7 @@ dependencies:
   device_info_plus:
   geolocator:
   dots_indicator: ^2.0.0
+  image: ^4.1.6
 
 
 

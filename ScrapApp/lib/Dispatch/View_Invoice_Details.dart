@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../AppClass/AppDrawer.dart';
@@ -74,7 +75,7 @@ class _InvoicePageState extends State<InvoicePage> {
         List<String> imageUrls = [];
 
         // Define base URL
-        String baseUrl = "${URL}";
+        String baseUrl = "${Image_URL}";
 
         // Extract URLs from "ot" key
         if (data["images"].containsKey("ot") && data["images"]["ot"] is List) {
@@ -95,6 +96,11 @@ class _InvoicePageState extends State<InvoicePage> {
   List<String> taxValues = [];
 
   Future<void> fetchInvoiceData() async {
+
+    print(widget.sale_order_id);
+    print(widget.bidder_id);
+    print("widget.bidder_id");
+
     await checkLogin();
     final url = Uri.parse("${URL}payment_details");
     var response = await http.post(
@@ -113,6 +119,8 @@ class _InvoicePageState extends State<InvoicePage> {
       final data = json.decode(response.body);
       setState(() {
         invoiceData = data;
+        // totalBalanceController.text = double.parse(data["total_balance"].toString()).toStringAsFixed(2);
+
         if (invoiceData!["material_lifting_details"] is Map) {
           // Sirf us invoice ka data filter karna
           materialLiftingDetails = invoiceData!["material_lifting_details"]
@@ -215,14 +223,49 @@ class _InvoicePageState extends State<InvoicePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-            "Vendor Name : ${invoiceData!['vendor_buyer_details']['vendor_name']}"),
-        Text(
-            "Buyer Name : ${invoiceData!['vendor_buyer_details']['bidder_name']}"),
-        Text("Branch: ${invoiceData!['vendor_buyer_details']['branch_name']}"),
+        RichText(
+          text: TextSpan(
+            style: TextStyle(color: Colors.black, fontSize: 18), // Default style
+            children: [
+              TextSpan(text: "Vendor Name: ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              TextSpan(
+                text: "${invoiceData!['vendor_buyer_details']['vendor_name']}".toUpperCase(),
+                style: TextStyle(fontSize: 18),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 5), // Add spacing
+        RichText(
+          text: TextSpan(
+            style: TextStyle(color: Colors.black, fontSize: 18),
+            children: [
+              TextSpan(text: "Buyer Name: ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              TextSpan(
+                text: "${invoiceData!['vendor_buyer_details']['bidder_name']}".toUpperCase(),
+                style: TextStyle(fontSize: 18),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 5),
+        RichText(
+          text: TextSpan(
+            style: TextStyle(color: Colors.black, fontSize: 18),
+            children: [
+              TextSpan(text: "Branch: ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              TextSpan(
+                text: "${invoiceData!['vendor_buyer_details']['branch_name']}".toUpperCase(),
+                style: TextStyle(fontSize: 18),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
+
+
 
   TableRow buildTableRow(String label, String? value) {
     return TableRow(
@@ -237,7 +280,7 @@ class _InvoicePageState extends State<InvoicePage> {
         TableCell(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(value ?? ""),
+            child: Text((value ?? "").toUpperCase()),
           ),
         ),
       ],
@@ -245,6 +288,20 @@ class _InvoicePageState extends State<InvoicePage> {
   }
 
   TextEditingController finalAmountController = TextEditingController();
+  // TextEditingController totalBalanceController = TextEditingController();
+
+  String formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) {
+      return 'No data';
+    }
+    try {
+      DateTime parsedDate = DateTime.parse(dateStr);
+      return DateFormat('dd-MM-yyyy').format(parsedDate);
+    } catch (e) {
+      return 'Invalid date';
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -275,12 +332,13 @@ class _InvoicePageState extends State<InvoicePage> {
                         int index = entry.key;
                         var item = entry.value;
 
-                        finalAmountController.text = item["total_amt"].toString();
+                        finalAmountController.text = double.parse(item["total_amt"].toString()).toStringAsFixed(2);
 
                         return [
                           buildTableRows(
                             ['INVOICE NO', 'DATE'],
-                            [item["invoice_no"], item["date_time"]],
+                            [item["invoice_no"],formatDate(item["date_time"])
+                              ],
                             1,
                           ),
                           buildTableRows(
@@ -305,7 +363,7 @@ class _InvoicePageState extends State<InvoicePage> {
                         ];
                       }).toList(),
                     ),
-                    SizedBox(height: 20),
+                    // SizedBox(height: 20),
                     Align(
                       alignment: Alignment.centerRight,
                       child: Column(
@@ -313,7 +371,8 @@ class _InvoicePageState extends State<InvoicePage> {
                         children: [
                           // Text("Sub Total: ${invoiceData!["sub_total"]}",
                           //     style: TextStyle(fontWeight: FontWeight.bold)),
-
+                          // Text("Balance Due: ${totalBalanceController.text}", style: TextStyle(color: Colors.red, fontSize: 16)),
+                          SizedBox(height: 5),
                           // Tax Details Show Karne Ke Liye
                           if (materialLiftingDetails.isNotEmpty && materialLiftingDetails.first["tax_details"] != null)
                             ...materialLiftingDetails.first["tax_details"].map<Widget>((tax) {
@@ -322,7 +381,6 @@ class _InvoicePageState extends State<InvoicePage> {
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               );
                             }).toList(),
-
                           SizedBox(height: 10),
                           Text("FINAL AMOUNT	: ${finalAmountController.text}",
                               style: TextStyle(

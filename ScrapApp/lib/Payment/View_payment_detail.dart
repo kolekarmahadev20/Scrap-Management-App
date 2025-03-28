@@ -350,19 +350,26 @@ class _View_payment_detailState extends State<View_payment_detail> {
       children: [
         buildVendorInfoText(
             "Vendor Name : ",
-            ViewPaymentData['vendor_buyer_details']['vendor_name'] ?? 'N/A',
+            (ViewPaymentData['vendor_buyer_details']['vendor_name'] ?? 'N/A')
+                .toString()
+                .toUpperCase(),
             false),
         buildVendorInfoText(
             "Branch : ",
-            ViewPaymentData['vendor_buyer_details']['branch_name'] ?? 'N/A',
+            (ViewPaymentData['vendor_buyer_details']['branch_name'] ?? 'N/A')
+                .toString()
+                .toUpperCase(),
             false),
         buildVendorInfoText(
             "Buyer Name : ",
-            ViewPaymentData['vendor_buyer_details']['bidder_name'] ?? 'N/A',
+            (ViewPaymentData['vendor_buyer_details']['bidder_name'] ?? 'N/A')
+                .toString()
+                .toUpperCase(),
             false),
       ],
     );
   }
+
 
   Widget buildVendorInfoText(String key, String value, bool isRed) {
     return Padding(

@@ -44,6 +44,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
   List<dynamic> cmdStatus = [];
   List<dynamic> taxes =[];
 
+  final TextEditingController totalPaymentController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -51,7 +53,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
       setState(() {});
     });
     fetchRefundDetails();
-    fetchPaymentDetails();
+    fetchRefundPaymentDetails();
   }
 
   Future<void> checkLogin() async {
@@ -110,42 +112,34 @@ class _View_refund_detailsState extends State<View_refund_details> {
     }
   }
 
-  Future<void> fetchPaymentDetails() async {
-
+  Future<void> fetchRefundPaymentDetails() async {
     try {
-      setState(() {
-        isLoading = true;
-      });
       await checkLogin();
-      final url = Uri.parse("${URL}payment_details");
+      final url = Uri.parse("${URL}EMD_CMD_details");
       var response = await http.post(
         url,
         headers: {"Accept": "application/json"},
         body: {
           'user_id': username,
-          'uuid': uuid,
+          'uuid':uuid,
           'user_pass': password,
-          'sale_order_id': widget.sale_order_id,
-          'bidder_id': widget.bidder_id,
+          'sale_order_id':widget.sale_order_id,
+          'branch_id':widget.branch_id_from_ids,
+          'vendor_id':widget.vendor_id_from_ids
         },
       );
-
       if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
         setState(() {
-          final data = json.decode(response.body);
-          var jsonData = json.decode(response.body);
-          totalBalance = (data['total_balance'] as num).toDouble();
-
+          totalPaymentController.text = jsonData['Advance_payment'] != null
+              ? double.tryParse(jsonData['Advance_payment'].toString())?.toStringAsFixed(2) ?? "0.00"
+              : "N/A";
         });
       } else {
-        print("Unable to fetch data.");
+        print("unable to load order ids.");
       }
     } catch (e) {
-      print("Server Exception: $e");
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
+      print("Server Exception : $e");
     }
   }
 
@@ -387,15 +381,21 @@ class _View_refund_detailsState extends State<View_refund_details> {
       children: [
         buildVendorInfoText(
             "Vendor Name : ",
-            ViewRefundData['vendor_buyer_details']['vendor_name'] ?? 'N/A',
+            (ViewRefundData['vendor_buyer_details']['vendor_name'] ?? 'N/A')
+                .toString()
+                .toUpperCase(),
             false),
         buildVendorInfoText(
             "Branch : ",
-            ViewRefundData['vendor_buyer_details']['branch_name'] ?? 'N/A',
+            (ViewRefundData['vendor_buyer_details']['branch_name'] ?? 'N/A')
+                .toString()
+                .toUpperCase(),
             false),
         buildVendorInfoText(
             "Buyer Name : ",
-            ViewRefundData['vendor_buyer_details']['bidder_name'] ?? 'N/A',
+            (ViewRefundData['vendor_buyer_details']['bidder_name'] ?? 'N/A')
+                .toString()
+                .toUpperCase(),
             false),
       ],
     );
@@ -547,7 +547,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
 
             buildDetailTile(
               "Balance\nAdvance Amount : ",
-              totalBalance.toString(),
+              totalPaymentController.text,
               Icons.account_balance_wallet,
             ),
           ],
@@ -833,29 +833,29 @@ class _View_refund_detailsState extends State<View_refund_details> {
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // RichText(
-                  //   text: TextSpan(
-                  //     children: [
-                  //       TextSpan(
-                  //         text: "Ref No : ",
-                  //         style: TextStyle(
-                  //           color: Colors.black87,
-                  //           fontWeight: FontWeight.bold, // Bold key
-                  //           fontSize: 16,
-                  //         ),
-                  //       ),
-                  //       TextSpan(
-                  //         text: "${index['pay_ref_no'] ?? 'N/A'}",
-                  //         style: TextStyle(
-                  //           color: Colors.black54,
-                  //           fontWeight: FontWeight.normal, // Normal value
-                  //           fontSize: 16,
-                  //
-                  //         ),
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: "NFA No : ",
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontWeight: FontWeight.bold, // Bold key
+                            fontSize: 16,
+                          ),
+                        ),
+                        TextSpan(
+                          text: "${index['nfa_no'] ?? 'N/A'}",
+                          style: TextStyle(
+                            color: Colors.black54,
+                            fontWeight: FontWeight.normal, // Normal value
+                            fontSize: 16,
+
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   RichText(
                     text: TextSpan(
                       children: [

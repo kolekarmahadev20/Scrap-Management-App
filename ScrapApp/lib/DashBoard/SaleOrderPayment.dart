@@ -44,6 +44,9 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
   List<dynamic> cmdStatus = [];
   List<dynamic> taxes = [];
 
+  final TextEditingController totalPaymentController = TextEditingController();
+
+
   @override
   void initState() {
     // TODO: implement initState
@@ -53,6 +56,7 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
       setState(() {});
     });
     fetchPaymentDetails();
+    fetchRefundPaymentDetails();
   }
 
   Future<void> checkLogin() async {
@@ -109,6 +113,37 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> fetchRefundPaymentDetails() async {
+    try {
+      await checkLogin();
+      final url = Uri.parse("${URL}EMD_CMD_details");
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': username,
+          'uuid':uuid,
+          'user_pass': password,
+          'sale_order_id':widget.sale_order_id,
+          'branch_id':widget.branch_id_from_ids,
+          'vendor_id':widget.vendor_id_from_ids
+        },
+      );
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        setState(() {
+          totalPaymentController.text = jsonData['Advance_payment'] != null
+              ? double.tryParse(jsonData['Advance_payment'].toString())?.toStringAsFixed(2) ?? "0.00"
+              : "N/A";
+        });
+      } else {
+        print("unable to load order ids.");
+      }
+    } catch (e) {
+      print("Server Exception : $e");
     }
   }
 
@@ -349,15 +384,21 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
       children: [
         buildVendorInfoText(
             "Vendor Name : ",
-            ViewPaymentData['vendor_buyer_details']['vendor_name'] ?? 'N/A',
+            (ViewPaymentData['vendor_buyer_details']['vendor_name'] ?? 'N/A')
+                .toString()
+                .toUpperCase(),
             false),
         buildVendorInfoText(
             "Branch : ",
-            ViewPaymentData['vendor_buyer_details']['branch_name'] ?? 'N/A',
+            (ViewPaymentData['vendor_buyer_details']['branch_name'] ?? 'N/A')
+                .toString()
+                .toUpperCase(),
             false),
         buildVendorInfoText(
             "Buyer Name : ",
-            ViewPaymentData['vendor_buyer_details']['bidder_name'] ?? 'N/A',
+            (ViewPaymentData['vendor_buyer_details']['bidder_name'] ?? 'N/A')
+                .toString()
+                .toUpperCase(),
             false),
       ],
     );
@@ -507,6 +548,12 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
                 "SO Validity : ",
                 formatDate(ViewPaymentData['sale_order_details'][0]['sovu']),
                 Icons.event_available),
+
+            buildDetailTile(
+              "Balance\nAdvance Amount : ",
+              totalPaymentController.text,
+              Icons.account_balance_wallet,
+            ),
           ],
         ),
       ),

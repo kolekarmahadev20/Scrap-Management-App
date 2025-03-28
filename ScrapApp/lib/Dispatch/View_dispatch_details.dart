@@ -8,8 +8,10 @@ import 'package:scrapapp/Dispatch/View_dispatch_lifting_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../URL_CONSTANT.dart';
+import 'Edit_dispatch_details.dart';
 import 'View_Invoice_Details.dart';
 import 'addDispatchToSaleOrder.dart';
+import 'editDispatchDetails.dart';
 
 class View_dispatch_details extends StatefulWidget {
   final String sale_order_id;
@@ -132,8 +134,10 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
               ? List<Map<String, dynamic>>.from(jsonData['taxDetails'])
               : [];
 
-          balanceQty = jsonData['balance_qty'] ?? 0;
-          totalBalance = jsonData['total_balance'] ?? 0;
+          balanceQty = (jsonData['balance_qty'] ?? 0).toDouble();
+          totalBalance = (jsonData['total_balance'] ?? 0).toDouble();
+
+
         });
       } else {
         print("Unable to fetch data.");
@@ -400,7 +404,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
           buildSummaryRow(
               "SO Balance Qty:",
               balanceQty != null
-                  ? "${balanceQty} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ""}"
+                  ? "${balanceQty.toStringAsFixed(2)} ${ViewPaymentData['sale_order_details'][0]['totunit'] ?? ""}"
                   : "N/A",
               totalBalance != null ? totalBalance.toStringAsFixed(2) : "N/A"),
         ],
@@ -496,6 +500,9 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                         ['material_name'] ??
                     'N/A',
                 bidder_id: widget.bidder_id,
+                totalQty:ViewDispatchData['sale_order_details']?[0]
+                ['qty'] ??
+                    'N/A',
               ),
             ),
           ).then((value) => setState(() {
@@ -566,16 +573,22 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         buildVendorInfoText(
-            "Vendor Name: ",
-            ViewDispatchData['vendor_buyer_details']['vendor_name'] ?? 'N/A',
+            "Vendor Name : ",
+            (ViewPaymentData['vendor_buyer_details']['vendor_name'] ?? 'N/A')
+                .toString()
+                .toUpperCase(),
             false),
         buildVendorInfoText(
-            "Branch: ",
-            ViewDispatchData['vendor_buyer_details']['branch_name'] ?? 'N/A',
+            "Branch : ",
+            (ViewPaymentData['vendor_buyer_details']['branch_name'] ?? 'N/A')
+                .toString()
+                .toUpperCase(),
             false),
         buildVendorInfoText(
-            "Buyer Name: ",
-            ViewDispatchData['vendor_buyer_details']['bidder_name'] ?? 'N/A',
+            "Buyer Name : ",
+            (ViewPaymentData['vendor_buyer_details']['bidder_name'] ?? 'N/A')
+                .toString()
+                .toUpperCase(),
             false),
       ],
     );
@@ -716,37 +729,34 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                       ),
                     ),
                     ElevatedButton(
-                        onPressed: (
-                            userType == 'S' ||
-                            userType == 'A' ||
-                            userType == 'U'
-                        )
-                            ? () {
-                          // Navigator.push(
-                          //   context,
-                            // MaterialPageRoute(
-                            //   builder: (context) =>
-                            //       Edit_dispatch_details(
-                            //         sale_order_id:
-                            //         widget.sale_order_id,
-                            //         bidder_id: widget.bidder_id,
-                            //         lift_id: widget.lift_id,
-                            //         material: material,
-                            //         invoiceNo: invoiceNo,
-                            //         truckNo: truckNo,
-                            //         firstWeight: firstWeight,
-                            //         fullWeight: fullWeight,
-                            //         moistureWeight: moistureWeight,
-                            //         netWeight: netWeight,
-                            //         note: note,
-                            //         quantity: quantity,
-                            //         selectedOrderId: selectedOrderId,
-                            //         date: date,
-                            //       ),
-                            // ),
-                          // );
-                        }
-                            : null,
+                        onPressed:  () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  EditDispatchDetails(
+                                    sale_order_id: widget.sale_order_id,
+                                    bidder_id: widget.bidder_id,
+                                    lift_id: index['lift_id'] ?? '',
+
+                                    material_name: index['material_name'] ?? '',
+                                    invoiceNo: index['invoice_no'] ?? '',
+                                    date: index['date_time'] ?? '',
+                                    truckNo: index['truck_no'] ?? '',
+                                    firstweight: index['truck_weight']?.toString() ?? '',
+                                    full_weight: index['full_weight']?.toString() ?? '',
+                                    netweight: index['net_weight']?.toString() ?? '',
+                                    moisweight: index['mois_weight']?.toString() ?? '',
+                                    qty: index['qty']?.toString() ?? '',
+                                    note: index['note'] ?? '',
+                                    imagesUrl: index['images'] ?? [], // Assuming it's a list of URLs
+
+
+
+                                  ),
+                            ),
+                          );
+                        },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,

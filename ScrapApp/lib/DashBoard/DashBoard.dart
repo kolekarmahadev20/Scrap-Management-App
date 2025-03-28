@@ -56,7 +56,7 @@ class _DashBoardState extends State<DashBoard> {
   }
 
   Future<void> checkLogin() async {
-     final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     uuid = prefs.getString("uuid")!;
     uuid = prefs.getString("uuid")!;
@@ -73,8 +73,8 @@ class _DashBoardState extends State<DashBoard> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-        'user_id': username,
-         'uuid':uuid,
+          'user_id': username,
+          'uuid':uuid,
           'user_pass': password,
         },
       );
@@ -127,11 +127,18 @@ class _DashBoardState extends State<DashBoard> {
       ),
     );
   }
-
   Widget _buildGraph(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     List<String> lastSixMonths = getLastSixMonths();
+
+    // Determine dynamic max Y value
+    double maxY = (graph.isNotEmpty)
+        ? graph.map((e) => int.tryParse(e['cnt'].toString()) ?? 0).reduce(math.max).toDouble()
+        : 100; // Default if graph is empty
+
+    double stepSize = (maxY / 5).ceilToDouble(); // Creates 5 steps on Y-axis
+
     return Container(
       width: screenWidth,
       height: screenHeight * 0.35,
@@ -143,7 +150,7 @@ class _DashBoardState extends State<DashBoard> {
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
-                maxY: 100,
+                maxY: maxY + stepSize, // Add buffer
                 barTouchData: BarTouchData(
                   touchTooltipData: BarTouchTooltipData(),
                 ),
@@ -151,7 +158,8 @@ class _DashBoardState extends State<DashBoard> {
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 35,
+                      reservedSize: 40,
+                      interval: stepSize, // Dynamic step size
                       getTitlesWidget: (value, meta) => SideTitleWidget(
                         axisSide: meta.axisSide,
                         space: 10,
@@ -182,7 +190,10 @@ class _DashBoardState extends State<DashBoard> {
                 ),
                 borderData: FlBorderData(show: true),
                 barGroups: _buildBarGroups(),
-                gridData: FlGridData(show: false),
+                gridData: FlGridData(
+                  show: true,
+                  horizontalInterval: stepSize, // Dynamic interval for Y-grid lines
+                ),
               ),
             ),
           ),

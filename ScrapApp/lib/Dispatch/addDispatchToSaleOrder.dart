@@ -21,11 +21,13 @@ class addDispatchToSaleOrder extends StatefulWidget {
   final String sale_order_id;
   final String material_name;
   final String bidder_id;
+  final String totalQty;
 
   addDispatchToSaleOrder({
     required this.sale_order_id,
     required this.material_name,
     required this.bidder_id,
+    required this.totalQty,
   });
 
   @override
@@ -113,22 +115,41 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   void calculateNetWeight() {
     double firstWeight = double.tryParse(firstWeightNoController.text) ?? 0.0;
     double fullWeight = double.tryParse(fullWeightController.text) ?? 0.0;
-    double moistureWeight =
-        double.tryParse(moistureWeightController.text) ?? 0.0;
+    double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
+
+    if (fullWeight == 0.0) {
+      return;
+    }
 
     double netWeight = (fullWeight - firstWeight);
-    netWeight = double.parse(
-        netWeight.toStringAsFixed(3)); // Rounding to 3 decimal places
+    netWeight = double.parse(netWeight.toStringAsFixed(3));
 
     double DMTWeight = ((fullWeight - firstWeight) * moistureWeight) / 100;
     DMTWeight = netWeight - DMTWeight;
-    DMTWeight = double.parse(
-        DMTWeight.toStringAsFixed(3)); // Rounding to 3 decimal places
+    DMTWeight = double.parse(DMTWeight.toStringAsFixed(3));
 
-    // Update the net weight controller with the result
+    double totalQty = double.tryParse(widget.totalQty) ?? 0.0;
+    if ((netWeight > totalQty) || netWeight < 0) {
+      netWeightController.clear();
+      quantityController.clear();
+
+      String errorMessage = (netWeight > totalQty)
+          ? "Net weight ($netWeight) cannot exceed total quantity ($totalQty)!"
+          : "Net weight ($netWeight) cannot be negative!";
+
+      Fluttertoast.showToast(
+        msg: errorMessage,
+          gravity: ToastGravity.CENTER,
+      );
+      return;
+    }
+
+    // ✅ Update the controllers
     netWeightController.text = netWeight.toStringAsFixed(3);
     quantityController.text = DMTWeight.toStringAsFixed(3);
   }
+
+
 
   // void calculateNetWeight() {
   //   double firstWeight = double.tryParse(firstWeightNoController.text) ?? 0.0;
@@ -585,24 +606,24 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
                                   const EdgeInsets.symmetric(horizontal: 8.0),
                               child: Row(
                                 mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                    MainAxisAlignment.center,
                                 children: [
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      clearFields();
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text("Back"),
-                                    style: ElevatedButton.styleFrom(
-                                      foregroundColor: Colors.white,
-                                      backgroundColor: Colors.indigo[800],
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 50, vertical: 12),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  ),
+                                  // ElevatedButton(
+                                  //   onPressed: () {
+                                  //     clearFields();
+                                  //     Navigator.of(context).pop();
+                                  //   },
+                                  //   child: Text("Back"),
+                                  //   style: ElevatedButton.styleFrom(
+                                  //     foregroundColor: Colors.white,
+                                  //     backgroundColor: Colors.indigo[800],
+                                  //     padding: EdgeInsets.symmetric(
+                                  //         horizontal: 50, vertical: 12),
+                                  //     shape: RoundedRectangleBorder(
+                                  //       borderRadius: BorderRadius.circular(12),
+                                  //     ),
+                                  //   ),
+                                  // ),
                                   ElevatedButton(
                                     onPressed: () {
                                       addDispatchDetails();
