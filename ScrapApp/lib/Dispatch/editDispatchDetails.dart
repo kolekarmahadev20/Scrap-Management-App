@@ -603,7 +603,7 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
                       buildTextField("Net", netWeightController, true,false ,Colors.grey[400]!, context),
                       buildTextField("Moisture Weight", moistureWeightController, false,false ,Colors.white, context),
                       buildTextField("DMT/Quantity Weight", quantityController, true,false , Colors.white,context),
-                      buildTextField("Note", noteController, true,false , Colors.white,context),
+                      buildTextField("Note", noteController, false,false , Colors.white,context),
                       SizedBox(
                         height: 40,
                       ),
