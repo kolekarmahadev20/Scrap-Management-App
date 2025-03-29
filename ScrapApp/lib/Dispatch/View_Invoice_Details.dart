@@ -396,7 +396,7 @@ class _InvoicePageState extends State<InvoicePage> {
                           if (materialLiftingDetails.isNotEmpty && materialLiftingDetails.first["tax_details"] != null)
                             ...materialLiftingDetails.first["tax_details"].map<Widget>((tax) {
                               return Text(
-                                "${tax["tax_name"]} - ${tax["tax_rate"]} % : ${tax["tax_value"]}",
+                                "${tax["tax_name"]}@${tax["tax_rate"]} % : ${tax["tax_value"]}",
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               );
                             }).toList(),
@@ -407,7 +407,6 @@ class _InvoicePageState extends State<InvoicePage> {
                         ],
                       ),
                     ),
-
                   ],
                 ),
               ),
@@ -433,7 +432,10 @@ class _InvoicePageState extends State<InvoicePage> {
                   labels[idx],
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                Text(values[idx] ?? ''),
+                Text(
+                  values[idx] != null ? values[idx]!.toString().toUpperCase() : '',
+                  style: TextStyle(fontSize: 16),
+                ),
               ],
             ),
           ),
