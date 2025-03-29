@@ -82,6 +82,10 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
         isLoading = true;
       });
 
+      print(widget.sale_order_id);
+      print(widget.bidder_id);
+
+
       await checkLogin();
       final url = Uri.parse("${URL}payment_details");
       var response = await http.post(
@@ -730,6 +734,22 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                     ),
                     ElevatedButton(
                         onPressed:  () {
+                          print("Imagesa: ${index['images']}");
+
+                          dynamic imagesData = index['images']; // It can be a List or String
+
+                          // ✅ Convert it to a comma-separated string
+                          String? imagesUrl;
+
+                          if (imagesData is List) {
+                            // Case 1: It's already a List<String>
+                            imagesUrl = imagesData.cast<String>().join(", ");
+                          } else if (imagesData is String && imagesData.isNotEmpty) {
+                            // Case 2: It's already a comma-separated String
+                            imagesUrl = imagesData;
+                          }
+
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -738,7 +758,6 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                                     sale_order_id: widget.sale_order_id,
                                     bidder_id: widget.bidder_id,
                                     lift_id: index['lift_id'] ?? '',
-
                                     material_name: index['material_name'] ?? '',
                                     invoiceNo: index['invoice_no'] ?? '',
                                     date: index['date_time'] ?? '',
@@ -749,7 +768,10 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                                     moisweight: index['mois_weight']?.toString() ?? '',
                                     qty: index['qty']?.toString() ?? '',
                                     note: index['note'] ?? '',
-                                    imagesUrl: index['images'] ?? [], // Assuming it's a list of URLs
+                                    totalQty:ViewDispatchData['sale_order_details']?[0]
+                                    ['qty'] ??
+                                        'N/A',
+                                    imagesUrl: imagesUrl, // ✅ Now it's a String!
 
 
 

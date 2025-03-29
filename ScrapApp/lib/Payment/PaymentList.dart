@@ -107,31 +107,28 @@ class _PaymentListState extends State<PaymentList> {
 
     // Apply Material filter
     if (searchMaterialController.text.isNotEmpty) {
+      List<String> searchTerms = searchMaterialController.text.toLowerCase().trim().split(' '); // Split words
       searchResults = searchResults.where((order) {
-        return order['description']
-            .toString()
-            .toLowerCase()
-            .contains(searchMaterialController.text.toLowerCase());
+        String description = order['description'].toString().toLowerCase();
+        return searchTerms.every((term) => description.contains(term)); // Check if all words exist
       }).toList();
     }
 
     // Apply Vendor filter
     if (searchVendorController.text.isNotEmpty) {
+      List<String> searchTerms = searchVendorController.text.toLowerCase().trim().split(' ');
       searchResults = searchResults.where((order) {
-        return order['vendor_name']
-            .toString()
-            .toLowerCase()
-            .contains(searchVendorController.text.toLowerCase());
+        String vendorName = order['vendor_name'].toString().toLowerCase();
+        return searchTerms.every((term) => vendorName.contains(term));
       }).toList();
     }
 
-    // Apply Plant filter
+    // Apply Bidder filter
     if (searchBidderController.text.isNotEmpty) {
+      List<String> searchTerms = searchBidderController.text.toLowerCase().trim().split(' ');
       searchResults = searchResults.where((order) {
-        return order['branch_name']
-            .toString()
-            .toLowerCase()
-            .contains(searchBidderController.text.toLowerCase());
+        String bidderName = order['branch_name'].toString().toLowerCase();
+        return searchTerms.every((term) => bidderName.contains(term));
       }).toList();
     }
 
@@ -162,9 +159,9 @@ class _PaymentListState extends State<PaymentList> {
                       children: [
                         Expanded(
                           child: Text(
-                            "Search Sale Orders",
+                            "Search By",
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 19,
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
                             ),
@@ -214,8 +211,7 @@ class _PaymentListState extends State<PaymentList> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(15),
                                 ),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 25, vertical: 15),
+                                padding: EdgeInsets.all(8),
                                 elevation: 5,
                               ),
                               child: Text(
@@ -241,8 +237,7 @@ class _PaymentListState extends State<PaymentList> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(15),
                                 ),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 25, vertical: 15),
+                                padding: EdgeInsets.all(8),
                                 elevation: 5,
                               ),
                               child: Text(
@@ -271,17 +266,17 @@ class _PaymentListState extends State<PaymentList> {
   }) {
     return TextField(
       controller: controller,
-      style: TextStyle(fontSize: 18),
+      style: TextStyle(fontSize: 16, color: Colors.black87),
       decoration: InputDecoration(
         hintText: hintText,
-        prefixIcon: Icon(Icons.search, color: Colors.grey),
+        prefixIcon: Icon(Icons.search, color: Colors.blueGrey[400]),
         filled: true,
-        fillColor: Colors.grey[100],
+        fillColor: Colors.white,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Colors.indigo),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
         ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }

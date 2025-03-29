@@ -132,6 +132,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     if ((netWeight > totalQty) || netWeight < 0) {
       netWeightController.clear();
       quantityController.clear();
+      fullWeightController.clear();
 
       String errorMessage = (netWeight > totalQty)
           ? "Net weight ($netWeight) cannot exceed total quantity ($totalQty)!"
@@ -274,15 +275,15 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       request.fields['rate'] = rate ?? '';
       request.fields['advance_payment'] = advancePayment ?? '';
       request.fields['lotno'] = materialId ?? '';
-      request.fields['invoice_no'] = invoiceController.text;
-      request.fields['date_time'] = dateController.text;
-      request.fields['truck_no'] = truckNoController.text;
-      request.fields['truck_weight'] = firstWeightNoController.text;
-      request.fields['full_weight'] = fullWeightController.text;
-      request.fields['mois_weight'] = moistureWeightController.text;
-      request.fields['net_weight'] = netWeightController.text;
-      request.fields['qty'] = quantityController.text;
-      request.fields['note'] = noteController.text;
+      request.fields['invoice_no'] = invoiceController.text?? '';
+      request.fields['date_time'] = dateController.text?? '';
+      request.fields['truck_no'] = truckNoController.text?? '';
+      request.fields['truck_weight'] = firstWeightNoController.text?? '';
+      request.fields['full_weight'] = fullWeightController.text?? '';
+      request.fields['mois_weight'] = moistureWeightController.text?? '';
+      request.fields['net_weight'] = netWeightController.text?? '';
+      request.fields['qty'] = quantityController.text?? '';
+      request.fields['note'] = noteController.text?? '';
 
       print("======== Request Fields ========");
       request.fields.forEach((key, value) {
@@ -304,6 +305,10 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
             if (!addedHashes.contains(imageHash)) {
               String fileName =
                   '$keyword${compressedImage.path.split('/').last}';
+
+              print(fileName);
+              print("fileName");
+
               var stream = http.ByteStream(compressedImage.openRead());
               var length = await compressedImage.length();
               var multipartFile = http.MultipartFile(
@@ -475,7 +480,8 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
                       ),
                       SizedBox(height: 16),
                       Expanded(
-                        child: ListView(
+                        child:SingleChildScrollView(
+                        child: Column(
                           children: [
                             buildTextField("Material", materialController, true,
                                 false, Colors.white, context),
@@ -645,6 +651,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
                             ),
                             SizedBox(height: 16),
                           ],
+                        ),
                         ),
                       ),
                     ],

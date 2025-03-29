@@ -27,7 +27,7 @@ class InvoicePage extends StatefulWidget {
 class _InvoicePageState extends State<InvoicePage> {
   Map<String, dynamic>? invoiceData;
   List<dynamic> materialLiftingDetails = [];
-  List<String> imageList = [];
+  List<Map<String, String>> imageList = []; // Change List<String> to List<Map<String, String>>
 
   String? username = '';
   String uuid = '';
@@ -56,6 +56,9 @@ class _InvoicePageState extends State<InvoicePage> {
     await checkLogin();
     final url = Uri.parse("${URL}check_url");
 
+    print(widget.sale_order_id);
+    print(widget.invoiceNo);
+
     var response = await http.post(
       url,
       headers: {"Accept": "application/json"},
@@ -71,26 +74,42 @@ class _InvoicePageState extends State<InvoicePage> {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
 
-      if (data.containsKey("images") && data["images"] is Map) {
-        List<String> imageUrls = [];
+      List<Map<String, String>> imageDetails = []; // Store image URLs with date
 
-        // Define base URL
-        String baseUrl = "${Image_URL}";
+      // Define base URL
+      String baseUrl = "${Image_URL}";
 
-        // Extract URLs from "ot" key
-        if (data["images"].containsKey("ot") && data["images"]["ot"] is List) {
-          imageUrls = data["images"]["ot"].map<String>((path) => baseUrl + path).toList();
-        }
+      // Check if 'ot' key exists and is a Map
+      if (data.containsKey("ot") && data["ot"].containsKey("ot") && data["ot"]["ot"] is Map) {
+        Map<String, dynamic> otData = data["ot"]["ot"];
 
-        setState(() {
-          imageList = imageUrls;
-          print("ASFASFASF:$imageList");
+        // Iterate through each entry in "ot"
+        otData.forEach((key, value) {
+          if (value.containsKey("images") && value["images"] is List && value.containsKey("created_date")) {
+            String createdDate = value["created_date"];
+            List<String> images = List<String>.from(value["images"]);
+
+            images.forEach((path) {
+              imageDetails.add({
+                "url": baseUrl + path,
+                "date": createdDate
+              });
+            });
+          }
         });
       }
+
+      setState(() {
+        imageList = imageDetails;
+        print("Updated Image List with Date: $imageList");
+      });
     } else {
       print("Failed to load invoice data");
     }
+
+
   }
+
   List<String> taxNames = [];
   List<String> taxRates = [];
   List<String> taxValues = [];
@@ -194,7 +213,7 @@ class _InvoicePageState extends State<InvoicePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ImageViewer(imgUrls: imageList),
+                          builder: (context) => ImageViewer(imgData: imageList),
                         ),
                       );
                     }

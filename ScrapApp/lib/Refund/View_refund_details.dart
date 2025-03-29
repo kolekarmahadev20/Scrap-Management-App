@@ -131,9 +131,14 @@ class _View_refund_detailsState extends State<View_refund_details> {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         setState(() {
+
           totalPaymentController.text = jsonData['Advance_payment'] != null
-              ? double.tryParse(jsonData['Advance_payment'].toString())?.toStringAsFixed(2) ?? "0.00"
+              ? double.tryParse(jsonData['Advance_payment'].toString()) != null
+              ? (double.parse(jsonData['Advance_payment'].toString()).toStringAsFixed(3)) // Round to 3 decimals first
+              .substring(0, (double.parse(jsonData['Advance_payment'].toString()).toStringAsFixed(3)).length - 1) // Convert back to 2 decimals
+              : "0.00"
               : "N/A";
+
         });
       } else {
         print("unable to load order ids.");

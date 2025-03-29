@@ -16,6 +16,7 @@ import 'package:path/path.dart' as path;
 import 'dart:typed_data';
 import 'package:image/image.dart' as Img;
 import 'View_dispatch_details.dart';
+import 'package:crypto/crypto.dart';
 
 class EditDispatchDetails extends StatefulWidget {
   final String sale_order_id;
@@ -31,10 +32,12 @@ class EditDispatchDetails extends StatefulWidget {
   final String note;
   final String invoiceNo;
   final String full_weight;
-  final String imagesUrl;
+  final String? imagesUrl;
+  final String totalQty;
 
 
   EditDispatchDetails({
+    required this.totalQty,
     required this.lift_id,
     required this.full_weight,
     required this.invoiceNo,
@@ -48,7 +51,7 @@ class EditDispatchDetails extends StatefulWidget {
     required this.moisweight,
     required this.qty,
     required this.note,
-    required this.imagesUrl,
+    this.imagesUrl,
 
   });
 
@@ -164,22 +167,41 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
   void calculateNetWeight() {
     double firstWeight = double.tryParse(firstWeightNoController.text) ?? 0.0;
     double fullWeight = double.tryParse(fullWeightController.text) ?? 0.0;
-    double moistureWeight =
-        double.tryParse(moistureWeightController.text) ?? 0.0;
+    double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
+
+    if (fullWeight == 0.0) {
+      return;
+    }
 
     double netWeight = (fullWeight - firstWeight);
-    netWeight = double.parse(
-        netWeight.toStringAsFixed(3)); // Rounding to 3 decimal places
+    netWeight = double.parse(netWeight.toStringAsFixed(3));
 
     double DMTWeight = ((fullWeight - firstWeight) * moistureWeight) / 100;
     DMTWeight = netWeight - DMTWeight;
-    DMTWeight = double.parse(
-        DMTWeight.toStringAsFixed(3)); // Rounding to 3 decimal places
+    DMTWeight = double.parse(DMTWeight.toStringAsFixed(3));
 
-    // Update the net weight controller with the result
+    double totalQty = double.tryParse(widget.totalQty) ?? 0.0;
+    if ((netWeight > totalQty) || netWeight < 0) {
+      netWeightController.clear();
+      quantityController.clear();
+      fullWeightController.clear();
+
+      String errorMessage = (netWeight > totalQty)
+          ? "Net weight ($netWeight) cannot exceed total quantity ($totalQty)!"
+          : "Net weight ($netWeight) cannot be negative!";
+
+      Fluttertoast.showToast(
+        msg: errorMessage,
+        gravity: ToastGravity.CENTER,
+      );
+      return;
+    }
+
+    // ✅ Update the controllers
     netWeightController.text = netWeight.toStringAsFixed(3);
     quantityController.text = DMTWeight.toStringAsFixed(3);
   }
+
 
   // void calculateNetWeight() {
   //   double firstWeight = double.tryParse(firstWeightNoController.text) ?? 0.0;
@@ -318,37 +340,71 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
       request.fields['qty'] = quantityController.text;
       request.fields['note'] = noteController.text;
 
-      if (_images != null) {
-        print("📸 Total Images: ${_images.length}");
+      // Function to add images to the request
+      Future<void> addImages(List<File> images, String keyword, http.MultipartRequest request) async {
+        Set<String> addedHashes = {}; // Unique image tracking
 
+        for (var image in images) {
+          print('Processing image: ${image.path}');
 
-        for (var image in _images) {
+          File? compressedImage = await compressImage(image);
+          if (compressedImage != null) {
+            print('Compressed image path: ${compressedImage.path}');
 
-          print("📸 Image Debug: ");
-          print("   📂 Path: ${image.path}");
-          print("   🏷 Name: ${image.path.split('/').last}");
-          print("   📏 Size: ${await image.length()} bytes");
+            String imageHash = await computeFileHash(compressedImage);
+            print('Image Hash: $imageHash');
 
-          try {
-            request.files.add(
-              await http.MultipartFile.fromPath(
+            if (!addedHashes.contains(imageHash)) {
+              String fileName = '$keyword${compressedImage.path.split('/').last}';
+              print('Generated File Name: $fileName');
+
+              var stream = http.ByteStream(compressedImage.openRead());
+              var length = await compressedImage.length();
+
+              var multipartFile = http.MultipartFile(
                 'certifications[]',
-                image.path,
-              ),
-            );
-            print("✅ Image added to request successfully!");
-          } catch (e) {
-            print("❌ Error adding image: $e");
+                stream,
+                length,
+                filename: fileName,
+              );
+
+              request.files.add(multipartFile);
+              addedHashes.add(imageHash); // Track added image hash
+
+              print('Generated File Name: $fileName');
+              print('Adding image to request: $fileName');
+              print('Total files in request: ${request.files.length}');
+
+
+            } else {
+              print('Skipping duplicate image');
+            }
           }
         }
       }
 
-// Debug all fields being sent
-      print('📤 Fields sent in the request:');
+
+      // Add images from different sources
+      if (vehicleFront.isNotEmpty) await addImages(vehicleFront, "Fr", request);
+      if (vehicleBack.isNotEmpty) await addImages(vehicleBack, "Ba", request);
+      if (Material.isNotEmpty) await addImages(Material, "Ma", request);
+      if (MaterialHalfLoad.isNotEmpty)
+        await addImages(MaterialHalfLoad, "Ha", request);
+      if (MaterialFullLoad.isNotEmpty)
+        await addImages(MaterialFullLoad, "Fu", request);
+      if (other.isNotEmpty) await addImages(other, "ot", request);
+
+      print('Fields sent:');
       request.fields.forEach((key, value) {
-        print('   🔑 $key: $value');
+        print('$key: $value');
       });
 
+      // print("**************************************************************");
+
+      // print('Files sent:');
+      // request.files.forEach((file) {
+      //   print('File: ${file.filename}, length: ${file.length}');
+      // });
 
       // Send the request
       var response = await request.send();
@@ -397,6 +453,12 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
     }
   }
 
+  // Function to compute the hash of a file's contents
+  Future<String> computeFileHash(File file) async {
+    var bytes = await file.readAsBytes();
+    return md5.convert(bytes).toString(); // Using MD5 hash
+  }
+
 
   showLoading() {
     return Container(
@@ -407,61 +469,6 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
         child: CircularProgressIndicator(),
       ),
     );
-  }
-
-  String getImageData(String imageUrl) {
-    return imageUrl;
-  }
-
-  // Function to pick images from the gallery
-  Future<void> _pickImagesFromGallery() async {
-
-    List<XFile>? pickedImages = await ImagePicker().pickMultiImage();
-
-    if (pickedImages != null) {
-      for (var pickedImage in pickedImages) {
-        await _compressAndAddImage(pickedImage.path);
-      }
-    }
-
-  }
-
-// Function to pick images from the gallery _pickImageFromCamera
-  Future<void> _pickImageFromCamera() async {
-
-    final pickedImage = await ImagePicker().pickImage(source: ImageSource.camera);
-
-    if (pickedImage != null) {
-      await _compressAndAddImage(pickedImage.path);
-    }
-
-  }
-
-  Future<void> _compressAndAddImage(String imagePath) async {
-    File imageFile = File(imagePath);
-
-    try {
-      List<int> imageBytes = await imageFile.readAsBytes();
-      Img.Image image = Img.decodeImage(Uint8List.fromList(imageBytes))!;
-      Img.Image compressedImage = Img.copyResize(image, width: 1024);
-      List<int> compressedImageBytes;
-      String extension = imagePath.split('.').last.toLowerCase();
-      if (extension == 'jpg' || extension == 'jpeg') {
-        compressedImageBytes = Img.encodeJpg(compressedImage, quality: 70);
-      } else if (extension == 'png') {
-        compressedImageBytes = Img.encodePng(compressedImage);
-      } else {
-        throw UnsupportedError('Unsupported image format: $extension');
-      }
-      File compressedFile = File(imagePath.replaceAll(RegExp(r'\.\w+$'), '_compressed.$extension'));
-      await compressedFile.writeAsBytes(compressedImageBytes);
-
-      setState(() {
-        _images.add(compressedFile);
-      });
-    } catch (e) {
-      print('Error during image compression: $e');
-    }
   }
 
 
@@ -535,7 +542,8 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
                 ),
                 SizedBox(height: 16),
                 Expanded(
-                  child: ListView(
+                  child:SingleChildScrollView(
+                  child: Column(
                     children: [
                       buildTextField("Material", materialController,true, false , Colors.white,context),
                       buildTextField("Invoice No", invoiceController , false,false ,Colors.white, context),
@@ -550,37 +558,19 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
                       SizedBox(
                         height: 40,
                       ),
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // Left Label
-                            Text(
-                              "Add Images",
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                            ),
-
-                            // Right Icons (Image & Camera)
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.image, color: Colors.blue),
-                                  onPressed: _pickImagesFromGallery,
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.camera_alt, color: Colors.green),
-                                  onPressed: _pickImageFromCamera, // Use camera picker here if needed
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                      ImageWidget(
+                          value: 'Add Images',
+                          cameraIcon: Icon(Icons.camera_alt,
+                              color: Colors.blue),
+                          galleryIcon: Icon(Icons.photo_library,
+                              color: Colors.green),
+                          onImagesSelected: (images) {
+                            // Handle selected images
+                            setState(() {
+                              other.addAll(
+                                  images); // Store uploaded images
+                            });
+                          }),
 
 
                       SizedBox(
@@ -743,6 +733,7 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
                       SizedBox(height: 16),
                     ],
                   ),
+                  ),
                 ),
               ],
             ),
@@ -830,6 +821,157 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
           )
         ],
       ),
+    );
+  }
+}
+
+class ImageWidget extends StatefulWidget {
+  final String value;
+  final Icon cameraIcon;
+  final Icon galleryIcon;
+  final Function(List<File>) onImagesSelected;
+
+  const ImageWidget({
+    Key? key,
+    required this.value,
+    required this.cameraIcon,
+    required this.galleryIcon,
+    required this.onImagesSelected,
+  }) : super(key: key);
+
+  @override
+  _ImageWidgetState createState() => _ImageWidgetState();
+}
+
+class _ImageWidgetState extends State<ImageWidget> {
+  List<File> _images = [];
+
+  // Function to pick multiple images from the gallery
+  Future<void> _pickImagesFromGallery() async {
+    final picker = ImagePicker();
+    // final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery); // Pick only one image
+    List<XFile>? pickedFile = await ImagePicker().pickMultiImage();
+
+    if (pickedFile != null) {
+      for (var pickedImage in pickedFile) {
+        _images.add(
+            File(pickedImage.path)); // Append images instead of overwriting
+      }
+
+      setState(() {
+        // _images = [File(pickedFile.path)]; // Replace the list with the new image
+      });
+      widget.onImagesSelected(_images);
+      // _showSingleImageNotification();
+    }
+  }
+
+  // Function to capture a single image using the camera
+  Future<void> _captureImageFromCamera() async {
+    final picker = ImagePicker();
+    final XFile? capturedFile =
+    await picker.pickImage(source: ImageSource.camera);
+
+    if (capturedFile != null) {
+      setState(() {
+        _images.add(File(capturedFile.path));
+        // _images = [File(capturedFile.path)]; // Replace the list with the new captured image
+      });
+      widget.onImagesSelected(_images);
+      // _showSingleImageNotification();
+    }
+  }
+
+  void _showSingleImageNotification() {
+    // Use Future to delay the snackbar to ensure widget is mounted
+    Future.delayed(Duration.zero, () {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("You can only upload one image at a time."),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    });
+  }
+
+  // Function to delete a selected image
+  void _deleteImage(int index) {
+    setState(() {
+      _images.removeAt(index); // Remove the image at the specified index
+      widget.onImagesSelected(_images); // Update parent with the new list
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                widget.value,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Spacer(),
+              IconButton(
+                icon: widget.cameraIcon,
+                onPressed: _captureImageFromCamera, // Calls the camera function
+              ),
+              IconButton(
+                icon: widget.galleryIcon,
+                onPressed:
+                _pickImagesFromGallery, // Calls the gallery picker function
+              ),
+            ],
+          ),
+        ),
+        _images.isNotEmpty
+            ? GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3, // Display 3 images per row
+            crossAxisSpacing: 4.0,
+            mainAxisSpacing: 4.0,
+          ),
+          itemCount: _images.length,
+          itemBuilder: (context, index) {
+            return Stack(
+              children: [
+                Container(
+                  height: 100, // Set fixed height for images
+                  width: 100, // Set fixed width for images
+                  child: ClipRRect(
+                    borderRadius:
+                    BorderRadius.circular(8), // Rounded corners
+                    child: Image.file(
+                      _images[index],
+                      fit: BoxFit
+                          .cover, // Ensure the image fits within the container
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () =>
+                        _deleteImage(index), // Delete the selected image
+                  ),
+                ),
+              ],
+            );
+          },
+        )
+            : Container(),
+      ],
     );
   }
 }

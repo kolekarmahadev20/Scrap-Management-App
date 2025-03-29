@@ -87,79 +87,33 @@ class saleOrderListState extends State<saleOrderList> {
     }
   }
 
-  showLoading() {
-    return Container(
-      height: double.infinity,
-      width: double.infinity,
-      color: Colors.transparent,
-      child: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
-
-  // Function to filter the list based on search query
-  void filterSearchResults(String query) {
-    List<dynamic> searchResults = [];
-    if (query.isNotEmpty) {
-      saleOrderList.forEach((order) {
-        if (order['description']
-                .toString()
-                .toLowerCase()
-                .contains(query.toLowerCase()) ||
-            order['vendor_name']
-                .toString()
-                .toLowerCase()
-                .contains(query.toLowerCase()) ||
-            order['bidder_name']
-                .toString()
-                .toLowerCase()
-                .contains(query.toLowerCase())) {
-          searchResults.add(order);
-        }
-      });
-      setState(() {
-        filteredSaleOrderList = searchResults;
-      });
-    } else {
-      setState(() {
-        filteredSaleOrderList =
-            saleOrderList; // Reset to full list when search is cleared
-      });
-    }
-  }
-
-
   void filterResults() {
     List<dynamic> searchResults = saleOrderList;
 
     // Apply Material filter
     if (searchMaterialController.text.isNotEmpty) {
+      List<String> searchTerms = searchMaterialController.text.toLowerCase().trim().split(' '); // Split words
       searchResults = searchResults.where((order) {
-        return order['description']
-            .toString()
-            .toLowerCase()
-            .contains(searchMaterialController.text.toLowerCase());
+        String description = order['description'].toString().toLowerCase();
+        return searchTerms.every((term) => description.contains(term)); // Check if all words exist
       }).toList();
     }
 
     // Apply Vendor filter
     if (searchVendorController.text.isNotEmpty) {
+      List<String> searchTerms = searchVendorController.text.toLowerCase().trim().split(' ');
       searchResults = searchResults.where((order) {
-        return order['vendor_name']
-            .toString()
-            .toLowerCase()
-            .contains(searchVendorController.text.toLowerCase());
+        String vendorName = order['vendor_name'].toString().toLowerCase();
+        return searchTerms.every((term) => vendorName.contains(term));
       }).toList();
     }
 
-    // Apply Plant filter
+    // Apply Bidder filter
     if (searchBidderController.text.isNotEmpty) {
+      List<String> searchTerms = searchBidderController.text.toLowerCase().trim().split(' ');
       searchResults = searchResults.where((order) {
-        return order['branch_name']
-            .toString()
-            .toLowerCase()
-            .contains(searchBidderController.text.toLowerCase());
+        String bidderName = order['branch_name'].toString().toLowerCase();
+        return searchTerms.every((term) => bidderName.contains(term));
       }).toList();
     }
 
@@ -190,9 +144,9 @@ class saleOrderListState extends State<saleOrderList> {
                       children: [
                         Expanded(
                           child: Text(
-                            "Search Sale Orders",
+                            "Search By",
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 19,
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
                             ),
@@ -242,8 +196,7 @@ class saleOrderListState extends State<saleOrderList> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(15),
                                 ),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 25, vertical: 15),
+                                padding: EdgeInsets.all(8),
                                 elevation: 5,
                               ),
                               child: Text(
@@ -269,8 +222,7 @@ class saleOrderListState extends State<saleOrderList> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(15),
                                 ),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 25, vertical: 15),
+                                padding: EdgeInsets.all(8),
                                 elevation: 5,
                               ),
                               child: Text(
@@ -299,20 +251,247 @@ class saleOrderListState extends State<saleOrderList> {
   }) {
     return TextField(
       controller: controller,
-      style: TextStyle(fontSize: 18),
+      style: TextStyle(fontSize: 16, color: Colors.black87),
       decoration: InputDecoration(
         hintText: hintText,
-        prefixIcon: Icon(Icons.search, color: Colors.grey),
+        prefixIcon: Icon(Icons.search, color: Colors.blueGrey[400]),
         filled: true,
-        fillColor: Colors.grey[100],
+        fillColor: Colors.white,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Colors.indigo),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
         ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }
+
+  showLoading() {
+    return Container(
+      height: double.infinity,
+      width: double.infinity,
+      color: Colors.transparent,
+      child: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+  // Function to filter the list based on search query
+  void filterSearchResults(String query) {
+    List<dynamic> searchResults = [];
+    if (query.isNotEmpty) {
+      saleOrderList.forEach((order) {
+        if (order['description']
+                .toString()
+                .toLowerCase()
+                .contains(query.toLowerCase()) ||
+            order['vendor_name']
+                .toString()
+                .toLowerCase()
+                .contains(query.toLowerCase()) ||
+            order['bidder_name']
+                .toString()
+                .toLowerCase()
+                .contains(query.toLowerCase())) {
+          searchResults.add(order);
+        }
+      });
+      setState(() {
+        filteredSaleOrderList = searchResults;
+      });
+    } else {
+      setState(() {
+        filteredSaleOrderList =
+            saleOrderList; // Reset to full list when search is cleared
+      });
+    }
+  }
+
+
+  // void filterResults() {
+  //   List<dynamic> searchResults = saleOrderList;
+  //
+  //   // Apply Material filter
+  //   if (searchMaterialController.text.isNotEmpty) {
+  //     searchResults = searchResults.where((order) {
+  //       return order['description']
+  //           .toString()
+  //           .toLowerCase()
+  //           .contains(searchMaterialController.text.toLowerCase());
+  //     }).toList();
+  //   }
+  //
+  //   // Apply Vendor filter
+  //   if (searchVendorController.text.isNotEmpty) {
+  //     searchResults = searchResults.where((order) {
+  //       return order['vendor_name']
+  //           .toString()
+  //           .toLowerCase()
+  //           .contains(searchVendorController.text.toLowerCase());
+  //     }).toList();
+  //   }
+  //
+  //   // Apply Plant filter
+  //   if (searchBidderController.text.isNotEmpty) {
+  //     searchResults = searchResults.where((order) {
+  //       return order['branch_name']
+  //           .toString()
+  //           .toLowerCase()
+  //           .contains(searchBidderController.text.toLowerCase());
+  //     }).toList();
+  //   }
+  //
+  //   setState(() {
+  //     filteredSaleOrderList = searchResults;
+  //   });
+  // }
+  //
+  // Future showFilterDialog() {
+  //   return showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return StatefulBuilder(
+  //         builder: (BuildContext context, StateSetter setState) {
+  //           return Dialog(
+  //             backgroundColor: Colors.white,
+  //             shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.circular(20),
+  //             ),
+  //             child: Padding(
+  //               padding: const EdgeInsets.all(20.0),
+  //               child: Column(
+  //                 mainAxisSize: MainAxisSize.min,
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   Row(
+  //                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                     children: [
+  //                       Expanded(
+  //                         child: Text(
+  //                           "Search Sale Orders",
+  //                           style: TextStyle(
+  //                             fontSize: 20,
+  //                             fontWeight: FontWeight.bold,
+  //                             color: Colors.black87,
+  //                           ),
+  //                         ),
+  //                       ),
+  //                       IconButton(
+  //                         icon: Icon(Icons.close, color: Colors.black54),
+  //                         onPressed: () {
+  //                           Navigator.pop(context);
+  //                         },
+  //                       )
+  //                     ],
+  //                   ),
+  //                   SizedBox(height: 10),
+  //                   _buildSearchField(
+  //                     controller: searchMaterialController,
+  //                     hintText: "Enter Material Name",
+  //                   ),
+  //                   SizedBox(height: 10),
+  //                   _buildSearchField(
+  //                     controller: searchVendorController,
+  //                     hintText: "Enter Vendor Name",
+  //                   ),
+  //                   SizedBox(height: 10),
+  //                   _buildSearchField(
+  //                     controller: searchBidderController,
+  //                     hintText: "Enter Plant Name",
+  //                   ),
+  //                   SizedBox(height: 20),
+  //                   Row(
+  //                     children: [
+  //                       Expanded(
+  //                         child: Padding(
+  //                           padding: const EdgeInsets.all(8.0),
+  //                           child: ElevatedButton(
+  //                             onPressed: () {
+  //                               setState(() {
+  //                                 searchMaterialController.clear();
+  //                                 searchVendorController.clear();
+  //                                 searchBidderController.clear();
+  //                                 fetchSaleOrderList();
+  //                               });
+  //                               Navigator.pop(context); // Close dialog
+  //                             },
+  //                             style: ElevatedButton.styleFrom(
+  //                               backgroundColor: Colors.red[400],
+  //                               shape: RoundedRectangleBorder(
+  //                                 borderRadius: BorderRadius.circular(15),
+  //                               ),
+  //                               padding: EdgeInsets.symmetric(
+  //                                   horizontal: 25, vertical: 15),
+  //                               elevation: 5,
+  //                             ),
+  //                             child: Text(
+  //                               "Reset",
+  //                               style: TextStyle(
+  //                                   fontSize: 18, color: Colors.white),
+  //                             ),
+  //                           ),
+  //                         ),
+  //                       ),
+  //                       Expanded(
+  //                         child: Padding(
+  //                           padding: const EdgeInsets.all(8.0),
+  //                           child: ElevatedButton(
+  //                             onPressed: () {
+  //                               setState(() {
+  //                                 filterResults();
+  //                               });
+  //                               Navigator.pop(context); // Close dialog
+  //                             },
+  //                             style: ElevatedButton.styleFrom(
+  //                               backgroundColor: Colors.green[400],
+  //                               shape: RoundedRectangleBorder(
+  //                                 borderRadius: BorderRadius.circular(15),
+  //                               ),
+  //                               padding: EdgeInsets.symmetric(
+  //                                   horizontal: 25, vertical: 15),
+  //                               elevation: 5,
+  //                             ),
+  //                             child: Text(
+  //                               "Apply",
+  //                               style: TextStyle(
+  //                                   fontSize: 18, color: Colors.white),
+  //                             ),
+  //                           ),
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   )
+  //                 ],
+  //               ),
+  //             ),
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
+  //
+  // Widget _buildSearchField({
+  //   required TextEditingController controller,
+  //   required String hintText,
+  // }) {
+  //   return TextField(
+  //     controller: controller,
+  //     style: TextStyle(fontSize: 18),
+  //     decoration: InputDecoration(
+  //       hintText: hintText,
+  //       prefixIcon: Icon(Icons.search, color: Colors.grey),
+  //       filled: true,
+  //       fillColor: Colors.grey[100],
+  //       border: OutlineInputBorder(
+  //         borderRadius: BorderRadius.circular(15),
+  //         borderSide: BorderSide(color: Colors.indigo),
+  //       ),
+  //       contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {

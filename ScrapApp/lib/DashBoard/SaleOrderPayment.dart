@@ -136,8 +136,12 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
         final jsonData = json.decode(response.body);
         setState(() {
           totalPaymentController.text = jsonData['Advance_payment'] != null
-              ? double.tryParse(jsonData['Advance_payment'].toString())?.toStringAsFixed(2) ?? "0.00"
+              ? double.tryParse(jsonData['Advance_payment'].toString()) != null
+              ? (double.parse(jsonData['Advance_payment'].toString()).toStringAsFixed(3)) // Round to 3 decimals first
+              .substring(0, (double.parse(jsonData['Advance_payment'].toString()).toStringAsFixed(3)).length - 1) // Convert back to 2 decimals
+              : "0.00"
               : "N/A";
+
         });
       } else {
         print("unable to load order ids.");

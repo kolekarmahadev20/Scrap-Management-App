@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:dots_indicator/dots_indicator.dart';
 
 class ImageViewer extends StatefulWidget {
-  final List<String> imgUrls;
+  final List<Map<String, String>> imgData; // List containing image URL & date
 
-  const ImageViewer({Key? key, required this.imgUrls}) : super(key: key);
+  const ImageViewer({Key? key, required this.imgData}) : super(key: key);
 
   @override
   _ImageViewerState createState() => _ImageViewerState();
@@ -17,7 +17,7 @@ class _ImageViewerState extends State<ImageViewer> {
   @override
   void initState() {
     super.initState();
-    print("ASFASFASF:${widget.imgUrls}");
+    print("ASFASFASF:${widget.imgData}");
 
     _pageController.addListener(() {
       setState(() {
@@ -28,7 +28,7 @@ class _ImageViewerState extends State<ImageViewer> {
 
   @override
   Widget build(BuildContext context) {
-    final uniqueImgUrls = widget.imgUrls.toSet().toList(); // Remove duplicates
+    final uniqueImgData = widget.imgData.toSet().toList(); // Remove duplicates
 
     return Scaffold(
       appBar: AppBar(
@@ -41,34 +41,60 @@ class _ImageViewerState extends State<ImageViewer> {
         elevation: 2,
         shadowColor: Colors.black,
         shape: OutlineInputBorder(
-            borderSide:
-                BorderSide(style: BorderStyle.solid, color: Colors.white60)),
+          borderSide: BorderSide(style: BorderStyle.solid, color: Colors.white60),
+        ),
       ),
       body: Stack(
         children: [
-          uniqueImgUrls.isEmpty
+          uniqueImgData.isEmpty
               ? Center(child: Text('No images found'))
               : PageView.builder(
-                  controller: _pageController,
-                  itemCount: uniqueImgUrls.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Image.network(
-                        uniqueImgUrls[index],
-                        fit: BoxFit.contain, // You can adjust this value
-                        height: 200.0, // Set a maximum height if needed
+            controller: _pageController,
+            itemCount: uniqueImgData.length,
+            itemBuilder: (context, index) {
+              return Stack(
+                children: [
+                  // Full-Screen Image
+                  Positioned.fill(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20), // Add padding here
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10), // Optional: rounded corners
+                        child: Image.network(
+                          uniqueImgData[index]['url']!,
+                          fit: BoxFit.contain, // Ensure the image stays within the padded area
+                        ),
                       ),
-                    );
-                  },
-                ),
-          if (uniqueImgUrls.isNotEmpty) // Conditionally render DotsIndicator
+                    ),
+                  ),
+
+                  // Date-Time on Top-Right
+                  Positioned(
+                    top: 10.0,
+                    right: 10.0,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        uniqueImgData[index]['date']!,
+                        style: TextStyle(fontSize: 14, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          if (uniqueImgData.isNotEmpty) // Conditionally render DotsIndicator
             Positioned(
               bottom: 16.0,
               left: 0,
               right: 0,
               child: DotsIndicator(
-                dotsCount: uniqueImgUrls.length,
+                dotsCount: uniqueImgData.length,
                 position: currentPage.toDouble(),
                 decorator: DotsDecorator(
                   size: const Size.square(8.0),

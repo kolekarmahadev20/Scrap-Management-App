@@ -16,7 +16,6 @@ import 'package:scrapapp/Dispatch/View_dispatch_details.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart'; // Import for File
-import 'package:crypto/crypto.dart';
 
 
 class Edit_dispatch_details extends StatefulWidget {
@@ -68,7 +67,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   final TextEditingController noteController = TextEditingController();
 
   String? username = '';
- String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -90,10 +88,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   String? materialHalfLoad;
   String? materialFullLoad;
   String? otherImg;
-
-
-  List<String> otherImgs = [];
-
   Uint8List? imageBytes;
 
   String advancePayment = '';
@@ -119,23 +113,21 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   }
 
   getData(){
-      materialController.text=widget.material ?? 'N/A';
-      invoiceController.text=widget.invoiceNo ?? 'N/A';
-      dateController.text=widget.date ?? 'N/A';
-      truckNoController.text=(widget.truckNo ?? 'N/A').toUpperCase();
-      firstWeightNoController.text = widget.firstWeight ?? "N/A";
-      fullWeightController.text = widget.fullWeight ?? "N/A";
-      moistureWeightController.text = widget.moistureWeight ?? "N/A";
-      netWeightController.text = widget.netWeight ?? "N/A";
-      quantityController.text=widget.quantity ?? 'N/A';
-      noteController.text=widget.note ?? 'N/A';
-    }
+    materialController.text=widget.material ?? 'N/A';
+    invoiceController.text=widget.invoiceNo ?? 'N/A';
+    dateController.text=widget.date ?? 'N/A';
+    truckNoController.text=widget.truckNo ?? 'N/A';
+    firstWeightNoController.text = widget.firstWeight ?? "N/A";
+    fullWeightController.text = widget.fullWeight ?? "N/A";
+    moistureWeightController.text = widget.moistureWeight ?? "N/A";
+    netWeightController.text = widget.netWeight ?? "N/A";
+    quantityController.text=widget.quantity ?? 'N/A';
+    noteController.text=widget.note ?? 'N/A';
+  }
 
   Future<void> checkLogin() async {
-     final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
-    uuid = prefs.getString("uuid")!;
-    uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
@@ -144,21 +136,15 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   void calculateNetWeight() {
     double firstWeight = double.tryParse(firstWeightNoController.text) ?? 0.0;
     double fullWeight = double.tryParse(fullWeightController.text) ?? 0.0;
-    double moistureWeight =
-        double.tryParse(moistureWeightController.text) ?? 0.0;
+    double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
 
     double netWeight = (fullWeight - firstWeight);
-    netWeight = double.parse(
-        netWeight.toStringAsFixed(3)); // Rounding to 3 decimal places
 
-    double DMTWeight = ((fullWeight - firstWeight) * moistureWeight) / 100;
-    DMTWeight = netWeight - DMTWeight;
-    DMTWeight = double.parse(
-        DMTWeight.toStringAsFixed(3)); // Rounding to 3 decimal places
-
+    double DMTWeight = ((fullWeight - firstWeight) * moistureWeight)/100;
+    DMTWeight = netWeight-DMTWeight;
     // Update the net weight controller with the result
-    netWeightController.text = netWeight.toStringAsFixed(3);
-    quantityController.text = DMTWeight.toStringAsFixed(3);
+    netWeightController.text = netWeight.toStringAsFixed(2);
+    quantityController.text = DMTWeight.toStringAsFixed(2);
   }
 
   void clearFields(){
@@ -182,7 +168,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
           'user_id':username,
           'user_pass':password,
           'sale_order_id':widget.sale_order_id,
-          'uuid':uuid
         },
       );
       //variable to send material value instead of name in backend.
@@ -217,8 +202,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-        'user_id': username,
-'uuid':uuid,
+          'user_id': username,
           'user_pass': password,
           'sale_order_id':widget.sale_order_id,
         },
@@ -261,12 +245,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
   }
 
 
-  // Function to compute the hash of a file's contents
-  Future<String> computeFileHash(File file) async {
-    var bytes = await file.readAsBytes();
-    return md5.convert(bytes).toString(); // Using MD5 hash
-  }
-
   Future<void> editDispatchDetails() async {
     try {
       setState(() {
@@ -280,8 +258,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
 
       request.fields['user_id'] = username!;
       request.fields['user_pass'] = password!;
-      request.fields['uuid'] = uuid!;
-
       request.fields['sale_order_id_lift'] = widget.sale_order_id;
       request.fields['rate'] = rate ?? '';
       request.fields['advance_payment'] = advancePayment ?? '';
@@ -298,32 +274,19 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       request.fields['note'] = noteController.text;
 
       // Add images to the request
-      Future<void> addImages(List<File> images, String keyword,
-          http.MultipartRequest request) async {
-        Set<String> addedHashes = {}; // To track unique image hashes
-
+      Future<void> addImages(List<File> images, String keyword, http.MultipartRequest request) async {
         for (var image in images) {
           File? compressedImage = await compressImage(image);
-
           if (compressedImage != null) {
-            // Generate a unique hash for the image content
-            String imageHash = await computeFileHash(compressedImage);
-
-            if (!addedHashes.contains(imageHash)) {
-              String fileName =
-                  '$keyword${compressedImage.path.split('/').last}';
-              var stream = http.ByteStream(compressedImage.openRead());
-              var length = await compressedImage.length();
-              var multipartFile = http.MultipartFile(
-                'certifications[]',
-                stream,
-                length,
-                filename: fileName,
-              );
-
-              request.files.add(multipartFile);
-              addedHashes.add(imageHash); // Track added image hash
-            }
+            var stream = http.ByteStream(compressedImage.openRead());
+            var length = await compressedImage.length();
+            var multipartFile = http.MultipartFile(
+              'certifications[]',
+              stream,
+              length,
+              filename: '$keyword${compressedImage.path.split('/').last}',
+            );
+            request.files.add(multipartFile);
           }
         }
       }
@@ -414,10 +377,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
       if (response.statusCode == 200) {
         final res = await http.Response.fromStream(response);
         final jsonData = json.decode(res.body);
-
-        print(jsonData);
-        print(res);
-
         if(jsonData.containsKey('liftedTaxAmount')){
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${jsonData['msg']} ${jsonData['liftedTaxAmount']}")));
         }else{
@@ -469,7 +428,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
         headers: {"Accept": "application/json"},
         body: {
           'user_id': username,
-          'uuid': uuid,
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
           'invoice_no': widget.invoiceNo,
@@ -480,8 +438,6 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
         setState(() {
           var jsonData = json.decode(response.body);
 
-          print("Response Data: $jsonData");
-
           // Check if the response is empty
           if (jsonData.isEmpty) {
             print("No data returned from the API.");
@@ -490,7 +446,7 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
             materialImg = "";
             materialHalfLoad = "";
             materialFullLoad = "";
-            otherImgs = [];
+            otherImg = "N/A";
           } else if (jsonData is Map<String, dynamic>) {
             // Handle the valid map response
             frontVehicle = jsonData['Fr'] != null ? '${Image_URL}${jsonData['Fr']}' : "";
@@ -498,15 +454,16 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
             materialImg = jsonData['Ma'] != null ? '${Image_URL}${jsonData['Ma']}' : "";
             materialHalfLoad = jsonData['Ha'] != null ? '${Image_URL}${jsonData['Ha']}' : "";
             materialFullLoad = jsonData['Fu'] != null ? '${Image_URL}${jsonData['Fu']}' : "";
-
-            // Handling 'ot' as a list
-            if (jsonData['ot'] != null && jsonData['ot'] is List) {
-              otherImgs = (jsonData['ot'] as List)
-                  .map((img) => '${Image_URL}$img')
-                  .toList();
-            } else {
-              otherImgs = [];
-            }
+            otherImg = jsonData['ot'] != null ? '${Image_URL}${jsonData['ot']}' : "";
+          } else if (jsonData is List) {
+            // Handle the case if the response is a list (unexpected)
+            print("API returned a list instead of a map. List: $jsonData");
+            frontVehicle = "";
+            backVehicle = "";
+            materialImg = "";
+            materialHalfLoad = "";
+            materialFullLoad = "";
+            otherImg = "";
           } else {
             print("Unexpected data structure: $jsonData");
           }
@@ -561,240 +518,203 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
         drawer: AppDrawer(currentPage: 5),
         appBar: CustomAppBar(),
         body: Stack(
-          children:[
-            isLoading
-            ?showLoading()
-            :Container(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            color: Colors.grey[100],
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    "Dispatch",
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white, // Background color
-                      border:Border.all(color: Colors.blueGrey[400]!),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26, // Shadow color
-                          blurRadius: 4, // Softness of the shadow
-                          offset: Offset(2, 2), // Position of the shadow
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        SizedBox(height: 8,),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "EDIT MATERIAL LIFTING DETAIL",
-                              style: TextStyle(
-                                fontSize: 16, // Keep previous font size
-                                color: Colors.black54,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 8,),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16),
-                Expanded(
-                  child: ListView(
-                    children: [
-                      buildTextField("Material", materialController,true, false , Colors.white,context),
-                      buildTextField("Invoice No", invoiceController , false,false ,Colors.white, context),
-                      buildTextField("Date", dateController, true,false , Colors.white,context),
-                      buildTextField("Truck No", truckNoController, true,false ,Colors.white, context),
-                      buildTextField("First Weight", firstWeightNoController, false,false ,Colors.white, context),
-                      buildTextField("Gross Weight", fullWeightController, false,false , Colors.white,context),
-                      buildTextField("Net", netWeightController, true,false ,Colors.grey[400]!, context),
-                      buildTextField("Moisture Weight", moistureWeightController, false,false ,Colors.white, context),
-                      buildTextField("DMT/Quantity Weight", quantityController, true,false , Colors.white,context),
-                      buildTextField("Note", noteController, true,false , Colors.white,context),
-                      SizedBox(height: 25,),
-                      if( otherImgs!= null ||  otherImgs!.isNotEmpty)
-                        Container(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Padding(
-                            //   padding: const EdgeInsets.all(8.0),
-                            //   child: Text(
-                            //     "View Images",
-                            //     style: TextStyle(
-                            //         fontWeight: FontWeight.bold,
-                            //         fontSize: 24),
-                            //   ),
-                            // ),
-                            // ImageWidget(
-                            //   value: '1) Vehicle Front',
-                            //   filePath: frontVehicle!,
-                            // ),
-                            // ImageWidget(
-                            //   value: '2) Vehicle Back',
-                            //   filePath: backVehicle!,
-                            // ),
-                            // ImageWidget(
-                            //   value: '3) Material',
-                            //   filePath: materialImg!,
-                            // ),
-                            // ImageWidget(
-                            //   value: '4) Material Half Load',
-                            //   filePath: materialHalfLoad!,
-                            // ),
-                            // ImageWidget(
-                            //   value: '5) Material Full Load',
-                            //   filePath: materialFullLoad!,
-                            // ),
-                            ImageWidget(value: 'View Images', filePaths: otherImgs),
-                          ],
+            children:[
+              isLoading
+                  ?showLoading()
+                  :Container(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                color: Colors.grey[100],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        "Dispatch",
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          letterSpacing: 1.5,
                         ),
                       ),
-                      Container(
-
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text("Edit Images" , style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
-                            ),
-                            // ImageWidget(
-                            //     value: '1) Vehicle Front',
-                            //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                            //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                            //     filePath: frontVehicle!,
-                            //     onImagesSelected: (images) { // Handle selected images
-                            //       setState(() {
-                            //         vehicleFront.addAll(images); // Store uploaded images
-                            //         print(vehicleFront);
-                            //       });
-                            //     }
-                            // ),
-                            // ImageWidget(
-                            //     value: '2) Vehicle Back',
-                            //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                            //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                            //     filePath: backVehicle!,
-                            //     onImagesSelected: (images) { // Handle selected images
-                            //       setState(() {
-                            //         vehicleBack.addAll(images); // Store uploaded images
-                            //       });
-                            //     }
-                            // ),
-                            // ImageWidget(
-                            //     value: '3) Material',
-                            //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                            //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                            //     filePath: materialImg!,
-                            //     onImagesSelected: (images) { // Handle selected images
-                            //       setState(() {
-                            //         Material.addAll(images); // Store uploaded images
-                            //       });
-                            //     }
-                            // ),
-                            // ImageWidget(
-                            //     value: '4) Material Half Load',
-                            //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                            //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                            //     filePath: materialHalfLoad!,
-                            //     onImagesSelected: (images) { // Handle selected images
-                            //       setState(() {
-                            //         MaterialHalfLoad.addAll(images); // Store uploaded images
-                            //       });
-                            //     }
-                            // ),
-                            // ImageWidget(
-                            //     value: '5) Material Full Load',
-                            //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                            //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                            //     filePath: materialFullLoad!,
-                            //     onImagesSelected: (images) { // Handle selected images
-                            //       setState(() {
-                            //         MaterialFullLoad.addAll(images); // Store uploaded images
-                            //       });
-                            //     }
-                            // ),
-                            EditImageWidget(
-                                value: 'Add Images',
-                                cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                onImagesSelected: (images) { // Handle selected images
-                                  setState(() {
-                                    other.addAll(images); // Store uploaded images
-                                  });
-                                }
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white, // Background color
+                          border:Border.all(color: Colors.blueGrey[400]!),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26, // Shadow color
+                              blurRadius: 4, // Softness of the shadow
+                              offset: Offset(2, 2), // Position of the shadow
                             ),
                           ],
                         ),
-                      ),
-                      SizedBox(height: 60,),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        child: Column(
                           children: [
-                            // ElevatedButton(
-                            //   onPressed: () {
-                            //     clearFields();
-                            //     Navigator.of(context).pop();
-                            //   },
-                            //   child: Text("Back"),
-                            //   style: ElevatedButton.styleFrom(
-                            //     foregroundColor: Colors.white,
-                            //     backgroundColor: Colors.indigo[800],
-                            //     padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                            //     shape: RoundedRectangleBorder(
-                            //       borderRadius: BorderRadius.circular(12),
-                            //     ),
-                            //   ),
-                            // ),
-                            ElevatedButton(
-                              onPressed: () {
-                                editDispatchDetails();
-                                // clearFields();
-                              },
-                              child: Text("Save"),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.indigo[800],
-                                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                            SizedBox(height: 8,),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "EDIT MATERIAL LIFTING DETAIL",
+                                  style: TextStyle(
+                                    fontSize: 16, // Keep previous font size
+                                    color: Colors.black54,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
+                            SizedBox(height: 8,),
                           ],
                         ),
                       ),
-                      SizedBox(height: 16),
-                    ],
-                  ),
+                    ),
+                    SizedBox(height: 16),
+                    Expanded(
+                      child: ListView(
+                        children: [
+                          buildTextField("Material", materialController,true, false , Colors.white,context),
+                          buildTextField("Invoice No", invoiceController , false,false ,Colors.white, context),
+                          buildTextField("Date", dateController, false,true , Colors.white,context),
+                          buildTextField("Truck No", truckNoController, false,false ,Colors.white, context),
+                          buildTextField("First Weight", firstWeightNoController, false,false ,Colors.white, context),
+                          buildTextField("Gross Weight", fullWeightController, false,false , Colors.white,context),
+                          buildTextField("Net", netWeightController, true,false ,Colors.grey[400]!, context),
+                          buildTextField("Moisture Weight", moistureWeightController, false,false ,Colors.white, context),
+                          buildTextField("DMT/Quantity Weight", quantityController, false,false , Colors.white,context),
+                          buildTextField("Note", noteController, false,false , Colors.white,context),
+                          SizedBox(height: 100,),
+                          Container(
+
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text("Edit Images" , style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
+                                ),
+                                ImageWidget(
+                                    value: '1) Vehicle Front',
+                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    filePath: frontVehicle!,
+                                    onImagesSelected: (images) { // Handle selected images
+                                      setState(() {
+                                        vehicleFront.addAll(images); // Store uploaded images
+                                        print(vehicleFront);
+                                      });
+                                    }
+                                ),
+                                ImageWidget(
+                                    value: '2) Vehicle Back',
+                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    filePath: backVehicle!,
+                                    onImagesSelected: (images) { // Handle selected images
+                                      setState(() {
+                                        vehicleBack.addAll(images); // Store uploaded images
+                                      });
+                                    }
+                                ),
+                                ImageWidget(
+                                    value: '3) Material',
+                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    filePath: materialImg!,
+                                    onImagesSelected: (images) { // Handle selected images
+                                      setState(() {
+                                        Material.addAll(images); // Store uploaded images
+                                      });
+                                    }
+                                ),
+                                ImageWidget(
+                                    value: '4) Material Half Load',
+                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    filePath: materialHalfLoad!,
+                                    onImagesSelected: (images) { // Handle selected images
+                                      setState(() {
+                                        MaterialHalfLoad.addAll(images); // Store uploaded images
+                                      });
+                                    }
+                                ),
+                                ImageWidget(
+                                    value: '5) Material Full Load',
+                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    filePath: materialFullLoad!,
+                                    onImagesSelected: (images) { // Handle selected images
+                                      setState(() {
+                                        MaterialFullLoad.addAll(images); // Store uploaded images
+                                      });
+                                    }
+                                ),
+                                ImageWidget(
+                                    value: '6) Other',
+                                    cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    filePath: otherImg!,
+                                    onImagesSelected: (images) { // Handle selected images
+                                      setState(() {
+                                        other.addAll(images); // Store uploaded images
+                                      });
+                                    }
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 60,),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    clearFields();
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text("Back"),
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: Colors.indigo[800],
+                                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    editDispatchDetails();
+                                    // clearFields();
+                                  },
+                                  child: Text("Save"),
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: Colors.indigo[800],
+                                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-        ]),
+              ),
+            ]),
       ),
     );
   }
@@ -822,118 +742,113 @@ class Edit_dispatch_detailState extends State<Edit_dispatch_details> {
             child: Text(
               label,
               style: TextStyle(
-                fontSize: 16,
-                color: Colors.black,
+                color: Colors.black54,
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
           Expanded(
-            flex: 5, // Adjusts text field width
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: color,
-                ),
-                child: TextField(
-                  onTap: isDateField ? () => _selectDate(context, controller) : null,
-                  controller: controller,
-                  decoration: InputDecoration(
-                    suffixIcon: isDateField
-                        ? IconButton(
-                      icon: Icon(Icons.calendar_today),
-                      onPressed: () => _selectDate(context, controller),
-                    )
-                        :null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: Colors.indigo[800]!,
-                        width: 2.0,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: Colors.grey[400]!,
-                        width: 1.5,
-                      ),
-                    ),
-                    contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            flex: 7, // Adjusts text field width
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: color,
+              ),
+              child: TextField(
+                onTap: isDateField ? () => _selectDate(context, controller) : null,
+                controller: controller,
+                decoration: InputDecoration(
+                  suffixIcon: isDateField
+                      ? IconButton(
+                    icon: Icon(Icons.calendar_today),
+                    onPressed: () => _selectDate(context, controller),
+                  )
+                      :null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  readOnly: isReadOnly,
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.indigo[800]!,
+                      width: 2.0,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.grey[400]!,
+                      width: 1.5,
+                    ),
+                  ),
+                  contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
+                readOnly: isReadOnly,
               ),
             ),
-          SizedBox(width: 20,)
+          ),
         ],
       ),
     );
   }
 }
 
-
-class EditImageWidget extends StatefulWidget {
+class ImageWidget extends StatefulWidget {
   final String value;
   final Icon cameraIcon;
   final Icon galleryIcon;
+  final String? filePath;
   final Function(List<File>) onImagesSelected;
 
-  const EditImageWidget({
+  const ImageWidget({
     Key? key,
     required this.value,
     required this.cameraIcon,
     required this.galleryIcon,
+    required this.filePath,
     required this.onImagesSelected,
   }) : super(key: key);
 
   @override
-  _EditImageWidgetState createState() => _EditImageWidgetState();
+  _ImageWidgetState createState() => _ImageWidgetState();
 }
 
-class _EditImageWidgetState extends State<EditImageWidget> {
+class _ImageWidgetState extends State<ImageWidget> {
+
   List<File> _images = [];
+
+  Uint8List? imageBytes;
 
   // Function to pick multiple images from the gallery
   Future<void> _pickImagesFromGallery() async {
     final picker = ImagePicker();
-    // final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery); // Pick only one image
-    List<XFile>? pickedFile = await ImagePicker().pickMultiImage();
+    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery); // Pick only one image
 
     if (pickedFile != null) {
-      for (var pickedImage in pickedFile) {
-        _images.add(
-            File(pickedImage.path)); // Append images instead of overwriting
-      }
-
       setState(() {
-        // _images = [File(pickedFile.path)]; // Replace the list with the new image
+        _images = [File(pickedFile.path)]; // Replace the list with the new image
       });
       widget.onImagesSelected(_images);
-      // _showSingleImageNotification();
+      _showSingleImageNotification();
     }
   }
 
   // Function to capture a single image using the camera
   Future<void> _captureImageFromCamera() async {
     final picker = ImagePicker();
-    final XFile? capturedFile =
-    await picker.pickImage(source: ImageSource.camera);
+    final XFile? capturedFile = await picker.pickImage(source: ImageSource.camera);
 
-    if (capturedFile != null) {
+    if (capturedFile  != null) {
       setState(() {
-        _images.add(File(capturedFile.path));
-        // _images = [File(capturedFile.path)]; // Replace the list with the new captured image
+        _images = [File(capturedFile.path)]; // Replace the list with the new captured image
       });
       widget.onImagesSelected(_images);
-      // _showSingleImageNotification();
+      _showSingleImageNotification();
     }
   }
 
+  // Function to show a SnackBar notifying the user
   void _showSingleImageNotification() {
     // Use Future to delay the snackbar to ensure widget is mounted
     Future.delayed(Duration.zero, () {
@@ -947,148 +862,101 @@ class _EditImageWidgetState extends State<EditImageWidget> {
       }
     });
   }
-
   // Function to delete a selected image
   void _deleteImage(int index) {
     setState(() {
       _images.removeAt(index); // Remove the image at the specified index
       widget.onImagesSelected(_images); // Update parent with the new list
+      print(widget.onImagesSelected(_images));
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Text(
-                widget.value,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              Spacer(),
-              IconButton(
-                icon: widget.cameraIcon,
-                onPressed: _captureImageFromCamera, // Calls the camera function
-              ),
-              IconButton(
-                icon: widget.galleryIcon,
-                onPressed:
-                _pickImagesFromGallery, // Calls the gallery picker function
-              ),
-            ],
-          ),
-        ),
-        _images.isNotEmpty
-            ? GridView.builder(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3, // Display 3 images per row
-            crossAxisSpacing: 4.0,
-            mainAxisSpacing: 4.0,
-          ),
-          itemCount: _images.length,
-          itemBuilder: (context, index) {
-            return Stack(
-              children: [
-                Container(
-                  height: 100, // Set fixed height for images
-                  width: 100, // Set fixed width for images
-                  child: ClipRRect(
-                    borderRadius:
-                    BorderRadius.circular(8), // Rounded corners
-                    child: Image.file(
-                      _images[index],
-                      fit: BoxFit
-                          .cover, // Ensure the image fits within the container
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: IconButton(
-                    icon: Icon(Icons.delete, color: Colors.red),
-                    onPressed: () =>
-                        _deleteImage(index), // Delete the selected image
-                  ),
-                ),
-              ],
-            );
-          },
-        )
-            : Container(),
-      ],
-    );
+
+  Future<void> _fetchFileBytesFromServer(String fileUrl) async {
+    try {
+      var response = await http.get(Uri.parse(fileUrl));
+      if(response.statusCode == 200) {
+        setState(() {
+          imageBytes = response.bodyBytes;
+          _showImage();
+        });
+      } else {
+        if(imageBytes == null){
+          showNoImage();
+        }else{
+          print("Unable to load the Image");
+        }
+      }
+    } catch (e) {
+      if(imageBytes == null){
+        showNoImage();
+      }else{
+        print('Exception: $e');
+      }
+    } finally {
+      setState(() {});
+    }
   }
-}
-
-
-
-
-
-
-
-
-
-
-class ImageWidget extends StatefulWidget {
-  final String value;
-  final List<String>? filePaths;
-
-  const ImageWidget({
-    Key? key,
-    required this.value,
-    required this.filePaths,
-  }) : super(key: key);
-
-  @override
-  _ImageWidgetState createState() => _ImageWidgetState();
-}
-
-class _ImageWidgetState extends State<ImageWidget> {
-  List<Uint8List> imageBytesList = [];
 
   void showNoImage() {
     Fluttertoast.showToast(
       msg: "No images Found",
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
+      toastLength: Toast.LENGTH_SHORT, // Can be LENGTH_SHORT or LENGTH_LONG
+      gravity: ToastGravity.BOTTOM,    // Position of the toast
       backgroundColor: Colors.black,
       textColor: Colors.white,
       fontSize: 16.0,
     );
   }
 
-  Future<void> _fetchFileBytesFromServer(List<String> fileUrls) async {
-    try {
-      List<Uint8List> loadedImages = [];
-      for (String fileUrl in fileUrls) {
-        var response = await http.get(Uri.parse(fileUrl));
-        if (response.statusCode == 200) {
-          loadedImages.add(response.bodyBytes);
-        }
-      }
 
-      if (loadedImages.isNotEmpty) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ImagePreviewScreen(images: loadedImages),
+  void _showImage() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  widget.filePath!.split('/').last,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 10),
+                imageBytes != null
+                    ?Container(
+                    height: 300,
+                    width: 300,
+                    child: Positioned.fill(
+                        child: Image.memory(imageBytes!, fit: BoxFit.contain)))
+                    : showLoading(),
+                SizedBox(height: 10),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("Close"),
+                ),
+              ],
+            ),
           ),
         );
-      } else {
-        showNoImage();
-      }
-    } catch (e) {
-      showNoImage();
-      print('Exception: $e');
-    }
+      },
+    );
+  }
+
+  showLoading() {
+    return Container(
+      height: double.infinity,
+      width: double.infinity,
+      color: Colors.black.withOpacity(0.4),
+      child: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
   }
 
   @override
@@ -1106,339 +974,70 @@ class _ImageWidgetState extends State<ImageWidget> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Spacer(),
-              IconButton(
-                icon: Icon(Icons.photo, color: Colors.blue, size: 30),
-                onPressed: () {
-                  if (widget.filePaths == null || widget.filePaths!.isEmpty) {
+              TextButton(
+                child:Text("View",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold ,color: Colors.green),
+                ),
+                onPressed: (){
+                  if(widget.filePath == null){
                     showNoImage();
-                  } else {
-                    _fetchFileBytesFromServer(widget.filePaths!);
+                  }else{
+                    _fetchFileBytesFromServer(widget.filePath!);
                   }
                 },
+              ),
+              IconButton(
+                icon: widget.cameraIcon,
+                onPressed: _captureImageFromCamera, // Calls the camera function
+              ),
+              IconButton(
+                icon: widget.galleryIcon,
+                onPressed: _pickImagesFromGallery, // Calls the gallery picker function
               ),
             ],
           ),
         ),
+        _images.isNotEmpty
+            ? Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3, // Display 3 images per row
+              crossAxisSpacing: 4.0,
+              mainAxisSpacing: 4.0,
+            ),
+            itemCount: _images.length,
+            itemBuilder: (context, index) {
+              return Stack(
+                children: [
+                  Container(
+                    height: 100, // Set fixed height for images
+                    width: 100, // Set fixed width for images
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8), // Rounded corners
+                      child: Image.file(
+                        _images[index],
+                        fit: BoxFit.cover, // Ensure the image fits within the container
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _deleteImage(index), // Delete the selected image
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        )
+            : Container(),
       ],
     );
   }
 }
-
-// New Page for Image Preview with Slider
-class ImagePreviewScreen extends StatefulWidget {
-  final List<Uint8List> images;
-
-  const ImagePreviewScreen({Key? key, required this.images}) : super(key: key);
-
-  @override
-  _ImagePreviewScreenState createState() => _ImagePreviewScreenState();
-}
-
-class _ImagePreviewScreenState extends State<ImagePreviewScreen> {
-  int currentIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor:Colors.blueGrey[700],
-        title: Text(
-          "Image Preview",
-          style: TextStyle(color: Colors.white),
-        ),
-        elevation: 2,
-        shadowColor: Colors.black,
-        shape: OutlineInputBorder(
-
-            borderSide: BorderSide(style: BorderStyle.solid ,color: Colors.white60)
-        ),
-
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: PageView.builder(
-                itemCount: widget.images.length,
-                onPageChanged: (index) {
-                  setState(() {
-                    currentIndex = index;
-                  });
-                },
-                itemBuilder: (context, index) {
-                  return Center(
-                    child: Image.memory(
-                      widget.images[index],
-                      fit: BoxFit.contain,
-                    ),
-                  );
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Text(
-                "${currentIndex + 1} / ${widget.images.length}",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-
-// class ImageWidget extends StatefulWidget {
-//   final String value;
-//   final Icon cameraIcon;
-//   final Icon galleryIcon;
-//   final String? filePath;
-//   final Function(List<File>) onImagesSelected;
-//
-//   const ImageWidget({
-//     Key? key,
-//     required this.value,
-//     required this.cameraIcon,
-//     required this.galleryIcon,
-//     required this.filePath,
-//     required this.onImagesSelected,
-//   }) : super(key: key);
-//
-//   @override
-//   _ImageWidgetState createState() => _ImageWidgetState();
-// }
-//
-// class _ImageWidgetState extends State<ImageWidget> {
-//
-//   List<File> _images = [];
-//
-//   Uint8List? imageBytes;
-//
-//   // Function to pick multiple images from the gallery
-//   Future<void> _pickImagesFromGallery() async {
-//     final picker = ImagePicker();
-//     final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery); // Pick only one image
-//
-//     if (pickedFile != null) {
-//       setState(() {
-//         _images = [File(pickedFile.path)]; // Replace the list with the new image
-//       });
-//       widget.onImagesSelected(_images);
-//       _showSingleImageNotification();
-//     }
-//   }
-//
-//   // Function to capture a single image using the camera
-//   Future<void> _captureImageFromCamera() async {
-//     final picker = ImagePicker();
-//     final XFile? capturedFile = await picker.pickImage(source: ImageSource.camera);
-//
-//     if (capturedFile  != null) {
-//       setState(() {
-//         _images = [File(capturedFile.path)]; // Replace the list with the new captured image
-//       });
-//       widget.onImagesSelected(_images);
-//       _showSingleImageNotification();
-//     }
-//   }
-//
-//   // Function to show a SnackBar notifying the user
-//   void _showSingleImageNotification() {
-//     // Use Future to delay the snackbar to ensure widget is mounted
-//     Future.delayed(Duration.zero, () {
-//       if (mounted) {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           SnackBar(
-//             content: Text("You can only upload one image at a time."),
-//             duration: Duration(seconds: 2),
-//           ),
-//         );
-//       }
-//     });
-//   }
-//   // Function to delete a selected image
-//   void _deleteImage(int index) {
-//     setState(() {
-//       _images.removeAt(index); // Remove the image at the specified index
-//       widget.onImagesSelected(_images); // Update parent with the new list
-//       print(widget.onImagesSelected(_images));
-//     });
-//   }
-//
-//
-//   Future<void> _fetchFileBytesFromServer(String fileUrl) async {
-//     try {
-//       var response = await http.get(Uri.parse(fileUrl));
-//       if(response.statusCode == 200) {
-//         setState(() {
-//           imageBytes = response.bodyBytes;
-//           _showImage();
-//         });
-//       } else {
-//         if(imageBytes == null){
-//           showNoImage();
-//         }else{
-//           print("Unable to load the Image");
-//         }
-//       }
-//     } catch (e) {
-//       if(imageBytes == null){
-//         showNoImage();
-//       }else{
-//         print('Exception: $e');
-//       }
-//     } finally {
-//       setState(() {});
-//     }
-//   }
-//
-//   void showNoImage() {
-//     Fluttertoast.showToast(
-//       msg: "No images Found",
-//       toastLength: Toast.LENGTH_SHORT, // Can be LENGTH_SHORT or LENGTH_LONG
-//       gravity: ToastGravity.BOTTOM,    // Position of the toast
-//       backgroundColor: Colors.black,
-//       textColor: Colors.white,
-//       fontSize: 16.0,
-//     );
-//   }
-//
-//
-//   void _showImage() {
-//     showModalBottomSheet(
-//       context: context,
-//       builder: (context) {
-//         return Container(
-//           width: double.infinity,
-//           padding: EdgeInsets.all(16.0),
-//           child: SingleChildScrollView(
-//             child: Column(
-//               mainAxisSize: MainAxisSize.min,
-//               children: [
-//                 Text(
-//                   widget.filePath!.split('/').last,
-//                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-//                 ),
-//                 SizedBox(height: 10),
-//                 imageBytes != null
-//                     ?Container(
-//                     height: 300,
-//                     width: 300,
-//                     child: Positioned.fill(
-//                         child: Image.memory(imageBytes!, fit: BoxFit.contain)))
-//                     : showLoading(),
-//                 SizedBox(height: 10),
-//                 TextButton(
-//                   onPressed: () {
-//                     Navigator.pop(context);
-//                   },
-//                   child: Text("Close"),
-//                 ),
-//               ],
-//             ),
-//           ),
-//         );
-//       },
-//     );
-//   }
-//
-//   showLoading() {
-//     return Container(
-//       height: double.infinity,
-//       width: double.infinity,
-//       color: Colors.black.withOpacity(0.4),
-//       child: Center(
-//         child: CircularProgressIndicator(),
-//       ),
-//     );
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         Padding(
-//           padding: const EdgeInsets.all(8.0),
-//           child: Row(
-//             mainAxisAlignment: MainAxisAlignment.start,
-//             children: [
-//               Text(
-//                 widget.value,
-//                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-//               ),
-//               Spacer(),
-//               TextButton(
-//                 child:Text("View",
-//                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold ,color: Colors.green),
-//                 ),
-//                 onPressed: (){
-//                   if(widget.filePath == null){
-//                     showNoImage();
-//                   }else{
-//                   _fetchFileBytesFromServer(widget.filePath!);
-//                   }
-//                 },
-//               ),
-//               IconButton(
-//                 icon: widget.cameraIcon,
-//                 onPressed: _captureImageFromCamera, // Calls the camera function
-//               ),
-//               IconButton(
-//                 icon: widget.galleryIcon,
-//                 onPressed: _pickImagesFromGallery, // Calls the gallery picker function
-//               ),
-//             ],
-//           ),
-//         ),
-//         _images.isNotEmpty
-//             ? Padding(
-//           padding: const EdgeInsets.all(8.0),
-//           child: GridView.builder(
-//             shrinkWrap: true,
-//             physics: NeverScrollableScrollPhysics(),
-//             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-//               crossAxisCount: 3, // Display 3 images per row
-//               crossAxisSpacing: 4.0,
-//               mainAxisSpacing: 4.0,
-//             ),
-//             itemCount: _images.length,
-//             itemBuilder: (context, index) {
-//               return Stack(
-//                 children: [
-//                   Container(
-//                     height: 100, // Set fixed height for images
-//                     width: 100, // Set fixed width for images
-//                     child: ClipRRect(
-//                       borderRadius: BorderRadius.circular(8), // Rounded corners
-//                       child: Image.file(
-//                         _images[index],
-//                         fit: BoxFit.cover, // Ensure the image fits within the container
-//                       ),
-//                     ),
-//                   ),
-//                   Positioned(
-//                     top: 0,
-//                     right: 0,
-//                     child: IconButton(
-//                       icon: Icon(Icons.delete, color: Colors.red),
-//                       onPressed: () => _deleteImage(index), // Delete the selected image
-//                     ),
-//                   ),
-//                 ],
-//               );
-//             },
-//           ),
-//         )
-//         : Container(),
-//       ],
-//     );
-//   }
-// }
-
-
