@@ -145,7 +145,8 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
 
     materialController.text = widget.material_name ?? '';
     invoiceController.text=widget.invoiceNo ?? 'N/A';
-    dateController.text=widget.date ?? 'N/A';
+    dateController.text = formatDate(widget.date) ?? 'N/A';
+
     truckNoController.text=(widget.truckNo ?? 'N/A').toUpperCase();
     firstWeightNoController.text = widget.firstweight ?? "N/A";
     fullWeightController.text = widget.full_weight ?? "N/A";
@@ -166,32 +167,67 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
 
   void calculateNetWeight() {
     double firstWeight = double.tryParse(firstWeightNoController.text) ?? 0.0;
-    double fullWeight = double.tryParse(fullWeightController.text) ?? 0.0;
-    double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
+    String fullWeightText = fullWeightController.text.trim();
 
-    if (fullWeight == 0.0) {
+    // ✅ Ensure the user enters a full weight before processing
+    if (fullWeightText.isEmpty) {
+      print("Waiting for full weight input...");
       return;
     }
 
+    double fullWeight = double.tryParse(fullWeightText) ?? 0.0;
+
+    // ✅ Ensure fullWeight is greater than firstWeight before processing
+    if (fullWeight <= firstWeight) {
+      print("Full weight is not yet valid. Waiting...");
+      return;
+    }
+
+    double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
+
+    print("First Weight: $firstWeight");
+    print("Full Weight: $fullWeight");
+    print("Moisture Weight: $moistureWeight");
+
     double netWeight = (fullWeight - firstWeight);
     netWeight = double.parse(netWeight.toStringAsFixed(3));
+
+    print("Calculated Net Weight: $netWeight");
 
     double DMTWeight = ((fullWeight - firstWeight) * moistureWeight) / 100;
     DMTWeight = netWeight - DMTWeight;
     DMTWeight = double.parse(DMTWeight.toStringAsFixed(3));
 
+    print("Calculated DMT Weight: $DMTWeight");
+
     double totalQty = double.tryParse(widget.totalQty) ?? 0.0;
-    if ((netWeight > totalQty) || netWeight < 0) {
+    print("Total Quantity: $totalQty");
+
+    // ✅ Check if netWeight is greater than totalQty first
+    if (netWeight > totalQty) {
+      print("Error: Net weight ($netWeight) exceeds total quantity ($totalQty).");
+
       netWeightController.clear();
       quantityController.clear();
       fullWeightController.clear();
 
-      String errorMessage = (netWeight > totalQty)
-          ? "Net weight ($netWeight) cannot exceed total quantity ($totalQty)!"
-          : "Net weight ($netWeight) cannot be negative!";
+      Fluttertoast.showToast(
+        msg: "Net weight ($netWeight) cannot exceed total quantity ($totalQty)!",
+        gravity: ToastGravity.CENTER,
+      );
+      return;
+    }
+
+    // ✅ Check if netWeight is negative
+    if (netWeight < 0) {
+      print("Error: Net weight ($netWeight) is negative.");
+
+      netWeightController.clear();
+      quantityController.clear();
+      fullWeightController.clear();
 
       Fluttertoast.showToast(
-        msg: errorMessage,
+        msg: "Net weight ($netWeight) cannot be negative!",
         gravity: ToastGravity.CENTER,
       );
       return;
@@ -200,6 +236,9 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
     // ✅ Update the controllers
     netWeightController.text = netWeight.toStringAsFixed(3);
     quantityController.text = DMTWeight.toStringAsFixed(3);
+
+    print("Final Net Weight: ${netWeightController.text}");
+    print("Final DMT Weight: ${quantityController.text}");
   }
 
 
@@ -471,7 +510,17 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
     );
   }
 
-
+  String formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) {
+      return 'No data';
+    }
+    try {
+      DateTime parsedDate = DateTime.parse(dateStr);
+      return DateFormat('dd-MM-yyyy').format(parsedDate);
+    } catch (e) {
+      return 'Invalid date';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -547,7 +596,7 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
                     children: [
                       buildTextField("Material", materialController,true, false , Colors.white,context),
                       buildTextField("Invoice No", invoiceController , false,false ,Colors.white, context),
-                      buildTextField("Date", dateController, true,false , Colors.white,context),
+                      buildTextField("Date", dateController as TextEditingController, true,false , Colors.white,context),
                       buildTextField("Truck No", truckNoController, true,false ,Colors.white, context),
                       buildTextField("First Weight", firstWeightNoController, false,false ,Colors.white, context),
                       buildTextField("Gross Weight", fullWeightController, false,false , Colors.white,context),

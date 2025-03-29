@@ -676,12 +676,10 @@ class saleOrderListState extends State<saleOrderList> {
                   bottomRight: Radius.circular(15),
                 ),
                 child: ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                   leading: CircleAvatar(
                     backgroundColor: Colors.indigo[800]!,
-                    child:
-                        Icon(Icons.border_outer, size: 22, color: Colors.white),
+                    child: Icon(Icons.border_outer, size: 22, color: Colors.white),
                   ),
                   title: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -690,7 +688,7 @@ class saleOrderListState extends State<saleOrderList> {
                         text: TextSpan(
                           children: [
                             TextSpan(
-                              text: "Vendor Name : ",
+                              text: "Vendor Name : ", // Label remains unchanged
                               style: TextStyle(
                                 color: Colors.black87,
                                 fontWeight: FontWeight.bold,
@@ -698,7 +696,7 @@ class saleOrderListState extends State<saleOrderList> {
                               ),
                             ),
                             TextSpan(
-                              text: "${index['vendor_name'] ?? 'N/A'}",
+                              text: "${(index['vendor_name'] ?? 'N/A').toString().toUpperCase()}", // ✅ Value converted to uppercase
                               style: TextStyle(
                                 color: Colors.black54,
                                 fontWeight: FontWeight.normal,
@@ -718,7 +716,7 @@ class saleOrderListState extends State<saleOrderList> {
                         text: TextSpan(
                           children: [
                             TextSpan(
-                              text: "Buyer : ",
+                              text: "Buyer : ", // Label remains unchanged
                               style: TextStyle(
                                 color: Colors.black87,
                                 fontWeight: FontWeight.bold,
@@ -726,7 +724,7 @@ class saleOrderListState extends State<saleOrderList> {
                               ),
                             ),
                             TextSpan(
-                              text: "${index['bidder_name'] ?? 'N/A'}",
+                              text: "${(index['bidder_name'] ?? 'N/A').toString().toUpperCase()}", // ✅ Value converted to uppercase
                               style: TextStyle(
                                 color: Colors.black54,
                                 fontWeight: FontWeight.normal,
@@ -740,7 +738,7 @@ class saleOrderListState extends State<saleOrderList> {
                         text: TextSpan(
                           children: [
                             TextSpan(
-                              text: "Plant : ",
+                              text: "Plant : ", // Label remains unchanged
                               style: TextStyle(
                                 color: Colors.black87,
                                 fontWeight: FontWeight.bold,
@@ -748,7 +746,7 @@ class saleOrderListState extends State<saleOrderList> {
                               ),
                             ),
                             TextSpan(
-                              text: "${index['branch_name'] ?? 'N/A'}",
+                              text: "${(index['branch_name'] ?? 'N/A').toString().toUpperCase()}", // ✅ Value converted to uppercase
                               style: TextStyle(
                                 color: Colors.black54,
                                 fontWeight: FontWeight.normal,
