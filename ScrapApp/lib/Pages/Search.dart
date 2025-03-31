@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../AppClass/AppDrawer.dart';
 import '../AppClass/appBar.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class Search extends StatefulWidget {
   final int currentPage;
@@ -39,6 +40,12 @@ class _SearchState extends State<Search> {
   Map<String, String> PlantName = {};
   Map<String, String> Buyer = {};
   Map<String, String> Material = {};
+
+  TextEditingController vendorController = TextEditingController();
+  TextEditingController plantController = TextEditingController();
+  TextEditingController buyerController = TextEditingController();
+  TextEditingController materialController = TextEditingController();
+
 
   @override
   void initState() {
@@ -312,7 +319,7 @@ class _SearchState extends State<Search> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        "Search Scrap",
+                        "Summary Report",
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
@@ -329,47 +336,45 @@ class _SearchState extends State<Search> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      buildDropdown('Select Vendor', VendorType, (value) {
+                      buildDropdown('Select Vendor', VendorType, vendorController, (value) {
                         setState(() {
                           selectedVendorType = value;
-                          selectedPlantName = null; // Reset plant selection
+                          selectedPlantName = null;
+                          plantController.clear();
                         });
-                        if (value != null && value != 'Select') {
-                          fetchPlantData(
-                              value); // Fetch plant data for selected vendor
+                        if (value != null) {
+                          fetchPlantData(value);
                         }
                       }),
 
-                      // Plant Dropdown
-                      buildDropdown('Select Plant', PlantName, (value) {
+                      buildDropdown('Select Plant', PlantName, plantController, (value) {
                         setState(() {
                           selectedPlantName = value;
-                          // selectedPlantName = null; // Reset plant selection
+                          selectedBuyer = null;
+                          buyerController.clear();
                         });
-                        if (value != null && value != 'Select') {
-                          fetchBuyerData(
-                              value); // Fetch plant data for selected vendor
+                        if (value != null) {
+                          fetchBuyerData(value);
                         }
-
                       }),
 
-                      buildDropdown("Buyer", Buyer, (value) {
+                      buildDropdown('Buyer', Buyer, buyerController, (value) {
                         setState(() {
                           selectedBuyer = value;
-                          // selectedPlantName = null; // Reset plant selection
+                          selectedMaterial = null;
+                          materialController.clear();
                         });
-                        if (value != null && value != 'Select') {
-                          fetchMaterialData(
-                              value); // Fetch plant data for selected vendor
+                        if (value != null) {
+                          fetchMaterialData(value);
                         }
-
                       }),
 
-                      buildDropdown("Material", Material, (value) {
+                      buildDropdown('Material', Material, materialController, (value) {
                         setState(() {
                           selectedMaterial = value;
                         });
                       }),
+
                       buildFieldWithDatePicker(
                         'From Date',
                         fromDate,
@@ -595,8 +600,12 @@ class _SearchState extends State<Search> {
     );
   }
 
-  Widget buildDropdown(String label, Map<String, String> options,
-      ValueChanged<String?> onChanged) {
+  Widget buildDropdown(
+      String label,
+      Map<String, String> options,
+      TextEditingController controller,
+      ValueChanged<String?> onChanged,
+      ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
@@ -613,30 +622,82 @@ class _SearchState extends State<Search> {
           ),
           Expanded(
             flex: 7,
-            child: DropdownButtonFormField<String>(
-              isExpanded: true,
-              decoration: InputDecoration(
-                contentPadding: const EdgeInsets.all(10.0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+            child: TypeAheadFormField<String>(
+              textFieldConfiguration: TextFieldConfiguration(
+                controller: controller,
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.all(10.0),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
-              value: options.isNotEmpty
-                  ? options.keys.first
-                  : null, // Check for empty options
-              items: options.entries.map((entry) {
-                return DropdownMenuItem<String>(
-                  value: entry.value,
-                  child: Text(entry.key),
+              suggestionsCallback: (pattern) {
+                return options.keys
+                    .where((key) =>
+                    key.toLowerCase().contains(pattern.toLowerCase()))
+                    .toList();
+              },
+              itemBuilder: (context, suggestion) {
+                return ListTile(
+                  title: Text(suggestion),
                 );
-              }).toList(),
-              onChanged: onChanged,
+              },
+              onSuggestionSelected: (suggestion) {
+                setState(() {
+                  controller.text = suggestion; // Show selected value in UI
+                  onChanged(options[suggestion]);
+                });
+              },
             ),
           ),
         ],
       ),
     );
   }
+
+  // Widget buildDropdown(String label, Map<String, String> options,
+  //     ValueChanged<String?> onChanged) {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+  //     child: Row(
+  //       children: [
+  //         Expanded(
+  //           flex: 3,
+  //           child: Text(
+  //             label,
+  //             style: TextStyle(
+  //               color: Colors.black,
+  //               fontWeight: FontWeight.w500,
+  //             ),
+  //           ),
+  //         ),
+  //         Expanded(
+  //           flex: 7,
+  //           child: DropdownButtonFormField<String>(
+  //             isExpanded: true,
+  //             decoration: InputDecoration(
+  //               contentPadding: const EdgeInsets.all(10.0),
+  //               border: OutlineInputBorder(
+  //                 borderRadius: BorderRadius.circular(12),
+  //               ),
+  //             ),
+  //             value: options.isNotEmpty
+  //                 ? options.keys.first
+  //                 : null, // Check for empty options
+  //             items: options.entries.map((entry) {
+  //               return DropdownMenuItem<String>(
+  //                 value: entry.value,
+  //                 child: Text(entry.key),
+  //               );
+  //             }).toList(),
+  //             onChanged: onChanged,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget buildFieldWithDatePicker(
     String label,
