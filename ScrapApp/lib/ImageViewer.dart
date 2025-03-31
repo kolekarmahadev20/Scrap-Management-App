@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dots_indicator/dots_indicator.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 
 class ImageViewer extends StatefulWidget {
   final List<Map<String, String>> imgData; // List containing image URL & date
@@ -17,11 +19,9 @@ class _ImageViewerState extends State<ImageViewer> {
   @override
   void initState() {
     super.initState();
-    print("ASFASFASF:${widget.imgData}");
-
     _pageController.addListener(() {
       setState(() {
-        currentPage = _pageController.page!.round();
+        currentPage = _pageController.page?.round() ?? 0;
       });
     });
   }
@@ -34,61 +34,56 @@ class _ImageViewerState extends State<ImageViewer> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: Colors.blueGrey[700],
-        title: Text(
+        title: const Text(
           "Image Preview",
           style: TextStyle(color: Colors.white),
         ),
         elevation: 2,
         shadowColor: Colors.black,
-        shape: OutlineInputBorder(
-          borderSide: BorderSide(style: BorderStyle.solid, color: Colors.white60),
-        ),
       ),
       body: Stack(
         children: [
           uniqueImgData.isEmpty
-              ? Center(child: Text('No images found'))
-              : PageView.builder(
-            controller: _pageController,
+              ? const Center(child: Text('No images found'))
+              : PhotoViewGallery.builder(
+            scrollPhysics: const BouncingScrollPhysics(),
+            pageController: _pageController,
             itemCount: uniqueImgData.length,
-            itemBuilder: (context, index) {
-              return Stack(
-                children: [
-                  // Full-Screen Image
-                  Positioned.fill(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20), // Add padding here
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10), // Optional: rounded corners
-                        child: Image.network(
-                          uniqueImgData[index]['url']!,
-                          fit: BoxFit.contain, // Ensure the image stays within the padded area
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Date-Time on Top-Right
-                  Positioned(
-                    top: 10.0,
-                    right: 10.0,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Text(
-                        uniqueImgData[index]['date']!,
-                        style: TextStyle(fontSize: 14, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
+            builder: (context, index) {
+              return PhotoViewGalleryPageOptions(
+                imageProvider: NetworkImage(uniqueImgData[index]['url']!),
+                minScale: PhotoViewComputedScale.contained, // Normal Scale
+                maxScale: PhotoViewComputedScale.covered * 2.5, // Zoom Level
+                heroAttributes: PhotoViewHeroAttributes(tag: index), // Unique tag per image
               );
             },
+            onPageChanged: (index) {
+              setState(() {
+                currentPage = index;
+              });
+            },
           ),
-          if (uniqueImgData.isNotEmpty) // Conditionally render DotsIndicator
+
+          // Date-Time on Top-Right
+          if (uniqueImgData.isNotEmpty)
+            Positioned(
+              top: 10.0,
+              right: 10.0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Text(
+                  uniqueImgData[currentPage]['date']!,
+                  style: const TextStyle(fontSize: 14, color: Colors.white),
+                ),
+              ),
+            ),
+
+          // Dots Indicator
+          if (uniqueImgData.isNotEmpty)
             Positioned(
               bottom: 16.0,
               left: 0,

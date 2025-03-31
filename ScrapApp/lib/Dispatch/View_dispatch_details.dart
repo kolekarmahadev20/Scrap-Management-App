@@ -84,6 +84,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
 
       print(widget.sale_order_id);
       print(widget.bidder_id);
+      print("4651");
 
 
       await checkLogin();
@@ -140,14 +141,12 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
 
           balanceQty = (jsonData['balance_qty'] ?? 0).toDouble();
           totalBalance = (jsonData['total_balance'] ?? 0).toDouble();
-
-
         });
       } else {
         print("Unable to fetch data.");
       }
     } catch (e) {
-      print("Server Exception: $e");
+      print("Server Exceptionasfasf: $e");
     } finally {
       setState(() {
         isLoading = false;
@@ -732,7 +731,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                         ),
                       ),
                     ),
-                    ElevatedButton(
+                    if(index['status'] != 'c')
+                     ElevatedButton(
                         onPressed:  () {
                           print("Imagesa: ${index['images']}");
 
@@ -757,6 +757,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                                   EditDispatchDetails(
                                     sale_order_id: widget.sale_order_id,
                                     bidder_id: widget.bidder_id,
+                                    status: index['status'] ?? '',
+
                                     lift_id: index['lift_id'] ?? '',
                                     material_name: index['material_name'] ?? '',
                                     invoiceNo: index['invoice_no'] ?? '',
@@ -831,7 +833,22 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                     ),
                   ],
                 ),
-
+                Row(
+                  children: [
+                    Icon(Icons.person, color: Colors.indigo[800], size: 25),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "Dispatch By: ${index['person_name']}",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -844,13 +861,13 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                       ),
                     ),
                     Text(
-                      index['status'] == 'Pending'
+                      index['status'] == 'p'
                           ? "Dispatch Pending"
                           : "Dispatch Completed",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: index['status'] == 'Pending'
+                        color: index['status'] == 'p'
                             ? Colors.red
                             : Colors.green.shade600,
                       ),

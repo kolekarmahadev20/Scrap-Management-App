@@ -1091,6 +1091,7 @@ class _Add_userState extends State<Add_user> {
                 selectedUserType = value;
               });
             }),
+
             buildSearchableDropdown(
               "Full Name",
               selectedEmployeeId,

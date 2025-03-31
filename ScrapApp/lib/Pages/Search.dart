@@ -136,14 +136,14 @@ class _SearchState extends State<Search> {
 
           setState(() {
             // Material
-            Material = {
-              'Select': 'Select',
-              ...{
-                for (var item in data['material_list'] ?? [])
-                  item['material_name'] ?? 'Unknown':
-                  (item['material_id'] ?? '0').toString()
-              }
-            };
+            // Material = {
+            //   'Select': 'Select',
+            //   ...{
+            //     for (var item in data['material_list'] ?? [])
+            //       item['material_name'] ?? 'Unknown':
+            //       (item['material_id'] ?? '0').toString()
+            //   }
+            // };
 
             // Vendor
             VendorType = {
@@ -156,14 +156,14 @@ class _SearchState extends State<Search> {
             };
 
             // Buyer
-            Buyer = {
-              'Select': 'Select',
-              ...{
-                for (var item in data['buyer_list'] ?? [])
-                  item['buyer_name'] ?? 'Unknown':
-                  (item['buyer_id'] ?? '0').toString()
-              }
-            };
+            // Buyer = {
+            //   'Select': 'Select',
+            //   ...{
+            //     for (var item in data['buyer_list'] ?? [])
+            //       item['buyer_name'] ?? 'Unknown':
+            //       (item['buyer_id'] ?? '0').toString()
+            //   }
+            // };
           });
         } catch (e) {
           print("Error decoding JSON: $e");
@@ -185,8 +185,8 @@ class _SearchState extends State<Search> {
         Uri.parse('${URL}vendor_wise_plant'),
         headers: {"Accept": "application/json"},
         body: {
-        'user_id': username,
-'uuid':uuid,
+          'user_id': username,
+          'uuid':uuid,
           'user_pass': password,
           'vendor_id': vendorId,
         },
@@ -203,6 +203,82 @@ class _SearchState extends State<Search> {
             ...{
               for (var item in data['plant_list'])
                 item['branch_name']: item['branch_id'] ?? '0'
+            }
+          };
+        });
+      } else {
+        print(
+            'Failed to fetch plant data. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching plant data: $e');
+    }
+  }
+
+  Future<void> fetchBuyerData(String plantId) async {
+    try {
+      await checkLogin();
+      final response = await http.post(
+        Uri.parse('${URL}plant_wise_bidders'),
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': username,
+          'uuid':uuid,
+          'user_pass': password,
+          'plant_id': plantId,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        // print(data);
+
+        // Update the PlantName dropdown data based on the response
+        setState(() {
+          Buyer = {
+            'Select': 'Select',
+            ...{
+              for (var item in data['bidder_list'] ?? [])
+                item['bidder_name'] ?? 'Unknown':
+                (item['buyer_id'] ?? '0').toString()
+            }
+          };
+        });
+      } else {
+        print(
+            'Failed to fetch plant data. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching plant data: $e');
+    }
+  }
+
+  Future<void> fetchMaterialData(String bidderId) async {
+    try {
+      await checkLogin();
+      final response = await http.post(
+        Uri.parse('${URL}bidder_wise_material'),
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': username,
+          'uuid':uuid,
+          'user_pass': password,
+          'bidder_id': bidderId,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        // print(data);
+
+        // Update the PlantName dropdown data based on the response
+        setState(() {
+          Material = {
+            'Select': 'Select',
+            ...{
+              for (var item in data['material_list'] ?? [])
+                item['description'] ?? 'Unknown':
+                (item['id'] ?? '0').toString()
             }
           };
         });
@@ -268,14 +344,27 @@ class _SearchState extends State<Search> {
                       buildDropdown('Select Plant', PlantName, (value) {
                         setState(() {
                           selectedPlantName = value;
+                          // selectedPlantName = null; // Reset plant selection
                         });
+                        if (value != null && value != 'Select') {
+                          fetchBuyerData(
+                              value); // Fetch plant data for selected vendor
+                        }
+
                       }),
 
                       buildDropdown("Buyer", Buyer, (value) {
                         setState(() {
                           selectedBuyer = value;
+                          // selectedPlantName = null; // Reset plant selection
                         });
+                        if (value != null && value != 'Select') {
+                          fetchMaterialData(
+                              value); // Fetch plant data for selected vendor
+                        }
+
                       }),
+
                       buildDropdown("Material", Material, (value) {
                         setState(() {
                           selectedMaterial = value;

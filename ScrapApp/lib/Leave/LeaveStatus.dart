@@ -286,9 +286,10 @@ class _LeaveStatusState extends State<LeaveStatus> {
             _buildLeaveInfoRowName('Leave Applicant:', leave['person_name'], index),
             SizedBox(height: 8.0),
             // Leave Dates and Reason
-            _buildLeaveInfoRow('From Date:', leave['from_date'], index),
-            _buildLeaveInfoRow('To Date:', leave['to_date'], index),
-            _buildLeaveInfoRow('Reason:', leave['reason'], index),
+            _buildLeaveInfoRow('From Date :', leave['from_date'], index),
+            _buildLeaveInfoRow('To Date :', leave['to_date'], index),
+            _buildLeaveInfoRow('Selected Reason :', leave['selected_reason'], index),
+            _buildLeaveInfoRow('User Comment :', leave['reason'], index),
             SizedBox(height: 12.0),
             // Leave Status and Actions
             _buildStatusRow(leave),

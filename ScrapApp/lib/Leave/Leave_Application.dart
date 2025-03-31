@@ -27,12 +27,13 @@ class _LeaveApplicationState extends State<LeaveApplication> {
   // Controller Declarations
   TextEditingController locationController = TextEditingController();
   TextEditingController reasonController = TextEditingController();
+  TextEditingController commentController = TextEditingController();
   TextEditingController contactController = TextEditingController();
   TextEditingController authController = TextEditingController();
 
   // Variables for user details
   String? username = '';
- String uuid = '';
+  String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -40,9 +41,27 @@ class _LeaveApplicationState extends State<LeaveApplication> {
   DateTime? fromDate;
   DateTime? toDate;
 
+  String? selectedLocationId = '0'; // Default value for "All Location"
+  Map<String, String> locationMap = {'All Location': '0'};
+
   // State variables
   String? selectedAuthorizationby = '0'; // Default value for "All Location"
   Map<String, String> AuthorizationByType = {'Select': '0'};
+
+  String? selectedReason;
+
+  Map<String, String> reasons = {
+    "Select": "Select",
+    "Sick Leave": "Sick Leave",
+    "Family Emergency": "Family Emergency",
+    "Personal Work": "Personal Work",
+    "Medical Appointment": "Medical Appointment",
+    "Vacation": "Vacation",
+    "Work from Home": "Work from Home",
+    "Wedding": "Wedding",
+    "Other": "Other",
+  };
+
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -64,6 +83,7 @@ class _LeaveApplicationState extends State<LeaveApplication> {
   void initState() {
     super.initState();
     checkLogin();
+    fetchLocations();
     fetchLeaveData();
     fetchUserLeave();
   }
@@ -85,10 +105,10 @@ class _LeaveApplicationState extends State<LeaveApplication> {
 
   Future<void> _submitLeave() async {
     // Validate fields
-    if (locationController.text.isEmpty ||
+    if (selectedLocationId!.isEmpty ||
         fromDate == null ||
         toDate == null ||
-        reasonController.text.isEmpty ||
+        commentController.text.isEmpty ||
         selectedAuthorizationby == '0' ||
         contactController.text.isEmpty) {
       Fluttertoast.showToast(
@@ -105,19 +125,23 @@ class _LeaveApplicationState extends State<LeaveApplication> {
       return;
     }
 
+    print(selectedAuthorizationby);
+
+
     await checkLogin();
     final url = '${URL}submit_leave';
     final response = await http.post(
       Uri.parse(url),
       body: {
-      'user_id': username,
-'uuid':uuid,
+        'user_id': username,
+        'uuid':uuid,
         'user_pass': password,
-        'location_id': locationController.text,
+        'location_id': selectedLocationId,
         'from_date': fromDate != null ? fromDate?.toLocal().toString() : '',
         'to_date': toDate != null ? toDate?.toLocal().toString() : '',
-        'reason': reasonController.text,
+        'reason': commentController.text,
         'contact_no': contactController.text,
+        'selected_reason': selectedReason.toString(),
         'authorised_by': selectedAuthorizationby.toString(),
       },
     );
@@ -136,7 +160,7 @@ class _LeaveApplicationState extends State<LeaveApplication> {
         // Clear fields and notify the UI
         setState(() {
           locationController.clear();
-          reasonController.clear();
+          commentController.clear();
           contactController.clear();
           fromDate = null;
           toDate = null;
@@ -159,11 +183,9 @@ class _LeaveApplicationState extends State<LeaveApplication> {
         Uri.parse('${URL}user_leaves'),
         headers: {"Accept": "application/json"},
         body: {
-          // 'uuid': 'UKQ1.231108.001',
-        'user_id': username,
-        'uuid':uuid,
+          'user_id': username,
+          'uuid':uuid,
           'user_pass': password,
-          // 'person_id':'92'
         },
       );
 
@@ -245,6 +267,40 @@ class _LeaveApplicationState extends State<LeaveApplication> {
 
     print("=== End of fetchLeaveData Function ===");
     return [];
+  }
+
+  Future<void> fetchLocations() async {
+    try {
+      await checkLogin();
+      final url = '${URL}get_dropdown';
+      final response = await http.post(
+        Uri.parse(url),
+        body: {
+          'user_id': username,
+          'uuid':uuid,
+          'user_pass': password,
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data['status'] == "1") {
+          setState(() {
+            // Keep "All Location" as the first option
+            locationMap = {'All Location': '0'};
+            for (var location in data['location']) {
+              locationMap[location['location_name']] = location['location_name'];
+            }
+          });
+        } else {
+          print("Error: No locations found.");
+        }
+      } else {
+        print("Error: Failed to fetch data.");
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
   }
 
   Widget buildFieldWithDatePicker(
@@ -392,6 +448,90 @@ class _LeaveApplicationState extends State<LeaveApplication> {
     );
   }
 
+
+
+  Widget buildDropdownreason(String label, Map<String, String> options, ValueChanged<String?> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 7,
+            child: DropdownButtonFormField<String>(
+              isExpanded: true,
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.all(10.0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              value: selectedReason, // Set the default value
+              hint: Text("Select a Reason"), // Hint Text
+              items: options.entries.map((entry) {
+                return DropdownMenuItem<String>(
+                  value: entry.value, // Return ID
+                  child: Text(entry.key), // Display name
+                );
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Widget buildDropdownLocation(String label, Map<String, String> options, ValueChanged<String?> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 7,
+            child: DropdownButtonFormField<String>(
+              isExpanded: true,
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.all(10.0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              value: selectedLocationId, // Set the default value
+              items: options.entries.map((entry) {
+                return DropdownMenuItem<String>(
+                  value: entry.value, // Return ID
+                  child: Text(entry.key), // Display name
+                );
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -425,7 +565,16 @@ class _LeaveApplicationState extends State<LeaveApplication> {
                 SizedBox(
                   height: 10,
                 ),
-                _buildTextField("Location From", locationController),
+                buildDropdownLocation(
+                  "Location:",
+                  locationMap,
+                      (value) {
+                    setState(() {
+                      selectedLocationId = value;
+                      print("Selected Location ID: $selectedLocationId");
+                    });
+                  },
+                ),
                 buildFieldWithDatePicker(
                   'From Date',
                   fromDate,
@@ -444,7 +593,20 @@ class _LeaveApplicationState extends State<LeaveApplication> {
                     });
                   },
                 ),
-                _buildTextField("Reason", reasonController),
+                buildDropdownreason(
+                  "Reason:",
+                  reasons as Map<String, String>,
+                      (value) {
+                    setState(() {
+                      selectedReason = value;
+                      print("Selected Location ID: $selectedReason");
+                    });
+                  },
+                ),
+
+              if (selectedReason != null && selectedReason!.isNotEmpty)
+                _buildTextField("Comment", commentController),
+
                 _buildTextField("Contact Number", contactController),
                 buildDropdown(
                   "Approved by",
@@ -452,7 +614,7 @@ class _LeaveApplicationState extends State<LeaveApplication> {
                   (value) {
                     setState(() {
                       selectedAuthorizationby = value;
-                      print("Selected Location ID: $selectedAuthorizationby");
+                      print("Selected selectedAuthorizationby ID: $selectedAuthorizationby");
                     });
                   },
                 ),
@@ -535,6 +697,11 @@ class _LeaveApplicationState extends State<LeaveApplication> {
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16))),
+                          DataColumn(
+                              label: Text('Comment',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16))),
                         ],
                         rows: List<DataRow>.generate(
                           leaveDatas.length,
@@ -569,6 +736,7 @@ class _LeaveApplicationState extends State<LeaveApplication> {
                               DataCell(
                                   Text(leaveDatas[index]['from_date'] ?? '')),
                               DataCell(Text(leaveDatas[index]['to_date'] ?? '')),
+                              DataCell(Text(leaveDatas[index]['selected_reason'] ?? '')),
                               DataCell(Text(leaveDatas[index]['reason'] ?? '')),
                             ],
                           ),

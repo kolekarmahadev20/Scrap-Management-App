@@ -62,6 +62,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   String? selectedOrderId;
   String? MaterialSelected;
   String? materialId;
+  bool isDispatchCompleted = false;
 
   List<String> orderIDs = [
     'Select',
@@ -130,7 +131,8 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       return;
     }
 
-    double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
+    double moistureWeight =
+        double.tryParse(moistureWeightController.text) ?? 0.0;
 
     print("First Weight: $firstWeight");
     print("Full Weight: $fullWeight");
@@ -152,14 +154,16 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
 
     // ✅ Check if netWeight is greater than totalQty first
     if (netWeight > totalQty) {
-      print("Error: Net weight ($netWeight) exceeds total quantity ($totalQty).");
+      print(
+          "Error: Net weight ($netWeight) exceeds total quantity ($totalQty).");
 
       netWeightController.clear();
       quantityController.clear();
       fullWeightController.clear();
 
       Fluttertoast.showToast(
-        msg: "Net weight ($netWeight) cannot exceed total quantity ($totalQty)!",
+        msg:
+            "Net weight ($netWeight) cannot exceed total quantity ($totalQty)!",
         gravity: ToastGravity.CENTER,
       );
       return;
@@ -187,11 +191,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     print("Final Net Weight: ${netWeightController.text}");
     print("Final DMT Weight: ${quantityController.text}");
   }
-
-
-
-
-
 
   // void calculateNetWeight() {
   //   double firstWeight = double.tryParse(firstWeightNoController.text) ?? 0.0;
@@ -316,15 +315,17 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       request.fields['rate'] = rate ?? '';
       request.fields['advance_payment'] = advancePayment ?? '';
       request.fields['lotno'] = materialId ?? '';
-      request.fields['invoice_no'] = invoiceController.text?? '';
-      request.fields['date_time'] = dateController.text?? '';
-      request.fields['truck_no'] = truckNoController.text?? '';
-      request.fields['truck_weight'] = firstWeightNoController.text?? '';
-      request.fields['full_weight'] = fullWeightController.text?? '';
-      request.fields['mois_weight'] = moistureWeightController.text?? '';
-      request.fields['net_weight'] = netWeightController.text?? '';
-      request.fields['qty'] = quantityController.text?? '';
-      request.fields['note'] = noteController.text?? '';
+      request.fields['invoice_no'] = invoiceController.text ?? '';
+      request.fields['date_time'] = dateController.text ?? '';
+      request.fields['truck_no'] = truckNoController.text ?? '';
+      request.fields['truck_weight'] = firstWeightNoController.text ?? '';
+      request.fields['full_weight'] = fullWeightController.text ?? '';
+      request.fields['mois_weight'] = moistureWeightController.text ?? '';
+      request.fields['net_weight'] = netWeightController.text ?? '';
+      request.fields['qty'] = quantityController.text ?? '';
+      request.fields['note'] = noteController.text ?? '';
+      request.fields['status'] = isDispatchCompleted ? 'c' : 'p';
+
 
       print("======== Request Fields ========");
       request.fields.forEach((key, value) {
@@ -521,178 +522,244 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
                       ),
                       SizedBox(height: 16),
                       Expanded(
-                        child:SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            buildTextField("Material", materialController, true,
-                                false, Colors.white, context),
-                            buildTextField("Invoice No", invoiceController,
-                                false, false, Colors.white, context),
-                            buildTextField("Date", dateController, false, true,
-                                Colors.white, context),
-                            buildTextField("Truck No", truckNoController, false,
-                                false, Colors.white, context),
-                            buildTextField(
-                                "First Weight",
-                                firstWeightNoController,
-                                false,
-                                false,
-                                Colors.white,
-                                context),
-                            buildTextField("Gross Weight", fullWeightController,
-                                false, false, Colors.white, context),
-                            buildTextField("Net", netWeightController, true,
-                                false, Colors.grey[400]!, context),
-                            buildTextField(
-                                "Moisture Weight",
-                                moistureWeightController,
-                                false,
-                                false,
-                                Colors.white,
-                                context),
-                            buildTextField(
-                                "DMT/Quantity Weight",
-                                quantityController,
-                                false,
-                                false,
-                                Colors.white,
-                                context),
-                            buildTextField("Note", noteController, false, false,
-                                Colors.white, context),
-                            SizedBox(
-                              height: 40,
-                            ),
-                            Container(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Divider(
-                                      thickness: 1.5, color: Colors.black54),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      "Upload Images",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 24),
-                                    ),
-                                  ),
-                                  Divider(
-                                      thickness: 1.5, color: Colors.black54),
-                                  // ImageWidget(
-                                  //     value: '1) Vehicle Front',
-                                  //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                  //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                  //     onImagesSelected: (images) { // Handle selected images
-                                  //       setState(() {
-                                  //         vehicleFront.addAll(images); // Store uploaded images
-                                  //       });
-                                  //     }
-                                  // ),
-                                  // ImageWidget(
-                                  //     value: '2) Vehicle Back',
-                                  //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                  //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                  //     onImagesSelected: (images) { // Handle selected images
-                                  //       setState(() {
-                                  //         vehicleBack.addAll(images); // Store uploaded images
-                                  //       });
-                                  //     }
-                                  // ),
-                                  // ImageWidget(
-                                  //     value: '3) Material',
-                                  //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                  //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                  //     onImagesSelected: (images) { // Handle selected images
-                                  //       setState(() {
-                                  //         Material.addAll(images); // Store uploaded images
-                                  //       });
-                                  //     }
-                                  // ),
-                                  // ImageWidget(
-                                  //     value: '4) Material Half Load',
-                                  //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                  //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                  //     onImagesSelected: (images) { // Handle selected images
-                                  //       setState(() {
-                                  //         MaterialHalfLoad.addAll(images); // Store uploaded images
-                                  //       });
-                                  //     }
-                                  // ),
-                                  // ImageWidget(
-                                  //     value: '5) Material Full Load',
-                                  //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
-                                  //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
-                                  //     onImagesSelected: (images) { // Handle selected images
-                                  //       setState(() {
-                                  //         MaterialFullLoad.addAll(images); // Store uploaded images
-                                  //       });
-                                  //     }
-                                  // ),
-                                  ImageWidget(
-                                      value: 'Add Images',
-                                      cameraIcon: Icon(Icons.camera_alt,
-                                          color: Colors.blue),
-                                      galleryIcon: Icon(Icons.photo_library,
-                                          color: Colors.green),
-                                      onImagesSelected: (images) {
-                                        // Handle selected images
-                                        setState(() {
-                                          other.addAll(
-                                              images); // Store uploaded images
-                                        });
-                                      }),
-                                ],
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              buildTextField("Material", materialController,
+                                  true, false, Colors.white, context),
+                              buildTextField("Invoice No", invoiceController,
+                                  false, false, Colors.white, context),
+                              buildTextField("Date", dateController, false,
+                                  true, Colors.white, context),
+                              buildTextField("Truck No", truckNoController,
+                                  false, false, Colors.white, context),
+                              buildTextField(
+                                  "First Weight",
+                                  firstWeightNoController,
+                                  false,
+                                  false,
+                                  Colors.white,
+                                  context),
+                              buildTextField(
+                                  "Gross Weight",
+                                  fullWeightController,
+                                  false,
+                                  false,
+                                  Colors.white,
+                                  context),
+                              buildTextField("Net", netWeightController, true,
+                                  false, Colors.grey[400]!, context),
+                              buildTextField(
+                                  "Moisture Weight",
+                                  moistureWeightController,
+                                  false,
+                                  false,
+                                  Colors.white,
+                                  context),
+                              buildTextField(
+                                  "DMT/Quantity Weight",
+                                  quantityController,
+                                  false,
+                                  false,
+                                  Colors.white,
+                                  context),
+                              buildTextField("Note", noteController, false,
+                                  false, Colors.white, context),
+                              LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        flex:
+                                            2, // Adjusts the label width proportionally
+                                        child: Padding(
+                                          padding: EdgeInsets.all(
+                                              8.0), // Adds padding around the text
+                                          child: Text(
+                                            'Dispatch\nCompleted',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex:
+                                            3, // Adjusts the radio buttons area proportionally
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            Flexible(
+                                              child: Radio<bool>(
+                                                value: true,
+                                                groupValue: isDispatchCompleted,
+                                                onChanged: (bool? newValue) {
+                                                  setState(() {
+                                                    isDispatchCompleted =
+                                                        newValue ?? false;
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                            Text('Yes'),
+                                            Flexible(
+                                              child: Radio<bool>(
+                                                value: false,
+                                                groupValue: isDispatchCompleted,
+                                                onChanged: (bool? newValue) {
+                                                  setState(() {
+                                                    isDispatchCompleted =
+                                                        newValue ?? false;
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                            Text('No'),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
                               ),
-                            ),
-                            SizedBox(
-                              height: 60,
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.center,
-                                children: [
-                                  // ElevatedButton(
-                                  //   onPressed: () {
-                                  //     clearFields();
-                                  //     Navigator.of(context).pop();
-                                  //   },
-                                  //   child: Text("Back"),
-                                  //   style: ElevatedButton.styleFrom(
-                                  //     foregroundColor: Colors.white,
-                                  //     backgroundColor: Colors.indigo[800],
-                                  //     padding: EdgeInsets.symmetric(
-                                  //         horizontal: 50, vertical: 12),
-                                  //     shape: RoundedRectangleBorder(
-                                  //       borderRadius: BorderRadius.circular(12),
-                                  //     ),
-                                  //   ),
-                                  // ),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      addDispatchDetails();
-                                      // clearFields();
-                                    },
-                                    child: Text("Add"),
-                                    style: ElevatedButton.styleFrom(
-                                      foregroundColor: Colors.white,
-                                      backgroundColor: Colors.indigo[800],
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 50, vertical: 12),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                              SizedBox(
+                                height: 40,
+                              ),
+                              Container(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Divider(
+                                        thickness: 1.5, color: Colors.black54),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        "Upload Images",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 24),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                    Divider(
+                                        thickness: 1.5, color: Colors.black54),
+                                    // ImageWidget(
+                                    //     value: '1) Vehicle Front',
+                                    //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    //     onImagesSelected: (images) { // Handle selected images
+                                    //       setState(() {
+                                    //         vehicleFront.addAll(images); // Store uploaded images
+                                    //       });
+                                    //     }
+                                    // ),
+                                    // ImageWidget(
+                                    //     value: '2) Vehicle Back',
+                                    //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    //     onImagesSelected: (images) { // Handle selected images
+                                    //       setState(() {
+                                    //         vehicleBack.addAll(images); // Store uploaded images
+                                    //       });
+                                    //     }
+                                    // ),
+                                    // ImageWidget(
+                                    //     value: '3) Material',
+                                    //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    //     onImagesSelected: (images) { // Handle selected images
+                                    //       setState(() {
+                                    //         Material.addAll(images); // Store uploaded images
+                                    //       });
+                                    //     }
+                                    // ),
+                                    // ImageWidget(
+                                    //     value: '4) Material Half Load',
+                                    //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    //     onImagesSelected: (images) { // Handle selected images
+                                    //       setState(() {
+                                    //         MaterialHalfLoad.addAll(images); // Store uploaded images
+                                    //       });
+                                    //     }
+                                    // ),
+                                    // ImageWidget(
+                                    //     value: '5) Material Full Load',
+                                    //     cameraIcon: Icon(Icons.camera_alt, color: Colors.blue),
+                                    //     galleryIcon: Icon(Icons.photo_library, color: Colors.green),
+                                    //     onImagesSelected: (images) { // Handle selected images
+                                    //       setState(() {
+                                    //         MaterialFullLoad.addAll(images); // Store uploaded images
+                                    //       });
+                                    //     }
+                                    // ),
+                                    ImageWidget(
+                                        value: 'Add Images',
+                                        cameraIcon: Icon(Icons.camera_alt,
+                                            color: Colors.blue),
+                                        galleryIcon: Icon(Icons.photo_library,
+                                            color: Colors.green),
+                                        onImagesSelected: (images) {
+                                          // Handle selected images
+                                          setState(() {
+                                            other.addAll(
+                                                images); // Store uploaded images
+                                          });
+                                        }),
+                                  ],
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 16),
-                          ],
-                        ),
+                              SizedBox(
+                                height: 60,
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    // ElevatedButton(
+                                    //   onPressed: () {
+                                    //     clearFields();
+                                    //     Navigator.of(context).pop();
+                                    //   },
+                                    //   child: Text("Back"),
+                                    //   style: ElevatedButton.styleFrom(
+                                    //     foregroundColor: Colors.white,
+                                    //     backgroundColor: Colors.indigo[800],
+                                    //     padding: EdgeInsets.symmetric(
+                                    //         horizontal: 50, vertical: 12),
+                                    //     shape: RoundedRectangleBorder(
+                                    //       borderRadius: BorderRadius.circular(12),
+                                    //     ),
+                                    //   ),
+                                    // ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        addDispatchDetails();
+                                        // clearFields();
+                                      },
+                                      child: Text("Add"),
+                                      style: ElevatedButton.styleFrom(
+                                        foregroundColor: Colors.white,
+                                        backgroundColor: Colors.indigo[800],
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 50, vertical: 12),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 16),
+                            ],
+                          ),
                         ),
                       ),
                     ],

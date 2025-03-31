@@ -34,9 +34,12 @@ class EditDispatchDetails extends StatefulWidget {
   final String full_weight;
   final String? imagesUrl;
   final String totalQty;
+  final String status;
+
 
 
   EditDispatchDetails({
+    required this.status,
     required this.totalQty,
     required this.lift_id,
     required this.full_weight,
@@ -87,6 +90,7 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
   String? selectedOrderId;
   String? MaterialSelected;
   String? materialId;
+  bool isDispatchCompleted = false;
 
   List<String> orderIDs = [
     'Select',
@@ -146,6 +150,8 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
     materialController.text = widget.material_name ?? '';
     invoiceController.text=widget.invoiceNo ?? 'N/A';
     dateController.text = formatDate(widget.date) ?? 'N/A';
+
+    isDispatchCompleted = (widget.status == "p") ?  false:true ;
 
     truckNoController.text=(widget.truckNo ?? 'N/A').toUpperCase();
     firstWeightNoController.text = widget.firstweight ?? "N/A";
@@ -378,6 +384,7 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
       request.fields['net_weight'] = netWeightController.text;
       request.fields['qty'] = quantityController.text;
       request.fields['note'] = noteController.text;
+      request.fields['status'] = isDispatchCompleted ? 'c' : 'p';
 
       // Function to add images to the request
       Future<void> addImages(List<File> images, String keyword, http.MultipartRequest request) async {
@@ -604,6 +611,68 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
                       buildTextField("Moisture Weight", moistureWeightController, false,false ,Colors.white, context),
                       buildTextField("DMT/Quantity Weight", quantityController, true,false , Colors.white,context),
                       buildTextField("Note", noteController, false,false , Colors.white,context),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          return Row(
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex:
+                                2, // Adjusts the label width proportionally
+                                child: Padding(
+                                  padding: EdgeInsets.all(
+                                      8.0), // Adds padding around the text
+                                  child: Text(
+                                    'Dispatch\nCompleted',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex:
+                                3, // Adjusts the radio buttons area proportionally
+                                child: Row(
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.start,
+                                  children: [
+                                    Flexible(
+                                      child: Radio<bool>(
+                                        value: true,
+                                        groupValue: isDispatchCompleted,
+                                        onChanged: (bool? newValue) {
+                                          setState(() {
+                                            isDispatchCompleted =
+                                                newValue ?? false;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                    Text('Yes'),
+                                    Flexible(
+                                      child: Radio<bool>(
+                                        value: false,
+                                        groupValue: isDispatchCompleted,
+                                        onChanged: (bool? newValue) {
+                                          setState(() {
+                                            isDispatchCompleted =
+                                                newValue ?? false;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                    Text('No'),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+
                       SizedBox(
                         height: 40,
                       ),

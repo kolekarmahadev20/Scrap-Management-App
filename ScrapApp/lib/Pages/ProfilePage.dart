@@ -381,7 +381,7 @@ class _ProfilePageState extends State<ProfilePage> {
           'user_id': username,
           'user_pass': password,
           'id': personId,
-          'uuid':uuid,
+          'uuid': uuid,
         },
       );
 
@@ -389,16 +389,17 @@ class _ProfilePageState extends State<ProfilePage> {
         final responseData = json.decode(response.body);
         print(responseData);
 
-        // If status is 0 and message is "Failed To Track Admin Activity...", do nothing
         if (responseData['status'] == '0' && responseData['msg'] == "Failed To Track Admin Activity...") {
           print("Condition met: Do nothing");
           return;
         }
 
         if (responseData['status'] == '1') {
-          final adminActivity = responseData['tracked_admin_activity'];
+          final adminActivities = responseData['tracked_admin_activity'];
 
-          if (adminActivity != null) {
+          if (adminActivities != null && adminActivities.isNotEmpty) {
+            final adminActivity = adminActivities[0];  // Hamesha 0th position ka response le raha hai
+
             final adminremarkmsg = adminActivity['remark'] ?? 'No remark found';
             final adminstatus = adminActivity['status'] ?? 'P';
 
@@ -411,19 +412,17 @@ class _ProfilePageState extends State<ProfilePage> {
               if (adminremarkmsg == "No remark found") {
                 print("Condition met without status: Showing Late Login Remark Dialog");
                 _showLateLoginRemarkDialog();
-              }
-              else if (adminstatus == "P" || adminstatus == "R") {
+              } else if (adminstatus == "P" || adminstatus == "R") {
                 print("Condition met with status: Showing Late Login Admin Remark Dialog");
                 _showLateLoginAdminRemarkDialog();
-              }
-              else {
+              } else {
                 print("Login Approved.");
               }
             });
           } else {
             print("No tracked admin activity found.");
           }
-        }  else {
+        } else {
           print('Unexpected status: ${responseData['status']}');
         }
       } else {
@@ -433,6 +432,73 @@ class _ProfilePageState extends State<ProfilePage> {
       print('Error: $e');
     }
   }
+
+
+  // Future<void> trackadminresponse() async {
+  //   print(username);
+  //   print(password);
+  //
+  //   try {
+  //     await checkLogin();
+  //     final response = await http.post(
+  //       Uri.parse('${URL}track_admin_response'),
+  //       headers: {"Accept": "application/json"},
+  //       body: {
+  //         'user_id': username,
+  //         'user_pass': password,
+  //         'id': personId,
+  //         'uuid':uuid,
+  //       },
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       final responseData = json.decode(response.body);
+  //       print(responseData);
+  //
+  //       // If status is 0 and message is "Failed To Track Admin Activity...", do nothing
+  //       if (responseData['status'] == '0' && responseData['msg'] == "Failed To Track Admin Activity...") {
+  //         print("Condition met: Do nothing");
+  //         return;
+  //       }
+  //
+  //       if (responseData['status'] == '1') {
+  //         final adminActivity = responseData['tracked_admin_activity'];
+  //
+  //         if (adminActivity != null) {
+  //           final adminremarkmsg = adminActivity['remark'] ?? 'No remark found';
+  //           final adminstatus = adminActivity['status'] ?? 'P';
+  //
+  //           print(adminstatus);
+  //           print("adminstatus");
+  //
+  //           setState(() {
+  //             print("Admin remark message: $adminremarkmsg");
+  //
+  //             if (adminremarkmsg == "No remark found") {
+  //               print("Condition met without status: Showing Late Login Remark Dialog");
+  //               _showLateLoginRemarkDialog();
+  //             }
+  //             else if (adminstatus == "P" || adminstatus == "R") {
+  //               print("Condition met with status: Showing Late Login Admin Remark Dialog");
+  //               _showLateLoginAdminRemarkDialog();
+  //             }
+  //             else {
+  //               print("Login Approved.");
+  //             }
+  //           });
+  //         } else {
+  //           print("No tracked admin activity found.");
+  //         }
+  //       }  else {
+  //         print('Unexpected status: ${responseData['status']}');
+  //       }
+  //     } else {
+  //       print('Failed. Status code: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     print('Errorasdfasf: $e');
+  //   }
+  // }
 
   Future<void> _submitLateLoginRemark(String remark) async {
     try {
