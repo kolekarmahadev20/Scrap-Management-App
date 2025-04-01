@@ -10,15 +10,15 @@ import '../AppClass/AppDrawer.dart';
 import '../AppClass/appBar.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 
-class Search extends StatefulWidget {
+class Summary_Report extends StatefulWidget {
   final int currentPage;
-  Search({required this.currentPage});
+  Summary_Report({required this.currentPage});
 
   @override
-  _SearchState createState() => _SearchState();
+  _Summary_ReportState createState() => _Summary_ReportState();
 }
 
-class _SearchState extends State<Search> {
+class _Summary_ReportState extends State<Summary_Report> {
   // Variables for user details
   String? username = '';
   String uuid = '';
@@ -81,14 +81,12 @@ class _SearchState extends State<Search> {
       isLoading = true;
     });
 
-    print(selectedVendorType);
+    print('selectedVendorType');
     print(selectedPlantName);
-    print(selectedBuyer);
-    print(selectedMaterial);
+
     String formattedFromDate = DateFormat('yyyy-MM-dd').format(fromDate!);
     String formattedToDate = DateFormat('yyyy-MM-dd').format(toDate!);
-    print(formattedFromDate);
-    print(formattedToDate);
+
 
     await checkLogin();
     final response = await http.post(
@@ -104,13 +102,15 @@ class _SearchState extends State<Search> {
         // 'mat_id':'393',
         // 'from_date':'2025-03-01',
         // 'to_date':'2025-04-01',
-        "vendor_id": selectedVendorType.toString()?? '',
-        if(selectedPlantName!=null && selectedPlantName !='Select')
-          "plant_id": selectedPlantName.toString()?? '',
-        if(selectedBuyer!=null&& selectedBuyer !='Select')
-          "buyer_id": selectedBuyer?.toString() ?? '',
-        if(selectedMaterial!=null&& selectedMaterial !='Select')
-          "mat_id": selectedMaterial?.toString() ?? '',
+
+        // if(selectedPlantName!=null && selectedPlantName !='Select')
+        //   "plant_id": selectedPlantName.toString()?? '',
+
+        "plant_id": (selectedPlantName != null && selectedPlantName != 'All Select')
+            ? selectedPlantName.toString()
+            : '',
+
+
         "from_date": formattedFromDate,
         "to_date": formattedToDate,
 
@@ -346,6 +346,16 @@ class _SearchState extends State<Search> {
           final data = json.decode(response.body);
 
           setState(() {
+            setState(() {
+              PlantName = {
+                'All Location': 'All Location',
+                ...{
+                  for (var item in data['plant'])
+                    item['branch_name']: item['branch_id'] ?? '0'
+                }
+              };
+            });
+
             // Material
             // Material = {
             //   'Select': 'Select',
@@ -357,14 +367,14 @@ class _SearchState extends State<Search> {
             // };
 
             // Vendor
-            VendorType = {
-              'Select': 'Select',
-              ...{
-                for (var item in data['vendor_list'] ?? [])
-                  item['vendor_name'] ?? 'Unknown':
-                      (item['vendor_id'] ?? '0').toString()
-              }
-            };
+            // VendorType = {
+            //   'Select': 'Select',
+            //   ...{
+            //     for (var item in data['vendor_list'] ?? [])
+            //       item['vendor_name'] ?? 'Unknown':
+            //       (item['vendor_id'] ?? '0').toString()
+            //   }
+            // };
 
             // Buyer
             // Buyer = {
@@ -451,7 +461,7 @@ class _SearchState extends State<Search> {
             ...{
               for (var item in data['bidder_list'] ?? [])
                 item['bidder_name'] ?? 'Unknown':
-                    (item['buyer_id'] ?? '0').toString()
+                (item['buyer_id'] ?? '0').toString()
             }
           };
         });
@@ -522,7 +532,7 @@ class _SearchState extends State<Search> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        "Search",
+                        "Summary Report",
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
@@ -539,53 +549,53 @@ class _SearchState extends State<Search> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      buildDropdown(
-                          'Select Vendor', VendorType, vendorController,
-                          (value) {
-                        setState(() {
-                          selectedVendorType = value;
-                          selectedPlantName = null;
-                          plantController.clear();
-                        });
-                        if (value != null) {
-                          fetchPlantData(value);
-                        }
-                      }),
+                      // buildDropdown(
+                      //     'Select Vendor', VendorType, vendorController,
+                      //         (value) {
+                      //       setState(() {
+                      //         selectedVendorType = value;
+                      //         selectedPlantName = null;
+                      //         plantController.clear();
+                      //       });
+                      //       if (value != null) {
+                      //         fetchPlantData(value);
+                      //       }
+                      //     }),
 
-                      buildDropdown('Select Plant', PlantName, plantController,
-                          (value) {
-                        setState(() {
-                          selectedPlantName = value;
-                          selectedBuyer = null;
-                          buyerController.clear();
-                        });
-                        if (value != null) {
-                          fetchBuyerData(value);
-                        }
-                      }),
+                      buildDropdown('Location', PlantName, plantController,
+                              (value) {
+                            setState(() {
+                              selectedPlantName = value;
+                              selectedBuyer = null;
+                              buyerController.clear();
+                            });
+                            if (value != null) {
+                              fetchBuyerData(value);
+                            }
+                          }),
 
-                      buildDropdown('Buyer', Buyer, buyerController, (value) {
-                        setState(() {
-                          selectedBuyer = value;
-                          selectedMaterial = null;
-                          materialController.clear();
-                        });
-                        if (value != null) {
-                          fetchMaterialData(value);
-                        }
-                      }),
-
-                      buildDropdown('Material', Material, materialController,
-                          (value) {
-                        setState(() {
-                          selectedMaterial = value;
-                        });
-                      }),
+                      // buildDropdown('Buyer', Buyer, buyerController, (value) {
+                      //   setState(() {
+                      //     selectedBuyer = value;
+                      //     selectedMaterial = null;
+                      //     materialController.clear();
+                      //   });
+                      //   if (value != null) {
+                      //     fetchMaterialData(value);
+                      //   }
+                      // }),
+                      //
+                      // buildDropdown('Material', Material, materialController,
+                      //         (value) {
+                      //       setState(() {
+                      //         selectedMaterial = value;
+                      //       });
+                      //     }),
 
                       buildFieldWithDatePicker(
                         'From Date',
                         fromDate,
-                        (selectedDate) {
+                            (selectedDate) {
                           setState(() {
                             fromDate = selectedDate;
                           });
@@ -594,7 +604,7 @@ class _SearchState extends State<Search> {
                       buildFieldWithDatePicker(
                         'To Date',
                         toDate,
-                        (selectedEndDate) {
+                            (selectedEndDate) {
                           setState(() {
                             toDate = selectedEndDate;
                           });
@@ -611,7 +621,7 @@ class _SearchState extends State<Search> {
                             backgroundColor: Colors.blueGrey[400], // Text color
                             shape: RoundedRectangleBorder(
                               borderRadius:
-                                  BorderRadius.circular(12), // Rounded corners
+                              BorderRadius.circular(12), // Rounded corners
                             ),
                             elevation: 5,
                             padding: EdgeInsets.symmetric(
@@ -627,7 +637,9 @@ class _SearchState extends State<Search> {
                           scrollDirection: Axis.horizontal,
                           child: buildDynamicTable(scrapData)),
                       // If data is still loading, you can return an empty container or other widget
-                      Container(),
+                      Container(
+                        height: 20,
+                      ),
                       if (scrapData.isNotEmpty) // Condition to check if the data is not empty
                         Center(
                           child: ElevatedButton(
@@ -641,7 +653,9 @@ class _SearchState extends State<Search> {
                             child: Text('Copy to Clipboard'),
                           ),
                         ),
-
+                      Container(
+                        height: 20,
+                      ),
                     ],
                   ),
                 ),
@@ -654,11 +668,11 @@ class _SearchState extends State<Search> {
   }
 
   Widget buildDropdown(
-    String label,
-    Map<String, String> options,
-    TextEditingController controller,
-    ValueChanged<String?> onChanged,
-  ) {
+      String label,
+      Map<String, String> options,
+      TextEditingController controller,
+      ValueChanged<String?> onChanged,
+      ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
@@ -689,22 +703,22 @@ class _SearchState extends State<Search> {
                       hintText: 'Select', // Adds "Select" as placeholder
                       suffixIcon: controller.text.isNotEmpty
                           ? IconButton(
-                              icon: Icon(Icons.clear,
-                                  size: 18), // Reduce icon size
-                              onPressed: () {
-                                setState(() {
-                                  controller.clear();
-                                  onChanged(null); // Clear selected value
-                                });
-                              },
-                            )
+                        icon: Icon(Icons.clear,
+                            size: 18), // Reduce icon size
+                        onPressed: () {
+                          setState(() {
+                            controller.clear();
+                            onChanged(null); // Clear selected value
+                          });
+                        },
+                      )
                           : null,
                     ),
                   ),
                   suggestionsCallback: (pattern) {
                     return options.keys
                         .where((key) =>
-                            key.toLowerCase().contains(pattern.toLowerCase()))
+                        key.toLowerCase().contains(pattern.toLowerCase()))
                         .toList();
                   },
                   itemBuilder: (context, suggestion) {
@@ -728,10 +742,10 @@ class _SearchState extends State<Search> {
   }
 
   Widget buildFieldWithDatePicker(
-    String label,
-    DateTime? selectedDate,
-    void Function(DateTime?) onDateChanged,
-  ) {
+      String label,
+      DateTime? selectedDate,
+      void Function(DateTime?) onDateChanged,
+      ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
@@ -755,7 +769,7 @@ class _SearchState extends State<Search> {
                     onTap: () async {
                       final newSelectedDate = await showDatePicker(
                         context:
-                            context, // Make sure you have access to the context
+                        context, // Make sure you have access to the context
                         initialDate: selectedDate ?? DateTime.now(),
                         firstDate: DateTime(1900),
                         lastDate: DateTime.now().add(Duration(days: 365)),

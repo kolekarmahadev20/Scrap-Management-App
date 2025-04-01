@@ -18,6 +18,7 @@ import '../Pages/EmployeeTracker.dart';
 import '../Pages/ForgotPunchOutPage.dart';
 import '../Pages/Search.dart';
 import '../Pages/SummaryReport.dart';
+import '../Pages/Summary_Report.dart';
 import '../Users/User_list.dart';
 import '../Vendor/Vendor_list.dart';
 
@@ -292,20 +293,20 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
-                  // if(userType == 'S' || userType == 'A')
-                  //   _buildDrawerItem(
-                  //   context,
-                  //   11,
-                  //   icon: Icons.file_open_outlined,
-                  //   text: "Summary Report",
-                  //   onTap: () {
-                  //     Timer(Duration(milliseconds: 300), () {
-                  //       Navigator.pop(context); // Close the drawer
-                  //       Navigator.push(context, MaterialPageRoute(builder: (context) => SummaryReport(currentPage: 11,)));
-                  //     });
-                  //
-                  //   },
-                  // ),
+                  if(userType == 'S' || userType == 'A')
+                    _buildDrawerItem(
+                    context,
+                    11,
+                    icon: Icons.search,
+                    text: "Search",
+                    onTap: () {
+                      Timer(Duration(milliseconds: 300), () {
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => Search(currentPage: 11,)));
+                      });
+
+                    },
+                  ),
                   if(userType == 'S')
                     _buildDrawerItem(
                     context,
@@ -329,7 +330,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => Search(currentPage: 13,)));
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => Summary_Report(currentPage: 13,)));
                       });
 
                     },
