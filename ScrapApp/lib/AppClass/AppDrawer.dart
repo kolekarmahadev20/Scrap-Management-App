@@ -292,20 +292,20 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
-                  if(userType == 'S' || userType == 'A')
-                    _buildDrawerItem(
-                    context,
-                    11,
-                    icon: Icons.file_open_outlined,
-                    text: "Summary Report",
-                    onTap: () {
-                      Timer(Duration(milliseconds: 300), () {
-                        Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => SummaryReport(currentPage: 11,)));
-                      });
-
-                    },
-                  ),
+                  // if(userType == 'S' || userType == 'A')
+                  //   _buildDrawerItem(
+                  //   context,
+                  //   11,
+                  //   icon: Icons.file_open_outlined,
+                  //   text: "Summary Report",
+                  //   onTap: () {
+                  //     Timer(Duration(milliseconds: 300), () {
+                  //       Navigator.pop(context); // Close the drawer
+                  //       Navigator.push(context, MaterialPageRoute(builder: (context) => SummaryReport(currentPage: 11,)));
+                  //     });
+                  //
+                  //   },
+                  // ),
                   if(userType == 'S')
                     _buildDrawerItem(
                     context,
@@ -324,8 +324,8 @@ class _AppDrawerState extends State<AppDrawer> {
                     _buildDrawerItem(
                     context,
                     13,
-                    icon: Icons.content_paste_search,
-                    text: "Search",
+                    icon: Icons.file_open_outlined,
+                    text: "Summary Report",
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.pop(context); // Close the drawer

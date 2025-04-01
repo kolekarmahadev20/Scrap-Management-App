@@ -303,6 +303,19 @@ class _LeaveApplicationState extends State<LeaveApplication> {
     }
   }
 
+  String formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) {
+      return 'No data';
+    }
+    try {
+      DateTime parsedDate = DateTime.parse(dateStr);
+      return DateFormat('dd-MM-yyyy').format(parsedDate);
+    } catch (e) {
+      return 'Invalid date';
+    }
+  }
+
+
   Widget buildFieldWithDatePicker(
     String label,
     DateTime? selectedDate,
@@ -716,8 +729,8 @@ class _LeaveApplicationState extends State<LeaveApplication> {
                               DataCell(Text((index + 1).toString())),
                               DataCell(
                                   Text(leaveDatas[index]['person_name'] ?? '')),
-                              DataCell(
-                                  Text(leaveDatas[index]['submitted_on'] ?? '')),
+                              DataCell(Text(formatDate(leaveDatas[index]['submitted_on']))),
+
                               DataCell(
                                 Text(
                                   getStatusLabel(
@@ -733,9 +746,8 @@ class _LeaveApplicationState extends State<LeaveApplication> {
                                   ),
                                 ),
                               ),
-                              DataCell(
-                                  Text(leaveDatas[index]['from_date'] ?? '')),
-                              DataCell(Text(leaveDatas[index]['to_date'] ?? '')),
+                              DataCell(Text(formatDate(leaveDatas[index]['from_date']))),
+                              DataCell(Text(formatDate(leaveDatas[index]['to_date']))),
                               DataCell(Text(leaveDatas[index]['selected_reason'] ?? '')),
                               DataCell(Text(leaveDatas[index]['reason'] ?? '')),
                             ],

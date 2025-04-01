@@ -36,9 +36,10 @@ class _ProfilePageState extends State<ProfilePage> {
   String address = '';
   String empCode = '';
   String personId = '';
-
+  String remainingDays = '';
   String logINTimeString = "";
   String logoutTimeString = "";
+  String remainingDaysString = '';
 
   bool isLoggedIn = false;
   bool isPunchedIn = false;
@@ -107,6 +108,17 @@ class _ProfilePageState extends State<ProfilePage> {
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
+    remainingDays = prefs.getString("remainingDays")!;
+
+    DateTime today = DateTime.now();
+    DateTime targetDate = DateTime.parse(remainingDays);
+
+    Duration difference = targetDate.difference(today);
+    remainingDaysString = difference.inDays.toString(); // Convert duration to string
+
+    print("Remaining Days: $remainingDaysString");
+
+
     uuid = prefs.getString("uuid")!;
   }
 
@@ -826,6 +838,10 @@ class _ProfilePageState extends State<ProfilePage> {
                               color: Colors.white,
                               fontSize: 16,
                             ),
+                          ),
+                          Text(
+                            "Deactivates in $remainingDaysString days!",
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.white),
                           ),
                         ],
                       ),

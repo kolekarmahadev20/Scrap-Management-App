@@ -302,6 +302,10 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
   }
 
   Future<void> fetchPaymentDetails() async {
+
+print(widget.sale_order_id);
+print("widget.sale_order_id");
+
     try {
       setState(() {
         isLoading = true;
@@ -316,6 +320,7 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
           'uuid': uuid,
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
+
         },
       );
       if (response.statusCode == 200) {

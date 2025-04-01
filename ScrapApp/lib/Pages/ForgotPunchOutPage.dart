@@ -6,7 +6,7 @@ import '../AppClass/AppDrawer.dart';
 import '../AppClass/appBar.dart';
 import '../URL_CONSTANT.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-
+import 'package:intl/intl.dart';
 import 'StartPage.dart';
 
 class ForgotPunchOutPage extends StatefulWidget {
@@ -95,6 +95,18 @@ class _ForgotPunchOutPageState extends State<ForgotPunchOutPage> {
           user['name'].toLowerCase().contains(query)) // Filter by name
           .toList();
     });
+  }
+
+  String formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) {
+      return 'No data';
+    }
+    try {
+      DateTime parsedDate = DateTime.parse(dateStr);
+      return DateFormat('dd-MM-yyyy HH:mm:ss').format(parsedDate);
+    } catch (e) {
+      return 'Invalid date';
+    }
   }
 
   // Function to fetch late-logged-out users from the API
@@ -308,7 +320,7 @@ class _ForgotPunchOutPageState extends State<ForgotPunchOutPage> {
             //   style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
             // ),
             Text(
-              'Punch In Time: ${user['punchInTime']}',
+              'Punch In Time: ${formatDate(user['punchInTime'])}',
               style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
             ),
             // if (user['remark'].isNotEmpty)

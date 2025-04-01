@@ -271,6 +271,17 @@ class _LeaveStatusState extends State<LeaveStatus> {
     );
   }
 
+  String formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) {
+      return 'No data';
+    }
+    try {
+      DateTime parsedDate = DateTime.parse(dateStr);
+      return DateFormat('dd-MM-yyyy').format(parsedDate);
+    } catch (e) {
+      return 'Invalid date';
+    }
+  }
 
   Widget _buildLeaveCard(dynamic leave, int index) {
     return Card(
@@ -286,8 +297,8 @@ class _LeaveStatusState extends State<LeaveStatus> {
             _buildLeaveInfoRowName('Leave Applicant:', leave['person_name'], index),
             SizedBox(height: 8.0),
             // Leave Dates and Reason
-            _buildLeaveInfoRow('From Date :', leave['from_date'], index),
-            _buildLeaveInfoRow('To Date :', leave['to_date'], index),
+            _buildLeaveInfoRow('From Date :', formatDate(leave['from_date']), index),
+            _buildLeaveInfoRow('To Date :',formatDate(leave['to_date']), index),
             _buildLeaveInfoRow('Selected Reason :', leave['selected_reason'], index),
             _buildLeaveInfoRow('User Comment :', leave['reason'], index),
             SizedBox(height: 12.0),
@@ -298,6 +309,9 @@ class _LeaveStatusState extends State<LeaveStatus> {
       ),
     );
   }
+
+
+
 
   Widget _buildLeaveInfoRow(String label, String? value, int index) {
     return Row(

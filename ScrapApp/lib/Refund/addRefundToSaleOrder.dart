@@ -101,6 +101,13 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
 
 
   Future<void> fetchRefundPaymentDetails() async {
+
+    print(widget.branch_id_from_ids);
+    print(widget.sale_order_id);
+    print(widget.vendor_id_from_ids);
+
+    print("asfgasfsaf");
+
     try {
       await checkLogin();
       final url = Uri.parse("${URL}EMD_CMD_details");

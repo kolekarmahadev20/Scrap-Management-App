@@ -18,7 +18,7 @@ class Search extends StatefulWidget {
 class _SearchState extends State<Search> {
   // Variables for user details
   String? username = '';
- String uuid = '';
+  String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -56,7 +56,7 @@ class _SearchState extends State<Search> {
   }
 
   Future<void> checkLogin() async {
-     final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     uuid = prefs.getString("uuid")!;
     uuid = prefs.getString("uuid")!;
@@ -84,7 +84,7 @@ class _SearchState extends State<Search> {
           'user_pass': password,
           "vendor_id": selectedVendorType.toString()?? '',
           if(selectedPlantName!=null && selectedPlantName !='Select')
-           "plant_id": selectedPlantName.toString()?? '',
+            "plant_id": selectedPlantName.toString()?? '',
           if(selectedBuyer!=null&& selectedBuyer !='Select')
             "buyer_id": selectedBuyer?.toString() ?? '', // Use empty string if null
           if(selectedMaterial!=null&& selectedMaterial !='Select')
@@ -378,7 +378,7 @@ class _SearchState extends State<Search> {
                       buildFieldWithDatePicker(
                         'From Date',
                         fromDate,
-                        (selectedDate) {
+                            (selectedDate) {
                           setState(() {
                             fromDate = selectedDate;
                           });
@@ -387,7 +387,7 @@ class _SearchState extends State<Search> {
                       buildFieldWithDatePicker(
                         'To Date',
                         toDate,
-                        (selectedEndDate) {
+                            (selectedEndDate) {
                           setState(() {
                             toDate = selectedEndDate;
                           });
@@ -405,7 +405,7 @@ class _SearchState extends State<Search> {
                             backgroundColor: Colors.blueGrey[400], // Text color
                             shape: RoundedRectangleBorder(
                               borderRadius:
-                                  BorderRadius.circular(12), // Rounded corners
+                              BorderRadius.circular(12), // Rounded corners
                             ),
                             elevation: 5,
                             padding: EdgeInsets.symmetric(
@@ -414,7 +414,7 @@ class _SearchState extends State<Search> {
                           ),
                           child: isLoading
                               ? const CircularProgressIndicator(
-                                  color: Colors.white)
+                              color: Colors.white)
                               : const Text("Get Data"),
                         ),
                       ),
@@ -422,120 +422,120 @@ class _SearchState extends State<Search> {
                           height: 20), // Spacing between button and results
                       searchResults.isEmpty
                           ? const Center(
-                              child: Text("No Data Available"),
-                            )
+                        child: Text("No Data Available"),
+                      )
                           : ListView.builder(
-                              shrinkWrap:
-                                  true, // Ensures it doesn't take infinite space in SingleChildScrollView
-                              physics:
-                                  const NeverScrollableScrollPhysics(), // Prevents nested scrolling issues
-                              itemCount: searchResults.length,
-                              itemBuilder: (context, index) {
-                                final item = searchResults[index];
-                                // return Card(
-                                //   elevation: 4,
-                                //   margin: const EdgeInsets.symmetric(
-                                //       horizontal: 16, vertical: 8),
-                                //   shape: RoundedRectangleBorder(
-                                //     borderRadius: BorderRadius.circular(10),
-                                //   ),
-                                //   child: Padding(
-                                //     padding: const EdgeInsets.all(16.0),
-                                //     child: Column(
-                                //       crossAxisAlignment:
-                                //           CrossAxisAlignment.start,
-                                //       children: [
-                                //         Text(
-                                //           "ID: ${item['id']}",
-                                //           style: const TextStyle(
-                                //               fontWeight: FontWeight.bold),
-                                //         ),
-                                //         Text("Vendor ID: ${item['vendor_id']}"),
-                                //         Text("Lot ID: ${item['lot_id']}"),
-                                //         Text(
-                                //             "Auction ID: ${item['auction_id']}"),
-                                //         Text(
-                                //             "Description: ${item['description']}"),
-                                //         Text(
-                                //             "Auction Date: ${item['auction_date']}"),
-                                //         Text(
-                                //             "Created By: ${item['created_by']}"),
-                                //       ],
-                                //     ),
-                                //   ),
-                                // );
-                               return Column(
-                                 children: [
-                                   Card(
-                                     color: Colors.blueGrey[500],
-                                     child: Row(
-                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                       children: [
-                                         Expanded(
-                                           child: Padding(
-                                             padding: const EdgeInsets.all(8.0),
-                                             child: Container(
-                                               child: Text(
-                                                 'Lot Id : ${item['lot_id']}'
-                                                     // ' ${item['sale_order_code']}'
-                                                 ,
-                                                 style: TextStyle(
-                                                   fontWeight: FontWeight.bold,
-                                                   fontSize: 17,
-                                                   color: Colors.white,
-                                                 ),
-                                               ),
-                                             ),
-                                           ),
-                                         ),
-                                       ],
-                                     ),
-                                   ),
-
-                                   Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Table(
-                                        columnWidths: {
-                                          0: FixedColumnWidth(150),
-                                        },
-                                        children: [
-                                          buildTableRow('Sale Order Code','${item['sale_order_code']}', 0),
-
-                                          // buildTableRows(
-                                          //   ['Lot Id', 'Sale Order Code'],
-                                          //   ['${item['lot_id']}', '${item['sale_order_code']}'], 0,
-                                          // ),
-                                          // buildTableRow('Contact', vendor.phone, 1),
-                                          buildTableRows(
-                                            ['Auction ID', 'Auction Date'],
-                                            ['${item['auction_id']}', '${item['auction_date']}'],
-                                            1,
+                        shrinkWrap:
+                        true, // Ensures it doesn't take infinite space in SingleChildScrollView
+                        physics:
+                        const NeverScrollableScrollPhysics(), // Prevents nested scrolling issues
+                        itemCount: searchResults.length,
+                        itemBuilder: (context, index) {
+                          final item = searchResults[index];
+                          // return Card(
+                          //   elevation: 4,
+                          //   margin: const EdgeInsets.symmetric(
+                          //       horizontal: 16, vertical: 8),
+                          //   shape: RoundedRectangleBorder(
+                          //     borderRadius: BorderRadius.circular(10),
+                          //   ),
+                          //   child: Padding(
+                          //     padding: const EdgeInsets.all(16.0),
+                          //     child: Column(
+                          //       crossAxisAlignment:
+                          //           CrossAxisAlignment.start,
+                          //       children: [
+                          //         Text(
+                          //           "ID: ${item['id']}",
+                          //           style: const TextStyle(
+                          //               fontWeight: FontWeight.bold),
+                          //         ),
+                          //         Text("Vendor ID: ${item['vendor_id']}"),
+                          //         Text("Lot ID: ${item['lot_id']}"),
+                          //         Text(
+                          //             "Auction ID: ${item['auction_id']}"),
+                          //         Text(
+                          //             "Description: ${item['description']}"),
+                          //         Text(
+                          //             "Auction Date: ${item['auction_date']}"),
+                          //         Text(
+                          //             "Created By: ${item['created_by']}"),
+                          //       ],
+                          //     ),
+                          //   ),
+                          // );
+                          return Column(
+                            children: [
+                              Card(
+                                color: Colors.blueGrey[500],
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Container(
+                                          child: Text(
+                                            'Lot Id : ${item['lot_id']}'
+                                            // ' ${item['sale_order_code']}'
+                                            ,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 17,
+                                              color: Colors.white,
+                                            ),
                                           ),
-                                          buildTableRows(
-                                            ['Freezed', 'Approval Status'],
-                                            ['${item['freezed']}', '${item['approval_status']}'],
-                                            0,
-                                          ),
-                                          buildTableRows(
-                                            ['Payment Type', 'Lifting Type'],
-                                            ['${item['payment_type']}', '${item['lifting_type']}'],
-                                            1,
-                                          ),
-                                          buildTableRows(
-                                            ['More Quantity Lifting', 'Cancel Order'],
-                                            ['${item['more_quantity_lifting']}', '${item['cancle_order']}'],
-                                            0,
-                                          ),
-                                          buildTableRow('Description','${item['description']}', 1),
-                                          // buildTableRow('User by', vendor.contactPerson, 0),
-                                        ],
+                                        ),
                                       ),
                                     ),
-                                 ],
-                               );
+                                  ],
+                                ),
+                              ),
 
-                              },
-                            ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Table(
+                                  columnWidths: {
+                                    0: FixedColumnWidth(150),
+                                  },
+                                  children: [
+                                    buildTableRow('Sale Order Code','${item['sale_order_code']}', 0),
+
+                                    // buildTableRows(
+                                    //   ['Lot Id', 'Sale Order Code'],
+                                    //   ['${item['lot_id']}', '${item['sale_order_code']}'], 0,
+                                    // ),
+                                    // buildTableRow('Contact', vendor.phone, 1),
+                                    buildTableRows(
+                                      ['Auction ID', 'Auction Date'],
+                                      ['${item['auction_id']}', '${item['auction_date']}'],
+                                      1,
+                                    ),
+                                    buildTableRows(
+                                      ['Freezed', 'Approval Status'],
+                                      ['${item['freezed']}', '${item['approval_status']}'],
+                                      0,
+                                    ),
+                                    buildTableRows(
+                                      ['Payment Type', 'Lifting Type'],
+                                      ['${item['payment_type']}', '${item['lifting_type']}'],
+                                      1,
+                                    ),
+                                    buildTableRows(
+                                      ['More Quantity Lifting', 'Cancel Order'],
+                                      ['${item['more_quantity_lifting']}', '${item['cancle_order']}'],
+                                      0,
+                                    ),
+                                    buildTableRow('Description','${item['description']}', 1),
+                                    // buildTableRow('User by', vendor.contactPerson, 0),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -599,7 +599,6 @@ class _SearchState extends State<Search> {
       ],
     );
   }
-
   Widget buildDropdown(
       String label,
       Map<String, String> options,
@@ -622,39 +621,57 @@ class _SearchState extends State<Search> {
           ),
           Expanded(
             flex: 7,
-            child: TypeAheadFormField<String>(
-              textFieldConfiguration: TextFieldConfiguration(
-                controller: controller,
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.all(10.0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+            child: Stack(
+              alignment: Alignment.centerRight,
+              children: [
+                TypeAheadFormField<String>(
+                  textFieldConfiguration: TextFieldConfiguration(
+                    controller: controller,
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.all(10.0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      hintText: 'Select', // Adds "Select" as placeholder
+                      suffixIcon: controller.text.isNotEmpty
+                          ? IconButton(
+                        icon: Icon(Icons.clear, size: 18), // Reduce icon size
+                        onPressed: () {
+                          setState(() {
+                            controller.clear();
+                            onChanged(null); // Clear selected value
+                          });
+                        },
+                      )
+                          : null,
+                    ),
                   ),
+                  suggestionsCallback: (pattern) {
+                    return options.keys
+                        .where((key) => key.toLowerCase().contains(pattern.toLowerCase()))
+                        .toList();
+                  },
+                  itemBuilder: (context, suggestion) {
+                    return ListTile(
+                      title: Text(suggestion),
+                    );
+                  },
+                  onSuggestionSelected: (suggestion) {
+                    setState(() {
+                      controller.text = suggestion;
+                      onChanged(options[suggestion]);
+                    });
+                  },
                 ),
-              ),
-              suggestionsCallback: (pattern) {
-                return options.keys
-                    .where((key) =>
-                    key.toLowerCase().contains(pattern.toLowerCase()))
-                    .toList();
-              },
-              itemBuilder: (context, suggestion) {
-                return ListTile(
-                  title: Text(suggestion),
-                );
-              },
-              onSuggestionSelected: (suggestion) {
-                setState(() {
-                  controller.text = suggestion; // Show selected value in UI
-                  onChanged(options[suggestion]);
-                });
-              },
+              ],
             ),
           ),
         ],
       ),
     );
   }
+
+
 
   // Widget buildDropdown(String label, Map<String, String> options,
   //     ValueChanged<String?> onChanged) {
@@ -700,10 +717,10 @@ class _SearchState extends State<Search> {
   // }
 
   Widget buildFieldWithDatePicker(
-    String label,
-    DateTime? selectedDate,
-    void Function(DateTime?) onDateChanged,
-  ) {
+      String label,
+      DateTime? selectedDate,
+      void Function(DateTime?) onDateChanged,
+      ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
@@ -727,7 +744,7 @@ class _SearchState extends State<Search> {
                     onTap: () async {
                       final newSelectedDate = await showDatePicker(
                         context:
-                            context, // Make sure you have access to the context
+                        context, // Make sure you have access to the context
                         initialDate: selectedDate ?? DateTime.now(),
                         firstDate: DateTime(1900),
                         lastDate: DateTime.now().add(Duration(days: 365)),

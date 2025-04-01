@@ -198,12 +198,14 @@ class _InvoicePageState extends State<InvoicePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    "Invoice No: ${liftingDetails['invoice_no'] ?? 'N/A'}",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                  Expanded(
+                    child: Text(
+                      "Invoice No: ${liftingDetails['invoice_no'] ?? 'N/A'}",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                   SizedBox(width: 10),
