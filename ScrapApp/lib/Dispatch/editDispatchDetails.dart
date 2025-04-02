@@ -357,6 +357,82 @@ print("widget.sale_order_id");
     }
   }
 
+  Future<void> deleteImage(String image) async {
+    print("Lift ID: ${widget.lift_id}");
+    print("Sale Order ID: ${widget.sale_order_id}");
+    print("Material ID: $materialId");
+    print("Invoice No: ${widget.invoiceNo}");
+    print("Image URL: $image");
+
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      await checkLogin();
+      final url = Uri.parse("${URL}delete_image");
+
+      var response = await http.post(
+        url,
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id':username,
+          'uuid':uuid,
+          'user_pass':password,
+          'lift_id':widget.lift_id,
+          'sale_order_id':widget.sale_order_id,
+          'material_id':materialId,
+          'invoice_no':widget.invoiceNo,
+          'img_path':image,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        print("Response: $jsonData");
+
+        if (jsonData["status"] == "1") {
+          Fluttertoast.showToast(
+            msg:"Image deleted Successfully", // "Image deleted successfully."
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.green,
+            textColor: Colors.white,
+          );
+        } else {
+          Fluttertoast.showToast(
+            msg: "Failed to delete image: ${jsonData["msg"]}",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+          );
+        }
+      } else {
+        Fluttertoast.showToast(
+          msg: "Server Error: ${response.statusCode}",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: 'Server Exception: $e',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.yellow,
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+
   Future<void> editDispatchDetails() async {
 
     if (truckNoController.text.trim().length < 7) {
@@ -796,9 +872,13 @@ print("widget.sale_order_id");
                                               child: Text("No"),
                                             ),
                                             TextButton(
-                                              onPressed: () => Navigator.of(context).pop(true), // Yes
+                                              onPressed: () async {
+                                                 await deleteImage(image); // Wait for deleteImage to complete
+                                                Navigator.of(context).pop(true); // Then close the dialog
+                                              },
                                               child: Text("Yes"),
                                             ),
+
                                           ],
                                         );
                                       },
