@@ -359,7 +359,15 @@ print("widget.sale_order_id");
 
   Future<void> editDispatchDetails() async {
 
-    print("⚠️ _images list is empty or null! $_images");
+    if (truckNoController.text.trim().length < 7) {
+      Fluttertoast.showToast(
+        msg: 'Truck Number must be at least 7 characters long.',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+      );
+      return; // Exit the function early
+    }
+
 
     try {
       setState(() {

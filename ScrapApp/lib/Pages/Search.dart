@@ -274,22 +274,25 @@ class _SearchState extends State<Search> {
 
       double grandTotalQty = 0.0;
 
+
       // Process each material group
       groupedData.forEach((materialName, items) {
+        // Extract the location from the first item (assuming all items have the same location)
+        String locationName = items.isNotEmpty ? items.first['location'] : "Unknown";
+
         clipboardContent.writeln("\n-----------------------------------------------");
-        clipboardContent.writeln("$materialName");
+        clipboardContent.writeln("Location: $locationName");  // Added Location
         clipboardContent.writeln("-------------------------------------------------");
 
         double materialTotalQty = 0.0;
-
         int counter = 1;
 
         for (var item in items) {
-          String material = item['material'];
+          String material = item['material'].toString().toUpperCase();
           String netWeight = item['net_weight'];
           String totalAmount = item['total_amount'].toString();
-          String vehicleNo = item['vehicle_no'];
-          String location = item['location'];
+          String vehicleNo = item['vehicle_no'].toString().toUpperCase();
+          String location = item['location'].toString().toUpperCase();
           String rate = item['rate'];
 
           clipboardContent.writeln("$counter. Material: $material | Net Weight: $netWeight | Total Amount: $totalAmount | Vehicle No: $vehicleNo | Location: $location | Rate: $rate");
@@ -304,6 +307,7 @@ class _SearchState extends State<Search> {
 
         grandTotalQty += materialTotalQty;
       });
+
 
       clipboardContent.writeln("\n=============================");
       clipboardContent.writeln("Grand Total Net Weight: ${grandTotalQty.toStringAsFixed(3)}");

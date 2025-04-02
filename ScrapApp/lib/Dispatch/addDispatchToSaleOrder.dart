@@ -298,6 +298,17 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
 
   Future<void> addDispatchDetails() async {
     try {
+
+      if (truckNoController.text.trim().length < 7) {
+        Fluttertoast.showToast(
+          msg: 'Truck Number must be at least 7 characters long.',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+        );
+        return; // Exit the function early
+      }
+
+
       setState(() {
         isLoading = true;
       });
