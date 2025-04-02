@@ -18,7 +18,6 @@ import '../Pages/EmployeeTracker.dart';
 import '../Pages/ForgotPunchOutPage.dart';
 import '../Pages/Search.dart';
 import '../Pages/SummaryReport.dart';
-import '../Pages/Summary_Report.dart';
 import '../Users/User_list.dart';
 import '../Vendor/Vendor_list.dart';
 

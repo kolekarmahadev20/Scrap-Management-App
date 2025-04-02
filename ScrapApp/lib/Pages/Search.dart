@@ -133,7 +133,10 @@ class _SearchState extends State<Search> {
                 'vehicle_no': item['vehicle_no'],
                 'location': item['location'],
                 'rate': item['rate'],
+                'vendor_name': item['vendor_name'],  // Add this
+                'bidder_name': item['bidder_name'],  // Add this
               });
+
             }
           }
         });
@@ -250,41 +253,34 @@ class _SearchState extends State<Search> {
   }
 
 
-
   void _copyToClipboard() {
-    // Check if there is data in the table and date range is selected
     if (scrapData.isNotEmpty && fromDate != null && toDate != null) {
-      // Group data by material (e.g., 'BRASS 1')
       Map<String, List<Map<String, dynamic>>> groupedData = {};
+
       for (var item in scrapData) {
-        String materialName = item['material']; // Adjusted to 'material'
+        String materialName = item['material'];
         if (!groupedData.containsKey(materialName)) {
           groupedData[materialName] = [];
         }
         groupedData[materialName]?.add(item);
       }
 
-      // Prepare clipboard content
+      // ✅ Declare clipboardContent here
       StringBuffer clipboardContent = StringBuffer();
 
-      // Format the selected date range
-      String formattedFromDate = "${fromDate!.year}-${fromDate!.month.toString().padLeft(2, '0')}-${fromDate!.day.toString().padLeft(2, '0')}";
-      String formattedToDate = "${toDate!.year}-${toDate!.month.toString().padLeft(2, '0')}-${toDate!.day.toString().padLeft(2, '0')}";
+      // ✅ Format the selected date range
+      String formattedFromDate = DateFormat('yyyy-MM-dd').format(fromDate!);
+      String formattedToDate = DateFormat('yyyy-MM-dd').format(toDate!);
       clipboardContent.writeln("Date: ($formattedFromDate) to ($formattedToDate)");
 
       double grandTotalQty = 0.0;
 
-
-      // Process each material group
       groupedData.forEach((materialName, items) {
-        // Extract the location from the first item (assuming all items have the same location)
         String locationName = items.isNotEmpty ? items.first['location'] : "Unknown";
 
-        clipboardContent.writeln("\n-----------------------------------------------");
-        clipboardContent.writeln("Location: $locationName");  // Added Location
-        clipboardContent.writeln("-------------------------------------------------");
-
         double materialTotalQty = 0.0;
+
+        // ✅ Declare counter before the loop
         int counter = 1;
 
         for (var item in items) {
@@ -294,25 +290,41 @@ class _SearchState extends State<Search> {
           String vehicleNo = item['vehicle_no'].toString().toUpperCase();
           String location = item['location'].toString().toUpperCase();
           String rate = item['rate'];
+          String vendorName = (item['vendor_name'] ?? 'UNKNOWN VENDOR').toString().toUpperCase();
+          String bidderName = (item['bidder_name'] ?? 'UNKNOWN BIDDER').toString().toUpperCase();
 
-          clipboardContent.writeln("$counter. Material: $material | Net Weight: $netWeight | Total Amount: $totalAmount | Vehicle No: $vehicleNo | Location: $location | Rate: $rate");
+          clipboardContent.writeln("\n-----------------------------------------------");
+          clipboardContent.writeln("Vendor Name: $vendorName");
+          clipboardContent.writeln("Buyer Name: $bidderName");
+          clipboardContent.writeln("Location: $locationName");
+
+          clipboardContent.writeln("-------------------------------------------------");
+
+
+          // ✅ Include vendor_name and bidder_name
+          clipboardContent.writeln(
+              "$counter. Material: $material | Net Weight: $netWeight | Total Amount: $totalAmount | "
+                  "Vehicle No: $vehicleNo | Location: $location | Rate: $rate "
+          );
 
           counter++;
-
           materialTotalQty += double.parse(netWeight);
         }
 
         clipboardContent.writeln("~~~~~~~~~~~~~~~~~~~~~~");
-        clipboardContent.writeln("                    Total Net Weight: ${materialTotalQty.toStringAsFixed(3)}");
+        clipboardContent.writeln("Total Net Weight: ${materialTotalQty.toStringAsFixed(3)}");
 
         grandTotalQty += materialTotalQty;
       });
-
 
       clipboardContent.writeln("\n=============================");
       clipboardContent.writeln("Grand Total Net Weight: ${grandTotalQty.toStringAsFixed(3)}");
       clipboardContent.writeln("=============================");
 
+      // ✅ Debugging: Print to console before copying
+      print(clipboardContent.toString());
+
+      // ✅ Copy to clipboard
       FlutterClipboard.copy(clipboardContent.toString()).then((value) {
         Fluttertoast.showToast(
           msg: 'Table data copied to clipboard',
@@ -328,6 +340,7 @@ class _SearchState extends State<Search> {
       );
     }
   }
+
 
 
 
@@ -366,7 +379,7 @@ class _SearchState extends State<Search> {
               ...{
                 for (var item in data['vendor_list'] ?? [])
                   item['vendor_name'] ?? 'Unknown':
-                      (item['vendor_id'] ?? '0').toString()
+                  (item['vendor_id'] ?? '0').toString()
               }
             };
 
@@ -455,7 +468,7 @@ class _SearchState extends State<Search> {
             ...{
               for (var item in data['bidder_list'] ?? [])
                 item['bidder_name'] ?? 'Unknown':
-                    (item['buyer_id'] ?? '0').toString()
+                (item['buyer_id'] ?? '0').toString()
             }
           };
         });
@@ -545,28 +558,28 @@ class _SearchState extends State<Search> {
                     children: [
                       buildDropdown(
                           'Select Vendor', VendorType, vendorController,
-                          (value) {
-                        setState(() {
-                          selectedVendorType = value;
-                          selectedPlantName = null;
-                          plantController.clear();
-                        });
-                        if (value != null) {
-                          fetchPlantData(value);
-                        }
-                      }),
+                              (value) {
+                            setState(() {
+                              selectedVendorType = value;
+                              selectedPlantName = null;
+                              plantController.clear();
+                            });
+                            if (value != null) {
+                              fetchPlantData(value);
+                            }
+                          }),
 
                       buildDropdown('Select Plant', PlantName, plantController,
-                          (value) {
-                        setState(() {
-                          selectedPlantName = value;
-                          selectedBuyer = null;
-                          buyerController.clear();
-                        });
-                        if (value != null) {
-                          fetchBuyerData(value);
-                        }
-                      }),
+                              (value) {
+                            setState(() {
+                              selectedPlantName = value;
+                              selectedBuyer = null;
+                              buyerController.clear();
+                            });
+                            if (value != null) {
+                              fetchBuyerData(value);
+                            }
+                          }),
 
                       buildDropdown('Buyer', Buyer, buyerController, (value) {
                         setState(() {
@@ -580,16 +593,16 @@ class _SearchState extends State<Search> {
                       }),
 
                       buildDropdown('Material', Material, materialController,
-                          (value) {
-                        setState(() {
-                          selectedMaterial = value;
-                        });
-                      }),
+                              (value) {
+                            setState(() {
+                              selectedMaterial = value;
+                            });
+                          }),
 
                       buildFieldWithDatePicker(
                         'From Date',
                         fromDate,
-                        (selectedDate) {
+                            (selectedDate) {
                           setState(() {
                             fromDate = selectedDate;
                           });
@@ -598,7 +611,7 @@ class _SearchState extends State<Search> {
                       buildFieldWithDatePicker(
                         'To Date',
                         toDate,
-                        (selectedEndDate) {
+                            (selectedEndDate) {
                           setState(() {
                             toDate = selectedEndDate;
                           });
@@ -615,7 +628,7 @@ class _SearchState extends State<Search> {
                             backgroundColor: Colors.blueGrey[400], // Text color
                             shape: RoundedRectangleBorder(
                               borderRadius:
-                                  BorderRadius.circular(12), // Rounded corners
+                              BorderRadius.circular(12), // Rounded corners
                             ),
                             elevation: 5,
                             padding: EdgeInsets.symmetric(
@@ -658,11 +671,11 @@ class _SearchState extends State<Search> {
   }
 
   Widget buildDropdown(
-    String label,
-    Map<String, String> options,
-    TextEditingController controller,
-    ValueChanged<String?> onChanged,
-  ) {
+      String label,
+      Map<String, String> options,
+      TextEditingController controller,
+      ValueChanged<String?> onChanged,
+      ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
@@ -693,22 +706,22 @@ class _SearchState extends State<Search> {
                       hintText: 'Select', // Adds "Select" as placeholder
                       suffixIcon: controller.text.isNotEmpty
                           ? IconButton(
-                              icon: Icon(Icons.clear,
-                                  size: 18), // Reduce icon size
-                              onPressed: () {
-                                setState(() {
-                                  controller.clear();
-                                  onChanged(null); // Clear selected value
-                                });
-                              },
-                            )
+                        icon: Icon(Icons.clear,
+                            size: 18), // Reduce icon size
+                        onPressed: () {
+                          setState(() {
+                            controller.clear();
+                            onChanged(null); // Clear selected value
+                          });
+                        },
+                      )
                           : null,
                     ),
                   ),
                   suggestionsCallback: (pattern) {
                     return options.keys
                         .where((key) =>
-                            key.toLowerCase().contains(pattern.toLowerCase()))
+                        key.toLowerCase().contains(pattern.toLowerCase()))
                         .toList();
                   },
                   itemBuilder: (context, suggestion) {
@@ -732,10 +745,10 @@ class _SearchState extends State<Search> {
   }
 
   Widget buildFieldWithDatePicker(
-    String label,
-    DateTime? selectedDate,
-    void Function(DateTime?) onDateChanged,
-  ) {
+      String label,
+      DateTime? selectedDate,
+      void Function(DateTime?) onDateChanged,
+      ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Row(
@@ -759,7 +772,7 @@ class _SearchState extends State<Search> {
                     onTap: () async {
                       final newSelectedDate = await showDatePicker(
                         context:
-                            context, // Make sure you have access to the context
+                        context, // Make sure you have access to the context
                         initialDate: selectedDate ?? DateTime.now(),
                         firstDate: DateTime(1900),
                         lastDate: DateTime.now().add(Duration(days: 365)),
