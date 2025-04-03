@@ -734,7 +734,6 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                     if(index['status'] != 'c')
                      ElevatedButton(
                         onPressed:  () {
-                          print("Imagesa: ${index['images']}");
 
                           dynamic imagesData = index['images']; // It can be a List or String
 
@@ -749,7 +748,6 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                             imagesUrl = imagesData;
                           }
 
-
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -758,7 +756,6 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                                     sale_order_id: widget.sale_order_id,
                                     bidder_id: widget.bidder_id,
                                     status: index['status'] ?? '',
-
                                     lift_id: index['lift_id'] ?? '',
                                     material_name: index['material_name'] ?? '',
                                     invoiceNo: index['invoice_no'] ?? '',

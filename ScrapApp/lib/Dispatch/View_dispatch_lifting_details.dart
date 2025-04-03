@@ -658,7 +658,7 @@ class _View_dispatch_lifting_detailsState
                                         userType == 'A' ||
                                         userType == 'U')
                                     ? () {
-                                        Navigator.push(
+                                        Navigator.pushReplacement(
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>

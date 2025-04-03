@@ -458,13 +458,13 @@ print("widget.sale_order_id");
       request.fields['user_id'] = username!;
       request.fields['user_pass'] = password!;
       request.fields['uuid'] = uuid!;
-
       request.fields['sale_order_id_lift'] = widget.sale_order_id;
       request.fields['rate'] = rate ?? '';
       request.fields['advance_payment'] = advancePayment ?? '';
       request.fields['lift_id'] = widget.lift_id;
       request.fields['lotno'] = materialId ?? '';
-      request.fields['invoice_no'] = invoiceController.text;
+      request.fields['material_id_lifted'] = materialId ?? '';
+      request.fields['invoice_no_lift'] = invoiceController.text;
       request.fields['date_time'] = dateController.text;
       request.fields['truck_no'] = truckNoController.text;
       request.fields['truck_weight'] = firstWeightNoController.text;
@@ -873,7 +873,7 @@ print("widget.sale_order_id");
                                             ),
                                             TextButton(
                                               onPressed: () async {
-                                                 await deleteImage(image); // Wait for deleteImage to complete
+                                                 //await deleteImage(image); // Wait for deleteImage to complete
                                                 Navigator.of(context).pop(true); // Then close the dialog
                                               },
                                               child: Text("Yes"),
