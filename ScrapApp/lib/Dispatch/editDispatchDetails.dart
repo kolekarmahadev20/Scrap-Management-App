@@ -106,6 +106,7 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
   List<File> _images = [];
 
 
+
   void clearFields() {
     selectedOrderId = null;
     materialController.clear();
@@ -120,8 +121,8 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
   void initState() {
     super.initState();
     _initializeData();
-
-    print("Images URL: ${widget.imagesUrl ?? 'No images available'}");
+    fetchImageList();
+    // print("Images URL: ${widget.imagesUrl ?? 'No images available'}");
 
   }
 
@@ -140,12 +141,12 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
 
   getData(){
 
-    if (widget.imagesUrl != null && widget.imagesUrl!.isNotEmpty) {
-      imgUrls = widget.imagesUrl!
-          .split(',') // ✅ If it's a string, split by comma
-          .map((img) => "http://scrap.systementerprises.in/${img.trim()}") // ✅ Add Base URL
-          .toList();
-    }
+    // if (widget.imagesUrl != null && widget.imagesUrl!.isNotEmpty) {
+    //   imgUrls = widget.imagesUrl!
+    //       .split(',') // ✅ If it's a string, split by comma
+    //       .map((img) => "http://scrap.systementerprises.in/${img.trim()}") // ✅ Add Base URL
+    //       .toList();
+    // }
 
     materialController.text = widget.material_name ?? '';
     invoiceController.text=widget.invoiceNo ?? 'N/A';
@@ -357,6 +358,65 @@ print("widget.sale_order_id");
     }
   }
 
+  List<String> imagesUrl = [];
+
+
+  Future<void> fetchImageList() async {
+    await checkLogin();
+    final url = Uri.parse("${URL}check_url");
+
+    print(widget.sale_order_id);
+    print(widget.invoiceNo);
+
+    var response = await http.post(
+      url,
+      headers: {"Accept": "application/json"},
+      body: {
+        'user_id': username,
+        'uuid': uuid,
+        'user_pass': password,
+        'sale_order_id': widget.sale_order_id,
+        'lift_id': widget.lift_id,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final decoded = json.decode(response.body);
+      print("Fetched data: $decoded");
+
+      List<String> imageUrls = [];
+      String baseUrl = "${Image_URL}";
+
+      // ✅ Check if response is a Map before using containsKey
+      if (decoded is Map<String, dynamic>) {
+        if (decoded.containsKey("ot") && decoded["ot"] is Map<String, dynamic>) {
+          Map<String, dynamic> otData = decoded["ot"];
+
+          otData.forEach((key, value) {
+            if (value is Map && value.containsKey("images") && value["images"] is List) {
+              List<dynamic> images = value["images"];
+
+              for (var path in images) {
+                if (path is String && path.isNotEmpty) {
+                  imageUrls.add(baseUrl + path);
+                }
+              }
+            }
+          });
+        }
+      } else {
+        print("Response is not a Map (likely empty list): $decoded");
+      }
+
+      setState(() {
+        imagesUrl = imageUrls;
+        print("Updated Image URLs: $imagesUrl");
+      });
+    } else {
+      print("Failed to load invoice data: ${response.statusCode}");
+    }
+  }
+
   Future<void> deleteImage(String image) async {
     print("Lift ID: ${widget.lift_id}");
     print("Sale Order ID: ${widget.sale_order_id}");
@@ -431,6 +491,7 @@ print("widget.sale_order_id");
       });
     }
   }
+
 
 
   Future<void> editDispatchDetails() async {
@@ -838,9 +899,9 @@ print("widget.sale_order_id");
                           mainAxisSpacing: 8.0,
                           childAspectRatio: 1, // Ensures square images
                         ),
-                        itemCount: imgUrls.length,
+                        itemCount: imagesUrl.length,
                         itemBuilder: (context, index) {
-                          final image = imgUrls[index];
+                          final image = imagesUrl[index];
 
                           return Stack(
                             alignment: Alignment.topRight,
@@ -886,7 +947,7 @@ print("widget.sale_order_id");
 
                                     if (deleteConfirmed == true) {
                                       setState(() {
-                                        imgUrls.removeAt(index);
+                                        imagesUrl.removeAt(index);
                                       });
                                     }
                                   },

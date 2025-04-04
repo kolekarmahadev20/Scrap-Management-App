@@ -13,11 +13,14 @@ class InvoicePage extends StatefulWidget {
   final String sale_order_id;
   final String bidder_id;
   final String? invoiceNo;
+  final String? lift_id;
 
   InvoicePage({
     required this.sale_order_id,
     required this.bidder_id,
     required this.invoiceNo,
+    required this.lift_id,
+
   });
 
   @override
@@ -67,12 +70,14 @@ class _InvoicePageState extends State<InvoicePage> {
         'uuid': uuid,
         'user_pass': password,
         'sale_order_id': widget.sale_order_id,
-        'invoice_no': widget.invoiceNo,
+        'lift_id': widget.lift_id,
       },
     );
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
+      print("data");
+
 
       List<Map<String, String>> imageDetails = []; // Store image URLs with date
 
@@ -80,12 +85,13 @@ class _InvoicePageState extends State<InvoicePage> {
       String baseUrl = "${Image_URL}";
 
       // Check if 'ot' key exists and is a Map
-      if (data.containsKey("ot") && data["ot"].containsKey("ot") && data["ot"]["ot"] is Map) {
-        Map<String, dynamic> otData = data["ot"]["ot"];
+      if (data.containsKey("ot") && data["ot"] is Map) {
+        Map<String, dynamic> otData = data["ot"];
 
-        // Iterate through each entry in "ot"
         otData.forEach((key, value) {
-          if (value.containsKey("images") && value["images"] is List && value.containsKey("created_date")) {
+          if (value.containsKey("images") &&
+              value["images"] is List &&
+              value.containsKey("created_date")) {
             String createdDate = value["created_date"];
             List<String> images = List<String>.from(value["images"]);
 
@@ -99,8 +105,10 @@ class _InvoicePageState extends State<InvoicePage> {
         });
       }
 
+
       setState(() {
         imageList = imageDetails;
+
         print("Updated Image List with Date: $imageList");
       });
     } else {

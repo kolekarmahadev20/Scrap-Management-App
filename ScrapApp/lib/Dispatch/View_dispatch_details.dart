@@ -701,6 +701,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                 sale_order_id: widget.sale_order_id,
                 invoiceNo: index['invoice_no'],
                 bidder_id: widget.bidder_id,
+                lift_id: index['lift_id'],
               ),
             ),
           );

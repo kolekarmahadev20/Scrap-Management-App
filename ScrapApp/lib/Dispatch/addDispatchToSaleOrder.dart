@@ -296,6 +296,184 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     }
   }
 
+  // Future<void> addDispatchDetails() async {
+  //   try {
+  //     print("======= Start addDispatchDetails =======");
+  //
+  //     if (truckNoController.text.trim().length < 7) {
+  //       Fluttertoast.showToast(
+  //         msg: 'Truck Number must be at least 7 characters long.',
+  //         toastLength: Toast.LENGTH_SHORT,
+  //         gravity: ToastGravity.BOTTOM,
+  //       );
+  //       print("Validation failed: Truck Number is too short.");
+  //       return; // Exit the function early
+  //     }
+  //
+  //     setState(() {
+  //       isLoading = true;
+  //     });
+  //
+  //     print("Checking login...");
+  //     await checkLogin();
+  //     print("Login check complete.");
+  //
+  //     final url = Uri.parse("${URL}save_lifting");
+  //     print("API URL: $url");
+  //
+  //     // Create a Multipart Request
+  //     var request = http.MultipartRequest('POST', url);
+  //
+  //     // Add form data
+  //     request.fields['user_id'] = username!;
+  //     request.fields['user_pass'] = password!;
+  //     request.fields['uuid'] = uuid!;
+  //     request.fields['sale_order_id_lift'] = widget.sale_order_id ?? '';
+  //     request.fields['rate'] = rate ?? '';
+  //     request.fields['advance_payment'] = advancePayment ?? '';
+  //     request.fields['lotno'] = materialId ?? '';
+  //     request.fields['invoice_no'] = invoiceController.text ?? '';
+  //     request.fields['date_time'] = dateController.text ?? '';
+  //     request.fields['truck_no'] = truckNoController.text ?? '';
+  //     request.fields['truck_weight'] = firstWeightNoController.text ?? '';
+  //     request.fields['full_weight'] = fullWeightController.text ?? '';
+  //     request.fields['mois_weight'] = moistureWeightController.text ?? '';
+  //     request.fields['net_weight'] = netWeightController.text ?? '';
+  //     request.fields['qty'] = quantityController.text ?? '';
+  //     request.fields['note'] = noteController.text ?? '';
+  //     request.fields['status'] = isDispatchCompleted ? 'c' : 'p';
+  //
+  //     print("======== Request Fields ========");
+  //     request.fields.forEach((key, value) {
+  //       print("$key: $value");
+  //     });
+  //
+  //     // Function to add images to the request
+  //     Future<void> addImages(List<File> images, String keyword,
+  //         http.MultipartRequest request) async {
+  //       Set<String> addedHashes = {}; // To track unique image hashes
+  //
+  //       for (var image in images) {
+  //         print("Processing image: ${image.path}");
+  //         File? compressedImage = await compressImage(image);
+  //
+  //         if (compressedImage != null) {
+  //           String imageHash = await computeFileHash(compressedImage);
+  //
+  //           if (!addedHashes.contains(imageHash)) {
+  //             String fileName =
+  //                 '$keyword${compressedImage.path.split('/').last}';
+  //
+  //             print("Adding image: $fileName");
+  //
+  //             var stream = http.ByteStream(compressedImage.openRead());
+  //             var length = await compressedImage.length();
+  //             var multipartFile = http.MultipartFile(
+  //               'certifications[]',
+  //               stream,
+  //               length,
+  //               filename: fileName,
+  //             );
+  //
+  //             request.files.add(multipartFile);
+  //             addedHashes.add(imageHash); // Track added image hash
+  //           } else {
+  //             //print("Duplicate image detected, skipping: $fileName");
+  //           }
+  //         } else {
+  //           print("Image compression failed for: ${image.path}");
+  //         }
+  //       }
+  //     }
+  //
+  //     // Add images from different sources
+  //     if (vehicleFront.isNotEmpty) {
+  //       print("Adding Vehicle Front Images...");
+  //       await addImages(vehicleFront, "Fr", request);
+  //     }
+  //     if (vehicleBack.isNotEmpty) {
+  //       print("Adding Vehicle Back Images...");
+  //       await addImages(vehicleBack, "Ba", request);
+  //     }
+  //     if (Material.isNotEmpty) {
+  //       print("Adding Material Images...");
+  //       await addImages(Material, "Ma", request);
+  //     }
+  //     if (MaterialHalfLoad.isNotEmpty) {
+  //       print("Adding Material Half Load Images...");
+  //       await addImages(MaterialHalfLoad, "Ha", request);
+  //     }
+  //     if (MaterialFullLoad.isNotEmpty) {
+  //       print("Adding Material Full Load Images...");
+  //       await addImages(MaterialFullLoad, "Fu", request);
+  //     }
+  //     if (other.isNotEmpty) {
+  //       print("Adding Other Images...");
+  //       await addImages(other, "ot", request);
+  //     }
+  //
+  //     print("Final Request Fields:");
+  //     request.fields.forEach((key, value) {
+  //       print("$key: $value");
+  //     });
+  //
+  //     print("Sending request...");
+  //     var response = await request.send();
+  //     print("Request sent. Response status code: ${response.statusCode}");
+  //
+  //     if (response.statusCode == 200) {
+  //       final res = await http.Response.fromStream(response);
+  //       final jsonData = json.decode(res.body);
+  //       print("Response Data: $jsonData");
+  //
+  //       setState(() {
+  //         Fluttertoast.showToast(
+  //           msg: "${jsonData['msg']}",
+  //         );
+  //       });
+  //
+  //       if (jsonData['status'] == 'success') {
+  //         print("Dispatch Details added successfully. Navigating...");
+  //         Navigator.pushReplacement(
+  //           context,
+  //           MaterialPageRoute(
+  //               builder: (context) => View_dispatch_details(
+  //                 sale_order_id: widget.sale_order_id,
+  //                 bidder_id: widget.bidder_id,
+  //               )),
+  //         );
+  //       } else {
+  //         print("Server returned an error: ${jsonData['msg']}");
+  //       }
+  //     } else {
+  //       print("Failed to insert data. Status code: ${response.statusCode}");
+  //       Fluttertoast.showToast(
+  //         msg: 'Unable to insert data.',
+  //         toastLength: Toast.LENGTH_SHORT,
+  //         gravity: ToastGravity.BOTTOM,
+  //         backgroundColor: Colors.red,
+  //         textColor: Colors.yellow,
+  //       );
+  //     }
+  //   } catch (e, stackTrace) {
+  //     print("Exception occurred: $e");
+  //     print("StackTrace: $stackTrace");
+  //     Fluttertoast.showToast(
+  //       msg: 'Error occurred while adding dispatch details.',
+  //       toastLength: Toast.LENGTH_LONG,
+  //       gravity: ToastGravity.BOTTOM,
+  //       backgroundColor: Colors.red,
+  //       textColor: Colors.white,
+  //     );
+  //   } finally {
+  //     setState(() {
+  //       isLoading = false;
+  //     });
+  //     print("======= End addDispatchDetails =======");
+  //   }
+  // }
+
+
   Future<void> addDispatchDetails() async {
     try {
 
@@ -401,7 +579,10 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       // });
 
       // Send the request
+      print("Sending request...");
       var response = await request.send();
+      print("Request sent. Response status code: ${response.statusCode}");
+
 
       // Handle response
       if (response.statusCode == 200) {
@@ -440,7 +621,8 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
           textColor: Colors.yellow,
         );
       }
-    } finally {
+    }
+    finally {
       setState(() {
         isLoading = false;
       });
