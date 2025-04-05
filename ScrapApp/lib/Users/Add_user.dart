@@ -76,6 +76,11 @@ class _Add_userState extends State<Add_user> {
   bool isPaymentNo = false;
   bool isDispatchYes = false;
   bool isDispatchNo = false;
+  bool isReadOnlyYes = false;
+  bool isReadOnlyNo = false;
+
+  bool isOnlyAttendYes = false;
+  bool isOnlyAttendNo = false;
 
   // Variables for user details
   String? username = '';
@@ -274,6 +279,10 @@ class _Add_userState extends State<Add_user> {
         'uname': usernameController.text ?? '',
         'c_pass': passwordController.text ?? '',
         'is_active': isActiveYes ? 'Y' : 'N',
+
+        // 'is_active': isReadOnlyYes ? 'Y' : 'N',
+        // 'is_active': isOnlyAttendYes ? 'Y' : 'N',
+
         'mob_login': isMobileLoginYes ? 'Y' : 'N',
         'acces_sale_order': hasAccessSaleOrderDataYes ? 'Y' : 'N',
         'acces_dispatch': isDispatchYes ? 'Y' : 'N',
@@ -331,6 +340,8 @@ class _Add_userState extends State<Add_user> {
 
           // 'is_all': (isMobileLoginYes == 'N' && isActiveYes == 'N') ? 'Y' : 'N',
           'is_all': (isMobileLoginYes == 'N') ? 'Y' : 'N',
+          'read_only': isReadOnlyYes ? 'Y' : 'N',
+          'attendance_only': isOnlyAttendYes ? 'Y' : 'N',
         },
       );
 
@@ -1206,18 +1217,18 @@ class _Add_userState extends State<Add_user> {
               },
               isMandatory: true,
             ),
-            _buildCheckboxWithOptions(
-              'Access Refund?',
-              isRefundYes,
-              isRefundNo,
-              (bool? yesChecked) {
-                setState(() {
-                  isRefundYes = yesChecked ?? false;
-                  isRefundNo = !yesChecked! ?? true;
-                });
-              },
-              isMandatory: true,
-            ),
+            // _buildCheckboxWithOptions(
+            //   'Access Refund?',
+            //   isRefundYes,
+            //   isRefundNo,
+            //   (bool? yesChecked) {
+            //     setState(() {
+            //       isRefundYes = yesChecked ?? false;
+            //       isRefundNo = !yesChecked! ?? true;
+            //     });
+            //   },
+            //   isMandatory: true,
+            // ),
             _buildCheckboxWithOptions(
               'Access Payment?',
               isPaymentYes,
@@ -1226,6 +1237,32 @@ class _Add_userState extends State<Add_user> {
                 setState(() {
                   isPaymentYes = yesChecked ?? false;
                   isPaymentNo = !yesChecked! ?? true;
+                });
+              },
+              isMandatory: true,
+            ),
+
+            _buildCheckboxWithOptions(
+              'Read Only User?',
+              isReadOnlyYes,
+              isReadOnlyNo,
+                  (bool? yesChecked) {
+                setState(() {
+                  isReadOnlyYes = yesChecked ?? false;
+                  isReadOnlyNo = !yesChecked! ?? true;
+                });
+              },
+              isMandatory: true,
+            ),
+
+            _buildCheckboxWithOptions(
+              'Only Attendance?',
+              isOnlyAttendYes,
+              isOnlyAttendNo,
+                  (bool? yesChecked) {
+                setState(() {
+                  isOnlyAttendYes = yesChecked ?? false;
+                  isOnlyAttendNo = !yesChecked! ?? true;
                 });
               },
               isMandatory: true,

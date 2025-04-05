@@ -74,6 +74,13 @@ class _Edit_UserState extends State<Edit_User> {
   bool isReceiverNo = false;
   bool isPaymentYes = false;
   bool isPaymentNo = false;
+
+  bool isReadOnlyYes = false;
+  bool isReadOnlyNo = false;
+
+  bool isOnlyAttendYes = false;
+  bool isOnlyAttendNo = false;
+
   bool isDispatchYes = false;
   bool isDispatchNo = false;
 
@@ -122,6 +129,12 @@ class _Edit_UserState extends State<Edit_User> {
     usernameController.text = widget.user.username??'';
     passwordController.text = widget.user.cPass??'';
     uuIDController.text = widget.user.uuid??'';
+
+    isOnlyAttendYes= widget.user.attendance_only == 'Y';
+    isOnlyAttendNo = widget.user.attendance_only != 'Y';
+
+    isReadOnlyYes = widget.user.read_only == 'Y';
+    isReadOnlyNo = widget.user.read_only != 'Y';
 
     isActiveYes = widget.user.isActive == 'Y';
     isActiveNo = widget.user.isActive != 'Y';
@@ -277,6 +290,10 @@ class _Edit_UserState extends State<Edit_User> {
           'user_type': selectedUserType.toString() ?? '',
           'uname': usernameController.text ?? '',
           'c_pass': passwordController.text ?? '',
+
+          'read_only': isReadOnlyYes ? 'Y' : 'N',
+          'attendance_only': isOnlyAttendYes ? 'Y' : 'N',
+
           'is_active': isActiveYes ? 'Y' : 'N',
           'mob_login': isMobileLoginYes ? 'Y' : 'N',
           'acces_sale_order': hasAccessSaleOrderDataYes ? 'Y' : 'N',
@@ -1219,18 +1236,18 @@ class _Edit_UserState extends State<Edit_User> {
                 },
                 isMandatory: true,
               ),
-              _buildCheckboxWithOptions(
-                'Access Refund?',
-                isRefundYes,
-                isRefundNo,
-                    (bool? yesChecked) {
-                  setState(() {
-                    isRefundYes = yesChecked ?? false;
-                    isRefundNo = !yesChecked! ?? true;
-                  });
-                },
-                isMandatory: true,
-              ),
+              // _buildCheckboxWithOptions(
+              //   'Access Refund?',
+              //   isRefundYes,
+              //   isRefundNo,
+              //       (bool? yesChecked) {
+              //     setState(() {
+              //       isRefundYes = yesChecked ?? false;
+              //       isRefundNo = !yesChecked! ?? true;
+              //     });
+              //   },
+              //   isMandatory: true,
+              // ),
               _buildCheckboxWithOptions(
                 'Access Payment?',
                 isPaymentYes,
@@ -1244,7 +1261,31 @@ class _Edit_UserState extends State<Edit_User> {
                 isMandatory: true,
               ),
 
+              _buildCheckboxWithOptions(
+                'Read Only User?',
+                isReadOnlyYes,
+                isReadOnlyNo,
+                    (bool? yesChecked) {
+                  setState(() {
+                    isReadOnlyYes = yesChecked ?? false;
+                    isReadOnlyNo = !yesChecked! ?? true;
+                  });
+                },
+                isMandatory: true,
+              ),
 
+              _buildCheckboxWithOptions(
+                'Only Attendance?',
+                isOnlyAttendYes,
+                isOnlyAttendNo,
+                    (bool? yesChecked) {
+                  setState(() {
+                    isOnlyAttendYes = yesChecked ?? false;
+                    isOnlyAttendNo = !yesChecked! ?? true;
+                  });
+                },
+                isMandatory: true,
+              ),
 
               // buildCheckboxDropdownOrganization(
               //   label: "Organization",

@@ -40,6 +40,8 @@ class _ProfilePageState extends State<ProfilePage> {
   String logINTimeString = "";
   String logoutTimeString = "";
   String remainingDaysString = '';
+  String? readonly = '';
+  String? attendonly = '';
 
   bool isLoggedIn = false;
   bool isPunchedIn = false;
@@ -67,7 +69,10 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _initLocation();
+    print("attendonly");
 
+
+    print(attendonly);
 
 
     getCredentialDetails();
@@ -109,6 +114,8 @@ class _ProfilePageState extends State<ProfilePage> {
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
     remainingDays = prefs.getString("remainingDays")!;
+    readonly = prefs.getString("readonly");
+    attendonly = prefs.getString("attendonly");
 
     DateTime today = DateTime.now();
     DateTime targetDate = DateTime.parse(remainingDays);
@@ -770,9 +777,15 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return StatefulBuilder(builder: (BuildContext context , StateSetter setState) {
       return Scaffold(
-        drawer: userType != 'S'
-            ? (isPunchedIn ? AppDrawer(currentPage: widget.currentPage) : null)
-            : AppDrawer(currentPage: widget.currentPage),
+        drawer: (attendonly == 'Y' || attendonly == '')
+            ? null
+            : userType != 'S'
+                ? (isPunchedIn ? AppDrawer(currentPage: widget.currentPage) : null)
+                : AppDrawer(currentPage: widget.currentPage),
+
+        // drawer: userType != 'S'
+        //     ? (isPunchedIn ? AppDrawer(currentPage: widget.currentPage) : null)
+        //     : AppDrawer(currentPage: widget.currentPage),
         appBar: CustomAppBar(),
         body: SingleChildScrollView(
           child: Column(

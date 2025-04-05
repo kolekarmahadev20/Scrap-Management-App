@@ -32,6 +32,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
   String? password = '';
   String? loginType = '';
   String? userType = '';
+  String? readonly = '';
+  String? attendonly = '';
   bool isLoading = false;
   Map<String, dynamic> ViewDispatchData = {};
   List<dynamic> liftingDetails = [];
@@ -55,6 +57,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
+    readonly = prefs.getString("readonly");
+    attendonly = prefs.getString("attendonly");
   }
 
   List<dynamic> liftedQuantity = [];
@@ -491,30 +495,62 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                 ),
               ),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Action when FAB is pressed
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => addDispatchToSaleOrder(
-                sale_order_id: widget.sale_order_id,
-                material_name: ViewDispatchData['sale_order_details']?[0]
-                        ['material_name'] ??
-                    'N/A',
-                bidder_id: widget.bidder_id,
-                totalQty:ViewDispatchData['sale_order_details']?[0]
-                ['qty'] ??
-                    'N/A',
-              ),
-            ),
-          ).then((value) => setState(() {
-                fetchDispatchDetails();
-              }));
-        },
-        child: Icon(Icons.add), // FAB icon
-        backgroundColor: Colors.blueGrey[200], // FAB background color
-      ),
+           floatingActionButton: readonly != 'Y'
+          ? FloatingActionButton(
+              onPressed: () {
+                // Action when FAB is pressed
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => addDispatchToSaleOrder(
+                     // balanceqty:balanceQty.toStringAsFixed(2),
+                      balanceqty: balanceQty.toString(),
+
+                      sale_order_id: widget.sale_order_id,
+                      material_name: ViewDispatchData['sale_order_details']?[0]
+                              ['material_name'] ??
+                          'N/A',
+                      bidder_id: widget.bidder_id,
+                      totalQty:ViewDispatchData['sale_order_details']?[0]
+                      ['qty'] ??
+                          'N/A',
+                    ),
+                  ),
+                ).then((value) => setState(() {
+                      fetchDispatchDetails();
+                    }));
+              },
+              child: Icon(Icons.add), // FAB icon
+              backgroundColor: Colors.blueGrey[200], // FAB background color
+            ): null,
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     // Action when FAB is pressed
+      //     Navigator.push(
+      //       context,
+      //       MaterialPageRoute(
+      //         builder: (context) => addDispatchToSaleOrder(
+      //           sale_order_id: widget.sale_order_id,
+      //           material_name: ViewDispatchData['sale_order_details']?[0]
+      //                   ['material_name'] ??
+      //               'N/A',
+      //           bidder_id: widget.bidder_id,
+      //           totalQty:ViewDispatchData['sale_order_details']?[0]
+      //           ['qty'] ??
+      //               'N/A',
+      //
+      //
+      //           balanceqty:balanceQty.toStringAsFixed(2),
+      //
+      //         ),
+      //       ),
+      //     ).then((value) => setState(() {
+      //           fetchDispatchDetails();
+      //         }));
+      //   },
+      //   child: Icon(Icons.add), // FAB icon
+      //   backgroundColor: Colors.blueGrey[200], // FAB background color
+      // ),
     );
   }
 
@@ -732,69 +768,130 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                         ),
                       ),
                     ),
-                    if(index['status'] != 'c')
-                     ElevatedButton(
-                        onPressed:  () {
 
-                          dynamic imagesData = index['images']; // It can be a List or String
+                    if (readonly != 'Y') ...[
+                      if (index['status'] != 'c')
+                        ElevatedButton(
+                          onPressed: () {
+                            dynamic imagesData = index['images'];
+                            String? imagesUrl;
 
-                          // ✅ Convert it to a comma-separated string
-                          String? imagesUrl;
-
-                          if (imagesData is List) {
-                            // Case 1: It's already a List<String>
-                            imagesUrl = imagesData.cast<String>().join(", ");
-                          } else if (imagesData is String && imagesData.isNotEmpty) {
-                            // Case 2: It's already a comma-separated String
-                            imagesUrl = imagesData;
-                          }
-
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  EditDispatchDetails(
-                                    sale_order_id: widget.sale_order_id,
-                                    bidder_id: widget.bidder_id,
-                                    status: index['status'] ?? '',
-                                    lift_id: index['lift_id'] ?? '',
-                                    material_name: index['material_name'] ?? '',
-                                    invoiceNo: index['invoice_no'] ?? '',
-                                    date: index['date_time'] ?? '',
-                                    truckNo: index['truck_no'] ?? '',
-                                    firstweight: index['truck_weight']?.toString() ?? '',
-                                    full_weight: index['full_weight']?.toString() ?? '',
-                                    netweight: index['net_weight']?.toString() ?? '',
-                                    moisweight: index['mois_weight']?.toString() ?? '',
-                                    qty: index['qty']?.toString() ?? '',
-                                    note: index['note'] ?? '',
-                                    totalQty:ViewDispatchData['sale_order_details']?[0]
-                                    ['qty'] ??
-                                        'N/A',
-                                    imagesUrl: imagesUrl, // ✅ Now it's a String!
+                            if (imagesData is List) {
+                              imagesUrl = imagesData.cast<String>().join(", ");
+                            } else if (imagesData is String && imagesData.isNotEmpty) {
+                              imagesUrl = imagesData;
+                            }
 
 
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditDispatchDetails(
+                                  // balanceqty:balanceQty.toStringAsFixed(2),
 
-                                  ),
+                                  balanceqty: balanceQty.toString(),
+                                  sale_order_id: widget.sale_order_id,
+                                  bidder_id: widget.bidder_id,
+                                  status: index['status'] ?? '',
+                                  lift_id: index['lift_id'] ?? '',
+                                  material_name: index['material_name'] ?? '',
+                                  invoiceNo: index['invoice_no'] ?? '',
+                                  date: index['date_time'] ?? '',
+                                  truckNo: index['truck_no'] ?? '',
+                                  firstweight: index['truck_weight']?.toString() ?? '',
+                                  full_weight: index['full_weight']?.toString() ?? '',
+                                  netweight: index['net_weight']?.toString() ?? '',
+                                  moisweight: index['mois_weight']?.toString() ?? '',
+                                  qty: index['qty']?.toString() ?? '',
+                                  note: index['note'] ?? '',
+                                  totalQty: ViewDispatchData['sale_order_details']?[0]['qty'] ?? 'N/A',
+                                  imagesUrl: imagesUrl,
+                                ),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                          );
-                        },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.edit, size: 18, color: Colors.white),
+                              SizedBox(width: 6),
+                              Text("Edit", style: TextStyle(fontSize: 16)),
+                            ],
+                          ),
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit, size: 18, color: Colors.white),
-                          SizedBox(width: 6),
-                          Text("Edit", style: TextStyle(fontSize: 16)),
-                        ],
-                      ),
-                    ),
+                    ]
+
+                    // if(index['status'] != 'c')
+                    //  ElevatedButton(
+                    //     onPressed:  () {
+                    //
+                    //       dynamic imagesData = index['images']; // It can be a List or String
+                    //
+                    //       // ✅ Convert it to a comma-separated string
+                    //       String? imagesUrl;
+                    //
+                    //       if (imagesData is List) {
+                    //         // Case 1: It's already a List<String>
+                    //         imagesUrl = imagesData.cast<String>().join(", ");
+                    //       } else if (imagesData is String && imagesData.isNotEmpty) {
+                    //         // Case 2: It's already a comma-separated String
+                    //         imagesUrl = imagesData;
+                    //       }
+                    //
+                    //       Navigator.push(
+                    //         context,
+                    //         MaterialPageRoute(
+                    //           builder: (context) =>
+                    //               EditDispatchDetails(
+                    //                 sale_order_id: widget.sale_order_id,
+                    //                 bidder_id: widget.bidder_id,
+                    //                 status: index['status'] ?? '',
+                    //                 lift_id: index['lift_id'] ?? '',
+                    //                 material_name: index['material_name'] ?? '',
+                    //                 invoiceNo: index['invoice_no'] ?? '',
+                    //                 date: index['date_time'] ?? '',
+                    //                 truckNo: index['truck_no'] ?? '',
+                    //                 firstweight: index['truck_weight']?.toString() ?? '',
+                    //                 full_weight: index['full_weight']?.toString() ?? '',
+                    //                 netweight: index['net_weight']?.toString() ?? '',
+                    //                 moisweight: index['mois_weight']?.toString() ?? '',
+                    //                 qty: index['qty']?.toString() ?? '',
+                    //                 note: index['note'] ?? '',
+                    //                 totalQty:ViewDispatchData['sale_order_details']?[0]
+                    //                 ['qty'] ??
+                    //                     'N/A',
+                    //                 balanceqty:balanceQty.toStringAsFixed(2),
+                    //                 imagesUrl: imagesUrl, // ✅ Now it's a String!
+                    //
+                    //
+                    //
+                    //               ),
+                    //         ),
+                    //       );
+                    //     },
+                    //   style: ElevatedButton.styleFrom(
+                    //     backgroundColor: Colors.blue,
+                    //     foregroundColor: Colors.white,
+                    //     padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                    //     shape: RoundedRectangleBorder(
+                    //       borderRadius: BorderRadius.circular(8),
+                    //     ),
+                    //   ),
+                    //   child: Row(
+                    //     children: [
+                    //       Icon(Icons.edit, size: 18, color: Colors.white),
+                    //       SizedBox(width: 6),
+                    //       Text("Edit", style: TextStyle(fontSize: 16)),
+                    //     ],
+                    //   ),
+                    // ),
                   ],
                 ),
 

@@ -347,7 +347,7 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
-                  if(userType == 'S')
+                  if(userType == 'S' || userType == 'A')
                     _buildDrawerItem(
                     context,
                     15,

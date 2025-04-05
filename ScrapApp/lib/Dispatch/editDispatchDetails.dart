@@ -35,6 +35,7 @@ class EditDispatchDetails extends StatefulWidget {
   final String? imagesUrl;
   final String totalQty;
   final String status;
+  final String balanceqty;
 
 
 
@@ -54,7 +55,9 @@ class EditDispatchDetails extends StatefulWidget {
     required this.moisweight,
     required this.qty,
     required this.note,
+    required this.balanceqty,
     this.imagesUrl,
+
 
   });
 
@@ -207,19 +210,19 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
 
     print("Calculated DMT Weight: $DMTWeight");
 
-    double totalQty = double.tryParse(widget.totalQty) ?? 0.0;
-    print("Total Quantity: $totalQty");
+    double balanceqty = double.tryParse(widget.balanceqty) ?? 0.0;
+    print("Total Quantity: $balanceqty");
 
     // ✅ Check if netWeight is greater than totalQty first
-    if (netWeight > totalQty) {
-      print("Error: Net weight ($netWeight) exceeds total quantity ($totalQty).");
+    if (netWeight > balanceqty) {
+      print("Error: Net weight ($netWeight) exceeds total quantity ($balanceqty).");
 
       netWeightController.clear();
       quantityController.clear();
       fullWeightController.clear();
 
       Fluttertoast.showToast(
-        msg: "Net weight ($netWeight) cannot exceed total quantity ($totalQty)!",
+        msg: "Net weight ($netWeight) cannot exceed total quantity ($balanceqty)!",
         gravity: ToastGravity.CENTER,
       );
       return;

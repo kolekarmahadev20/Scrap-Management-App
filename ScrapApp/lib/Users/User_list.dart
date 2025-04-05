@@ -54,7 +54,8 @@ class User {
   final String? vendorId;
   final String? plantId;
   final String? orgID;
-
+  final String? read_only;
+  final String? attendance_only;
 
 
 
@@ -99,6 +100,8 @@ class User {
     this.accesPayment,
     this.vendorId,
     this.plantId,
+    this.read_only,
+    this.attendance_only,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -143,6 +146,8 @@ class User {
       vendorId: json['vendor_id']?? 'NA',
       plantId: json['plant_id']?? 'NA',
       orgID: json['org_id']??'NA',
+      read_only: json['read_only']?? 'NA',
+      attendance_only: json['attendance_only']??'NA',
     );
   }
 }

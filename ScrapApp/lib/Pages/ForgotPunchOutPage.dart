@@ -137,15 +137,17 @@ class _ForgotPunchOutPageState extends State<ForgotPunchOutPage> {
           if (data['status'] == '1') {
             _users = List<Map<String, dynamic>>.from(data['late_logged_out_users'].map((user) {
               return {
-                'id': user['admin_id'],
+                'admin_id': user['admin_id'],
                 'name': user['person_name'],
                 'punchInTime':  user['login_time'], // Modify if you have punch-in time info
                 'status': user['status'],
                 'remark': user['remark'],
                 'attendance_id': user['attendance_id']
-
               };
             }));
+
+
+
             _users.sort((a, b) => (b['attendance_id']).compareTo(a['attendance_id']));
             _filteredUsers = _users; // Initialize the filtered list with all users
 
@@ -174,7 +176,7 @@ class _ForgotPunchOutPageState extends State<ForgotPunchOutPage> {
     print(password);
     print(uuid);
     print(userType);
-    print(adminID);
+    print('adminID: $adminID');
     print(admin_status);
     print(attendanceID);
 
@@ -339,7 +341,7 @@ class _ForgotPunchOutPageState extends State<ForgotPunchOutPage> {
                   ElevatedButton(
                     onPressed: () {
                       //_showRemarkDialog(user['id']);
-                      check_first_login("A",user['attendance_id'],user['id']);
+                      check_first_login("A",user['attendance_id'],user['admin_id']);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,

@@ -33,6 +33,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
   String? password = '';
   String? loginType = '';
   String? userType = '';
+  String? readonly = '';
+  String? attendonly = '';
   bool isLoading = false;
 
   Map<String , dynamic> taxAmount = {};
@@ -64,6 +66,8 @@ class _View_refund_detailsState extends State<View_refund_details> {
     password = prefs.getString("password");
     loginType = prefs.getString("loginType");
     userType = prefs.getString("userType");
+     readonly = prefs.getString("readonly");
+     attendonly = prefs.getString("attendonly");
   }
 
   Future<void> fetchRefundDetails() async {
@@ -274,27 +278,49 @@ class _View_refund_detailsState extends State<View_refund_details> {
             // }
           });
         }),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => addRefundToSaleOrder(
-                  sale_order_id: widget.sale_order_id!,
-                  material_name: ViewRefundData['sale_order_details']?[0]
-                  ['material_name'] ??
-                      'N/A',
-                  branch_id_from_ids: widget.branch_id_from_ids, // Extracted from "Ids"
-                  vendor_id_from_ids: widget.vendor_id_from_ids, // Extracted from "Ids"
-                ),
-              ),
-            ).then((value) => setState(() {
-              fetchRefundDetails();
-            }));
-          },
-          child: Icon(Icons.add), // FAB icon
-          backgroundColor: Colors.blueGrey[200],
-        ),
+        floatingActionButton: readonly != 'Y'
+            ? FloatingActionButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => addRefundToSaleOrder(
+                          sale_order_id: widget.sale_order_id!,
+                          material_name: ViewRefundData['sale_order_details']?[0]
+                          ['material_name'] ??
+                              'N/A',
+                          branch_id_from_ids: widget.branch_id_from_ids, // Extracted from "Ids"
+                          vendor_id_from_ids: widget.vendor_id_from_ids, // Extracted from "Ids"
+                        ),
+                      ),
+                    ).then((value) => setState(() {
+                      fetchRefundDetails();
+                    }));
+                  },
+                  child: Icon(Icons.add), // FAB icon
+                  backgroundColor: Colors.blueGrey[200],
+                ): null,
+        // floatingActionButton: FloatingActionButton(
+        //   onPressed: () {
+        //     Navigator.push(
+        //       context,
+        //       MaterialPageRoute(
+        //         builder: (context) => addRefundToSaleOrder(
+        //           sale_order_id: widget.sale_order_id!,
+        //           material_name: ViewRefundData['sale_order_details']?[0]
+        //           ['material_name'] ??
+        //               'N/A',
+        //           branch_id_from_ids: widget.branch_id_from_ids, // Extracted from "Ids"
+        //           vendor_id_from_ids: widget.vendor_id_from_ids, // Extracted from "Ids"
+        //         ),
+        //       ),
+        //     ).then((value) => setState(() {
+        //       fetchRefundDetails();
+        //     }));
+        //   },
+        //   child: Icon(Icons.add), // FAB icon
+        //   backgroundColor: Colors.blueGrey[200],
+        // ),
       ),
     );
   }

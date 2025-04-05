@@ -98,7 +98,9 @@ class _StartDashBoardPageState extends State<StartPage> {
   checkLogin(String username , String password , String loginType,String userType,
       String person_email, String person_name,String uuid,
       String is_active,String mob_login,String acces_sale_order,
-      String acces_dispatch,String acces_refund,String acces_payment,String remainingDays)async{
+      String acces_dispatch,String acces_refund,String acces_payment,String remainingDays,
+      String attendonly,String readonly
+      )async{
     final login = await SharedPreferences.getInstance();
     await login.setString("username", username);
     await login.setString("password", password);
@@ -115,6 +117,8 @@ class _StartDashBoardPageState extends State<StartPage> {
     await login.setString("acces_refund", acces_refund!);
     await login.setString("acces_payment", acces_payment!);
     await login.setString("remainingDays", remainingDays!);
+    await login.setString("attendonly", attendonly!);
+    await login.setString("readonly", readonly!);
 
 
 
@@ -166,11 +170,21 @@ class _StartDashBoardPageState extends State<StartPage> {
         isActive = user_data['is_active']?? "N?A";
         ismobLogin = user_data['mob_login']?? "N?A";
 
+        var attendonly = user_data['attendance_only']?? "N?A";
+        var readonly = user_data['read_only']?? "N?A";
+
+        print("readonly");
+
+        print(attendonly);
+        print(readonly);
+
         await saveUserData(true ,person_name, contact, person_email, emp_code, emp_address,person_id,_deviceID!);
         await checkLogin(username, password ,loginType ,userType,person_email,person_name,_deviceID!,
             is_active,mob_login,
             acces_sale_order,acces_dispatch
-        ,acces_refund,acces_payment,remainingDays);
+        ,acces_refund,acces_payment,remainingDays,
+            attendonly,readonly
+        );
 
         if (userType == "S") {
           Navigator.pushReplacement(

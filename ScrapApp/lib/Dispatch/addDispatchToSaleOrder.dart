@@ -22,12 +22,15 @@ class addDispatchToSaleOrder extends StatefulWidget {
   final String material_name;
   final String bidder_id;
   final String totalQty;
+  final String balanceqty;
 
   addDispatchToSaleOrder({
     required this.sale_order_id,
     required this.material_name,
     required this.bidder_id,
     required this.totalQty,
+    required this.balanceqty,
+
   });
 
   @override
@@ -149,13 +152,13 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
 
     print("Calculated DMT Weight: $DMTWeight");
 
-    double totalQty = double.tryParse(widget.totalQty) ?? 0.0;
-    print("Total Quantity: $totalQty");
+    double balanceqty = double.tryParse(widget.balanceqty) ?? 0.0;
+    print("Total Quantity: $balanceqty");
 
     // ✅ Check if netWeight is greater than totalQty first
-    if (netWeight > totalQty) {
+    if (netWeight > balanceqty) {
       print(
-          "Error: Net weight ($netWeight) exceeds total quantity ($totalQty).");
+          "Error: Net weight ($netWeight) exceeds total quantity ($balanceqty).");
 
       netWeightController.clear();
       quantityController.clear();
@@ -163,7 +166,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
 
       Fluttertoast.showToast(
         msg:
-            "Net weight ($netWeight) cannot exceed total quantity ($totalQty)!",
+            "Net weight ($netWeight) cannot exceed total quantity ($balanceqty)!",
         gravity: ToastGravity.CENTER,
       );
       return;
