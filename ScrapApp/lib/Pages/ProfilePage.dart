@@ -175,12 +175,12 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> set_user_attendances(
       String punchType, double? latitude, double? longitude) async {
     try {
-       int hitCounter = 0;
+      int hitCounter = 0;
       hitCounter++;
 
       print("========== DEBUG: set_user_attendances START ==========");
-       print("Function called $hitCounter time(s)");
-       print("Function called with:");
+      print("Function called $hitCounter time(s)");
+      print("Function called with:");
       print("Punch Type: $punchType");
       print("Latitude: ${latitude?.toString() ?? 'null'}");
       print("Longitude: ${longitude?.toString() ?? 'null'}");
@@ -777,15 +777,15 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return StatefulBuilder(builder: (BuildContext context , StateSetter setState) {
       return Scaffold(
-        drawer: (attendonly == 'Y' || attendonly == '')
-            ? null
-            : userType != 'S'
-                ? (isPunchedIn ? AppDrawer(currentPage: widget.currentPage) : null)
-                : AppDrawer(currentPage: widget.currentPage),
+        // drawer: (attendonly == 'Y' || attendonly == '')
+        //     ? null
+        //     : userType != 'S'
+        //         ? (isPunchedIn ? AppDrawer(currentPage: widget.currentPage) : null)
+        //         : AppDrawer(currentPage: widget.currentPage),
 
-        // drawer: userType != 'S'
-        //     ? (isPunchedIn ? AppDrawer(currentPage: widget.currentPage) : null)
-        //     : AppDrawer(currentPage: widget.currentPage),
+        drawer: userType != 'S'
+            ? (isPunchedIn ? AppDrawer(currentPage: widget.currentPage) : null)
+            : AppDrawer(currentPage: widget.currentPage),
         appBar: CustomAppBar(),
         body: SingleChildScrollView(
           child: Column(

@@ -14,6 +14,7 @@ import '../Leave/LeaveStatus.dart';
 import '../Leave/Leave_Application.dart';
 import '../Organization/OrganizationList.dart';
 import '../Pages/ChangePassword.dart';
+import '../Pages/EmployeeAttendanceReport.dart';
 import '../Pages/EmployeeTracker.dart';
 import '../Pages/ForgotPunchOutPage.dart';
 import '../Pages/Search.dart';
@@ -33,7 +34,7 @@ class AppDrawer extends StatefulWidget {
 
 class _AppDrawerState extends State<AppDrawer> {
   String? username = '';
- String uuid = '';
+  String uuid = '';
 
   String? password = '';
 
@@ -51,6 +52,8 @@ class _AppDrawerState extends State<AppDrawer> {
   String? acces_dispatch = '';
   String? acces_refund = '';
   String? acces_payment = '';
+  String? readonly = '';
+  String? attendonly = '';
 
   @override
   initState(){
@@ -62,7 +65,7 @@ class _AppDrawerState extends State<AppDrawer> {
   }
 
   Future<void> checkLogin() async {
-     final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
@@ -71,12 +74,14 @@ class _AppDrawerState extends State<AppDrawer> {
     person_email = prefs.getString("person_email");
     person_name = prefs.getString("person_name");
 
-     is_active = prefs.getString("is_active")!;
-     mob_login = prefs.getString("mob_login");
-     acces_sale_order = prefs.getString("acces_sale_order");
-     acces_dispatch = prefs.getString("acces_dispatch");
-     acces_refund = prefs.getString("acces_refund");
-     acces_payment = prefs.getString("acces_payment");
+    is_active = prefs.getString("is_active")!;
+    mob_login = prefs.getString("mob_login");
+    acces_sale_order = prefs.getString("acces_sale_order");
+    acces_dispatch = prefs.getString("acces_dispatch");
+    acces_refund = prefs.getString("acces_refund");
+    acces_payment = prefs.getString("acces_payment");
+    readonly = prefs.getString("readonly");
+    attendonly = prefs.getString("attendonly");
   }
 
   Future<void> _logout(BuildContext context) async {
@@ -148,18 +153,18 @@ class _AppDrawerState extends State<AppDrawer> {
                 children: [
                   if(userType == 'S')
                     _buildDrawerItem(
-                    context,
-                    1,
-                    icon: Icons.dashboard_outlined,
-                    text: "Dashboard",
-                    onTap: () {
-                      Timer(Duration(milliseconds: 300), () {
-                        Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => DashBoard(currentPage: 1,)));
-                      });
+                      context,
+                      1,
+                      icon: Icons.dashboard_outlined,
+                      text: "Dashboard",
+                      onTap: () {
+                        Timer(Duration(milliseconds: 300), () {
+                          Navigator.pop(context); // Close the drawer
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => DashBoard(currentPage: 1,)));
+                        });
 
-                    },
-                  ),
+                      },
+                    ),
                   // _buildDrawerItem(
                   //   context,
                   //   1,
@@ -186,22 +191,23 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
-                  if(userType == 'S' || userType == 'A'|| acces_sale_order == 'Y')
-                  _buildDrawerItem(
-                    context,
-                    3,
-                    icon: Icons.border_outer,
-                    text: "Sale Order",
-                    onTap: () {
-                      Timer(Duration(milliseconds: 300), () {
-                        Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => saleOrderList(currentPage: 3,)));
-                      });
+                  // if(userType == 'S' || userType == 'A'|| acces_sale_order == 'Y')
+                  if ((userType == 'S' || userType == 'A' || acces_sale_order == 'Y') && attendonly == 'N')
+                    _buildDrawerItem(
+                      context,
+                      3,
+                      icon: Icons.border_outer,
+                      text: "Sale Order",
+                      onTap: () {
+                        Timer(Duration(milliseconds: 300), () {
+                          Navigator.pop(context); // Close the drawer
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => saleOrderList(currentPage: 3,)));
+                        });
 
-                    },
-                  ),
-                  if(acces_payment == 'Y')
-                      _buildDrawerItem(
+                      },
+                    ),
+                  if(acces_payment == 'Y' && attendonly == 'N')
+                    _buildDrawerItem(
                       context,
                       4,
                       icon: Icons.payment_rounded,
@@ -240,32 +246,32 @@ class _AppDrawerState extends State<AppDrawer> {
                   //     });
                   //   },
                   // ),
-                if(userType == 'S')
+                  if(userType == 'S')
                     _buildDrawerItem(
-                    context,
-                    7,
-                    icon: Icons.location_on_outlined,
-                    text: "Employee Tracker",
-                    onTap: () {
-                      Timer(Duration(milliseconds: 300), () {
-                        Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => EmployeeTrackers(currentPage: 7,)));
-                      });
-                    },
-                  ),
-                  if(userType == 'S' || userType == 'A')
+                      context,
+                      7,
+                      icon: Icons.location_on_outlined,
+                      text: "Employee Tracker",
+                      onTap: () {
+                        Timer(Duration(milliseconds: 300), () {
+                          Navigator.pop(context); // Close the drawer
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => EmployeeTrackers(currentPage: 7,)));
+                        });
+                      },
+                    ),
+                  if((userType == 'S' || userType == 'A')&& attendonly == 'N')
                     _buildDrawerItem(
-                    context,
-                    8,
-                    icon: Icons.business,
-                    text: "Vendor",
-                    onTap: () {
-                      Timer(Duration(milliseconds: 300), () {
-                        Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => Vendor_list(currentPage: 8,)));
-                      });
-                    },
-                  ),
+                      context,
+                      8,
+                      icon: Icons.business,
+                      text: "Vendor",
+                      onTap: () {
+                        Timer(Duration(milliseconds: 300), () {
+                          Navigator.pop(context); // Close the drawer
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => Vendor_list(currentPage: 8,)));
+                        });
+                      },
+                    ),
                   // _buildDrawerItem(
                   //   context,
                   //   9,
@@ -292,48 +298,62 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
-                  if(userType == 'S' || userType == 'A')
+                  if((userType == 'S' || userType == 'A')&& attendonly == 'N')
                     _buildDrawerItem(
-                    context,
-                    11,
-                    icon: Icons.search,
-                    text: "Search",
-                    onTap: () {
-                      Timer(Duration(milliseconds: 300), () {
-                        Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => Search(currentPage: 11,)));
-                      });
+                      context,
+                      11,
+                      icon: Icons.search,
+                      text: "Search",
+                      onTap: () {
+                        Timer(Duration(milliseconds: 300), () {
+                          Navigator.pop(context); // Close the drawer
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => Search(currentPage: 11,)));
+                        });
 
-                    },
-                  ),
+                      },
+                    ),
                   if(userType == 'S')
                     _buildDrawerItem(
-                    context,
-                    12,
-                    icon: Icons.people_alt_outlined,
-                    text: "Users",
-                    onTap: () {
-                      Timer(Duration(milliseconds: 300), () {
-                        Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => view_user(currentPage: 12,)));
-                      });
+                      context,
+                      12,
+                      icon: Icons.people_alt_outlined,
+                      text: "Users",
+                      onTap: () {
+                        Timer(Duration(milliseconds: 300), () {
+                          Navigator.pop(context); // Close the drawer
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => view_user(currentPage: 12,)));
+                        });
 
-                    },
-                  ),
-                  if(userType == 'S' || userType == 'A')
+                      },
+                    ),
+                  if((userType == 'S' || userType == 'A')&& attendonly == 'N')
                     _buildDrawerItem(
-                    context,
-                    13,
-                    icon: Icons.file_open_outlined,
-                    text: "Summary Report",
-                    onTap: () {
-                      Timer(Duration(milliseconds: 300), () {
-                        Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => Summary_Report(currentPage: 13,)));
-                      });
+                      context,
+                      13,
+                      icon: Icons.file_open_outlined,
+                      text: "Summary Report",
+                      onTap: () {
+                        Timer(Duration(milliseconds: 300), () {
+                          Navigator.pop(context); // Close the drawer
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => Summary_Report(currentPage: 13,)));
+                        });
 
-                    },
-                  ),
+                      },
+                    ),
+                  if(userType == 'S')
+                    _buildDrawerItem(
+                      context,
+                      17,
+                      icon: Icons.assignment_outlined,
+                      text: "Attendance Report",
+                      onTap: () {
+                        Timer(Duration(milliseconds: 300), () {
+                          Navigator.pop(context); // Close the drawer
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => EmployeeAttendanceReport(currentPage: 17)));
+                        });
+
+                      },
+                    ),
                   _buildDrawerItem(
                     context,
                     14,
@@ -347,34 +367,34 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
-                  if(userType == 'S' || userType == 'A')
+                  if((userType == 'S' || userType == 'A')&& attendonly == 'N')
                     _buildDrawerItem(
-                    context,
-                    15,
-                    icon: Icons.pending_actions_outlined,
-                    text: "Leave Status",
-                    onTap: () {
-                      Timer(Duration(milliseconds: 300), () {
-                        Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => LeaveStatus(currentPage: 15,)));
-                      });
+                      context,
+                      15,
+                      icon: Icons.pending_actions_outlined,
+                      text: "Leave Status",
+                      onTap: () {
+                        Timer(Duration(milliseconds: 300), () {
+                          Navigator.pop(context); // Close the drawer
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => LeaveStatus(currentPage: 15,)));
+                        });
 
-                    },
-                  ),
-                  if(userType == 'S' || userType == 'A')
+                      },
+                    ),
+                  if((userType == 'S' || userType == 'A') && attendonly == 'N')
                     _buildDrawerItem(
-                    context,
-                    16,
-                    icon: Icons.access_time,
-                    text: "Late Login Remark",
-                    onTap: () {
-                      Timer(Duration(milliseconds: 300), () {
-                        Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => ForgotPunchOutPage(currentPage: 16,)));
-                      });
+                      context,
+                      16,
+                      icon: Icons.access_time,
+                      text: "Late Login Remark",
+                      onTap: () {
+                        Timer(Duration(milliseconds: 300), () {
+                          Navigator.pop(context); // Close the drawer
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => ForgotPunchOutPage(currentPage: 16,)));
+                        });
 
-                    },
-                  ),
+                      },
+                    ),
 
                   InkWell(
                     onTap:() {

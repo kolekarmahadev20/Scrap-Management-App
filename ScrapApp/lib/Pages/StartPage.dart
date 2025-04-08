@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../URL_CONSTANT.dart';
 import 'dart:math' as math;
 import 'package:device_info_plus/device_info_plus.dart';
+import 'ForgotPassword.dart';
 import 'ProfilePage.dart';
 
 
@@ -17,18 +18,11 @@ class StartPage extends StatefulWidget {
 }
 
 class _StartDashBoardPageState extends State<StartPage> {
-  // TextEditingController usernameController = TextEditingController(text: "bhag2368");
-  // TextEditingController passwordController = TextEditingController(text : "Bhag@2368");
-  // TextEditingController usernameController = TextEditingController(text: "paar9044");
-  // TextEditingController passwordController = TextEditingController(text: "Paar@9044");
-  // TextEditingController usernameController = TextEditingController(text: "mite7330");
-  // TextEditingController passwordController = TextEditingController(text: "Mite@7330");
-  // TextEditingController usernameController = TextEditingController(text: "mite7330");
-  // TextEditingController passwordController = TextEditingController(text: "Mite@7330");
+
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  // TextEditingController usernameController = TextEditingController();
-  // TextEditingController passwordController = TextEditingController();
+
+
   bool _obscureText = true; // Variable to manage password visibility
 
 
@@ -182,7 +176,7 @@ class _StartDashBoardPageState extends State<StartPage> {
         await checkLogin(username, password ,loginType ,userType,person_email,person_name,_deviceID!,
             is_active,mob_login,
             acces_sale_order,acces_dispatch
-        ,acces_refund,acces_payment,remainingDays,
+            ,acces_refund,acces_payment,remainingDays,
             attendonly,readonly
         );
 
@@ -275,6 +269,7 @@ class _StartDashBoardPageState extends State<StartPage> {
     );
   }
 
+
   Widget _buildBottom() {
     return ClipPath(
       clipper: BottomCurveClipper(), // Apply custom clipper for the bottom widget
@@ -304,6 +299,28 @@ class _StartDashBoardPageState extends State<StartPage> {
               Expanded(
                 child: Center(
                   child: _buildLoginForm(),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed:() {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+                      );
+                    } ,
+
+                    child: Text(
+                      "Forgot Password?",
+                      style: TextStyle(
+                        color: Colors.blueGrey[700],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
               ),
               Padding(
