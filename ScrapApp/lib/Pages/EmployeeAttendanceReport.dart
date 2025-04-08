@@ -220,6 +220,8 @@ class _EmployeeAttendanceReportState extends State<EmployeeAttendanceReport> {
   }
 
   String _formatAttendanceData(List<Map<String, dynamic>> data) {
+    print("BHARAT CHAUDAHRI : $data");
+
     final buffer = StringBuffer();
 
     buffer.writeln('📝 Attendance Report');
@@ -236,11 +238,18 @@ class _EmployeeAttendanceReportState extends State<EmployeeAttendanceReport> {
       final timeOut = logout?['logout_time'] ?? '-';
       final status = logout != null ? 'Logged In & Out' : 'Logged In Only';
 
+      final loginAddress = login['address'] ?? '-';
+      final logoutAddress = logout?['address'] ?? '-';
+
       // Padding each line for consistent alignment
       buffer.writeln('${'Name :'.padRight(10)}${name.padRight(25)}');
       buffer.writeln('${'Date :'.padRight(12)}${date.padRight(25)}');
+      buffer.writeln();
       buffer.writeln('${'In :'.padRight(15)}${timeIn.padRight(28)}');
+      buffer.writeln('${'In Addr :'.padRight(12)}${loginAddress.padRight(28)}');
+      buffer.writeln();
       buffer.writeln('${'Out :'.padRight(12)}${timeOut.padRight(28)}');
+      buffer.writeln('${'Out Addr :'.padRight(12)}${logoutAddress.padRight(28)}');
       buffer.writeln('${'Status :'.padRight(10)}${status.padRight(17)}');
 
 
@@ -288,6 +297,7 @@ class _EmployeeAttendanceReportState extends State<EmployeeAttendanceReport> {
           const SizedBox(height: 16),
 
           for (final record in attendanceData) ...[
+
             Container(
               margin: const EdgeInsets.only(bottom: 24),
               decoration: BoxDecoration(
@@ -332,7 +342,7 @@ class _EmployeeAttendanceReportState extends State<EmployeeAttendanceReport> {
                   if (record['logout_record'] != null)
                     _customReportCard(
                       title: "Logout Details",
-                      dateTime: formatDateTime(record['login_record']['login_time'] ?? 'NA'),
+                      dateTime: formatDateTime(record['logout_record']['logout_time'] ?? 'NA'),
                       project: "Address: ${record['logout_record']['address'] ?? 'NA'}",
                       status: formatStatus(record['logout_record']['attendance_type'] ?? 'InProgress'),
                       borderColor: Colors.red,
