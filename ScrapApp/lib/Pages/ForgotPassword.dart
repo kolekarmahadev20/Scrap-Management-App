@@ -21,57 +21,43 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final userId = userIdController.text.trim();
     final password = passwordController.text.trim();
 
-    // if (email.isEmpty || userId.isEmpty || password.isEmpty) {
-    //   _showMessage("Please enter either Email or User ID, and Password.");
-    //   return;
-    // }
-
     setState(() {
       isLoading = true;
     });
 
     final url = Uri.parse("${URL}forgot_password");
 
-    Map<String, String> requestBody = {
+    Map<String, String> requestBody = {};
 
-    };
+    if (userId.isNotEmpty) requestBody['user_id'] = userId;
+    if (password.isNotEmpty) requestBody['user_pass'] = password;
+    if (email.isNotEmpty) requestBody['email'] = email;
 
-    // Add only non-empty values
-    if (userId.isNotEmpty) {
-      requestBody['user_id'] = userId;
-    }
+    try {
+      final response = await http.post(url, body: requestBody);
 
-    if (password.isNotEmpty) {
-      requestBody['user_pass'] = password;
-    }
-
-    if (email.isNotEmpty) {
-      requestBody['email'] = email;
-    }
-
-    final response = await http.post(
-      url,
-      body: requestBody,
-    );
-
-    setState(() {
-      isLoading = false;
-    });
-
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> responseData = json.decode(response.body);
-      if (responseData['status'] == "1") {
-        final name = responseData['data']['person_name'];
-        final uname = responseData['data']['uname'];
-        final cpass = responseData['data']['c_pass'];
-        final empEmail = responseData['data']['emp_email'];
-
-        _showMessage("Success!\nName: $name\nUser ID: $uname\nPassword: $cpass\nEmail: $empEmail");
+      print("Status Code: ${response.statusCode}");
+      print("Raw Body: ${response.body}");
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        if (responseData['status'] == "1") {
+          final String message =
+              responseData['data'] ?? 'Login credentials sent successfully.';
+          print("Response message: $message");
+          _showMessage(message);
+        } else {
+          _showMessage("Failed: ${responseData['message'] ?? 'Unknown error'}");
+        }
       } else {
-        _showMessage("Failed: ${responseData['message'] ?? 'Unknown error'}");
+        _showMessage("Server Error: ${response.statusCode}");
       }
-    } else {
-      _showMessage("Server Error: ${response.statusCode}");
+    } catch (e) {
+      _showMessage("Something went wrong. Please try again later.");
+      print("Error during request: $e");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -79,11 +65,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("Your Login Credentials"),
+        title: Text("Email Sent!"),
         content: Text(message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              emailController.clear();
+              userIdController.clear();
+              passwordController.clear();
+              Navigator.pop(context);
+            },
             child: Text("OK"),
           )
         ],
@@ -187,9 +178,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         child: isLoading
                             ? CircularProgressIndicator(color: Colors.black)
                             : Text(
-                          'SUBMIT',
-                          style: TextStyle(fontSize: 16,color: Colors.white),
-                        ),
+                                'SUBMIT',
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.white),
+                              ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blueGrey[700],
                           shape: RoundedRectangleBorder(
