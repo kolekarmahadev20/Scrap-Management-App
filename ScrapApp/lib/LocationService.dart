@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'URL_CONSTANT.dart';
 
 class LocationService {
@@ -13,7 +12,6 @@ class LocationService {
   static final LocationService _instance = LocationService._internal();
   factory LocationService() => _instance;
   LocationService._internal() {
-    // First load credentials, then start location tracking.
     checkLogin().then((_) {
       _init();
     });
@@ -177,4 +175,10 @@ class LocationService {
   void dispose() {
     _gpsCheckTimer?.cancel();
   }
+
+  // Add at the end of LocationService class
+  double? get currentLatitude => _locationData.latitude;
+  double? get currentLongitude => _locationData.longitude;
+
+
 }

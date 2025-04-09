@@ -308,191 +308,6 @@ class saleOrderListState extends State<saleOrderList> {
     }
   }
 
-
-  // void filterResults() {
-  //   List<dynamic> searchResults = saleOrderList;
-  //
-  //   // Apply Material filter
-  //   if (searchMaterialController.text.isNotEmpty) {
-  //     searchResults = searchResults.where((order) {
-  //       return order['description']
-  //           .toString()
-  //           .toLowerCase()
-  //           .contains(searchMaterialController.text.toLowerCase());
-  //     }).toList();
-  //   }
-  //
-  //   // Apply Vendor filter
-  //   if (searchVendorController.text.isNotEmpty) {
-  //     searchResults = searchResults.where((order) {
-  //       return order['vendor_name']
-  //           .toString()
-  //           .toLowerCase()
-  //           .contains(searchVendorController.text.toLowerCase());
-  //     }).toList();
-  //   }
-  //
-  //   // Apply Plant filter
-  //   if (searchBidderController.text.isNotEmpty) {
-  //     searchResults = searchResults.where((order) {
-  //       return order['branch_name']
-  //           .toString()
-  //           .toLowerCase()
-  //           .contains(searchBidderController.text.toLowerCase());
-  //     }).toList();
-  //   }
-  //
-  //   setState(() {
-  //     filteredSaleOrderList = searchResults;
-  //   });
-  // }
-  //
-  // Future showFilterDialog() {
-  //   return showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return StatefulBuilder(
-  //         builder: (BuildContext context, StateSetter setState) {
-  //           return Dialog(
-  //             backgroundColor: Colors.white,
-  //             shape: RoundedRectangleBorder(
-  //               borderRadius: BorderRadius.circular(20),
-  //             ),
-  //             child: Padding(
-  //               padding: const EdgeInsets.all(20.0),
-  //               child: Column(
-  //                 mainAxisSize: MainAxisSize.min,
-  //                 crossAxisAlignment: CrossAxisAlignment.start,
-  //                 children: [
-  //                   Row(
-  //                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //                     children: [
-  //                       Expanded(
-  //                         child: Text(
-  //                           "Search Sale Orders",
-  //                           style: TextStyle(
-  //                             fontSize: 20,
-  //                             fontWeight: FontWeight.bold,
-  //                             color: Colors.black87,
-  //                           ),
-  //                         ),
-  //                       ),
-  //                       IconButton(
-  //                         icon: Icon(Icons.close, color: Colors.black54),
-  //                         onPressed: () {
-  //                           Navigator.pop(context);
-  //                         },
-  //                       )
-  //                     ],
-  //                   ),
-  //                   SizedBox(height: 10),
-  //                   _buildSearchField(
-  //                     controller: searchMaterialController,
-  //                     hintText: "Enter Material Name",
-  //                   ),
-  //                   SizedBox(height: 10),
-  //                   _buildSearchField(
-  //                     controller: searchVendorController,
-  //                     hintText: "Enter Vendor Name",
-  //                   ),
-  //                   SizedBox(height: 10),
-  //                   _buildSearchField(
-  //                     controller: searchBidderController,
-  //                     hintText: "Enter Plant Name",
-  //                   ),
-  //                   SizedBox(height: 20),
-  //                   Row(
-  //                     children: [
-  //                       Expanded(
-  //                         child: Padding(
-  //                           padding: const EdgeInsets.all(8.0),
-  //                           child: ElevatedButton(
-  //                             onPressed: () {
-  //                               setState(() {
-  //                                 searchMaterialController.clear();
-  //                                 searchVendorController.clear();
-  //                                 searchBidderController.clear();
-  //                                 fetchSaleOrderList();
-  //                               });
-  //                               Navigator.pop(context); // Close dialog
-  //                             },
-  //                             style: ElevatedButton.styleFrom(
-  //                               backgroundColor: Colors.red[400],
-  //                               shape: RoundedRectangleBorder(
-  //                                 borderRadius: BorderRadius.circular(15),
-  //                               ),
-  //                               padding: EdgeInsets.symmetric(
-  //                                   horizontal: 25, vertical: 15),
-  //                               elevation: 5,
-  //                             ),
-  //                             child: Text(
-  //                               "Reset",
-  //                               style: TextStyle(
-  //                                   fontSize: 18, color: Colors.white),
-  //                             ),
-  //                           ),
-  //                         ),
-  //                       ),
-  //                       Expanded(
-  //                         child: Padding(
-  //                           padding: const EdgeInsets.all(8.0),
-  //                           child: ElevatedButton(
-  //                             onPressed: () {
-  //                               setState(() {
-  //                                 filterResults();
-  //                               });
-  //                               Navigator.pop(context); // Close dialog
-  //                             },
-  //                             style: ElevatedButton.styleFrom(
-  //                               backgroundColor: Colors.green[400],
-  //                               shape: RoundedRectangleBorder(
-  //                                 borderRadius: BorderRadius.circular(15),
-  //                               ),
-  //                               padding: EdgeInsets.symmetric(
-  //                                   horizontal: 25, vertical: 15),
-  //                               elevation: 5,
-  //                             ),
-  //                             child: Text(
-  //                               "Apply",
-  //                               style: TextStyle(
-  //                                   fontSize: 18, color: Colors.white),
-  //                             ),
-  //                           ),
-  //                         ),
-  //                       ),
-  //                     ],
-  //                   )
-  //                 ],
-  //               ),
-  //             ),
-  //           );
-  //         },
-  //       );
-  //     },
-  //   );
-  // }
-  //
-  // Widget _buildSearchField({
-  //   required TextEditingController controller,
-  //   required String hintText,
-  // }) {
-  //   return TextField(
-  //     controller: controller,
-  //     style: TextStyle(fontSize: 18),
-  //     decoration: InputDecoration(
-  //       hintText: hintText,
-  //       prefixIcon: Icon(Icons.search, color: Colors.grey),
-  //       filled: true,
-  //       fillColor: Colors.grey[100],
-  //       border: OutlineInputBorder(
-  //         borderRadius: BorderRadius.circular(15),
-  //         borderSide: BorderSide(color: Colors.indigo),
-  //       ),
-  //       contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-  //     ),
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
     return AbsorbPointer(
@@ -604,6 +419,8 @@ class saleOrderListState extends State<saleOrderList> {
                 bidder_id: index['buyer_id'],
                 branch_id_from_ids: index['branch_id'],
                 vendor_id_from_ids: index['vendor_id'],
+                materialId:index['branch_id'],
+
               ),
             ),
           );
@@ -769,6 +586,8 @@ class saleOrderListState extends State<saleOrderList> {
                           bidder_id: index['buyer_id'],
                           branch_id_from_ids: index['branch_id'],
                           vendor_id_from_ids: index['vendor_id'],
+                          materialId:index['branch_id'],
+
                         ),
                       ),
                     );

@@ -83,6 +83,8 @@ class _PaymentListState extends State<PaymentList> {
             if (item.containsKey("Ids") && item["Ids"] != null) {
               item["vendor_id_from_ids"] = item["Ids"]["vendor_id"];
               item["branch_id_from_ids"] = item["Ids"]["branch_id"];
+              item["mat_id_from_ids"] = item["Ids"]["mat_id"];
+
             }
           }
 
@@ -568,7 +570,7 @@ class _PaymentListState extends State<PaymentList> {
                           bidder_id: index['bidder_id'],
                           branch_id_from_ids: index['branch_id_from_ids'], // Extracted from "Ids"
                           vendor_id_from_ids: index['vendor_id_from_ids'], // Extracted from "Ids"
-
+                          materialId: index['mat_id_from_ids'], // Extracted from "Ids"
                         ),
                       ),
                     ).then((value) => setState(() {
@@ -585,6 +587,7 @@ class _PaymentListState extends State<PaymentList> {
                         bidder_id: index['bidder_id'],
                         branch_id_from_ids: index['branch_id_from_ids'], // Extracted from "Ids"
                         vendor_id_from_ids: index['vendor_id_from_ids'], // Extracted from "Ids"
+                        materialId: index['vendor_id_from_ids'], // Extracted from "Ids"
 
                       ),
                     ),

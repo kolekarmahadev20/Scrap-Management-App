@@ -16,12 +16,14 @@ class View_payment_detail extends StatefulWidget {
   final String bidder_id;
   final String branch_id_from_ids;
   final String vendor_id_from_ids;
+  final String materialId;
 
   View_payment_detail({
     required this.sale_order_id,
     required this.bidder_id,
     required this.branch_id_from_ids,
     required this.vendor_id_from_ids,
+    required this.materialId,
   });
 
   @override
@@ -73,10 +75,6 @@ class _View_payment_detailState extends State<View_payment_detail> {
   }
 
   Future<void> fetchPaymentDetails() async {
-    print("asfasfasf");
-    print("Sale Order ID: ${widget.sale_order_id}");
-    print("Bidder ID: ${widget.bidder_id}");
-
     try {
       setState(() {
         isLoading = true;
@@ -92,6 +90,9 @@ class _View_payment_detailState extends State<View_payment_detail> {
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
           'bidder_id': widget.bidder_id,
+          'vendor_id': widget.vendor_id_from_ids,
+          'branch_id': widget.branch_id_from_ids,
+          'mat_id': widget.materialId,
         },
       );
 
@@ -769,7 +770,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
   }
 
   Widget buildPaymentDetailListTile(BuildContext context, index) {
-    if (index['payment_type'] == "Received Payment") {
+    // if (index['payment_type'] == "Received Payment") {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Container(
@@ -922,9 +923,9 @@ class _View_payment_detailState extends State<View_payment_detail> {
           ),
         ),
       );
-    } else {
-      return Container();
-    }
+    // } else {
+    //   return Container();
+    // }
   }
 
   Widget buildEmdDetailListTile(BuildContext context, index) {

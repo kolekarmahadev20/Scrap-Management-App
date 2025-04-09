@@ -3,12 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
-import 'package:scrapapp/Dispatch/Add_dispatch_details.dart';
-import 'package:scrapapp/Dispatch/View_dispatch_lifting_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../URL_CONSTANT.dart';
-import 'Edit_dispatch_details.dart';
 import 'View_Invoice_Details.dart';
 import 'addDispatchToSaleOrder.dart';
 import 'editDispatchDetails.dart';
@@ -16,10 +13,16 @@ import 'editDispatchDetails.dart';
 class View_dispatch_details extends StatefulWidget {
   final String sale_order_id;
   final String bidder_id;
+  final String branch_id_from_ids;
+  final String vendor_id_from_ids;
+  final String materialId;
 
   View_dispatch_details({
     required this.sale_order_id,
     required this.bidder_id,
+    required this.branch_id_from_ids,
+    required this.vendor_id_from_ids,
+    required this.materialId,
   });
 
   @override
@@ -78,18 +81,10 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
 
   Future<void> fetchDispatchDetails() async {
     try {
-      print(widget.sale_order_id);
-      print(widget.bidder_id);
-      print("55419844894");
 
       setState(() {
         isLoading = true;
       });
-
-      print(widget.sale_order_id);
-      print(widget.bidder_id);
-      print("4651");
-
 
       await checkLogin();
       final url = Uri.parse("${URL}payment_details");
@@ -133,8 +128,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
           taxes = ViewPaymentData?['tax_and_rate']?['taxes'] ?? [];
           taxAmount = ViewPaymentData?['tax_and_rate'] ?? {};
 
-          totalMaterialLiftedAmount =
-              jsonData['total_material_lifted_amount'] ?? 0;
+          totalMaterialLiftedAmount = (jsonData['total_material_lifted_amount'] ?? 0).toDouble();
+
           liftedQuantity = jsonData['lifted_quantity'] != null
               ? List<Map<String, dynamic>>.from(jsonData['lifted_quantity'])
               : [];
@@ -504,8 +499,10 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                   MaterialPageRoute(
                     builder: (context) => addDispatchToSaleOrder(
                      // balanceqty:balanceQty.toStringAsFixed(2),
+                      branch_id_from_ids: widget.branch_id_from_ids, // Extracted from "Ids"
+                      vendor_id_from_ids: widget.vendor_id_from_ids, // Extracted from "Ids"
+                      materialId:  widget.materialId, // Extracted from "Ids"
                       balanceqty: balanceQty.toString(),
-
                       sale_order_id: widget.sale_order_id,
                       material_name: ViewDispatchData['sale_order_details']?[0]
                               ['material_name'] ??
@@ -738,7 +735,10 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                 invoiceNo: index['invoice_no'],
                 bidder_id: widget.bidder_id,
                 lift_id: index['lift_id'],
-              ),
+                branch_id_from_ids: widget.branch_id_from_ids, // Extracted from "Ids"
+                vendor_id_from_ids: widget.vendor_id_from_ids, // Extracted from "Ids"
+                materialId:  widget.materialId, // Extracted from "Ids"
+                     ),
             ),
           );
         },
@@ -788,7 +788,9 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                               MaterialPageRoute(
                                 builder: (context) => EditDispatchDetails(
                                   // balanceqty:balanceQty.toStringAsFixed(2),
-
+                                  branch_id_from_ids: widget.branch_id_from_ids, // Extracted from "Ids"
+                                  vendor_id_from_ids: widget.vendor_id_from_ids, // Extracted from "Ids"
+                                  materialId:  widget.materialId, // Extracted from "Ids"
                                   balanceqty: balanceQty.toString(),
                                   sale_order_id: widget.sale_order_id,
                                   bidder_id: widget.bidder_id,

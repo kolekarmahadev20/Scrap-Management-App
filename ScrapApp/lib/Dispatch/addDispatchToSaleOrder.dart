@@ -23,6 +23,9 @@ class addDispatchToSaleOrder extends StatefulWidget {
   final String bidder_id;
   final String totalQty;
   final String balanceqty;
+  final String branch_id_from_ids;
+  final String vendor_id_from_ids;
+  final String materialId;
 
   addDispatchToSaleOrder({
     required this.sale_order_id,
@@ -30,7 +33,9 @@ class addDispatchToSaleOrder extends StatefulWidget {
     required this.bidder_id,
     required this.totalQty,
     required this.balanceqty,
-
+    required this.branch_id_from_ids,
+    required this.vendor_id_from_ids,
+    required this.materialId,
   });
 
   @override
@@ -120,9 +125,28 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     double firstWeight = double.tryParse(firstWeightNoController.text) ?? 0.0;
     String fullWeightText = fullWeightController.text.trim();
 
+    // 🚫 Check if firstWeight is empty or zero
+    if (fullWeightController.text.trim().isNotEmpty) {
+      // Check if First Weight is empty, invalid or zero
+      if (firstWeightNoController.text.trim().isEmpty ||
+          double.tryParse(firstWeightNoController.text.trim()) == null ||
+          double.tryParse(firstWeightNoController.text.trim()) == null ||
+          double.parse(firstWeightNoController.text.trim()) == 0.0) {
+        print("First weight is required before entering full weight.");
+        Fluttertoast.showToast(
+          msg: "Please enter First Weight before Full Weight!",
+          gravity: ToastGravity.CENTER,
+        );
+        fullWeightController.clear();
+        return;
+      }
+    }
+
     // ✅ Ensure the user enters a full weight before processing
     if (fullWeightText.isEmpty) {
       print("Waiting for full weight input...");
+      netWeightController.clear();
+      quantityController.clear();
       return;
     }
 
@@ -476,10 +500,8 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   //   }
   // }
 
-
   Future<void> addDispatchDetails() async {
     try {
-
       if (truckNoController.text.trim().length < 7) {
         Fluttertoast.showToast(
           msg: 'Truck Number must be at least 7 characters long.',
@@ -488,7 +510,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
         );
         return; // Exit the function early
       }
-
 
       setState(() {
         isLoading = true;
@@ -517,7 +538,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       request.fields['qty'] = quantityController.text ?? '';
       request.fields['note'] = noteController.text ?? '';
       request.fields['status'] = isDispatchCompleted ? 'c' : 'p';
-
 
       print("======== Request Fields ========");
       request.fields.forEach((key, value) {
@@ -586,7 +606,6 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       var response = await request.send();
       print("Request sent. Response status code: ${response.statusCode}");
 
-
       // Handle response
       if (response.statusCode == 200) {
         final res = await http.Response.fromStream(response);
@@ -612,6 +631,11 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
                 builder: (context) => View_dispatch_details(
                       sale_order_id: widget.sale_order_id,
                       bidder_id: widget.bidder_id,
+                      branch_id_from_ids:
+                          widget.branch_id_from_ids, // Extracted from "Ids"
+                      vendor_id_from_ids:
+                          widget.vendor_id_from_ids, // Extracted from "Ids"
+                      materialId: widget.materialId, // Extracted from "Ids"
                     )), // Navigate to the desired screen
           );
         }
@@ -624,8 +648,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
           textColor: Colors.yellow,
         );
       }
-    }
-    finally {
+    } finally {
       setState(() {
         isLoading = false;
       });

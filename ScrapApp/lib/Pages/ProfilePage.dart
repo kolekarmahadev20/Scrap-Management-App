@@ -11,6 +11,7 @@ import 'package:scrapapp/Pages/StartPage.dart';
 import 'package:scrapapp/URL_CONSTANT.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import '../LocationService.dart';
 import 'attendance.dart';
 import 'dart:math' as math;
 
@@ -64,18 +65,15 @@ class _ProfilePageState extends State<ProfilePage> {
   final Icon addressIcon =
   Icon(Icons.location_pin, color: Colors.blue.shade900, size: 40);
 
+  String? latitude;
+  String? longitude;
 
   @override
   void initState() {
     super.initState();
     _initLocation();
-    print("attendonly");
-
-
-    print(attendonly);
-
-
     getCredentialDetails();
+    _loadLatLong();
     checkLogin().then((_){
       setState(() {});
     });
@@ -91,6 +89,20 @@ class _ProfilePageState extends State<ProfilePage> {
     super.dispose();
     _gpsCheckTimer.cancel();
   }
+
+  Future<void> _loadLatLong() async {
+    final locationService = LocationService(); // Singleton instance
+
+    await Future.delayed(Duration(seconds: 1)); // optional: let location update at least once
+
+    setState(() {
+      latitude = locationService.currentLatitude?.toString();
+      longitude = locationService.currentLongitude?.toString();
+    });
+
+    debugPrint("Lat: $latitude, Long: $longitude");
+  }
+
 
   // Method to initialize location
   void _initLocation() async {
@@ -150,30 +162,50 @@ class _ProfilePageState extends State<ProfilePage> {
 
 
 
-  Future<String> getAddress(double latitude, double longitude) async {
-    final apiKey = 'AIzaSyCdIqus6Zv1nGHQtQA-JmoVxotbLtr1Cv0';
-    final endpoint = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=$latitude,$longitude&key=$apiKey';
+  Future<String> getAddress(String latitude, String longitude) async {
+    final apiKey = 'AIzaSyBrZfvGsraZRBZjSgYTFlfgsqAtinPhzss';
+    final latlng = '$latitude,$longitude';
+
+    final endpoint = Uri.https(
+      'maps.googleapis.com',
+      '/maps/api/geocode/json',
+      {
+        'latlng': latlng,
+        'key': apiKey,
+      },
+    );
+
+    print('Fetching address for: Latitude=$latitude, Longitude=$longitude');
+    print('Endpoint URL: $endpoint');
 
     try {
-      final response = await http.get(Uri.parse(endpoint));
+      final response = await http.get(endpoint);
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final results = data['results'] as List<dynamic>;
         if (results.isNotEmpty) {
           final formattedAddress = results[0]['formatted_address'];
           return formattedAddress;
+        } else {
+          return 'No address found';
         }
+      } else {
+        return 'API call failed';
       }
-      return 'Address not found';
     } catch (e) {
       print('Error getting address: $e');
       return 'Error';
     }
   }
 
+
+
   //Fetching API for User Attendance
   Future<void> set_user_attendances(
-      String punchType, double? latitude, double? longitude) async {
+      String punchType) async {
     try {
       int hitCounter = 0;
       hitCounter++;
@@ -186,7 +218,7 @@ class _ProfilePageState extends State<ProfilePage> {
       print("Longitude: ${longitude?.toString() ?? 'null'}");
 
       print("Fetching address...");
-      final address = await getAddress(latitude ?? 0.0, longitude ?? 0.0);
+      final address = await getAddress(latitude!, longitude!);
       print("Resolved Address: $address");
 
       final url = Uri.parse('${URL}set_user_attend');
@@ -891,7 +923,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           Fluttertoast.showToast(msg: 'Your attendance marked for today');
                         }
                             : () {
-                          set_user_attendances('logged in', _locationData?.latitude, _locationData?.longitude);
+                          set_user_attendances('logged in');
                           // sendPunchTimeToDatabase("logged in");
 
                           print('isPunchedIn :$isPunchedIn');
@@ -921,7 +953,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         }
                             : () {
                           if(isPunchedIn) {
-                            set_user_attendances('logged out', _locationData?.latitude, _locationData?.longitude);
+                            set_user_attendances('logged out');
                             // sendPunchTimeToDatabase("logged out");
 
                           }else{

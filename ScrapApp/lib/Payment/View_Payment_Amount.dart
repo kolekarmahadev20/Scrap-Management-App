@@ -77,9 +77,13 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
 
   getData(){
 
-
-    paymentType = widget.paymentType ?? '';
+    paymentType = widget.paymentType == 'P'
+        ? 'Payment Received'
+        : widget.paymentType == 'PT'
+        ? 'Transfer payment other plant'
+        : widget.paymentType ?? '';
     freezed = widget.freezed ?? '';
+
     date1 = widget.date1 ?? '';
     amount = widget.amount ?? '';
     referenceNo = widget.referenceNo ?? '';

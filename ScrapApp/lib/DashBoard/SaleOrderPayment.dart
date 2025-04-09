@@ -15,12 +15,15 @@ class View_payment_detailSale extends StatefulWidget {
   final String bidder_id;
   final String branch_id_from_ids;
   final String vendor_id_from_ids;
+  final String materialId;
 
   View_payment_detailSale({
     required this.sale_order_id,
     required this.bidder_id,
     required this.branch_id_from_ids,
     required this.vendor_id_from_ids,
+    required this.materialId,
+
   });
 
   @override
@@ -53,7 +56,6 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    print(widget.bidder_id);
     checkLogin().then((_) {
       setState(() {});
     });
@@ -75,10 +77,6 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
   }
 
   Future<void> fetchPaymentDetails() async {
-    print("asfasfasf");
-    print("Sale Order ID: ${widget.sale_order_id}");
-    print("Bidder ID: ${widget.bidder_id}");
-
     try {
       setState(() {
         isLoading = true;
@@ -94,6 +92,9 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
           'bidder_id': widget.bidder_id,
+          'vendor_id': widget.vendor_id_from_ids,
+          'branch_id': widget.branch_id_from_ids,
+          'mat_id': widget.materialId,
         },
       );
 
@@ -191,7 +192,7 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
         children: [
           buildNavButton(Icons.payment, "Payment \nDetails", 0, selectedIndex, onItemTapped),
           SizedBox(width: 20), // Space between buttons
-          buildNavButton(Icons.local_shipping, "Dispatch \nDetails", 3, selectedIndex, onItemTapped),
+          buildNavButton(Icons.local_shipping, "Dispatch \nDetails", 1, selectedIndex, onItemTapped),
         ],
       ),
     );
@@ -199,9 +200,9 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
 
   List<Color> buttonColors = [
     Colors.green,  // Payment Details
-    Colors.orange, // EMD Details
+    Colors.blue, // EMD Details
     Colors.red,    // CMD Details
-    Colors.blue,   // Dispatch Details
+    Colors.orange,   // Dispatch Details
   ];
 
   Widget buildNavButton(IconData icon, String label, int index,
@@ -290,13 +291,16 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
           setState(() {
             _selectedIndex = index;
             // Navigate to DispatchList when Dispatch is tapped
-            if (index == 3) {
+            if (index == 1) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => View_dispatch_details(
                       sale_order_id: widget.sale_order_id,
                       bidder_id: widget.bidder_id,
+                      branch_id_from_ids: widget.branch_id_from_ids, // Extracted from "Ids"
+                      vendor_id_from_ids: widget.vendor_id_from_ids, // Extracted from "Ids"
+                      materialId:  widget.materialId, // Extracted from "Ids"
                     )), // Navigate to DispatchList Page
               );
             }
@@ -811,7 +815,8 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
   }
 
   Widget buildPaymentDetailListTile(BuildContext context, index) {
-    if (index['payment_type'] == "Received Payment") {
+    // if (index['payment_type'] == "Received Payment") {
+
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Container(
@@ -964,9 +969,9 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
           ),
         ),
       );
-    } else {
-      return Container();
-    }
+    // } else {
+    //   return Container();
+    // }
   }
 
   Widget buildEmdDetailListTile(BuildContext context, index) {

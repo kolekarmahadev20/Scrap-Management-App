@@ -14,12 +14,18 @@ class InvoicePage extends StatefulWidget {
   final String bidder_id;
   final String? invoiceNo;
   final String? lift_id;
+  final String branch_id_from_ids;
+  final String vendor_id_from_ids;
+  final String materialId;
 
   InvoicePage({
     required this.sale_order_id,
     required this.bidder_id,
     required this.invoiceNo,
     required this.lift_id,
+    required this.branch_id_from_ids,
+    required this.vendor_id_from_ids,
+    required this.materialId,
 
   });
 
@@ -139,6 +145,9 @@ class _InvoicePageState extends State<InvoicePage> {
         'user_pass': password,
         'sale_order_id': widget.sale_order_id,
         'bidder_id': widget.bidder_id,
+        'vendor_id': widget.vendor_id_from_ids,
+        'branch_id': widget.branch_id_from_ids,
+        'mat_id': widget.materialId,
       },
     );
 

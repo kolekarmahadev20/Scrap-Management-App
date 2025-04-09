@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../URL_CONSTANT.dart';
+
 class ForgotPasswordScreen extends StatefulWidget {
   @override
   _ForgotPasswordScreenState createState() => _ForgotPasswordScreenState();
@@ -28,7 +30,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       isLoading = true;
     });
 
-    final url = Uri.parse("http://scrap.systementerprises.in/api/Comp_login/forgot_password");
+    final url = Uri.parse("${URL}forgot_password");
 
     Map<String, String> requestBody = {
 
@@ -61,10 +63,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       if (responseData['status'] == "1") {
         final name = responseData['data']['person_name'];
         final uname = responseData['data']['uname'];
-        final c_pass = responseData['data']['c_pass'];
+        final cpass = responseData['data']['c_pass'];
         final empEmail = responseData['data']['emp_email'];
 
-        _showMessage("Success!\nName: $name\nUser ID: $uname\nPassoed: $uname\nEmail: $empEmail");
+        _showMessage("Success!\nName: $name\nUser ID: $uname\nPassword: $cpass\nEmail: $empEmail");
       } else {
         _showMessage("Failed: ${responseData['message'] ?? 'Unknown error'}");
       }

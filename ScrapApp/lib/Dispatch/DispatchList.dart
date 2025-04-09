@@ -82,10 +82,22 @@ class _DispatchListState extends State<DispatchList> {
 
         setState(() {
           if (jsonData.containsKey('saleOrder_dispatchList')) {
+
             dispatchList = List<Map<String, dynamic>>.from(
                 jsonData['saleOrder_dispatchList']);
             filteredDispatchList = dispatchList;
             print("Dispatch List Fetched: ${dispatchList.length} items");
+
+            // Ensure Ids fields are extracted properly
+            for (var item in dispatchList) {
+              if (item.containsKey("Ids") && item["Ids"] != null) {
+                item["vendor_id_from_ids"] = item["Ids"]["vendor_id"];
+                item["branch_id_from_ids"] = item["Ids"]["branch_id"];
+                item["mat_id_from_ids"] = item["Ids"]["mat_id"];
+
+              }
+            }
+
           } else {
             print("Key 'saleOrder_dispatchList' not found in response.");
             dispatchList = [];
@@ -642,6 +654,9 @@ class _DispatchListState extends State<DispatchList> {
                           builder: (context) => View_dispatch_details(
                                 sale_order_id: index['sale_order_id'],
                                 bidder_id: index['bidder_id'],
+                                branch_id_from_ids: index['branch_id_from_ids'], // Extracted from "Ids"
+                                vendor_id_from_ids: index['vendor_id_from_ids'], // Extracted from "Ids"
+                                materialId: index['mat_id_from_ids'], // Extracted from "Ids"
                               )),
                     ).then((value) => setState(() {
                           fetchDispatchList();
@@ -655,6 +670,9 @@ class _DispatchListState extends State<DispatchList> {
                         builder: (context) => View_dispatch_details(
                               sale_order_id: index['sale_order_id'],
                               bidder_id: index['bidder_id'],
+                              branch_id_from_ids: index['branch_id_from_ids'], // Extracted from "Ids"
+                              vendor_id_from_ids: index['vendor_id_from_ids'], // Extracted from "Ids"
+                              materialId: index['mat_id_from_ids'], // Extracted from "Ids"
                             )),
                   ).then((value) => setState(() {
                         fetchDispatchList();
