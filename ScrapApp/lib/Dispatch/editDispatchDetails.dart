@@ -184,28 +184,9 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
     double firstWeight = double.tryParse(firstWeightNoController.text) ?? 0.0;
     String fullWeightText = fullWeightController.text.trim();
 
-    // 🚫 Check if firstWeight is empty or zero
-    if (fullWeightController.text.trim().isNotEmpty) {
-      // Check if First Weight is empty, invalid or zero
-      if (firstWeightNoController.text.trim().isEmpty ||
-          double.tryParse(firstWeightNoController.text.trim()) == null ||
-          double.tryParse(firstWeightNoController.text.trim()) == null ||
-          double.parse(firstWeightNoController.text.trim()) == 0.0) {
-        print("First weight is required before entering full weight.");
-        Fluttertoast.showToast(
-          msg: "Please enter First Weight before Full Weight!",
-          gravity: ToastGravity.CENTER,
-        );
-        fullWeightController.clear();
-        return;
-      }
-    }
-
     // ✅ Ensure the user enters a full weight before processing
     if (fullWeightText.isEmpty) {
       print("Waiting for full weight input...");
-      netWeightController.clear();
-      quantityController.clear();
       return;
     }
 
@@ -217,8 +198,7 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
       return;
     }
 
-    double moistureWeight =
-        double.tryParse(moistureWeightController.text) ?? 0.0;
+    double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
 
     print("First Weight: $firstWeight");
     print("Full Weight: $fullWeight");
@@ -240,16 +220,14 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
 
     // ✅ Check if netWeight is greater than totalQty first
     if (netWeight > balanceqty) {
-      print(
-          "Error: Net weight ($netWeight) exceeds total quantity ($balanceqty).");
+      print("Error: Net weight ($netWeight) exceeds total quantity ($balanceqty).");
 
       netWeightController.clear();
       quantityController.clear();
       fullWeightController.clear();
 
       Fluttertoast.showToast(
-        msg:
-        "Net weight ($netWeight) cannot exceed total quantity ($balanceqty)!",
+        msg: "Net weight ($netWeight) cannot exceed total quantity ($balanceqty)!",
         gravity: ToastGravity.CENTER,
       );
       return;
