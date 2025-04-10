@@ -65,15 +65,15 @@ class _ProfilePageState extends State<ProfilePage> {
   final Icon addressIcon =
   Icon(Icons.location_pin, color: Colors.blue.shade900, size: 40);
 
-  String? latitude;
-  String? longitude;
+  double? latitude;
+  double? longitude;
+
 
   @override
   void initState() {
     super.initState();
-    _initLocation();
     getCredentialDetails();
-    _loadLatLong();
+    _loadLocation();
     checkLogin().then((_){
       setState(() {});
     });
@@ -90,34 +90,19 @@ class _ProfilePageState extends State<ProfilePage> {
     _gpsCheckTimer.cancel();
   }
 
-  Future<void> _loadLatLong() async {
-    final locationService = LocationService(); // Singleton instance
+  Future<void> _loadLocation() async {
+    final prefs = await SharedPreferences.getInstance();
+     latitude = prefs.getDouble('latitude');
+     longitude = prefs.getDouble('longitude');
 
-    await Future.delayed(Duration(seconds: 1)); // optional: let location update at least once
-
-    setState(() {
-      latitude = locationService.currentLatitude?.toString();
-      longitude = locationService.currentLongitude?.toString();
-    });
-
-    debugPrint("Lat: $latitude, Long: $longitude");
-  }
-
-
-  // Method to initialize location
-  void _initLocation() async {
-    try {
-      _locationData = await Location().getLocation();
-      if (_locationData != null) {
-        double latitude = _locationData!.latitude!;
-        double longitude = _locationData!.longitude!;
-      } else {
-        print('Failed to fetch location data.');
-      }
-    } catch (e) {
-      print('Error fetching location: $e');
+    if (latitude != null && longitude != null) {
+      debugPrint('Saved Latitude: $latitude');
+      debugPrint('Saved Longitude: $longitude');
+    } else {
+      debugPrint('Location not found in SharedPreferences');
     }
   }
+
 
   Future<void> checkLogin() async {
     final prefs = await SharedPreferences.getInstance();
@@ -162,7 +147,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
 
 
-  Future<String> getAddress(String latitude, String longitude) async {
+  Future<String> getAddress(double latitude, double longitude) async {
     final apiKey = 'AIzaSyBrZfvGsraZRBZjSgYTFlfgsqAtinPhzss';
     final latlng = '$latitude,$longitude';
 

@@ -139,6 +139,26 @@ class LocationService {
     debugPrint("Longitude: $longitude");
     debugPrint("API URL: $_apiUrl");
 
+    // Save to SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+
+    // Get previously stored values
+    final prevLat = prefs.getDouble('latitude');
+    final prevLong = prefs.getDouble('longitude');
+
+    debugPrint("Previous Latitude: $prevLat");
+    debugPrint("Previous Longitude: $prevLong");
+
+    // Check if new values are different from previous
+    if (prevLat != latitude || prevLong != longitude) {
+      debugPrint("New location is different, updating SharedPreferences...");
+
+      await prefs.setDouble('latitude', latitude);
+      await prefs.setDouble('longitude', longitude);
+    } else {
+      debugPrint("Location is same as previous, not updating.");
+    }
+
     try {
       final response = await http.post(
         Uri.parse(_apiUrl),
@@ -175,10 +195,6 @@ class LocationService {
   void dispose() {
     _gpsCheckTimer?.cancel();
   }
-
-  // Add at the end of LocationService class
-  double? get currentLatitude => _locationData.latitude;
-  double? get currentLongitude => _locationData.longitude;
 
 
 }
