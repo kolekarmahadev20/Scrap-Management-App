@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart'; // <-- Needed for SystemNavigator.pop()
 import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'URL_CONSTANT.dart';
+
 
 class LocationService {
   // Singleton implementation
@@ -40,6 +43,7 @@ class LocationService {
   late LocationData _locationData;
   bool _serviceEnabled = true;
   late PermissionStatus _permissionGranted;
+  bool _gpsAlertShown = false;
 
   /// Loads the user data from SharedPreferences.
   Future<void> checkLogin() async {
@@ -66,18 +70,32 @@ class LocationService {
     _serviceEnabled = await _location.serviceEnabled();
 
     if (!_serviceEnabled) {
-      _serviceEnabled = await _location.requestService();
-      if (!_serviceEnabled) {
-        debugPrint('Location service is not enabled.');
+      if (!_gpsAlertShown) {
+        _gpsAlertShown = true; // Set flag early to prevent repeated popup
+        bool requested = await _location.requestService();
+        if (!requested) {
+          _closeApp("User declined to enable location services.");
+          return;
+        } else {
+          _gpsAlertShown = false;
+        }
+      } else {
         return;
       }
     }
 
     _permissionGranted = await _location.hasPermission();
     if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await _location.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) {
-        debugPrint('Location permission not granted.');
+      if (!_gpsAlertShown) {
+        _gpsAlertShown = true; // Set flag early
+        _permissionGranted = await _location.requestPermission();
+        if (_permissionGranted != PermissionStatus.granted) {
+          _closeApp("User denied location permission.");
+          return;
+        } else {
+          _gpsAlertShown = false;
+        }
+      } else {
         return;
       }
     }
@@ -88,6 +106,18 @@ class LocationService {
       debugPrint('Error getting location: $e');
     }
   }
+
+  void _closeApp(String reason) {
+    debugPrint(reason);
+    _gpsCheckTimer?.cancel();
+
+    if (Platform.isAndroid || Platform.isIOS) {
+      SystemNavigator.pop(); // Gracefully exits the app
+    } else {
+      exit(0); // Fallback for other platforms
+    }
+  }
+
 
   /// Converts degrees to radians.
   double _degToRad(double deg) {
