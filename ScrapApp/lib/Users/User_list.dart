@@ -200,7 +200,7 @@ class _view_userState extends State<view_user> {
     final response = await http.post(
       Uri.parse('${URL}user_list_details'),
       body: {
-        'uuid':uuid,
+        'uuid': uuid,
         'user_id': username,
         'user_pass': password,
       },
@@ -208,9 +208,16 @@ class _view_userState extends State<view_user> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final List<User> users = (data['user_data'] as List)
+
+      // Filter out users with null 'c_pass'
+      final filteredUserData = (data['user_data'] as List)
+          .where((userJson) => userJson['c_pass'] != null)
+          .toList();
+
+      final List<User> users = filteredUserData
           .map((userJson) => User.fromJson(userJson))
           .toList();
+
       // Count active and inactive users
       totalUsers = users.length;
       activeUsers = users.where((user) => user.isActive.toLowerCase() == 'y').length;
@@ -222,6 +229,7 @@ class _view_userState extends State<view_user> {
       throw Exception('Failed to load users');
     }
   }
+
 
 
   // Future<List<User>> _getUsers(String searchText) async {

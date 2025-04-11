@@ -265,6 +265,8 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
           'uuid': uuid,
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
+          'branch_id':widget.branch_id_from_ids,
+          'vendor_id':widget.vendor_id_from_ids,
         },
       );
       if (response.statusCode == 200) {

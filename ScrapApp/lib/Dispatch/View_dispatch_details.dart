@@ -97,6 +97,9 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
           'bidder_id': widget.bidder_id,
+          'vendor_id': widget.vendor_id_from_ids,
+          'branch_id': widget.branch_id_from_ids,
+          'mat_id': widget.materialId,
         },
       );
 

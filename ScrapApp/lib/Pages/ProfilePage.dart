@@ -15,9 +15,7 @@ import '../LocationService.dart';
 import 'attendance.dart';
 import 'dart:math' as math;
 
-
 class ProfilePage extends StatefulWidget {
-
   final int currentPage;
   ProfilePage({required this.currentPage});
 
@@ -49,32 +47,31 @@ class _ProfilePageState extends State<ProfilePage> {
   bool isPunchedOut = false;
   DateTime? punchTime;
   DateTime? punchOutTime;
-  String? attendanceType ;
+  String? attendanceType;
   int _currentIndex = 0; // Current tab index
   LocationData? _locationData;
   late Timer _gpsCheckTimer;
 
   final Icon nameIcon =
-  Icon(Icons.person, color: Colors.blue.shade900, size: 40);
+      Icon(Icons.person, color: Colors.blue.shade900, size: 40);
   final Icon contactIcon =
-  Icon(Icons.contacts, color: Colors.blue.shade900, size: 40);
+      Icon(Icons.contacts, color: Colors.blue.shade900, size: 40);
   final Icon emailIcon =
-  Icon(Icons.email_outlined, color: Colors.blue.shade900, size: 40);
+      Icon(Icons.email_outlined, color: Colors.blue.shade900, size: 40);
   final Icon empCodeIcon =
-  Icon(Icons.person, color: Colors.blue.shade900, size: 40);
+      Icon(Icons.person, color: Colors.blue.shade900, size: 40);
   final Icon addressIcon =
-  Icon(Icons.location_pin, color: Colors.blue.shade900, size: 40);
+      Icon(Icons.location_pin, color: Colors.blue.shade900, size: 40);
 
   double? latitude;
   double? longitude;
-
 
   @override
   void initState() {
     super.initState();
     getCredentialDetails();
     _loadLocation();
-    checkLogin().then((_){
+    checkLogin().then((_) {
       setState(() {});
     });
 
@@ -92,8 +89,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _loadLocation() async {
     final prefs = await SharedPreferences.getInstance();
-     latitude = prefs.getDouble('latitude');
-     longitude = prefs.getDouble('longitude');
+    latitude = prefs.getDouble('latitude');
+    longitude = prefs.getDouble('longitude');
 
     if (latitude != null && longitude != null) {
       debugPrint('Saved Latitude: $latitude');
@@ -102,7 +99,6 @@ class _ProfilePageState extends State<ProfilePage> {
       debugPrint('Location not found in SharedPreferences');
     }
   }
-
 
   Future<void> checkLogin() async {
     final prefs = await SharedPreferences.getInstance();
@@ -118,10 +114,10 @@ class _ProfilePageState extends State<ProfilePage> {
     DateTime targetDate = DateTime.parse(remainingDays);
 
     Duration difference = targetDate.difference(today);
-    remainingDaysString = difference.inDays.toString(); // Convert duration to string
+    remainingDaysString =
+        difference.inDays.toString(); // Convert duration to string
 
     print("Remaining Days: $remainingDaysString");
-
 
     uuid = prefs.getString("uuid")!;
   }
@@ -144,8 +140,6 @@ class _ProfilePageState extends State<ProfilePage> {
       );
     }
   }
-
-
 
   Future<String> getAddress(double latitude, double longitude) async {
     final apiKey = 'AIzaSyBrZfvGsraZRBZjSgYTFlfgsqAtinPhzss';
@@ -186,29 +180,23 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-
+  bool isLoading = false;
+  bool isPunchOutLoading = false;
 
   //Fetching API for User Attendance
-  Future<void> set_user_attendances(
-      String punchType) async {
+  Future<void> set_user_attendances(String punchType) async {
     try {
-      int hitCounter = 0;
-      hitCounter++;
+      setState(() {
+        if (punchType == 'logged in') {
+          isLoading = true;
+        } else {
+          isPunchOutLoading = true;
+        }
+      });
 
-      print("========== DEBUG: set_user_attendances START ==========");
-      print("Function called $hitCounter time(s)");
-      print("Function called with:");
-      print("Punch Type: $punchType");
-      print("Latitude: ${latitude?.toString() ?? 'null'}");
-      print("Longitude: ${longitude?.toString() ?? 'null'}");
-
-      print("Fetching address...");
       final address = await getAddress(latitude!, longitude!);
-      print("Resolved Address: $address");
 
       final url = Uri.parse('${URL}set_user_attend');
-      print("API URL: $url");
-
       final requestBody = {
         'user_id': username,
         'user_pass': password,
@@ -218,45 +206,108 @@ class _ProfilePageState extends State<ProfilePage> {
         'location[long]': longitude?.toString() ?? '',
         'address': address ?? ''
       };
-      print("Request Body: $requestBody");
 
-      print("Sending HTTP POST request...");
       final response = await http.post(
         url,
         headers: {"Accept": "application/json"},
         body: requestBody,
       );
 
-      print("Response Received!");
-      print("Response Status Code: ${response.statusCode}");
-
       if (response.statusCode == 200) {
-        print("Parsing response JSON...");
         final data = json.decode(response.body);
+        if (data['msg'] == 'Attendance updated successfully.') {
+          Fluttertoast.showToast(msg: 'Attendance marked successfully.');
 
-        Fluttertoast.showToast(msg: 'Attendance marked successfully.');
-
-        if (punchType == 'logged in') {
-          fetchPunchTimeFromDatabase();
+          if (punchType == 'logged in') {
+            fetchPunchTimeFromDatabase();
+          } else {
+            fetchLogoutPunchTimeFromDatabase();
+          }
         } else {
-          fetchLogoutPunchTimeFromDatabase();
+          Fluttertoast.showToast(msg: data['msg']);
         }
-
       } else {
-        print("========== ERROR RESPONSE ==========");
-        print("Response Status Code: ${response.statusCode}");
-        print("Response Body: ${response.body}");
+        print("Error: ${response.body}");
       }
     } catch (e, stackTrace) {
-      print("StackTrace: $stackTrace");
+      print("Error: $e\n$stackTrace");
     } finally {
-      print("========== DEBUG: set_user_attendances END ==========");
+      setState(() {
+        if (punchType == 'logged in') {
+          isLoading = false;
+        } else {
+          isPunchOutLoading = false;
+        }
+      });
     }
   }
 
+  // Future<void> set_user_attendances(
+  //     String punchType) async {
+  //   try {
+  //     int hitCounter = 0;
+  //     hitCounter++;
+  //
+  //     print("========== DEBUG: set_user_attendances START ==========");
+  //     print("Function called $hitCounter time(s)");
+  //     print("Function called with:");
+  //     print("Punch Type: $punchType");
+  //     print("Latitude: ${latitude?.toString() ?? 'null'}");
+  //     print("Longitude: ${longitude?.toString() ?? 'null'}");
+  //
+  //     print("Fetching address...");
+  //     final address = await getAddress(latitude!, longitude!);
+  //     print("Resolved Address: $address");
+  //
+  //     final url = Uri.parse('${URL}set_user_attend');
+  //     print("API URL: $url");
+  //
+  //     final requestBody = {
+  //       'user_id': username,
+  //       'user_pass': password,
+  //       'uuid': uuid,
+  //       'punch_type': punchType,
+  //       'location[lat]': latitude?.toString() ?? '',
+  //       'location[long]': longitude?.toString() ?? '',
+  //       'address': address ?? ''
+  //     };
+  //     print("Request Body: $requestBody");
+  //
+  //     print("Sending HTTP POST request...");
+  //     final response = await http.post(
+  //       url,
+  //       headers: {"Accept": "application/json"},
+  //       body: requestBody,
+  //     );
+  //
+  //     print("Response Received!");
+  //     print("Response Status Code: ${response.statusCode}");
+  //
+  //     if (response.statusCode == 200) {
+  //       print("Parsing response JSON...");
+  //       final data = json.decode(response.body);
+  //
+  //       Fluttertoast.showToast(msg: 'Attendance marked successfully.');
+  //
+  //       if (punchType == 'logged in') {
+  //         fetchPunchTimeFromDatabase();
+  //       } else {
+  //         fetchLogoutPunchTimeFromDatabase();
+  //       }
+  //
+  //     } else {
+  //       print("========== ERROR RESPONSE ==========");
+  //       print("Response Status Code: ${response.statusCode}");
+  //       print("Response Body: ${response.body}");
+  //     }
+  //   } catch (e, stackTrace) {
+  //     print("StackTrace: $stackTrace");
+  //   } finally {
+  //     print("========== DEBUG: set_user_attendances END ==========");
+  //   }
+  // }
 
   void sendPunchTimeToDatabase(String status) async {
-
     try {
       await checkLogin();
       final url = Uri.parse('${URL}set_user_attendance');
@@ -289,7 +340,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  void fetchPunchTimeFromDatabase() async{
+  void fetchPunchTimeFromDatabase() async {
     try {
       await checkLogin();
       final url = Uri.parse('${URL}fetch_attendance_time');
@@ -297,14 +348,15 @@ class _ProfilePageState extends State<ProfilePage> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id':username,
-          'uuid':uuid,
-          'user_pass':password,
+          'user_id': username,
+          'uuid': uuid,
+          'user_pass': password,
         },
       );
       var data = jsonDecode(response.body);
 
-      if (data.containsKey('login_time') && data['login_time'] == "0000-00-00") {
+      if (data.containsKey('login_time') &&
+          data['login_time'] == "0000-00-00") {
         // print("Skipping punchTime assignment. Invalid logout_time detected.");
         logINTimeString = data['login_time'];
       } else if (data.containsKey('login_time') && data['login_time'] != null) {
@@ -326,12 +378,12 @@ class _ProfilePageState extends State<ProfilePage> {
       String punchINDate = DateFormat('yyyy-MM-dd').format(punchTime!);
       // print("punchINDate:$punchINDate");
 
-      if (logINTimeString == "0000-00-00"  && userType != 'S') {
+      if (logINTimeString == "0000-00-00" && userType != 'S') {
         // print("Skipping trackadminresponse call because logINTimeString is 0000-00-00");
-      } else if (punchINDate != todayDate  && userType != 'S') {
+      } else if (punchINDate != todayDate && userType != 'S') {
         // print("punchINDate $punchINDate is not equal to todayDate $todayDate, calling fasfasf...");
         trackadminresponse();
-      }else {
+      } else {
         // print("Skipping trackadminresponse call because punchINDate matches today’s date.");
       }
 
@@ -351,14 +403,12 @@ class _ProfilePageState extends State<ProfilePage> {
       // } else {
       //   Fluttertoast.showToast(msg: 'Unable to fetch punch time');
       // }
-    }catch(e){
+    } catch (e) {
       print('Server Exception 258 : $e');
-    }finally{
-
-    }
+    } finally {}
   }
 
-  void fetchLogoutPunchTimeFromDatabase() async{
+  void fetchLogoutPunchTimeFromDatabase() async {
     try {
       await checkLogin();
       final url = Uri.parse('${URL}fetch_attendance_Outime');
@@ -366,22 +416,27 @@ class _ProfilePageState extends State<ProfilePage> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id':username,
-          'uuid':uuid,
-          'user_pass':password,
+          'user_id': username,
+          'uuid': uuid,
+          'user_pass': password,
         },
       );
       if (response.statusCode == 200) {
         setState(() {
           var data = jsonDecode(response.body);
 
-          if (data.containsKey('logout_time') && data['logout_time'] == "0000-00-00") {
-            print("Skipping punchTime assignment. Invalid logout_time detected.");
-            logoutTimeString = data['logout_time'] ?? ""; // Ensure it's not null
+          if (data.containsKey('logout_time') &&
+              data['logout_time'] == "0000-00-00") {
+            print(
+                "Skipping punchTime assignment. Invalid logout_time detected.");
+            logoutTimeString =
+                data['logout_time'] ?? ""; // Ensure it's not null
             print("logoutTimeString: $logoutTimeString");
-          } else if (data.containsKey('logout_time') && data['logout_time'] != "0000-00-00") {
+          } else if (data.containsKey('logout_time') &&
+              data['logout_time'] != "0000-00-00") {
             try {
-              punchOutTime = DateTime.tryParse(data['logout_time']); // Use tryParse to prevent crashes
+              punchOutTime = DateTime.tryParse(
+                  data['logout_time']); // Use tryParse to prevent crashes
               if (punchOutTime != null) {
                 enablePunching("logged out");
               }
@@ -390,18 +445,16 @@ class _ProfilePageState extends State<ProfilePage> {
               punchOutTime = null; // Ensure it's handled safely
             }
           } else {
-            print("Skipping punchTime assignment. 'logout_time' not found in response.");
+            print(
+                "Skipping punchTime assignment. 'logout_time' not found in response.");
           }
         });
       } else {
         Fluttertoast.showToast(msg: 'Unable to fetch punch time');
       }
-
-    }catch(e){
+    } catch (e) {
       print('Server Exceptionasfasf : $e');
-    }finally{
-
-    }
+    } finally {}
   }
 
   Future<void> trackadminresponse() async {
@@ -425,7 +478,8 @@ class _ProfilePageState extends State<ProfilePage> {
         final responseData = json.decode(response.body);
         print(responseData);
 
-        if (responseData['status'] == '0' && responseData['msg'] == "Failed To Track Admin Activity...") {
+        if (responseData['status'] == '0' &&
+            responseData['msg'] == "Failed To Track Admin Activity...") {
           print("Condition met: Do nothing");
           return;
         }
@@ -434,7 +488,8 @@ class _ProfilePageState extends State<ProfilePage> {
           final adminActivities = responseData['tracked_admin_activity'];
 
           if (adminActivities != null && adminActivities.isNotEmpty) {
-            final adminActivity = adminActivities[0];  // Hamesha 0th position ka response le raha hai
+            final adminActivity = adminActivities[
+                0]; // Hamesha 0th position ka response le raha hai
 
             final adminremarkmsg = adminActivity['remark'] ?? 'No remark found';
             final adminstatus = adminActivity['status'] ?? 'P';
@@ -446,10 +501,12 @@ class _ProfilePageState extends State<ProfilePage> {
               print("Admin remark message: $adminremarkmsg");
 
               if (adminremarkmsg == "No remark found") {
-                print("Condition met without status: Showing Late Login Remark Dialog");
+                print(
+                    "Condition met without status: Showing Late Login Remark Dialog");
                 _showLateLoginRemarkDialog();
               } else if (adminstatus == "P" || adminstatus == "R") {
-                print("Condition met with status: Showing Late Login Admin Remark Dialog");
+                print(
+                    "Condition met with status: Showing Late Login Admin Remark Dialog");
                 _showLateLoginAdminRemarkDialog();
               } else {
                 print("Login Approved.");
@@ -468,7 +525,6 @@ class _ProfilePageState extends State<ProfilePage> {
       print('Error: $e');
     }
   }
-
 
   // Future<void> trackadminresponse() async {
   //   print(username);
@@ -538,7 +594,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _submitLateLoginRemark(String remark) async {
     try {
-
       print(personId);
       print(remark);
       print(password);
@@ -550,11 +605,11 @@ class _ProfilePageState extends State<ProfilePage> {
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id':username,
-          'user_pass':password,
-          'id':personId,
+          'user_id': username,
+          'user_pass': password,
+          'id': personId,
           'remark': remark,
-          'uuid':uuid
+          'uuid': uuid
         },
       );
 
@@ -573,8 +628,6 @@ class _ProfilePageState extends State<ProfilePage> {
             SnackBar(content: Text('Remark submitted successfully')),
           );
 
-
-
           Navigator.pop(context); // Close the dialog
         } else {
           // Handle failure
@@ -586,14 +639,13 @@ class _ProfilePageState extends State<ProfilePage> {
     } catch (e) {
       // Handle exception
       print('Error submitting remark: $e');
-
     }
   }
 
   void _showLateLoginRemarkDialog() {
     showDialog(
       context: context,
-      barrierDismissible : false,
+      barrierDismissible: false,
       builder: (context) {
         final TextEditingController remarkController = TextEditingController();
         return AlertDialog(
@@ -623,8 +675,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 if (remarkController.text.isNotEmpty) {
                   await _submitLateLoginRemark(remarkController.text);
                   // Refresh the page by calling setState
-
-
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Remark cannot be empty')),
@@ -642,13 +692,13 @@ class _ProfilePageState extends State<ProfilePage> {
   void _showLateLoginAdminRemarkDialog() {
     showDialog(
       context: context,
-      barrierDismissible : false,
+      barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.0),
           ),
-          title:  Text(
+          title: Text(
             "Admin will shortly connect to you. Please wait for their response.",
             style: TextStyle(fontSize: 16),
           ),
@@ -667,28 +717,28 @@ class _ProfilePageState extends State<ProfilePage> {
 
   enablePunching(String status) {
     DateTime currentDateTime = DateTime.now();
-    String currentformattedDate = DateFormat('yyyy-MM-dd').format(currentDateTime);
-    if (status == 'logged in'){
+    String currentformattedDate =
+        DateFormat('yyyy-MM-dd').format(currentDateTime);
+    if (status == 'logged in') {
       String punchFormattedDate = DateFormat('yyyy-MM-dd').format(punchTime!);
       if (currentformattedDate != punchFormattedDate) {
         setState(() {
           isPunchedIn = false;
         });
-      }
-      else {
+      } else {
         setState(() {
           isPunchedIn = true;
         });
       }
     }
-    if(status == 'logged out') {
-      String punchOutFormattedDate = DateFormat('yyyy-MM-dd').format(punchOutTime!);
-      if(currentformattedDate != punchOutFormattedDate){
+    if (status == 'logged out') {
+      String punchOutFormattedDate =
+          DateFormat('yyyy-MM-dd').format(punchOutTime!);
+      if (currentformattedDate != punchOutFormattedDate) {
         setState(() {
           isPunchedOut = false;
         });
-      }
-      else{
+      } else {
         setState(() {
           isPunchedOut = true;
         });
@@ -698,18 +748,19 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _onItemTapped(int index) {
     setState(() {
-      if(isPunchedIn){
+      if (isPunchedIn) {
         _currentIndex = index; // Update current index
-      }else{
+      } else {
         Fluttertoast.showToast(msg: 'Please mark attendance first.');
       }
 
-      if(_currentIndex == 1){
+      if (_currentIndex == 1) {
         if (punchTime != null && punchOutTime != null) {
           Navigator.push(
             context,
             SlidePageRoute(
-              page: AttendanceMarkedPage(punchTime: punchTime!, punchOutTime: punchOutTime!),
+              page: AttendanceMarkedPage(
+                  punchTime: punchTime!, punchOutTime: punchOutTime!),
             ),
           ).then((value) {
             _currentIndex = 0;
@@ -719,7 +770,8 @@ class _ProfilePageState extends State<ProfilePage> {
           Navigator.push(
             context,
             SlidePageRoute(
-              page: AttendanceMarkedPage(punchTime: punchTime!, punchOutTime: null),
+              page: AttendanceMarkedPage(
+                  punchTime: punchTime!, punchOutTime: null),
             ),
           ).then((value) {
             _currentIndex = 0;
@@ -729,7 +781,8 @@ class _ProfilePageState extends State<ProfilePage> {
           Navigator.push(
             context,
             SlidePageRoute(
-              page: AttendanceMarkedPage(punchTime: null, punchOutTime: punchOutTime!),
+              page: AttendanceMarkedPage(
+                  punchTime: null, punchOutTime: punchOutTime!),
             ),
           ).then((value) {
             _currentIndex = 0;
@@ -792,7 +845,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return StatefulBuilder(builder: (BuildContext context , StateSetter setState) {
+    return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
       return Scaffold(
         // drawer: (attendonly == 'Y' || attendonly == '')
         //     ? null
@@ -824,16 +878,13 @@ class _ProfilePageState extends State<ProfilePage> {
                         border: Border.all(color: Colors.black, width: 1),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                            21),
+                        borderRadius: BorderRadius.circular(21),
                         // Ensure the image also respects the border radius
                         child: Image.asset(
                           'assets/images/themeimg1.jpeg',
-                          fit: BoxFit
-                              .cover,
+                          fit: BoxFit.cover,
                           // Use BoxFit.cover to ensure the image covers the entire area
-                          width: double
-                              .infinity,
+                          width: double.infinity,
                           // Ensure the image takes the full width of the container
                           height: 250,
                           // Set a fixed height or adjust as needed
@@ -848,8 +899,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         children: [
                           CircleAvatar(
                             radius: 50,
-                            backgroundImage: AssetImage(
-                                'assets/images/hello.gif'),
+                            backgroundImage:
+                                AssetImage('assets/images/hello.gif'),
                             // Replace with user's image
                             backgroundColor: Colors.blueGrey.shade100,
                           ),
@@ -871,7 +922,10 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           Text(
                             "Deactivates in $remainingDaysString days!",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.white),
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
                           ),
                         ],
                       ),
@@ -899,22 +953,16 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   Expanded(
                     child: Container(
-                      margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-                      child: ElevatedButton.icon(
-                        icon: Icon(Icons.login_rounded, color: Colors.white),
-                        label: Text("Punch In", style: TextStyle(color: Colors.white)),
-                        onPressed: isPunchedIn
-                            ? () {
-                          Fluttertoast.showToast(msg: 'Your attendance marked for today');
-                        }
+                      margin:
+                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                      child: ElevatedButton(
+                        onPressed: isPunchedIn || isLoading
+                            ? null
                             : () {
-                          set_user_attendances('logged in');
-                          // sendPunchTimeToDatabase("logged in");
-
-                          print('isPunchedIn :$isPunchedIn');
-                        },
+                                set_user_attendances('logged in');
+                              },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isPunchedIn
+                          backgroundColor: isPunchedIn || isLoading
                               ? Colors.grey[400]
                               : Colors.greenAccent[200],
                           shape: RoundedRectangleBorder(
@@ -923,41 +971,140 @@ class _ProfilePageState extends State<ProfilePage> {
                           elevation: 5,
                           padding: EdgeInsets.symmetric(vertical: 14.0),
                         ),
+                        child: isLoading
+                            ? SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.login_rounded,
+                                      color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Text("Punch In",
+                                      style: TextStyle(color: Colors.white)),
+                                ],
+                              ),
                       ),
                     ),
                   ),
                   Expanded(
                     child: Container(
-                      margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-                      child: ElevatedButton.icon(
-                        icon: Icon(Icons.logout_rounded, color: Colors.white),
-                        label: Text("Punch Out", style: TextStyle(color: Colors.white)),
-                        onPressed: isPunchedOut
-                            ? () {
-                          Fluttertoast.showToast(msg: 'Your attendance marked for today');
-                        }
+                      margin:
+                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                      child: ElevatedButton(
+                        onPressed: isPunchedOut || isPunchOutLoading
+                            ? null
                             : () {
-                          if(isPunchedIn) {
-                            set_user_attendances('logged out');
-                            // sendPunchTimeToDatabase("logged out");
-
-                          }else{
-                            Fluttertoast.showToast(msg: 'Please punch in first');
-                          }
-                        },
+                                if (isPunchedIn) {
+                                  set_user_attendances('logged out');
+                                } else {
+                                  Fluttertoast.showToast(
+                                      msg: 'Please punch in first');
+                                }
+                              },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isPunchedOut
+                          backgroundColor: isPunchedOut || isPunchOutLoading
                               ? Colors.grey[400]
-                              :Colors.redAccent[200],
+                              : Colors.redAccent[200],
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
                           elevation: 5,
                           padding: EdgeInsets.symmetric(vertical: 14.0),
                         ),
+                        child: isPunchOutLoading
+                            ? SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.logout_rounded,
+                                      color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Text("Punch Out",
+                                      style: TextStyle(color: Colors.white)),
+                                ],
+                              ),
                       ),
                     ),
                   ),
+
+                  // Expanded(
+                  //   child: Container(
+                  //     margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                  //     child: ElevatedButton.icon(
+                  //       icon: Icon(Icons.login_rounded, color: Colors.white),
+                  //       label: Text("Punch In", style: TextStyle(color: Colors.white)),
+                  //       onPressed: isPunchedIn
+                  //           ? () {
+                  //         Fluttertoast.showToast(msg: 'Your attendance marked for today');
+                  //       }
+                  //           : () {
+                  //         set_user_attendances('logged in');
+                  //         // sendPunchTimeToDatabase("logged in");
+                  //
+                  //         print('isPunchedIn :$isPunchedIn');
+                  //       },
+                  //       style: ElevatedButton.styleFrom(
+                  //         backgroundColor: isPunchedIn
+                  //             ? Colors.grey[400]
+                  //             : Colors.greenAccent[200],
+                  //         shape: RoundedRectangleBorder(
+                  //           borderRadius: BorderRadius.circular(30),
+                  //         ),
+                  //         elevation: 5,
+                  //         padding: EdgeInsets.symmetric(vertical: 14.0),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                  // Expanded(
+                  //   child: Container(
+                  //     margin:
+                  //         EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                  //     child: ElevatedButton.icon(
+                  //       icon: Icon(Icons.logout_rounded, color: Colors.white),
+                  //       label: Text("Punch Out",
+                  //           style: TextStyle(color: Colors.white)),
+                  //       onPressed: isPunchedOut
+                  //           ? () {
+                  //               Fluttertoast.showToast(
+                  //                   msg: 'Your attendance marked for today');
+                  //             }
+                  //           : () {
+                  //               if (isPunchedIn) {
+                  //                 set_user_attendances('logged out');
+                  //                 // sendPunchTimeToDatabase("logged out");
+                  //               } else {
+                  //                 Fluttertoast.showToast(
+                  //                     msg: 'Please punch in first');
+                  //               }
+                  //             },
+                  //       style: ElevatedButton.styleFrom(
+                  //         backgroundColor: isPunchedOut
+                  //             ? Colors.grey[400]
+                  //             : Colors.redAccent[200],
+                  //         shape: RoundedRectangleBorder(
+                  //           borderRadius: BorderRadius.circular(30),
+                  //         ),
+                  //         elevation: 5,
+                  //         padding: EdgeInsets.symmetric(vertical: 14.0),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ],
@@ -1008,8 +1155,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ],
             currentIndex: _currentIndex, // Set the index for the current tab
             selectedItemColor: Colors.blueGrey[900],
-            onTap: _onItemTapped
-        ),
+            onTap: _onItemTapped),
       );
     });
   }
@@ -1019,7 +1165,8 @@ class _ProfilePageState extends State<ProfilePage> {
       padding: const EdgeInsets.all(8.0),
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: Color(0xFF6482AD), width: 2), // Input border
+          border:
+              Border.all(color: Color(0xFF6482AD), width: 2), // Input border
           borderRadius: BorderRadius.circular(12), // Rounded corners
           color: Colors.white, // Background color
           boxShadow: [
@@ -1046,9 +1193,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   // Clip the image to ensure it fits within the rounded container
                   child: Image.asset(
                     path,
-                    fit: BoxFit.cover, // Change to BoxFit.cover or BoxFit.contain
+                    fit: BoxFit
+                        .cover, // Change to BoxFit.cover or BoxFit.contain
                     width: 50, // Ensure the width matches the container's width
-                    height: 50, // Ensure the height matches the container's height
+                    height:
+                        50, // Ensure the height matches the container's height
                   ),
                 ),
               ),
@@ -1092,26 +1241,25 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 }
 
-
 class SlidePageRoute extends PageRouteBuilder {
   final Widget page;
 
   SlidePageRoute({required this.page})
       : super(
-    pageBuilder: (context, animation, secondaryAnimation) => page,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      const begin = Offset(1.0, 0.0);
-      const end = Offset.zero;
-      const curve = Curves.easeInOut;
+          pageBuilder: (context, animation, secondaryAnimation) => page,
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.easeInOut;
 
-      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-      var offsetAnimation = animation.drive(tween);
+            var tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            var offsetAnimation = animation.drive(tween);
 
-      return SlideTransition(
-        position: offsetAnimation,
-        child: child,
-      );
-    },
-  );
+            return SlideTransition(
+              position: offsetAnimation,
+              child: child,
+            );
+          },
+        );
 }
-
