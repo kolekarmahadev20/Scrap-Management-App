@@ -142,7 +142,9 @@ class _ForgotPunchOutPageState extends State<ForgotPunchOutPage> {
                 'punchInTime':  user['login_time'], // Modify if you have punch-in time info
                 'status': user['status'],
                 'remark': user['remark'],
-                'attendance_id': user['attendance_id']
+                'attendance_id': user['attendance_id'],
+                'address': user['address']
+
               };
             }));
 
@@ -317,13 +319,16 @@ class _ForgotPunchOutPageState extends State<ForgotPunchOutPage> {
             //   'Email: ${user['email']}',
             //   style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
             // ),
-            // Text(
-            //   'Role: ${user['role']}',
-            //   style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
-            // ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Text(
+                'Location: ${user['address']}',
+                style: TextStyle(fontSize: 14),
+              ),
+            ),
             Text(
               'Punch In Time: ${formatDate(user['punchInTime'])}',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+              style: TextStyle(fontSize: 14),
             ),
             // if (user['remark'].isNotEmpty)
               Padding(
