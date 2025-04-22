@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
 import 'package:scrapapp/Pages/StartPage.dart';
@@ -66,6 +67,11 @@ class _ProfilePageState extends State<ProfilePage> {
   double? latitude;
   double? longitude;
 
+  String? appVersion;
+
+  String? _buildNumber;
+  bool _isUpdateAvailable = false;
+
   @override
   void initState() {
     super.initState();
@@ -74,7 +80,6 @@ class _ProfilePageState extends State<ProfilePage> {
     checkLogin().then((_) {
       setState(() {});
     });
-
     fetchPunchTimeFromDatabase(); // First call
     Future.delayed(Duration(milliseconds: 500), () {
       fetchLogoutPunchTimeFromDatabase(); // Second call after a small delay
@@ -109,6 +114,7 @@ class _ProfilePageState extends State<ProfilePage> {
     remainingDays = prefs.getString("remainingDays")!;
     readonly = prefs.getString("readonly");
     attendonly = prefs.getString("attendonly");
+    appVersion = prefs.getString("appVersion");
 
     DateTime today = DateTime.now();
     DateTime targetDate = DateTime.parse(remainingDays);
@@ -139,6 +145,75 @@ class _ProfilePageState extends State<ProfilePage> {
         MaterialPageRoute(builder: (context) => StartPage()),
       );
     }
+  }
+
+  void showUpdateDialog() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          elevation: 16,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue.shade50, Colors.white],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 10,
+                  offset: Offset(2, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.system_update, size: 60, color: Colors.blueAccent),
+                const SizedBox(height: 10),
+                Text(
+                  "New Update Available!",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "We've added new features and fixed some bugs. Please update to the latest version for the best experience.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    // Add redirect logic here
+                    Navigator.pop(context);
+                  },
+                  icon: Icon(Icons.download_rounded),
+                  label: Text("Update Now"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    elevation: 4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   Future<String> getAddress(double latitude, double longitude) async {
@@ -241,71 +316,6 @@ class _ProfilePageState extends State<ProfilePage> {
       });
     }
   }
-
-  // Future<void> set_user_attendances(
-  //     String punchType) async {
-  //   try {
-  //     int hitCounter = 0;
-  //     hitCounter++;
-  //
-  //     print("========== DEBUG: set_user_attendances START ==========");
-  //     print("Function called $hitCounter time(s)");
-  //     print("Function called with:");
-  //     print("Punch Type: $punchType");
-  //     print("Latitude: ${latitude?.toString() ?? 'null'}");
-  //     print("Longitude: ${longitude?.toString() ?? 'null'}");
-  //
-  //     print("Fetching address...");
-  //     final address = await getAddress(latitude!, longitude!);
-  //     print("Resolved Address: $address");
-  //
-  //     final url = Uri.parse('${URL}set_user_attend');
-  //     print("API URL: $url");
-  //
-  //     final requestBody = {
-  //       'user_id': username,
-  //       'user_pass': password,
-  //       'uuid': uuid,
-  //       'punch_type': punchType,
-  //       'location[lat]': latitude?.toString() ?? '',
-  //       'location[long]': longitude?.toString() ?? '',
-  //       'address': address ?? ''
-  //     };
-  //     print("Request Body: $requestBody");
-  //
-  //     print("Sending HTTP POST request...");
-  //     final response = await http.post(
-  //       url,
-  //       headers: {"Accept": "application/json"},
-  //       body: requestBody,
-  //     );
-  //
-  //     print("Response Received!");
-  //     print("Response Status Code: ${response.statusCode}");
-  //
-  //     if (response.statusCode == 200) {
-  //       print("Parsing response JSON...");
-  //       final data = json.decode(response.body);
-  //
-  //       Fluttertoast.showToast(msg: 'Attendance marked successfully.');
-  //
-  //       if (punchType == 'logged in') {
-  //         fetchPunchTimeFromDatabase();
-  //       } else {
-  //         fetchLogoutPunchTimeFromDatabase();
-  //       }
-  //
-  //     } else {
-  //       print("========== ERROR RESPONSE ==========");
-  //       print("Response Status Code: ${response.statusCode}");
-  //       print("Response Body: ${response.body}");
-  //     }
-  //   } catch (e, stackTrace) {
-  //     print("StackTrace: $stackTrace");
-  //   } finally {
-  //     print("========== DEBUG: set_user_attendances END ==========");
-  //   }
-  // }
 
   void sendPunchTimeToDatabase(String status) async {
     try {
@@ -458,9 +468,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> trackadminresponse() async {
-    print(username);
-    print(password);
-
     try {
       await checkLogin();
       final response = await http.post(
@@ -525,72 +532,6 @@ class _ProfilePageState extends State<ProfilePage> {
       print('Error: $e');
     }
   }
-
-  // Future<void> trackadminresponse() async {
-  //   print(username);
-  //   print(password);
-  //
-  //   try {
-  //     await checkLogin();
-  //     final response = await http.post(
-  //       Uri.parse('${URL}track_admin_response'),
-  //       headers: {"Accept": "application/json"},
-  //       body: {
-  //         'user_id': username,
-  //         'user_pass': password,
-  //         'id': personId,
-  //         'uuid':uuid,
-  //       },
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       final responseData = json.decode(response.body);
-  //       print(responseData);
-  //
-  //       // If status is 0 and message is "Failed To Track Admin Activity...", do nothing
-  //       if (responseData['status'] == '0' && responseData['msg'] == "Failed To Track Admin Activity...") {
-  //         print("Condition met: Do nothing");
-  //         return;
-  //       }
-  //
-  //       if (responseData['status'] == '1') {
-  //         final adminActivity = responseData['tracked_admin_activity'];
-  //
-  //         if (adminActivity != null) {
-  //           final adminremarkmsg = adminActivity['remark'] ?? 'No remark found';
-  //           final adminstatus = adminActivity['status'] ?? 'P';
-  //
-  //           print(adminstatus);
-  //           print("adminstatus");
-  //
-  //           setState(() {
-  //             print("Admin remark message: $adminremarkmsg");
-  //
-  //             if (adminremarkmsg == "No remark found") {
-  //               print("Condition met without status: Showing Late Login Remark Dialog");
-  //               _showLateLoginRemarkDialog();
-  //             }
-  //             else if (adminstatus == "P" || adminstatus == "R") {
-  //               print("Condition met with status: Showing Late Login Admin Remark Dialog");
-  //               _showLateLoginAdminRemarkDialog();
-  //             }
-  //             else {
-  //               print("Login Approved.");
-  //             }
-  //           });
-  //         } else {
-  //           print("No tracked admin activity found.");
-  //         }
-  //       }  else {
-  //         print('Unexpected status: ${responseData['status']}');
-  //       }
-  //     } else {
-  //       print('Failed. Status code: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     print('Errorasdfasf: $e');
-  //   }
-  // }
 
   Future<void> _submitLateLoginRemark(String remark) async {
     try {

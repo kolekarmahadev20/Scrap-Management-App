@@ -10,6 +10,7 @@ import 'dart:math' as math;
 import 'package:device_info_plus/device_info_plus.dart';
 import 'ForgotPassword.dart';
 import 'ProfilePage.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 
 class StartPage extends StatefulWidget {
@@ -40,6 +41,7 @@ class _StartDashBoardPageState extends State<StartPage> {
   void initState() {
     super.initState();
     _getDeviceInfo();
+    getAppVersion();
   }
 
   @override
@@ -48,13 +50,15 @@ class _StartDashBoardPageState extends State<StartPage> {
   }
 
   String? _deviceID;
-
+  String? _buildNumber;
 
   Future<void> _getDeviceInfo() async {
     WidgetsBinding.instance!.addPostFrameCallback((_) async {
       DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
       try {
         AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+
+
         setState(() {
           _deviceID = androidInfo.id!;
           print("_deviceID");
@@ -70,6 +74,21 @@ class _StartDashBoardPageState extends State<StartPage> {
         print('Error getting device info: $e');
       }
     });
+  }
+
+
+  Future<void> getAppVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+
+    String appName = packageInfo.appName;
+    String packageName = packageInfo.packageName;
+    String version = packageInfo.version;
+    _buildNumber = packageInfo.buildNumber;
+
+    print('App Name: $appName');
+    print('Package Name: $packageName');
+    print('Version: $version');
+    print('Build Number: $_buildNumber');
   }
 
 
@@ -93,7 +112,7 @@ class _StartDashBoardPageState extends State<StartPage> {
       String person_email, String person_name,String uuid,
       String is_active,String mob_login,String acces_sale_order,
       String acces_dispatch,String acces_refund,String acces_payment,String remainingDays,
-      String attendonly,String readonly
+      String attendonly,String readonly, String appVersion, String personId, String apkURL
       )async{
     final login = await SharedPreferences.getInstance();
     await login.setString("username", username);
@@ -114,6 +133,9 @@ class _StartDashBoardPageState extends State<StartPage> {
     await login.setString("attendonly", attendonly!);
     await login.setString("readonly", readonly!);
 
+    await login.setString("appVersion", appVersion!);
+    await login.setString("personId", personId!);
+    await login.setString("apkURL", apkURL!);
 
 
   }
@@ -167,17 +189,15 @@ class _StartDashBoardPageState extends State<StartPage> {
         var attendonly = user_data['attendance_only']?? "N?A";
         var readonly = user_data['read_only']?? "N?A";
 
-        print("readonly");
-
-        print(attendonly);
-        print(readonly);
+        var appVersion = user_data['version']?? "N?A";
+        var apkURL = user_data['apk_url']?? "N?A";
 
         await saveUserData(true ,person_name, contact, person_email, emp_code, emp_address,person_id,_deviceID!);
         await checkLogin(username, password ,loginType ,userType,person_email,person_name,_deviceID!,
             is_active,mob_login,
             acces_sale_order,acces_dispatch
             ,acces_refund,acces_payment,remainingDays,
-            attendonly,readonly
+            attendonly,readonly,appVersion,person_id,apkURL
         );
 
         if (userType == "S") {

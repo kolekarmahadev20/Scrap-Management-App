@@ -1,27 +1,28 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:scrapapp/DashBoard/DashBoard.dart';
 import 'package:scrapapp/DashBoard/saleOrderList.dart';
-import 'package:scrapapp/Dispatch/DispatchList.dart';
 import 'package:scrapapp/Pages/ProfilePage.dart';
 import 'package:scrapapp/Pages/StartPage.dart';
 import 'package:scrapapp/Payment/PaymentList.dart';
-import 'package:scrapapp/Refund/RefundList.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../Buyer/Buyer_list.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../Leave/LeaveStatus.dart';
 import '../Leave/Leave_Application.dart';
-import '../Organization/OrganizationList.dart';
 import '../Pages/ChangePassword.dart';
 import '../Pages/EmployeeAttendanceReport.dart';
 import '../Pages/EmployeeTracker.dart';
 import '../Pages/ForgotPunchOutPage.dart';
 import '../Pages/Search.dart';
 import '../Pages/SummaryReport.dart';
+import '../URL_CONSTANT.dart';
 import '../Users/User_list.dart';
 import '../Vendor/Vendor_list.dart';
-
+import 'package:http/http.dart' as http;
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:android_intent_plus/flag.dart';
 
 class AppDrawer extends StatefulWidget {
 
@@ -35,17 +36,11 @@ class AppDrawer extends StatefulWidget {
 class _AppDrawerState extends State<AppDrawer> {
   String? username = '';
   String uuid = '';
-
   String? password = '';
-
   String? loginType = '';
-
   String? userType = '';
-
   String? person_email = '';
-
   String? person_name = '';
-
   String? is_active = '';
   String? mob_login = '';
   String? acces_sale_order = '';
@@ -55,10 +50,18 @@ class _AppDrawerState extends State<AppDrawer> {
   String? readonly = '';
   String? attendonly = '';
 
+  String? appVersionID;
+  String? personId;
+  String? apkURL;
+
+  String? versionID;
+  bool _isUpdateAvailable = false;
+
   @override
   initState(){
     super.initState();
     checkLogin();
+    getAppVersion();
     checkLogin().then((_) {
       setState(() {});  // Rebuilds the widget after `userType` is updated.
     });
@@ -73,7 +76,6 @@ class _AppDrawerState extends State<AppDrawer> {
     userType = prefs.getString("userType");
     person_email = prefs.getString("person_email");
     person_name = prefs.getString("person_name");
-
     is_active = prefs.getString("is_active")!;
     mob_login = prefs.getString("mob_login");
     acces_sale_order = prefs.getString("acces_sale_order");
@@ -82,6 +84,34 @@ class _AppDrawerState extends State<AppDrawer> {
     acces_payment = prefs.getString("acces_payment");
     readonly = prefs.getString("readonly");
     attendonly = prefs.getString("attendonly");
+    appVersionID = prefs.getString("appVersion");
+    personId = prefs.getString("personId");
+    apkURL = prefs.getString("apkURL");
+
+    print(username);
+    print(uuid);
+    print(password);
+    print(personId);
+    print(versionID);
+    print(apkURL);
+
+  }
+
+  Future<void> getAppVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+
+    String appName = packageInfo.appName;
+    String packageName = packageInfo.packageName;
+    versionID = packageInfo.version;
+
+    print('App Name: $appName');
+    print('Package Name: $packageName');
+    print('Version: $versionID');
+
+    // 🔍 Compare current with latest version
+    setState(() {
+      _isUpdateAvailable = appVersionID != versionID;
+    });
   }
 
   Future<void> _logout(BuildContext context) async {
@@ -93,6 +123,7 @@ class _AppDrawerState extends State<AppDrawer> {
           (Route<dynamic> route) => false,
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -396,6 +427,41 @@ class _AppDrawerState extends State<AppDrawer> {
                       },
                     ),
 
+                  _buildDrawerItem(
+                    context,
+                    17,
+                    icon: Icons.system_update,
+                    text: "Update App",
+                    trailing: _isUpdateAvailable
+                        ? Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'New',
+                        style: TextStyle(color: Colors.white, fontSize: 10),
+                      ),
+                    )
+                        : null,
+                    onTap: () async {
+                      // Ensure the version is updated before launching the APK
+                      await updateVersion();  // Make sure the version update is successful
+
+                      print("ASFSAF:$apkURL");
+                      final String updateUrl = apkURL!;
+
+                      final intent = AndroidIntent(
+                        action: 'action_view',
+                        data: updateUrl,
+                        flags: <int>[Flag.FLAG_ACTIVITY_NEW_TASK],
+                      );
+                      await intent.launch();
+                    },
+                  ),
+
+
                   InkWell(
                     onTap:() {
                       Timer(Duration(milliseconds: 300), () {
@@ -419,20 +485,89 @@ class _AppDrawerState extends State<AppDrawer> {
     );
   }
 
-  Widget _buildDrawerItem(BuildContext context, int index,{required IconData icon, required String text, required VoidCallback onTap}) {
+  Widget _buildDrawerItem(
+      BuildContext context,
+      int index, {
+        required IconData icon,
+        required String text,
+        Widget? trailing, // 👈 Add this line
+        required VoidCallback onTap,
+      }) {
     return Material(
       color: Colors.transparent,
-
       child: InkWell(
         onTap: onTap,
         splashColor: Colors.indigo[100],
         highlightColor: Colors.indigo[50],
         child: ListTile(
-          leading: Icon(icon, color: widget.currentPage == index ?Colors.blue : Colors.blueGrey[700], size: 30),
-          title: Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500 , color: widget.currentPage == index ?Colors.blue : Colors.black )),
-
+          leading: Icon(
+            icon,
+            color: widget.currentPage == index ? Colors.blue : Colors.blueGrey[700],
+            size: 30,
+          ),
+          title: Text(
+            text,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: widget.currentPage == index ? Colors.blue : Colors.black,
+            ),
+          ),
+          trailing: trailing, // 👈 Use it here
         ),
       ),
     );
   }
+
+  updateVersion() async {
+    try {
+      await checkLogin();
+      final response = await http.post(
+        Uri.parse('${URL}version_update'),
+        headers: {"Accept": "application/json"},
+        body: {
+          'user_id': username,
+          'uuid': uuid,
+          'user_pass': password,
+          "person_id": personId,
+          "version": versionID
+        },
+      );
+
+      print(username);
+      print(uuid);
+      print(password);
+      print(personId);
+      print(versionID);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print("📊 Decoded Response: $data");
+
+        if (data['status'].toString().toLowerCase() == 'true') {
+          print("✅ ${data['message']}");
+          setState(() async {
+            SharedPreferences login = await SharedPreferences.getInstance();
+            await login.clear();
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => StartPage()),
+                  (Route<dynamic> route) => false,
+            );
+          });
+        } else {
+          print("❌ ${data['message']}");
+        }
+      } else {
+        print("⚠️ Failed with status code: ${response.statusCode}");
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+
+
+
+
 }
