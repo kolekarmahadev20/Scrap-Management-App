@@ -150,7 +150,7 @@ class _LeaveStatusState extends State<LeaveStatus> {
     await checkLogin();
     try {
       final response = await http.post(
-        Uri.parse('${URL}get_leaves'),
+        Uri.parse('${URL}monthly_applied_leaves'),
         headers: {"Accept": "application/json"},
         body: {
           'user_id': username,
