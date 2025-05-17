@@ -297,6 +297,13 @@ class _ProfilePageState extends State<ProfilePage> {
             fetchPunchTimeFromDatabase();
           } else {
             fetchLogoutPunchTimeFromDatabase();
+            // 🔴 Clear stored latitude & longitude on punch-out
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.remove('latitude');
+            await prefs.remove('longitude');
+            latitude = null;
+            longitude = null;
+            // debugPrint("Cleared latitude and longitude from SharedPreferences on punch-out.");
           }
         } else {
           Fluttertoast.showToast(msg: data['msg']);

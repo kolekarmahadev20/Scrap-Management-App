@@ -111,6 +111,8 @@ class _AppDrawerState extends State<AppDrawer> {
     // 🔍 Compare current with latest version
     setState(() {
       _isUpdateAvailable = appVersionID != versionID;
+      print('A PPVersion: $appVersionID');
+
     });
   }
 
@@ -427,39 +429,39 @@ class _AppDrawerState extends State<AppDrawer> {
                       },
                     ),
 
-                  _buildDrawerItem(
-                    context,
-                    17,
-                    icon: Icons.system_update,
-                    text: "Update App",
-                    trailing: _isUpdateAvailable
-                        ? Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Text(
-                        'New',
-                        style: TextStyle(color: Colors.white, fontSize: 10),
-                      ),
-                    )
-                        : null,
-                    onTap: () async {
-                      // Ensure the version is updated before launching the APK
-                      await updateVersion();  // Make sure the version update is successful
-
-                      print("ASFSAF:$apkURL");
-                      final String updateUrl = apkURL!;
-
-                      final intent = AndroidIntent(
-                        action: 'action_view',
-                        data: updateUrl,
-                        flags: <int>[Flag.FLAG_ACTIVITY_NEW_TASK],
-                      );
-                      await intent.launch();
-                    },
-                  ),
+                  // _buildDrawerItem(
+                  //   context,
+                  //   18,
+                  //   icon: Icons.system_update,
+                  //   text: "Update App",
+                  //   trailing: _isUpdateAvailable
+                  //       ? Container(
+                  //     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  //     decoration: BoxDecoration(
+                  //       color: Colors.red,
+                  //       borderRadius: BorderRadius.circular(12),
+                  //     ),
+                  //     child: const Text(
+                  //       'New',
+                  //       style: TextStyle(color: Colors.white, fontSize: 10),
+                  //     ),
+                  //   )
+                  //       : null,
+                  //   onTap: () async {
+                  //     // Ensure the version is updated before launching the APK
+                  //     await updateVersion();  // Make sure the version update is successful
+                  //
+                  //     print("ASFSAF:$apkURL");
+                  //     final String updateUrl = apkURL!;
+                  //
+                  //     final intent = AndroidIntent(
+                  //       action: 'action_view',
+                  //       data: updateUrl,
+                  //       flags: <int>[Flag.FLAG_ACTIVITY_NEW_TASK],
+                  //     );
+                  //     await intent.launch();
+                  //   },
+                  // ),
 
 
                   InkWell(
