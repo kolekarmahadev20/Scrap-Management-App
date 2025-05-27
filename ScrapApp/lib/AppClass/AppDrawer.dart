@@ -219,7 +219,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     onTap: () {
                       Timer(Duration(milliseconds: 300), () {
                         Navigator.pop(context); // Close the drawer
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage(currentPage: 2,)));
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ProfilePage(currentPage: 2,)));
                       });
 
                     },

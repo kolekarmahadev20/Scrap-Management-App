@@ -54,15 +54,15 @@ class _ProfilePageState extends State<ProfilePage> {
   late Timer _gpsCheckTimer;
 
   final Icon nameIcon =
-      Icon(Icons.person, color: Colors.blue.shade900, size: 40);
+  Icon(Icons.person, color: Colors.blue.shade900, size: 40);
   final Icon contactIcon =
-      Icon(Icons.contacts, color: Colors.blue.shade900, size: 40);
+  Icon(Icons.contacts, color: Colors.blue.shade900, size: 40);
   final Icon emailIcon =
-      Icon(Icons.email_outlined, color: Colors.blue.shade900, size: 40);
+  Icon(Icons.email_outlined, color: Colors.blue.shade900, size: 40);
   final Icon empCodeIcon =
-      Icon(Icons.person, color: Colors.blue.shade900, size: 40);
+  Icon(Icons.person, color: Colors.blue.shade900, size: 40);
   final Icon addressIcon =
-      Icon(Icons.location_pin, color: Colors.blue.shade900, size: 40);
+  Icon(Icons.location_pin, color: Colors.blue.shade900, size: 40);
 
   double? latitude;
   double? longitude;
@@ -84,6 +84,7 @@ class _ProfilePageState extends State<ProfilePage> {
     Future.delayed(Duration(milliseconds: 500), () {
       fetchLogoutPunchTimeFromDatabase(); // Second call after a small delay
     });
+    fetchAttendanceData();
   }
 
   @override
@@ -152,66 +153,70 @@ class _ProfilePageState extends State<ProfilePage> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          elevation: 16,
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.blue.shade50, Colors.white],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+        builder: (context) =>
+            Dialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              elevation: 16,
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue.shade50, Colors.white],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 10,
+                      offset: Offset(2, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.system_update, size: 60,
+                        color: Colors.blueAccent),
+                    const SizedBox(height: 10),
+                    Text(
+                      "New Update Available!",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blueAccent,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "We've added new features and fixed some bugs. Please update to the latest version for the best experience.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        // Add redirect logic here
+                        Navigator.pop(context);
+                      },
+                      icon: Icon(Icons.download_rounded),
+                      label: Text("Update Now"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        elevation: 4,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 10,
-                  offset: Offset(2, 4),
-                ),
-              ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.system_update, size: 60, color: Colors.blueAccent),
-                const SizedBox(height: 10),
-                Text(
-                  "New Update Available!",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blueAccent,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  "We've added new features and fixed some bugs. Please update to the latest version for the best experience.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    // Add redirect logic here
-                    Navigator.pop(context);
-                  },
-                  icon: Icon(Icons.download_rounded),
-                  label: Text("Update Now"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30)),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    elevation: 4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       );
     });
   }
@@ -236,6 +241,7 @@ class _ProfilePageState extends State<ProfilePage> {
       final response = await http.get(endpoint);
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
+
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -295,8 +301,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
           if (punchType == 'logged in') {
             fetchPunchTimeFromDatabase();
+            fetchAttendanceData();
           } else {
             fetchLogoutPunchTimeFromDatabase();
+            fetchAttendanceData();
             // 🔴 Clear stored latitude & longitude on punch-out
             final prefs = await SharedPreferences.getInstance();
             await prefs.remove('latitude');
@@ -503,7 +511,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
           if (adminActivities != null && adminActivities.isNotEmpty) {
             final adminActivity = adminActivities[
-                0]; // Hamesha 0th position ka response le raha hai
+            0]; // Hamesha 0th position ka response le raha hai
 
             final adminremarkmsg = adminActivity['remark'] ?? 'No remark found';
             final adminstatus = adminActivity['status'] ?? 'P';
@@ -666,7 +674,7 @@ class _ProfilePageState extends State<ProfilePage> {
   enablePunching(String status) {
     DateTime currentDateTime = DateTime.now();
     String currentformattedDate =
-        DateFormat('yyyy-MM-dd').format(currentDateTime);
+    DateFormat('yyyy-MM-dd').format(currentDateTime);
     if (status == 'logged in') {
       String punchFormattedDate = DateFormat('yyyy-MM-dd').format(punchTime!);
       if (currentformattedDate != punchFormattedDate) {
@@ -681,7 +689,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
     if (status == 'logged out') {
       String punchOutFormattedDate =
-          DateFormat('yyyy-MM-dd').format(punchOutTime!);
+      DateFormat('yyyy-MM-dd').format(punchOutTime!);
       if (currentformattedDate != punchOutFormattedDate) {
         setState(() {
           isPunchedOut = false;
@@ -743,6 +751,342 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
+  String presentCount = '0';
+  String absentCount = '0';
+  String lateLoginCount = '0';
+  List<Map<String, dynamic>> attendanceList = [];
+
+  // Leave Summary Strings
+  String takenLeaves = '0';
+  String upcomingLeaves = '0';
+
+// Leave Data List
+  List<Map<String, dynamic>> leaveList = [];
+
+  String location = '';
+
+  Future<void> fetchAttendanceData() async {
+    await checkLogin();
+    final response = await http.post(
+      Uri.parse('${URL}employee_details'),
+      body: {
+        'user_id': username,
+        'user_pass': password,
+        'uuid': uuid
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final decoded = json.decode(response.body);
+      final data = decoded['attendance_data'] ?? [];
+      final summary = decoded['attendance_summary'] ?? {};
+      final leaveSummary = decoded['leave_summary'] ?? {};
+      final leaveData = decoded['leave_data'] ?? [];
+      final locationData = decoded['location_data'] ?? {};
+
+      setState(() {
+        presentCount = summary['present_count'].toString();
+        absentCount = summary['absent_count'].toString();
+        lateLoginCount = summary['late_login_count'].toString();
+        attendanceList = List<Map<String, dynamic>>.from(data);
+        takenLeaves = leaveSummary['taken_leaves'].toString();
+        upcomingLeaves = leaveSummary['upcoming_leaves'].toString();
+        // Leave data list
+        leaveList = List<Map<String, dynamic>>.from(leaveData);
+        location = locationData['location'] ?? '';
+
+      });
+    } else {
+      throw Exception('Failed to fetch data');
+    }
+  }
+
+  Widget attendanceTile() {
+    final bool isAttendanceEmpty = attendanceList.isEmpty;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Attendance',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.indigo.shade800),
+          ),
+          const SizedBox(height: 12),
+
+          /// Summary inside ExpansionTile
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            childrenPadding: EdgeInsets.zero,
+            title: Row(
+              children: [
+                Expanded(
+                    child: Text('Present: $presentCount',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
+                Expanded(
+                    child: Text('Absent: $absentCount',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
+                Expanded(
+                    child: Text('Late: $lateLoginCount',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
+              ],
+            ),
+            children: [
+              if (isAttendanceEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Center(
+                      child: Text('No attendance data available',
+                          style: TextStyle(color: Colors.grey))),
+                )
+              else
+                ListView.separated(
+                  physics: NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: attendanceList.length,
+                  separatorBuilder: (context, index) =>
+                      SizedBox(height: 12), // Space between cards
+                  itemBuilder: (context, index) {
+                    final entry = attendanceList[index];
+                    final punchIn = entry['punchintime'] ?? '-';
+                    final punchOut = entry['punchout'] ?? '-';
+                    final status = (entry['status'] ?? '').toLowerCase();
+
+                    Color statusColor;
+                    String statusLabel;
+
+                    if (status == 'present') {
+                      statusColor = Colors.green;
+                      statusLabel = 'Present';
+                    } else if (status == 'not logged out') {
+                      statusColor = Colors.orange;
+                      statusLabel = 'Not Logged Out';
+                    } else {
+                      statusColor = Colors.red;
+                      statusLabel = 'Absent';
+                    }
+
+                    return Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.grey.shade200,
+                              blurRadius: 4,
+                              offset: Offset(0, 2))
+                        ],
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.login, color: Colors.blueAccent, size: 18),
+                              SizedBox(width: 8),
+                              Text('Punch In:',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500, color: Colors.black87)),
+                              SizedBox(width: 6),
+                              Text(punchIn,
+                                  style: TextStyle(color: Colors.black54)),
+                            ],
+                          ),
+                          SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Icon(Icons.logout, color: Colors.deepPurple, size: 18),
+                              SizedBox(width: 8),
+                              Text('Punch Out:',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500, color: Colors.black87)),
+                              SizedBox(width: 6),
+                              Text(punchOut,
+                                  style: TextStyle(color: Colors.black54)),
+                            ],
+                          ),
+                          SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Container(
+                                width: 10,
+                                height: 10,
+                                margin: const EdgeInsets.only(right: 8),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: statusColor,
+                                ),
+                              ),
+                              Text(
+                                statusLabel,
+                                style: TextStyle(
+                                  color: statusColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              SizedBox(height: 10),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Widget leaveTile() {
+    final bool isLeaveEmpty = leaveList.isEmpty;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Leave', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700,color: Colors.indigo.shade800)),
+          const SizedBox(height: 12),
+
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            childrenPadding: EdgeInsets.zero,
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Taken Leaves: $takenLeaves',
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    'Upcoming Leaves: $upcomingLeaves',
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                ),
+              ],
+            ),
+            children: [
+              if (isLeaveEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Center(
+                    child: Text('No leave data available', style: TextStyle(color: Colors.grey)),
+                  ),
+                )
+              else
+                ListView.separated(
+                  physics: NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: leaveList.length,
+                  separatorBuilder: (context, index) => SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final entry = leaveList[index];
+                    final fromDate = entry['from_date'] ?? '-';
+                    final toDate = entry['to_date'] ?? '-';
+                    final reason = entry['selected_reason'] ?? '-';
+                    final comment = entry['reason'] ?? '-';
+
+                    return Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.shade200,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          )
+                        ],
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.date_range, color: Colors.deepPurple, size: 18),
+                              SizedBox(width: 8),
+                              Text('From Date:',
+                                  style: TextStyle(fontWeight: FontWeight.w500, color: Colors.black87)),
+                              SizedBox(width: 6),
+                              Text(fromDate, style: TextStyle(color: Colors.black54)),
+                            ],
+                          ),
+                          SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Icon(Icons.event, color: Colors.green, size: 18),
+                              SizedBox(width: 8),
+                              Text('To Date:',
+                                  style: TextStyle(fontWeight: FontWeight.w500, color: Colors.black87)),
+                              SizedBox(width: 6),
+                              Text(toDate, style: TextStyle(color: Colors.black54)),
+                            ],
+                          ),
+                          SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Icon(Icons.info_outline, color: Colors.orangeAccent, size: 18),
+                              SizedBox(width: 8),
+                              Text('Reason:',
+                                  style: TextStyle(fontWeight: FontWeight.w500, color: Colors.black87)),
+                              SizedBox(width: 6),
+                              Flexible(child: Text(reason, style: TextStyle(color: Colors.black54))),
+                            ],
+                          ),
+                          SizedBox(height: 6),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.comment, color: Colors.teal, size: 18),
+                              SizedBox(width: 8),
+                              Text('Comment:',
+                                  style: TextStyle(fontWeight: FontWeight.w500, color: Colors.black87)),
+                              SizedBox(width: 6),
+                              Expanded(
+                                child: Text(comment, style: TextStyle(color: Colors.black54)),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              SizedBox(height: 10),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+
+
+
   Widget buildCard(String text, Icon icon, String path) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -795,199 +1139,206 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
-      return Scaffold(
-        // drawer: (attendonly == 'Y' || attendonly == '')
-        //     ? null
-        //     : userType != 'S'
-        //         ? (isPunchedIn ? AppDrawer(currentPage: widget.currentPage) : null)
-        //         : AppDrawer(currentPage: widget.currentPage),
+          return Scaffold(
+            // drawer: (attendonly == 'Y' || attendonly == '')
+            //     ? null
+            //     : userType != 'S'
+            //         ? (isPunchedIn ? AppDrawer(currentPage: widget.currentPage) : null)
+            //         : AppDrawer(currentPage: widget.currentPage),
 
-        drawer: userType != 'S'
-            ? (isPunchedIn ? AppDrawer(currentPage: widget.currentPage) : null)
-            : AppDrawer(currentPage: widget.currentPage),
-        appBar: CustomAppBar(),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Profile Picture Section
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  height: 250,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    color: Colors.blueGrey.shade400,
-                  ),
-                  child: Stack(children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(21),
-                        border: Border.all(color: Colors.black, width: 1),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(21),
-                        // Ensure the image also respects the border radius
-                        child: Image.asset(
-                          'assets/images/themeimg1.jpeg',
-                          fit: BoxFit.cover,
-                          // Use BoxFit.cover to ensure the image covers the entire area
-                          width: double.infinity,
-                          // Ensure the image takes the full width of the container
-                          height: 250,
-                          // Set a fixed height or adjust as needed
-                          colorBlendMode: BlendMode.darken,
-                        ),
-                      ),
-                    ),
-                    Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          CircleAvatar(
-                            radius: 50,
-                            backgroundImage:
-                                AssetImage('assets/images/hello.gif'),
-                            // Replace with user's image
-                            backgroundColor: Colors.blueGrey.shade100,
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            name,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            email,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text(
-                            "Deactivates in $remainingDaysString days!",
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ]),
-                ),
-              ),
-              // User Details Section (Cards)
-              // Row(
-              //   children: [
-              //     Expanded(
-              //         child: buildCard(
-              //             name, nameIcon, 'assets/images/user2.jpg')),
-              //     SizedBox(width: 8),
-              //     Expanded(
-              //         child: buildCard(
-              //             contact, contactIcon, 'assets/images/contact3.jpeg')),
-              //   ],
-              // ),
-              //Additional Info
-              buildListTile('Email', email, 'assets/images/email2.jpeg'),
-              buildListTile('Address', address, 'assets/images/location.jpeg'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            drawer: userType != 'S'
+                ? (isPunchedIn
+                ? AppDrawer(currentPage: widget.currentPage)
+                : null)
+                : AppDrawer(currentPage: widget.currentPage),
+            appBar: CustomAppBar(),
+            body: SingleChildScrollView(
+              child: Column(
                 children: [
-                  Expanded(
+                  // Profile Picture Section
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
                     child: Container(
-                      margin:
-                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-                      child: ElevatedButton(
-                        onPressed: isPunchedIn || isLoading
-                            ? null
-                            : () {
-                                set_user_attendances('logged in');
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isPunchedIn || isLoading
-                              ? Colors.grey[400]
-                              : Colors.greenAccent[200],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          elevation: 5,
-                          padding: EdgeInsets.symmetric(vertical: 14.0),
-                        ),
-                        child: isLoading
-                            ? SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.login_rounded,
-                                      color: Colors.white),
-                                  SizedBox(width: 8),
-                                  Text("Punch In",
-                                      style: TextStyle(color: Colors.white)),
-                                ],
-                              ),
+                      height: 250,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.blueGrey.shade400,
                       ),
+                      child: Stack(children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(21),
+                            border: Border.all(color: Colors.black, width: 1),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(21),
+                            // Ensure the image also respects the border radius
+                            child: Image.asset(
+                              'assets/images/themeimg1.jpeg',
+                              fit: BoxFit.cover,
+                              // Use BoxFit.cover to ensure the image covers the entire area
+                              width: double.infinity,
+                              // Ensure the image takes the full width of the container
+                              height: 250,
+                              // Set a fixed height or adjust as needed
+                              colorBlendMode: BlendMode.darken,
+                            ),
+                          ),
+                        ),
+                        Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              CircleAvatar(
+                                radius: 50,
+                                backgroundImage:
+                                AssetImage('assets/images/hello.gif'),
+                                // Replace with user's image
+                                backgroundColor: Colors.blueGrey.shade100,
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                name,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                email,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              Text(
+                                "Deactivates in $remainingDaysString days!",
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ]),
                     ),
                   ),
-                  Expanded(
-                    child: Container(
-                      margin:
-                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-                      child: ElevatedButton(
-                        onPressed: isPunchedOut || isPunchOutLoading
-                            ? null
-                            : () {
-                                if (isPunchedIn) {
-                                  set_user_attendances('logged out');
-                                } else {
-                                  Fluttertoast.showToast(
-                                      msg: 'Please punch in first');
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isPunchedOut || isPunchOutLoading
-                              ? Colors.grey[400]
-                              : Colors.redAccent[200],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          elevation: 5,
-                          padding: EdgeInsets.symmetric(vertical: 14.0),
-                        ),
-                        child: isPunchOutLoading
-                            ? SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.logout_rounded,
-                                      color: Colors.white),
-                                  SizedBox(width: 8),
-                                  Text("Punch Out",
-                                      style: TextStyle(color: Colors.white)),
-                                ],
+                  // User Details Section (Cards)
+                  // Row(
+                  //   children: [
+                  //     Expanded(
+                  //         child: buildCard(
+                  //             name, nameIcon, 'assets/images/user2.jpg')),
+                  //     SizedBox(width: 8),
+                  //     Expanded(
+                  //         child: buildCard(
+                  //             contact, contactIcon, 'assets/images/contact3.jpeg')),
+                  //   ],
+                  // ),
+                  //Additional Info
+                  // buildListTile('Email', email, 'assets/images/email2.jpeg'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Punch In Button
+                      Expanded(
+                        child: Container(
+                          margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                          child: ElevatedButton.icon(
+                            onPressed: isPunchedIn || isLoading
+                                ? null
+                                : () {
+                              set_user_attendances('logged in');
+                            },
+                            icon: Icon(Icons.login, size: 20),
+                            label: isLoading
+                                ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
                               ),
+                            )
+                                : Text(
+                              'Punch In',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isPunchedIn || isLoading
+                                  ? Colors.grey[400]
+                                  : Colors.green.shade600,
+                              foregroundColor: Colors.white,
+                              elevation: 6,
+                              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              shadowColor: Colors.greenAccent,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+
+                      // Punch Out Button
+                      Expanded(
+                        child: Container(
+                          margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                          child: ElevatedButton.icon(
+                            onPressed: isPunchedOut || isPunchOutLoading
+                                ? null
+                                : () {
+                              if (isPunchedIn) {
+                                set_user_attendances('logged out');
+                              } else {
+                                Fluttertoast.showToast(msg: 'Please punch in first');
+                              }
+                            },
+                            icon: Icon(Icons.logout, size: 20),
+                            label: isPunchOutLoading
+                                ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                                : Text(
+                              'Punch Out',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isPunchedOut || isPunchOutLoading
+                                  ? Colors.grey[400]
+                                  : Colors.red.shade600,
+                              foregroundColor: Colors.white,
+                              elevation: 6,
+                              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              shadowColor: Colors.redAccent,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                  buildListTile('Address', address, 'assets/images/location.jpeg'),
+                  buildListTile('Location', location , 'assets/images/location.jpeg'),
+                  attendanceTile(),
+                  leaveTile(),
+                  // buildListTile('Late Login', 'Check late login details', 'assets/images/location.jpeg'),
+                  // buildListTile('Leave', 'Apply or view your leave details', 'assets/images/location.jpeg'),
+
+
+
+
 
                   // Expanded(
                   //   child: Container(
@@ -1053,110 +1404,105 @@ class _ProfilePageState extends State<ProfilePage> {
                   //     ),
                   //   ),
                   // ),
+
                 ],
               ),
-            ],
-          ),
-        ),
-        //   floatingActionButton: FloatingActionButton(
-        //     onPressed: () {
-        //       if (punchTime != null && punchOutTime != null) {
-        //         Navigator.push(
-        //           context,
-        //           SlidePageRoute(
-        //             page: AttendanceMarkedPage(punchTime: punchTime!, punchOutTime: punchOutTime!),
-        //           ),
-        //         );
-        //       } else if (punchTime != null) {
-        //         Navigator.push(
-        //           context,
-        //           SlidePageRoute(
-        //             page: AttendanceMarkedPage(punchTime: punchTime!, punchOutTime: null),
-        //           ),
-        //         );
-        //       } else if (punchOutTime != null) {
-        //         Navigator.push(
-        //           context,
-        //           SlidePageRoute(
-        //             page: AttendanceMarkedPage(punchTime: null, punchOutTime: punchOutTime!),
-        //           ),
-        //         );
-        //       } else {
-        //         ScaffoldMessenger.of(context).showSnackBar(
-        //           SnackBar(content: Text("Please mark attendance first.")),
-        //         );
-        //       }
-        //     },
-        //     child:  Icon(Icons.fingerprint,color: Colors.blueGrey[900]!,),
-        //     backgroundColor:Colors.blueGrey[200]!,
-        // )
-        bottomNavigationBar: BottomNavigationBar(
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Profile',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.check_circle),
-                label: 'Attendance',
-              ),
-            ],
-            currentIndex: _currentIndex, // Set the index for the current tab
-            selectedItemColor: Colors.blueGrey[900],
-            onTap: _onItemTapped),
-      );
-    });
+            ),
+            //   floatingActionButton: FloatingActionButton(
+            //     onPressed: () {
+            //       if (punchTime != null && punchOutTime != null) {
+            //         Navigator.push(
+            //           context,
+            //           SlidePageRoute(
+            //             page: AttendanceMarkedPage(punchTime: punchTime!, punchOutTime: punchOutTime!),
+            //           ),
+            //         );
+            //       } else if (punchTime != null) {
+            //         Navigator.push(
+            //           context,
+            //           SlidePageRoute(
+            //             page: AttendanceMarkedPage(punchTime: punchTime!, punchOutTime: null),
+            //           ),
+            //         );
+            //       } else if (punchOutTime != null) {
+            //         Navigator.push(
+            //           context,
+            //           SlidePageRoute(
+            //             page: AttendanceMarkedPage(punchTime: null, punchOutTime: punchOutTime!),
+            //           ),
+            //         );
+            //       } else {
+            //         ScaffoldMessenger.of(context).showSnackBar(
+            //           SnackBar(content: Text("Please mark attendance first.")),
+            //         );
+            //       }
+            //     },
+            //     child:  Icon(Icons.fingerprint,color: Colors.blueGrey[900]!,),
+            //     backgroundColor:Colors.blueGrey[200]!,
+            // )
+            bottomNavigationBar: BottomNavigationBar(
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home),
+                    label: 'Profile',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.check_circle),
+                    label: 'Attendance',
+                  ),
+                ],
+                currentIndex: _currentIndex,
+                // Set the index for the current tab
+                selectedItemColor: Colors.blueGrey[900],
+                onTap: _onItemTapped),
+          );
+        });
   }
 
   Widget buildListTile(String text, String value, String path) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Container(
         decoration: BoxDecoration(
-          border:
-              Border.all(color: Color(0xFF6482AD), width: 2), // Input border
-          borderRadius: BorderRadius.circular(12), // Rounded corners
-          color: Colors.white, // Background color
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.grey.shade200, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black12,
-              blurRadius: 6,
-              offset: Offset(0, 2),
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 8,
+              offset: Offset(0, 4),
             ),
           ],
         ),
-        child: ListTile(
-          contentPadding: EdgeInsets.all(8), // Padding inside ListTile
-          title: Row(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 14),
+          child: Row(
             children: [
-              // Icon
+              // Circular image with orange border
               Container(
-                height: 50,
-                width: 50,
+                padding: EdgeInsets.all(2.5), // space between border and image
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(21),
-                  border: Border.all(color: Colors.black, width: 1),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.deepOrange, width: 2),
                 ),
-                child: ClipOval(
-                  // Clip the image to ensure it fits within the rounded container
-                  child: Image.asset(
-                    path,
-                    fit: BoxFit
-                        .cover, // Change to BoxFit.cover or BoxFit.contain
-                    width: 50, // Ensure the width matches the container's width
-                    height:
-                        50, // Ensure the height matches the container's height
+                child: CircleAvatar(
+                  radius: 24,
+                  backgroundColor: Colors.white,
+                  child: ClipOval(
+                    child: Image.asset(
+                      path,
+                      width: 44,
+                      height: 44,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               ),
-              // Vertical Divider
-              Container(
-                width: 1, // Width of the vertical line
-                height: 60, // Height of the vertical line
-                color: Colors.green.shade900, // Color of the vertical line
-                margin: EdgeInsets.symmetric(
-                    horizontal: 16), // Space around the vertical line
-              ),
+
+              SizedBox(width: 14),
+
               // Text Column
               Expanded(
                 child: Column(
@@ -1165,18 +1511,35 @@ class _ProfilePageState extends State<ProfilePage> {
                     Text(
                       text,
                       style: TextStyle(
-                        color: Color(0xFF2F4F4F),
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.indigo.shade800,
                       ),
                     ),
-                    SizedBox(height: 4), // Space between title and subtitle
+                    SizedBox(height: 4),
                     Text(
                       value,
                       style: TextStyle(
-                        color: Color(0xFF2F4F4F),
-                        fontSize: 16,
+                        fontSize: 13.5,
+                        color: Colors.grey.shade600,
                       ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Subtle right status dot (optional)
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: Colors.tealAccent.shade400,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.tealAccent.shade100.withOpacity(0.6),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
@@ -1188,26 +1551,25 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 }
-
 class SlidePageRoute extends PageRouteBuilder {
   final Widget page;
 
   SlidePageRoute({required this.page})
       : super(
-          pageBuilder: (context, animation, secondaryAnimation) => page,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.easeInOut;
+    pageBuilder: (context, animation, secondaryAnimation) => page,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
 
-            var tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            var offsetAnimation = animation.drive(tween);
+      var tween =
+      Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
 
-            return SlideTransition(
-              position: offsetAnimation,
-              child: child,
-            );
-          },
-        );
+      return SlideTransition(
+        position: offsetAnimation,
+        child: child,
+      );
+    },
+  );
 }
