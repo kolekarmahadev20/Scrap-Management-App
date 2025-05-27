@@ -153,70 +153,68 @@ class _ProfilePageState extends State<ProfilePage> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) =>
-            Dialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              elevation: 16,
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue.shade50, Colors.white],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 10,
-                      offset: Offset(2, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.system_update, size: 60,
-                        color: Colors.blueAccent),
-                    const SizedBox(height: 10),
-                    Text(
-                      "New Update Available!",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blueAccent,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      "We've added new features and fixed some bugs. Please update to the latest version for the best experience.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        // Add redirect logic here
-                        Navigator.pop(context);
-                      },
-                      icon: Icon(Icons.download_rounded),
-                      label: Text("Update Now"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30)),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
-                        elevation: 4,
-                      ),
-                    ),
-                  ],
-                ),
+        builder: (context) => Dialog(
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          elevation: 16,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue.shade50, Colors.white],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 10,
+                  offset: Offset(2, 4),
+                ),
+              ],
             ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.system_update, size: 60, color: Colors.blueAccent),
+                const SizedBox(height: 10),
+                Text(
+                  "New Update Available!",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "We've added new features and fixed some bugs. Please update to the latest version for the best experience.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    // Add redirect logic here
+                    Navigator.pop(context);
+                  },
+                  icon: Icon(Icons.download_rounded),
+                  label: Text("Update Now"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                    elevation: 4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       );
     });
   }
@@ -241,7 +239,6 @@ class _ProfilePageState extends State<ProfilePage> {
       final response = await http.get(endpoint);
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
-
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -769,11 +766,7 @@ class _ProfilePageState extends State<ProfilePage> {
     await checkLogin();
     final response = await http.post(
       Uri.parse('${URL}employee_details'),
-      body: {
-        'user_id': username,
-        'user_pass': password,
-        'uuid': uuid
-      },
+      body: {'user_id': username, 'user_pass': password, 'uuid': uuid},
     );
 
     if (response.statusCode == 200) {
@@ -794,12 +787,13 @@ class _ProfilePageState extends State<ProfilePage> {
         // Leave data list
         leaveList = List<Map<String, dynamic>>.from(leaveData);
         location = locationData['location'] ?? '';
-
       });
     } else {
       throw Exception('Failed to fetch data');
     }
   }
+
+  bool _isExpanded = false;
 
   Widget attendanceTile() {
     final bool isAttendanceEmpty = attendanceList.isEmpty;
@@ -816,139 +810,276 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Attendance',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.indigo.shade800),
-          ),
-          const SizedBox(height: 12),
-
-          /// Summary inside ExpansionTile
-          ExpansionTile(
-            tilePadding: EdgeInsets.zero,
-            childrenPadding: EdgeInsets.zero,
-            title: Row(
+          /// Attendance title with expansion arrow
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                    child: Text('Present: $presentCount',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
-                Expanded(
-                    child: Text('Absent: $absentCount',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
-                Expanded(
-                    child: Text('Late: $lateLoginCount',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
+                Text(
+                  'Attendance',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.indigo.shade800,
+                  ),
+                ),
+                Icon(
+                  _isExpanded ? Icons.expand_less : Icons.expand_more,
+                  color: Colors.indigo,
+                ),
               ],
             ),
+          ),
+
+          SizedBox(height: 8),
+
+          /// Status cards (always visible)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              if (isAttendanceEmpty)
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Center(
-                      child: Text('No attendance data available',
-                          style: TextStyle(color: Colors.grey))),
-                )
-              else
-                ListView.separated(
-                  physics: NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: attendanceList.length,
-                  separatorBuilder: (context, index) =>
-                      SizedBox(height: 12), // Space between cards
-                  itemBuilder: (context, index) {
-                    final entry = attendanceList[index];
-                    final punchIn = entry['punchintime'] ?? '-';
-                    final punchOut = entry['punchout'] ?? '-';
-                    final status = (entry['status'] ?? '').toLowerCase();
-
-                    Color statusColor;
-                    String statusLabel;
-
-                    if (status == 'present') {
-                      statusColor = Colors.green;
-                      statusLabel = 'Present';
-                    } else if (status == 'not logged out') {
-                      statusColor = Colors.orange;
-                      statusLabel = 'Not Logged Out';
-                    } else {
-                      statusColor = Colors.red;
-                      statusLabel = 'Absent';
-                    }
-
-                    return Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.grey.shade200,
-                              blurRadius: 4,
-                              offset: Offset(0, 2))
-                        ],
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.login, color: Colors.blueAccent, size: 18),
-                              SizedBox(width: 8),
-                              Text('Punch In:',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500, color: Colors.black87)),
-                              SizedBox(width: 6),
-                              Text(punchIn,
-                                  style: TextStyle(color: Colors.black54)),
-                            ],
-                          ),
-                          SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Icon(Icons.logout, color: Colors.deepPurple, size: 18),
-                              SizedBox(width: 8),
-                              Text('Punch Out:',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500, color: Colors.black87)),
-                              SizedBox(width: 6),
-                              Text(punchOut,
-                                  style: TextStyle(color: Colors.black54)),
-                            ],
-                          ),
-                          SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Container(
-                                width: 10,
-                                height: 10,
-                                margin: const EdgeInsets.only(right: 8),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: statusColor,
-                                ),
-                              ),
-                              Text(
-                                statusLabel,
-                                style: TextStyle(
-                                  color: statusColor,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              SizedBox(height: 10),
+              Expanded(
+                  child: _buildStatusCard(Icons.check_circle, " Present  ",
+                      "$presentCount", Colors.green)),
+              Expanded(
+                  child: _buildStatusCard(
+                      Icons.cancel, " Absent  ", "$absentCount", Colors.red)),
+              Expanded(
+                  child: _buildStatusCard(Icons.access_time, "Late Login",
+                      "$lateLoginCount", Colors.orange)),
             ],
+          ),
+
+          /// Expanded detailed attendance info
+          AnimatedCrossFade(
+            duration: Duration(milliseconds: 300),
+            crossFadeState: _isExpanded
+                ? CrossFadeState.showFirst
+                : CrossFadeState.showSecond,
+            firstChild: Padding(
+              padding: const EdgeInsets.only(top: 12.0),
+              child: isAttendanceEmpty
+                  ? Center(
+                child: Text(
+                  'No attendance data available',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              )
+                  : ListView.separated(
+                physics: NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: attendanceList.length,
+                separatorBuilder: (context, index) =>
+                    SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final entry = attendanceList[index];
+                  final punchIn = entry['punchintime'] ?? '-';
+                  final punchOut = entry['punchout'] ?? '-';
+                  final status = (entry['status'] ?? '').toLowerCase();
+
+                  Color statusColor;
+                  String statusLabel;
+
+                  if (status == 'present') {
+                    statusColor = Colors.green;
+                    statusLabel = 'Present';
+                  } else if (status == 'not logged out') {
+                    statusColor = Colors.orange;
+                    statusLabel = 'Not Logged Out';
+                  } else {
+                    statusColor = Colors.red;
+                    statusLabel = 'Absent';
+                  }
+
+                  return Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.shade200,
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.login,
+                                color: Colors.blueAccent, size: 18),
+                            SizedBox(width: 8),
+                            Text('Punch In:',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500)),
+                            SizedBox(width: 6),
+                            Text(punchIn,
+                                style: TextStyle(color: Colors.black54)),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.logout,
+                                color: Colors.deepPurple, size: 18),
+                            SizedBox(width: 8),
+                            Text('Punch Out:',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500)),
+                            SizedBox(width: 6),
+                            Text(punchOut,
+                                style: TextStyle(color: Colors.black54)),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Container(
+                              width: 10,
+                              height: 10,
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: statusColor,
+                              ),
+                            ),
+                            Text(
+                              statusLabel,
+                              style: TextStyle(
+                                  color: statusColor,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            secondChild: SizedBox.shrink(), // Collapsed state
           ),
         ],
       ),
     );
   }
 
+// Helper method
+  Widget _buildStatusCard(
+      IconData icon, String label, String value, Color color) {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _isExpanded = !_isExpanded;
+        });
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 4),
+        padding: EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 5,
+              offset: Offset(0, 3),
+            )
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 28),
+            SizedBox(height: 5),
+            Text(
+              label,
+              textScaleFactor: 1.0,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 3),
+            Text(
+              value,
+              textScaleFactor: 1.0,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  bool _isLeaveExpanded = false;
+
+  Widget _buildStatusCards(
+      IconData icon, String label, String value, Color color) {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _isLeaveExpanded = !_isLeaveExpanded;
+        });
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 4),
+        padding: EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 5,
+              offset: Offset(0, 3),
+            )
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 28),
+            SizedBox(height: 5),
+            Text(
+              label,
+              textScaleFactor: 1.0,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 3),
+            Text(
+              value,
+              textScaleFactor: 1.0,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget leaveTile() {
     final bool isLeaveEmpty = leaveList.isEmpty;
@@ -965,126 +1096,170 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Leave', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700,color: Colors.indigo.shade800)),
-          const SizedBox(height: 12),
-
-          ExpansionTile(
-            tilePadding: EdgeInsets.zero,
-            childrenPadding: EdgeInsets.zero,
-            title: Row(
+          /// Leave title with expand/collapse arrow
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isLeaveExpanded = !_isLeaveExpanded;
+              });
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Text(
-                    'Taken Leaves: $takenLeaves',
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                Text(
+                  'Leave',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.indigo.shade800,
                   ),
                 ),
-                Expanded(
-                  child: Text(
-                    'Upcoming Leaves: $upcomingLeaves',
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-                  ),
+                Icon(
+                  _isLeaveExpanded ? Icons.expand_less : Icons.expand_more,
+                  color: Colors.indigo,
                 ),
               ],
             ),
-            children: [
-              if (isLeaveEmpty)
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Center(
-                    child: Text('No leave data available', style: TextStyle(color: Colors.grey)),
-                  ),
-                )
-              else
-                ListView.separated(
-                  physics: NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: leaveList.length,
-                  separatorBuilder: (context, index) => SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final entry = leaveList[index];
-                    final fromDate = entry['from_date'] ?? '-';
-                    final toDate = entry['to_date'] ?? '-';
-                    final reason = entry['selected_reason'] ?? '-';
-                    final comment = entry['reason'] ?? '-';
+          ),
 
-                    return Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.shade200,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          )
-                        ],
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.date_range, color: Colors.deepPurple, size: 18),
-                              SizedBox(width: 8),
-                              Text('From Date:',
-                                  style: TextStyle(fontWeight: FontWeight.w500, color: Colors.black87)),
-                              SizedBox(width: 6),
-                              Text(fromDate, style: TextStyle(color: Colors.black54)),
-                            ],
-                          ),
-                          SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Icon(Icons.event, color: Colors.green, size: 18),
-                              SizedBox(width: 8),
-                              Text('To Date:',
-                                  style: TextStyle(fontWeight: FontWeight.w500, color: Colors.black87)),
-                              SizedBox(width: 6),
-                              Text(toDate, style: TextStyle(color: Colors.black54)),
-                            ],
-                          ),
-                          SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Icon(Icons.info_outline, color: Colors.orangeAccent, size: 18),
-                              SizedBox(width: 8),
-                              Text('Reason:',
-                                  style: TextStyle(fontWeight: FontWeight.w500, color: Colors.black87)),
-                              SizedBox(width: 6),
-                              Flexible(child: Text(reason, style: TextStyle(color: Colors.black54))),
-                            ],
-                          ),
-                          SizedBox(height: 6),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(Icons.comment, color: Colors.teal, size: 18),
-                              SizedBox(width: 8),
-                              Text('Comment:',
-                                  style: TextStyle(fontWeight: FontWeight.w500, color: Colors.black87)),
-                              SizedBox(width: 6),
-                              Expanded(
-                                child: Text(comment, style: TextStyle(color: Colors.black54)),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              SizedBox(height: 10),
+          SizedBox(height: 8),
+
+          /// Leave stats (always visible)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(
+                child: _buildStatusCards(Icons.flight_takeoff, " Taken Leaves",
+                    "$takenLeaves", Colors.blue),
+              ),
+              Expanded(
+                child: _buildStatusCards(Icons.event_available, " Upcoming Leaves",
+                    "$upcomingLeaves", Colors.deepPurple),
+              ),
             ],
+          ),
+
+          /// Expanded leave details
+          AnimatedCrossFade(
+            duration: Duration(milliseconds: 300),
+            crossFadeState: _isLeaveExpanded
+                ? CrossFadeState.showFirst
+                : CrossFadeState.showSecond,
+            firstChild: Padding(
+              padding: const EdgeInsets.only(top: 12.0),
+              child: isLeaveEmpty
+                  ? Center(
+                child: Text(
+                  'No leave data available',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              )
+                  : ListView.separated(
+                physics: NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: leaveList.length,
+                separatorBuilder: (context, index) =>
+                    SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final entry = leaveList[index];
+                  final fromDate = entry['from_date'] ?? '-';
+                  final toDate = entry['to_date'] ?? '-';
+                  final reason = entry['selected_reason'] ?? '-';
+                  final comment = entry['reason'] ?? '-';
+
+                  return Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.shade200,
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.date_range,
+                                color: Colors.deepPurple, size: 18),
+                            SizedBox(width: 8),
+                            Text('From Date:',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black87)),
+                            SizedBox(width: 6),
+                            Text(fromDate,
+                                style: TextStyle(color: Colors.black54)),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.event,
+                                color: Colors.green, size: 18),
+                            SizedBox(width: 8),
+                            Text('To Date:',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black87)),
+                            SizedBox(width: 6),
+                            Text(toDate,
+                                style: TextStyle(color: Colors.black54)),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.info_outline,
+                                color: Colors.orangeAccent, size: 18),
+                            SizedBox(width: 8),
+                            Text('Reason:',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black87)),
+                            SizedBox(width: 6),
+                            Flexible(
+                              child: Text(reason,
+                                  style: TextStyle(color: Colors.black54)),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.comment,
+                                color: Colors.teal, size: 18),
+                            SizedBox(width: 8),
+                            Text('Comment:',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black87)),
+                            SizedBox(width: 6),
+                            Expanded(
+                              child: Text(comment,
+                                  style: TextStyle(color: Colors.black54)),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            secondChild: SizedBox.shrink(), // Collapsed
           ),
         ],
       ),
     );
   }
-
-
 
 
   Widget buildCard(String text, Icon icon, String path) {
@@ -1147,9 +1322,7 @@ class _ProfilePageState extends State<ProfilePage> {
             //         : AppDrawer(currentPage: widget.currentPage),
 
             drawer: userType != 'S'
-                ? (isPunchedIn
-                ? AppDrawer(currentPage: widget.currentPage)
-                : null)
+                ? (isPunchedIn ? AppDrawer(currentPage: widget.currentPage) : null)
                 : AppDrawer(currentPage: widget.currentPage),
             appBar: CustomAppBar(),
             body: SingleChildScrollView(
@@ -1247,7 +1420,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       // Punch In Button
                       Expanded(
                         child: Container(
-                          margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                          margin:
+                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
                           child: ElevatedButton.icon(
                             onPressed: isPunchedIn || isLoading
                                 ? null
@@ -1266,7 +1440,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             )
                                 : Text(
                               'Punch In',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w600),
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isPunchedIn || isLoading
@@ -1274,7 +1449,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                   : Colors.green.shade600,
                               foregroundColor: Colors.white,
                               elevation: 6,
-                              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 24, vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),
@@ -1287,7 +1463,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       // Punch Out Button
                       Expanded(
                         child: Container(
-                          margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                          margin:
+                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
                           child: ElevatedButton.icon(
                             onPressed: isPunchedOut || isPunchOutLoading
                                 ? null
@@ -1295,7 +1472,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               if (isPunchedIn) {
                                 set_user_attendances('logged out');
                               } else {
-                                Fluttertoast.showToast(msg: 'Please punch in first');
+                                Fluttertoast.showToast(
+                                    msg: 'Please punch in first');
                               }
                             },
                             icon: Icon(Icons.logout, size: 20),
@@ -1310,7 +1488,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             )
                                 : Text(
                               'Punch Out',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w600),
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isPunchedOut || isPunchOutLoading
@@ -1318,7 +1497,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                   : Colors.red.shade600,
                               foregroundColor: Colors.white,
                               elevation: 6,
-                              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 24, vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),
@@ -1330,15 +1510,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                   buildListTile('Address', address, 'assets/images/location.jpeg'),
-                  buildListTile('Location', location , 'assets/images/location.jpeg'),
+                  buildListTile(
+                      'Location', location, 'assets/images/location.jpeg'),
                   attendanceTile(),
                   leaveTile(),
                   // buildListTile('Late Login', 'Check late login details', 'assets/images/location.jpeg'),
                   // buildListTile('Leave', 'Apply or view your leave details', 'assets/images/location.jpeg'),
-
-
-
-
 
                   // Expanded(
                   //   child: Container(
@@ -1404,7 +1581,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   //     ),
                   //   ),
                   // ),
-
                 ],
               ),
             ),
@@ -1551,6 +1727,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 }
+
 class SlidePageRoute extends PageRouteBuilder {
   final Widget page;
 
