@@ -28,10 +28,13 @@ class _DashBoardState extends State<DashBoard> {
   String? loginType;
   String? userType;
   String? saleOrders;
+  String? totalSaleOrder;
+  String? activeSaleOrder;
+  String? closedSaleOrder;
+
   String? buyerCount;
   String? auctionCmp;
   List<int> saleOrder = [];
-  String? totalSaleOrder = '92';
   String? curr_year;
   List<dynamic> graph = [];
 
@@ -82,7 +85,10 @@ class _DashBoardState extends State<DashBoard> {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         setState(() {
-          saleOrders = jsonData['saleorder']['sale_cnt'];
+          totalSaleOrder = jsonData['saleorder']['total_sale_order']['sale_cnt'];
+          closedSaleOrder = jsonData['saleorder']['done_sale_order']['sale_cnt'];
+          activeSaleOrder = jsonData['saleorder']['active_sale_order']['sale_cnt'];
+
           buyerCount = jsonData['bidders']['bidder_cnt'];
           auctionCmp = jsonData['auction_company']['auc_cnt'];
           graph = jsonData['six_month_data'];
@@ -214,8 +220,9 @@ class _DashBoardState extends State<DashBoard> {
               SizedBox(height: 20,),
               Row(
                 children: [
-                  Expanded(child: _buildCard("$saleOrders", "Active Sale Order", Colors.blue)),
-                  Expanded(child: _buildCard("$saleOrders", "Total Sale Order", Colors.green)),
+                  Expanded(child: _buildCard("$activeSaleOrder", "Active Sale Order", Colors.blue)),
+                  Expanded(child: _buildCard("$totalSaleOrder", "Total Sale Order", Colors.green)),
+                  // Expanded(child: _buildCard("$closedSaleOrder", "Closed  Sale Order", Colors.green)),
                 ],
               ),
               SizedBox(height: 20,),

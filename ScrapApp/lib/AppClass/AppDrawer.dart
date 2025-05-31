@@ -9,6 +9,7 @@ import 'package:scrapapp/Pages/StartPage.dart';
 import 'package:scrapapp/Payment/PaymentList.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../DashBoard/ReferedSaleOrderList.dart';
 import '../Leave/LeaveStatus.dart';
 import '../Leave/Leave_Application.dart';
 import '../Pages/ChangePassword.dart';
@@ -87,14 +88,6 @@ class _AppDrawerState extends State<AppDrawer> {
     appVersionID = prefs.getString("appVersion");
     personId = prefs.getString("personId");
     apkURL = prefs.getString("apkURL");
-
-    print(username);
-    print(uuid);
-    print(password);
-    print(personId);
-    print(versionID);
-    print(apkURL);
-
   }
 
   Future<void> getAppVersion() async {
@@ -225,7 +218,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     },
                   ),
                   // if(userType == 'S' || userType == 'A'|| acces_sale_order == 'Y')
-                  if ((userType == 'S' || userType == 'A' || acces_sale_order == 'Y') && attendonly == 'N')
+                  if ((userType == 'S' || userType == 'A' || userType == 'SA' || acces_sale_order == 'Y') && attendonly == 'N')
                     _buildDrawerItem(
                       context,
                       3,
@@ -235,6 +228,19 @@ class _AppDrawerState extends State<AppDrawer> {
                         Timer(Duration(milliseconds: 300), () {
                           Navigator.pop(context); // Close the drawer
                           Navigator.push(context, MaterialPageRoute(builder: (context) => saleOrderList(currentPage: 3,)));
+                        });
+                      },
+                    ),
+                  if(userType == 'U')
+                    _buildDrawerItem(
+                      context,
+                      19,
+                      icon: Icons.share,
+                      text: "Refered Sale Order",
+                      onTap: () {
+                        Timer(Duration(milliseconds: 300), () {
+                          Navigator.pop(context); // Close the drawer
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => ReferedSaleOrderList(currentPage: 19)));
                         });
 
                       },

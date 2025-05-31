@@ -398,6 +398,8 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
       "Rc": totalCmdController.text,
       "RE": totalEmdController.text,
       "R": totalPaymentController.text,
+      "PE": totalPaymentController.text,
+
     };
 
     // Get the total amount based on the selected payment type

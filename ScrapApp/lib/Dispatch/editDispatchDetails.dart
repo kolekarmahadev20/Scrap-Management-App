@@ -39,6 +39,8 @@ class EditDispatchDetails extends StatefulWidget {
   final String branch_id_from_ids;
   final String vendor_id_from_ids;
   final String materialId;
+  final String balanceQtyUnit;
+  final String balanceamount;
 
 
   EditDispatchDetails({
@@ -62,6 +64,9 @@ class EditDispatchDetails extends StatefulWidget {
     required this.branch_id_from_ids,
     required this.vendor_id_from_ids,
     required this.materialId,
+    required this.balanceamount,
+    required this.balanceQtyUnit,
+
 
 
   });
@@ -83,6 +88,11 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
   final TextEditingController netWeightController = TextEditingController();
   final TextEditingController quantityController = TextEditingController();
   final TextEditingController noteController = TextEditingController();
+
+  final TextEditingController balanceQtyController = TextEditingController();
+  final TextEditingController balanceQtyUnitController = TextEditingController();
+  final TextEditingController balanceAmountController = TextEditingController();
+
 
   String? username = '';
   String uuid = '';
@@ -141,6 +151,11 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
     await materialNameId();
     await getData();
     fetchPaymentDetails();
+
+    balanceQtyController.text = widget.balanceqty;
+    balanceQtyUnitController.text =  widget.balanceQtyUnit;
+    balanceAmountController.text =  widget.balanceamount;
+
     // Add listeners for weight calculations
     firstWeightNoController.addListener(calculateNetWeight);
     fullWeightController.addListener(calculateNetWeight);
@@ -766,6 +781,10 @@ print("widget.sale_order_id");
                   child: Column(
                     children: [
                       buildTextField("Material", materialController,true, false , Colors.white,context),
+                      buildTextField("SO Balance Qty", balanceQtyController,
+                          true, false, Colors.white, context),
+                      buildTextField("SO Balance Amount", balanceAmountController,
+                          true, false, Colors.white, context),
                       buildTextField("Invoice No", invoiceController , false,false ,Colors.white, context),
                       buildTextField("Date", dateController as TextEditingController, true,false , Colors.white,context),
                       buildTextField("Truck No", truckNoController, true,false ,Colors.white, context),
@@ -775,7 +794,8 @@ print("widget.sale_order_id");
                       buildTextField("Moisture Weight", moistureWeightController, false,false ,Colors.white, context),
                       buildTextField("DMT/Quantity Weight", quantityController, true,false , Colors.white,context),
                       buildTextField("Note", noteController, false,false , Colors.white,context),
-                      LayoutBuilder(
+                      if(userType != 'U')
+                        LayoutBuilder(
                         builder: (context, constraints) {
                           return Row(
                             crossAxisAlignment:

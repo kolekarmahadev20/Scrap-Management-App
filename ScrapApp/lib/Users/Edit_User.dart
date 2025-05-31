@@ -48,6 +48,7 @@ class _Edit_UserState extends State<Edit_User> {
     '':'Select',
     'S': 'Super Admin',
     'A': 'Admin',
+    'SA': 'Sub Admin',
     'U': 'User'
   };
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:intl/intl.dart';
 import 'package:scrapapp/AppClass/AppDrawer.dart';
 import 'package:scrapapp/AppClass/appBar.dart';
@@ -23,11 +24,11 @@ class View_payment_detailSale extends StatefulWidget {
     required this.branch_id_from_ids,
     required this.vendor_id_from_ids,
     required this.materialId,
-
   });
 
   @override
-  State<View_payment_detailSale> createState() => _View_payment_detailSaleState();
+  State<View_payment_detailSale> createState() =>
+      _View_payment_detailSaleState();
 }
 
 class _View_payment_detailSaleState extends State<View_payment_detailSale> {
@@ -38,6 +39,9 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
   String? userType = '';
   String? readonly = '';
   String? attendonly = '';
+  String? acces_payment = '';
+  String? acces_dispatch = '';
+
   var checkLiftedQty;
   bool isLoading = false;
 
@@ -51,6 +55,8 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
 
   final TextEditingController totalPaymentController = TextEditingController();
 
+  List<Map<String, dynamic>> userData = [];
+  List<Map<String, dynamic>> selectedUsers = [];
 
   @override
   void initState() {
@@ -59,6 +65,8 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
     checkLogin().then((_) {
       setState(() {});
     });
+    fetchUsers();
+    fetchPreSelectedUsers();
     fetchPaymentDetails();
     fetchRefundPaymentDetails();
   }
@@ -73,7 +81,8 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
     userType = prefs.getString("userType");
     readonly = prefs.getString("readonly");
     attendonly = prefs.getString("attendonly");
-
+    acces_payment = prefs.getString("acces_payment");
+    acces_dispatch = prefs.getString("acces_dispatch");
   }
 
   Future<void> fetchPaymentDetails() async {
@@ -131,11 +140,11 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
         headers: {"Accept": "application/json"},
         body: {
           'user_id': username,
-          'uuid':uuid,
+          'uuid': uuid,
           'user_pass': password,
-          'sale_order_id':widget.sale_order_id,
-          'branch_id':widget.branch_id_from_ids,
-          'vendor_id':widget.vendor_id_from_ids
+          'sale_order_id': widget.sale_order_id,
+          'branch_id': widget.branch_id_from_ids,
+          'vendor_id': widget.vendor_id_from_ids
         },
       );
       if (response.statusCode == 200) {
@@ -143,11 +152,16 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
         setState(() {
           totalPaymentController.text = jsonData['Advance_payment'] != null
               ? double.tryParse(jsonData['Advance_payment'].toString()) != null
-              ? (double.parse(jsonData['Advance_payment'].toString()).toStringAsFixed(3)) // Round to 3 decimals first
-              .substring(0, (double.parse(jsonData['Advance_payment'].toString()).toStringAsFixed(3)).length - 1) // Convert back to 2 decimals
-              : "0.00"
+                  ? (double.parse(jsonData['Advance_payment'].toString())
+                          .toStringAsFixed(3)) // Round to 3 decimals first
+                      .substring(
+                          0,
+                          (double.parse(jsonData['Advance_payment'].toString())
+                                      .toStringAsFixed(3))
+                                  .length -
+                              1) // Convert back to 2 decimals
+                  : "0.00"
               : "N/A";
-
         });
       } else {
         print("unable to load order ids.");
@@ -168,8 +182,6 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
     );
   }
 
-  int _selectedIndex = 0;
-
   String formatDate(String? dateStr) {
     if (dateStr == null || dateStr.isEmpty) {
       return 'No data';
@@ -182,70 +194,386 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
     }
   }
 
+  int _selectedIndex = 0;
+
   Widget buildBottomNavButtons(
       BuildContext context, int selectedIndex, Function(int) onItemTapped) {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 10),
       color: Colors.white,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center, // Center buttons
-        children: [
-          buildNavButton(Icons.payment, "Payment \nDetails", 0, selectedIndex, onItemTapped),
-          SizedBox(width: 20), // Space between buttons
-          buildNavButton(Icons.local_shipping, "Dispatch \nDetails", 1, selectedIndex, onItemTapped),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Wrap(
+          spacing: 8, // Space between buttons
+          alignment: WrapAlignment.center,// Center buttons
+          children: [
+            if (acces_payment == 'Y')
+              buildNavButton(Icons.payment, "Payment Details", 0, selectedIndex,
+                  onItemTapped),
+            if (acces_dispatch == 'Y')
+              buildNavButton(Icons.local_shipping, "Dispatch Details", 1,
+                  selectedIndex, onItemTapped),
+            if (userType == 'S' || userType == 'A'|| userType == 'SA')
+              buildNavButton(Icons.share, "Refer   ", 2,
+                  selectedIndex, onItemTapped),
+          ],
+        ),
       ),
     );
   }
 
   List<Color> buttonColors = [
-    Colors.green,  // Payment Details
+    Colors.green, // Payment Details
     Colors.blue, // EMD Details
-    Colors.red,    // CMD Details
-    Colors.orange,   // Dispatch Details
+    Colors.orange, // Dispatch Details
   ];
 
   Widget buildNavButton(IconData icon, String label, int index,
       int selectedIndex, Function(int) onItemTapped) {
-    return SizedBox(
-      width: 140, // Ensuring both buttons are equal width
-      height: 50,
-      child: ElevatedButton.icon(
-        onPressed: () => onItemTapped(index),
-        icon: Icon(
-          icon,
-          size: 18,
-          color: selectedIndex == index ? Colors.white : buttonColors[index],
-        ),
-        label: Text(
-          label,
-          textAlign: TextAlign.center,
+    return ElevatedButton.icon(
+      onPressed: () => onItemTapped(index),
+      icon: Icon(icon,
+          size: 18, color: selectedIndex == index ? Colors.white : buttonColors[index]),
+      label: Text(label,
           style: TextStyle(
-            fontSize: 12,
-            color: selectedIndex == index ? Colors.white : buttonColors[index],
-          ),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: selectedIndex == index ? buttonColors[index] : Colors.white,
-          padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: BorderSide(color: buttonColors[index]),
-          ),
+              fontSize: 12,
+              color: selectedIndex == index ? Colors.white : buttonColors[index])),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: selectedIndex == index ? buttonColors[index] : Colors.white,
+        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: buttonColors[index]),
         ),
       ),
     );
   }
 
+  Future<void> fetchUsers() async {
+    final url = Uri.parse("${URL}plantWiseUser");
+    try {
+      final response = await http.post(url, body: {
+        'user_id': username,
+        'user_pass': password,
+        'uuid': uuid,
+
+      });
+
+      final data = json.decode(response.body);
+      if (data['status'] == "1" && data['user_data'] != null) {
+        userData = List<Map<String, dynamic>>.from(data['user_data']);
+      } else {
+        print("Error in response: ${data['status']}");
+      }
+    } catch (e) {
+      print("Error fetching users: $e");
+    }
+  }
+
+  Future<void> fetchPreSelectedUsers() async {
+    final url = Uri.parse("${URL}FetchSaleOrderReferName");
+    try {
+      final response = await http.post(url, body: {
+        'user_id': username,
+        'user_pass': password,
+        'uuid': uuid,
+        'sale_order_id': widget.sale_order_id,
+      });
+
+      final data = json.decode(response.body);
+
+      if (data['status'] == "1" && data['user_data'] != null) {
+        selectedUsers.clear();
+
+        final preSelected = List<Map<String, dynamic>>.from(data['user_data']);
+
+        for (var preUser in preSelected) {
+          final match = userData.firstWhere(
+                (user) => user['person_id'].toString() == preUser['person_id'].toString(),
+            orElse: () => {},
+          );
+
+          if (match.isNotEmpty) {
+            // ✅ Check for duplicates before adding
+            bool alreadyExists = selectedUsers.any((u) =>
+            u['person_id'].toString() == match['person_id'].toString());
+
+            if (!alreadyExists) {
+              selectedUsers.add(match);
+            } else {
+              print(" Skipped duplicate user: ${match['person_name']}");
+            }
+          } else {
+            print(" No match found for person_id: ${preUser['person_id']}");
+          }
+        }
+      } else {
+        print(" No prefilled users or error: ${data['status']}");
+      }
+    } catch (e) {
+      print(" Error fetching users: $e");
+    }
+  }
+
+  Future<void> dispatchReferedUser(List selectedIds) async {
+    // final selectedIds = selectedUsers.map((u) => u['person_id']).toList();
+    print("Dispatching with IDs: ${selectedIds.join(',')}"); // ✅ Check this output
+
+    final url = Uri.parse("${URL}dispatchReferedUser");
+    try {
+      final response = await http.post(url, body: {
+        'user_id': username,
+        'user_pass': password,
+        'uuid': uuid,
+        'sale_order_id': widget.sale_order_id,
+        'branch_id': widget.branch_id_from_ids,
+        'vendor_id': widget.vendor_id_from_ids,
+        'mat_id': widget.materialId,
+        'bidder_id': widget.bidder_id,
+        'refered_user_id': selectedIds.join(','),
+        'mat_name': ViewPaymentData['sale_order_details']?[0]['material_name'] ?? 'N/A',
+      });
+
+      final data = json.decode(response.body);
+
+      if (data['status'] == "1" && data['msg'] != null) {
+        userData = List<Map<String, dynamic>>.from(data['user_data'] ?? []);
+
+        // Show the message using SnackBar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['msg']),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        Navigator.of(context).pop();
+      } else {
+        print("Error in response: ${data['status']}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Something went wrong."),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print("Error fetching users: $e");
+    }
+  }
+
+  Future<void> removeReferedUser(String selectedIds) async {
+    // final selectedIds = selectedUsers.map((u) => u['person_id']).toList();
+
+    print("Removing with IDs API: ${selectedIds.toString()}"); // ✅ Check this output
+
+
+    final url = Uri.parse("${URL}remove_ReferSaleOrder");
+    try {
+      final response = await http.post(url, body: {
+        'user_id': username,
+        'user_pass': password,
+        'uuid': uuid,
+        'sale_order_id': widget.sale_order_id,
+        'refered_user_id': selectedIds.toString(),
+      });
+
+      final responseData = json.decode(response.body);
+
+      if (response.statusCode == 200 && responseData['status'].toString() == '1') {
+        setState(() {
+          fetchUsers();
+          fetchPreSelectedUsers();
+          // Navigator.of(context).pop();
+
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("User removed successfully"),
+            duration: Duration(seconds: 2),
+          ),
+
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text("Failed to remove user: ${responseData['msg'] ?? 'Unknown error'}"),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+    } catch (e) {
+      print("Error fetching users: $e");
+    }
+  }
+
+  void showReferDialog(BuildContext context) async {
+    if (username == null || password == null || uuid == null) {
+      print("Login info missing -> username: $username, password: $password, uuid: $uuid");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Login info is missing. Please login again.")),
+      );
+      return;
+    }
+
+    final TextEditingController _typeAheadController = TextEditingController();
+
+    // 1. Fetch all users
+    await fetchUsers();
+
+    // 2. Fetch preselected users after full list is loaded
+    await fetchPreSelectedUsers();
+
+    if (userData.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("No users found to refer.")),
+      );
+      return;
+    }
+
+    // Continue with showDialog...
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Text(
+                "Select Users to Refer",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TypeAheadField<Map<String, dynamic>>(
+                      textFieldConfiguration: TextFieldConfiguration(
+                        controller: _typeAheadController,
+                        decoration: InputDecoration(
+                          labelText: 'Search user',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                      suggestionsCallback: (pattern) {
+                        return userData.where((user) =>
+                        user['person_name']
+                            .toString()
+                            .toLowerCase()
+                            .contains(pattern.toLowerCase()) &&
+                            !selectedUsers.any((sel) => sel['person_id'] == user['person_id']));
+                      },
+                      itemBuilder: (context, suggestion) {
+                        return ListTile(title: Text(suggestion['person_name']));
+                      },
+                      onSuggestionSelected: (suggestion) async {
+                        setState(() {
+                          selectedUsers.add(suggestion);
+                        });
+                        _typeAheadController.clear();
+                      },
+                      noItemsFoundBuilder: (context) => Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text('No users found.'),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (selectedUsers.isNotEmpty)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 6,
+                          children: selectedUsers.map((user) {
+                            return Chip(
+                              label: Text(user['person_name']),
+                              deleteIcon: Icon(Icons.close),
+                              onDeleted: () {
+                                setState(() {
+                                  selectedUsers.removeWhere((u) => u['person_id'] == user['person_id']);
+                                  print("Removed user ID internal: ${user['person_id']}");
+                                  // print("Updated selected IDs: ${selectedUsers.map((u) => u['person_id']).toList().join(', ')}");
+                                });
+
+                                removeReferedUser(user['person_id']);
+                              },
 
 
 
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: TextButton.styleFrom(foregroundColor: Colors.deepPurple),
+                  child: Text("Cancel"),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    print("Selected Users: $selectedUsers");
+
+                    final latestSelectedIds = selectedUsers.map((u) => u['person_id']).toList();
+                    print("latestSelectedIds: $latestSelectedIds");
+
+                    if (latestSelectedIds.isNotEmpty) {
+                      dispatchReferedUser(latestSelectedIds);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("No users selected. Please select at least one user."),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                  child: Text("Refer", style: TextStyle(color: Colors.white)),
+                ),
+
+                // ElevatedButton(
+                //   onPressed: () {
+                //     print("Selected Users: $selectedUsers");
+                //     setState(() {
+                //       final latestSelectedIds = selectedUsers.map((u) => u['person_id']).toList();
+                //       print("latestSelectedIds:$latestSelectedIds");
+                //
+                //         if (latestSelectedIds.isNotEmpty || latestSelectedIds != 0) {
+                //           dispatchReferedUser(latestSelectedIds);
+                //         } else {
+                //         print("No users selected. Skipping dispatch.");
+                //         }
+                //     });
+                //   },
+                //   style: ElevatedButton.styleFrom(
+                //     backgroundColor: Colors.deepPurple,
+                //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                //     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                //   ),
+                //   child: Text("Refer", style: TextStyle(color: Colors.white)),
+                // ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final List<Widget> _pages = [
       // buildMaterialListTab(),
-      buildScrollableTabContent(context, buildPaymentDetailListView),
+      if (acces_payment == 'Y')
+       buildScrollableTabContent(context, buildPaymentDetailListView),
       // buildScrollableTabContent(context, buildEmdDetailListView),
       // buildScrollableTabContent(context, buildCMDDetailListView),
     ];
@@ -258,36 +586,36 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
         body: isLoading
             ? showLoading()
             : SingleChildScrollView(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Sale Order",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                    letterSpacing: 1.2,
-                  ),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        "Sale Order",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                    buildRowWithIcon(context),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: buildVendorInfo(),
+                    ),
+                    buildExpansionTile(),
+                    SizedBox(height: 10), // Spacer before content
+                    IndexedStack(
+                      index: _selectedIndex,
+                      children: _pages,
+                    ),
+                  ],
                 ),
               ),
-              buildRowWithIcon(context),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: buildVendorInfo(),
-              ),
-              buildExpansionTile(),
-              SizedBox(height: 10), // Spacer before content
-              IndexedStack(
-                index: _selectedIndex,
-                children: _pages,
-              ),
-            ],
-          ),
-        ),
         bottomNavigationBar:
-        buildBottomNavButtons(context, _selectedIndex, (index) {
+            buildBottomNavButtons(context, _selectedIndex, (index) {
           setState(() {
             _selectedIndex = index;
             // Navigate to DispatchList when Dispatch is tapped
@@ -296,60 +624,72 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => View_dispatch_details(
-                      sale_order_id: widget.sale_order_id,
-                      bidder_id: widget.bidder_id,
-                      branch_id_from_ids: widget.branch_id_from_ids, // Extracted from "Ids"
-                      vendor_id_from_ids: widget.vendor_id_from_ids, // Extracted from "Ids"
-                      materialId:  widget.materialId, // Extracted from "Ids"
-                    )), // Navigate to DispatchList Page
+                          sale_order_id: widget.sale_order_id,
+                          bidder_id: widget.bidder_id,
+                          branch_id_from_ids:
+                              widget.branch_id_from_ids, // Extracted from "Ids"
+                          vendor_id_from_ids:
+                              widget.vendor_id_from_ids, // Extracted from "Ids"
+                          materialId: widget.materialId, // Extracted from "Ids"
+                        )), // Navigate to DispatchList Page
               );
             }
+
+            if (index == 2) {
+            showReferDialog(context); // <- Only one argument now
+            }
+
           });
         }),
         floatingActionButton: (readonly == 'Y')
             ? null
-            : FloatingActionButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => addPaymentToSaleOrder(
-                        sale_order_id: widget.sale_order_id,
-                        material_name: ViewPaymentData['sale_order_details']?[0]
-                                ['material_name'] ??
-                            'N/A',
-                        vendor_id_from_ids: widget.vendor_id_from_ids,
-                        branch_id_from_ids: widget.branch_id_from_ids,
-                      ),
-                    ),
-                  ).then((value) => setState(() {
-                        fetchPaymentDetails();
-                      }));
-                },
-                child: Icon(Icons.add),
-                backgroundColor: Colors.blueGrey[200],
-              ),
-        // floatingActionButton: FloatingActionButton(
-        //   onPressed: () {
-        //     Navigator.push(
-        //       context,
-        //       MaterialPageRoute(
-        //         builder: (context) => addPaymentToSaleOrder(
-        //           sale_order_id: widget.sale_order_id,
-        //           material_name: ViewPaymentData['sale_order_details']?[0]
-        //           ['material_name'] ??
-        //               'N/A',
-        //           vendor_id_from_ids: widget.vendor_id_from_ids,
-        //           branch_id_from_ids: widget.branch_id_from_ids,
-        //         ),
+            : (acces_payment != 'Y')
+                ? null
+                : FloatingActionButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => addPaymentToSaleOrder(
+                            sale_order_id: widget.sale_order_id,
+                            material_name: ViewPaymentData['sale_order_details']
+                                    ?[0]['material_name'] ??
+                                'N/A',
+                            vendor_id_from_ids: widget.vendor_id_from_ids,
+                            branch_id_from_ids: widget.branch_id_from_ids,
+                          ),
+                        ),
+                      ).then((value) => setState(() {
+                            fetchPaymentDetails();
+                          }));
+                    },
+                    child: Icon(Icons.add),
+                    backgroundColor: Colors.blueGrey[200],
+                  ),
+
+        // floatingActionButton: (readonly == 'Y')
+        //     ? null
+        //     : FloatingActionButton(
+        //         onPressed: () {
+        //           Navigator.push(
+        //             context,
+        //             MaterialPageRoute(
+        //               builder: (context) => addPaymentToSaleOrder(
+        //                 sale_order_id: widget.sale_order_id,
+        //                 material_name: ViewPaymentData['sale_order_details']?[0]
+        //                         ['material_name'] ??
+        //                     'N/A',
+        //                 vendor_id_from_ids: widget.vendor_id_from_ids,
+        //                 branch_id_from_ids: widget.branch_id_from_ids,
+        //               ),
+        //             ),
+        //           ).then((value) => setState(() {
+        //                 fetchPaymentDetails();
+        //               }));
+        //         },
+        //         child: Icon(Icons.add),
+        //         backgroundColor: Colors.blueGrey[200],
         //       ),
-        //     ).then((value) => setState(() {
-        //       fetchPaymentDetails();
-        //     }));
-        //   },
-        //   child: Icon(Icons.add), // FAB icon
-        //   backgroundColor: Colors.blueGrey[200],
-        // ),
       ),
     );
   }
@@ -358,8 +698,6 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
       BuildContext context, Widget Function() listViewBuilder) {
     return listViewBuilder();
   }
-
-
 
   Widget buildRowWithIcon(BuildContext context) {
     return Material(
@@ -444,7 +782,8 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Push key left & value right
+        mainAxisAlignment:
+            MainAxisAlignment.spaceBetween, // Push key left & value right
         children: [
           Text(
             key,
@@ -460,7 +799,9 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: isRed ? FontWeight.bold : FontWeight.normal,
-                color: isRed ? Colors.redAccent : Colors.black54, // Color based on isRed
+                color: isRed
+                    ? Colors.redAccent
+                    : Colors.black54, // Color based on isRed
               ),
             ),
           ),
@@ -497,7 +838,7 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
             //   "EMD Details",
             //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             // ),
-            buildEmdDetailListView(),  // ❌ `context` hata diya
+            buildEmdDetailListView(), // ❌ `context` hata diya
 
             SizedBox(height: 10), // Spacing
 
@@ -506,7 +847,7 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
             //   "CMD Details",
             //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             // ),
-            buildCMDDetailListView(),  // ❌ `context` hata diya
+            buildCMDDetailListView(), // ❌ `context` hata diya
           ],
         ),
       ),
@@ -525,7 +866,8 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
               alignment: Alignment.centerLeft,
               child: Text(
                 title,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
             ),
           ),
@@ -543,7 +885,6 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
     );
   }
 
-
   Widget buildPaymentDetailsCard(Map<String, dynamic> ViewPaymentData) {
     return Container(
       color: Colors.white,
@@ -554,7 +895,8 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
           children: [
             buildDetailTile(
                 "Material Name : ",
-                ViewPaymentData['sale_order_details']?[0]['material_name'] ?? 'N/A',
+                ViewPaymentData['sale_order_details']?[0]['material_name'] ??
+                    'N/A',
                 Icons.category),
             buildDetailTile(
                 "Total Qty : ",
@@ -573,7 +915,8 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
                   Icons.local_shipping),
             buildDetailTile(
                 "Rate : ",
-                ViewPaymentData['sale_order_details'][0]['rate']?.toString() ?? 'No data',
+                ViewPaymentData['sale_order_details'][0]['rate']?.toString() ??
+                    'No data',
                 Icons.attach_money),
             buildDetailTile(
                 "SO Date : ",
@@ -595,8 +938,6 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
       ),
     );
   }
-
-
 
   Widget buildTable() {
     // Use a Set to keep track of unique tax names
@@ -638,13 +979,19 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
             DataColumn(
               label: Text(
                 'Tax',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87),
               ),
             ),
             DataColumn(
               label: Text(
                 'Amount',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87),
               ),
             ),
           ],
@@ -652,8 +999,10 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
             DataRow(
               color: MaterialStateProperty.all(Colors.grey.shade200),
               cells: [
-                DataCell(Text('Basic Amount', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataCell(Text('₹${taxAmount['basicTaxAmount']}', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text('Basic Amount',
+                    style: TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text('₹${taxAmount['basicTaxAmount']}',
+                    style: TextStyle(fontWeight: FontWeight.bold))),
               ],
             ),
             if (uniqueTaxes.isNotEmpty)
@@ -668,8 +1017,10 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
             DataRow(
               color: MaterialStateProperty.all(Colors.grey.shade200),
               cells: [
-                DataCell(Text('Final SO Amount', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataCell(Text('₹${taxAmount['finalTaxAmount']}', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text('Final SO Amount',
+                    style: TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(Text('₹${taxAmount['finalTaxAmount']}',
+                    style: TextStyle(fontWeight: FontWeight.bold))),
               ],
             ),
           ],
@@ -709,7 +1060,7 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
           ListView.builder(
             shrinkWrap: true, // Prevents infinite scroll issue
             physics:
-            NeverScrollableScrollPhysics(), // Disables separate scrolling
+                NeverScrollableScrollPhysics(), // Disables separate scrolling
             itemCount: paymentStatus.length,
             itemBuilder: (context, index) {
               final paymentIdIndex = paymentStatus[index];
@@ -722,7 +1073,10 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
               padding: EdgeInsets.symmetric(vertical: 8.0),
               child: Text(
                 "No Payment Details Found",
-                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18,color: Colors.grey),
+                style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 18,
+                    color: Colors.grey),
               ),
             ),
           ),
@@ -751,7 +1105,7 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
           ListView.builder(
             shrinkWrap: true, // Prevents infinite scroll issue
             physics:
-            NeverScrollableScrollPhysics(), // Disables separate scrolling
+                NeverScrollableScrollPhysics(), // Disables separate scrolling
             itemCount: emdStatus.length,
             itemBuilder: (context, index) {
               final emdStatusIndex = emdStatus[index];
@@ -764,7 +1118,10 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
               padding: EdgeInsets.symmetric(vertical: 8.0),
               child: Text(
                 "No EMD Details Found",
-                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18,color: Colors.grey),
+                style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 18,
+                    color: Colors.grey),
               ),
             ),
           ),
@@ -793,7 +1150,7 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
           ListView.builder(
             shrinkWrap: true, // Prevents infinite scroll issue
             physics:
-            NeverScrollableScrollPhysics(), // Disables separate scrolling
+                NeverScrollableScrollPhysics(), // Disables separate scrolling
             itemCount: cmdStatus.length,
             itemBuilder: (context, index) {
               final cmdStatusIndex = cmdStatus[index];
@@ -806,7 +1163,10 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
               padding: EdgeInsets.symmetric(vertical: 8.0),
               child: Text(
                 "No CMD Details Found",
-                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18,color: Colors.grey),
+                style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 18,
+                    color: Colors.grey),
               ),
             ),
           ),
@@ -817,141 +1177,118 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
   Widget buildPaymentDetailListTile(BuildContext context, index) {
     // if (index['payment_type'] == "Received Payment") {
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 5),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
-                spreadRadius: 2,
-                blurRadius: 5,
-                offset: Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Card(
-            elevation: 0,
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(1),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 5),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: Offset(0, 3),
             ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.all(12.0),
-              leading: CircleAvatar(
-                backgroundColor: Colors.indigo[800],
-                child: Icon(Icons.border_outer, size: 24, color: Colors.white),
-              ),
-              title: RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: "Amount : ",
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.bold, // Bold key
-                        fontSize: 20,
-                      ),
-                    ),
-                    TextSpan(
-                      text: "${index['amt'] ?? 'N/A'}",
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.normal, // Normal value
-                        fontSize: 20,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          ],
+        ),
+        child: Card(
+          elevation: 0,
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(1),
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.all(12.0),
+            leading: CircleAvatar(
+              backgroundColor: Colors.indigo[800],
+              child: Icon(Icons.border_outer, size: 24, color: Colors.white),
+            ),
+            title: RichText(
+              text: TextSpan(
                 children: [
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "Ref No : ",
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontWeight: FontWeight.bold, // Bold key
-                            fontSize: 16,
-                          ),
-                        ),
-                        TextSpan(
-                          text: "${index['pay_ref_no'] ?? 'N/A'}",
-                          style: TextStyle(
-                            color: Colors.black54,
-                            fontWeight: FontWeight.normal, // Normal value
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
+                  TextSpan(
+                    text: "Amount : ",
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.bold, // Bold key
+                      fontSize: 20,
                     ),
                   ),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "Date : ",
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontWeight: FontWeight.bold, // Bold key
-                            fontSize: 16,
-                          ),
-                        ),
-                        TextSpan(
-                          text: formatDate(index['date'] ?? 'N/A'),
-                          style: TextStyle(
-                            color: Colors.black54,
-                            fontWeight: FontWeight.normal, // Normal value
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
+                  TextSpan(
+                    text: "${index['amt'] ?? 'N/A'}",
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.normal, // Normal value
+                      fontSize: 20,
                     ),
                   ),
                 ],
               ),
-              trailing: IconButton(
-                icon: Icon(Icons.arrow_forward_ios, size: 16),
-                color: Colors.grey[600],
-                onPressed: () {
-                  // Action on tapping the arrow
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => View_Payment_Amount(
-                          branch_id_from_ids: widget.branch_id_from_ids,
-                          vendor_id_from_ids: widget.vendor_id_from_ids,
-                          sale_order_id: widget.sale_order_id,
-                          bidder_id: widget.bidder_id,
-                          paymentId: index['payment_id'] ?? 'N/A',
-                          paymentType: index['payment_type'] ?? 'N/A',
-                          date1: index['date'] ?? 'N/A',
-                          amount: index['amt'] ?? 'N/A',
-                          referenceNo: index['pay_ref_no'] ?? 'N/A',
-                          typeOfTransfer: index['typeoftransfer'] ?? 'N/A',
-                          remark: index['narration'] ?? 'N/A',
-                          freezed: index['freezed'] ?? 'N/A'),
-                    ),
-                  ).then((value) => setState(() {
-                    fetchPaymentDetails();
-                  }));
-                },
-              ),
-              onTap: () {
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Ref No : ",
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold, // Bold key
+                          fontSize: 16,
+                        ),
+                      ),
+                      TextSpan(
+                        text: "${index['pay_ref_no'] ?? 'N/A'}",
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontWeight: FontWeight.normal, // Normal value
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Date : ",
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold, // Bold key
+                          fontSize: 16,
+                        ),
+                      ),
+                      TextSpan(
+                        text: formatDate(index['date'] ?? 'N/A'),
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontWeight: FontWeight.normal, // Normal value
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            trailing: IconButton(
+              icon: Icon(Icons.arrow_forward_ios, size: 16),
+              color: Colors.grey[600],
+              onPressed: () {
+                // Action on tapping the arrow
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => View_Payment_Amount(
-                        sale_order_id: widget.sale_order_id,
-                        bidder_id: widget.bidder_id,
                         branch_id_from_ids: widget.branch_id_from_ids,
                         vendor_id_from_ids: widget.vendor_id_from_ids,
+                        sale_order_id: widget.sale_order_id,
+                        bidder_id: widget.bidder_id,
                         paymentId: index['payment_id'] ?? 'N/A',
                         paymentType: index['payment_type'] ?? 'N/A',
                         date1: index['date'] ?? 'N/A',
@@ -962,13 +1299,36 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
                         freezed: index['freezed'] ?? 'N/A'),
                   ),
                 ).then((value) => setState(() {
-                  fetchPaymentDetails();
-                }));
+                      fetchPaymentDetails();
+                    }));
               },
             ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => View_Payment_Amount(
+                      sale_order_id: widget.sale_order_id,
+                      bidder_id: widget.bidder_id,
+                      branch_id_from_ids: widget.branch_id_from_ids,
+                      vendor_id_from_ids: widget.vendor_id_from_ids,
+                      paymentId: index['payment_id'] ?? 'N/A',
+                      paymentType: index['payment_type'] ?? 'N/A',
+                      date1: index['date'] ?? 'N/A',
+                      amount: index['amt'] ?? 'N/A',
+                      referenceNo: index['pay_ref_no'] ?? 'N/A',
+                      typeOfTransfer: index['typeoftransfer'] ?? 'N/A',
+                      remark: index['narration'] ?? 'N/A',
+                      freezed: index['freezed'] ?? 'N/A'),
+                ),
+              ).then((value) => setState(() {
+                    fetchPaymentDetails();
+                  }));
+            },
           ),
         ),
-      );
+      ),
+    );
     // } else {
     //   return Container();
     // }
@@ -1099,8 +1459,8 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
                           freezed: index['freezed'] ?? 'N/A'),
                     ),
                   ).then((value) => setState(() {
-                    fetchPaymentDetails();
-                  }));
+                        fetchPaymentDetails();
+                      }));
                 },
               ),
               onTap: () {
@@ -1122,8 +1482,8 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
                         freezed: index['freezed'] ?? 'N/A'),
                   ),
                 ).then((value) => setState(() {
-                  fetchPaymentDetails();
-                }));
+                      fetchPaymentDetails();
+                    }));
               },
             ),
           ),
@@ -1257,8 +1617,8 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
                         freezed: index['freezed'] ?? 'N/A'),
                   ),
                 ).then((value) => setState(() {
-                  fetchPaymentDetails();
-                }));
+                      fetchPaymentDetails();
+                    }));
               },
             ),
             onTap: () {
@@ -1280,8 +1640,8 @@ class _View_payment_detailSaleState extends State<View_payment_detailSale> {
                       freezed: index['freezed'] ?? 'N/A'),
                 ),
               ).then((value) => setState(() {
-                fetchPaymentDetails();
-              }));
+                    fetchPaymentDetails();
+                  }));
             },
           ),
         ),

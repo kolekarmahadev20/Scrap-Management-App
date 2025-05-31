@@ -38,7 +38,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
   String? userType = '';
   String? readonly = '';
   String? attendonly = '';
-
+  String? acces_payment = '';
+  String? acces_refund = '';
 
   var checkLiftedQty;
   bool isLoading = false;
@@ -72,6 +73,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
     userType = prefs.getString("userType");
     readonly = prefs.getString("readonly");
     attendonly = prefs.getString("attendonly");
+    acces_payment = prefs.getString("acces_payment");
+    acces_refund = prefs.getString("acces_refund");
   }
 
   Future<void> fetchPaymentDetails() async {
@@ -153,9 +156,11 @@ class _View_payment_detailState extends State<View_payment_detail> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center, // Center buttons
         children: [
-          buildNavButton(Icons.payment, "Payment \nDetails", 0, selectedIndex, onItemTapped),
+          if (acces_payment == 'Y')
+            buildNavButton(Icons.payment, "Payment \nDetails", 0, selectedIndex, onItemTapped),
           SizedBox(width: 20), // Space between buttons
-          buildNavButton(Icons.local_shipping, "Refund \nDetails", 3,
+          if (acces_refund == 'Y')
+            buildNavButton(Icons.local_shipping, "Refund \nDetails", 3,
               selectedIndex, onItemTapped),        ],
       ),
     );
@@ -268,6 +273,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
         }),
         floatingActionButton: (readonly == 'Y')
             ? null
+            : (acces_payment != 'Y')
+            ? null
             : FloatingActionButton(
           onPressed: () {
             Navigator.push(
@@ -275,8 +282,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
               MaterialPageRoute(
                 builder: (context) => addPaymentToSaleOrder(
                   sale_order_id: widget.sale_order_id,
-                  material_name: ViewPaymentData['sale_order_details']?[0]
-                  ['material_name'] ??
+                  material_name: ViewPaymentData['sale_order_details']
+                  ?[0]['material_name'] ??
                       'N/A',
                   vendor_id_from_ids: widget.vendor_id_from_ids,
                   branch_id_from_ids: widget.branch_id_from_ids,
@@ -289,7 +296,9 @@ class _View_payment_detailState extends State<View_payment_detail> {
           child: Icon(Icons.add),
           backgroundColor: Colors.blueGrey[200],
         ),
-        // floatingActionButton: FloatingActionButton(
+        // floatingActionButton: (readonly == 'Y')
+        //     ? null
+        //     : FloatingActionButton(
         //   onPressed: () {
         //     Navigator.push(
         //       context,
@@ -297,19 +306,20 @@ class _View_payment_detailState extends State<View_payment_detail> {
         //         builder: (context) => addPaymentToSaleOrder(
         //           sale_order_id: widget.sale_order_id,
         //           material_name: ViewPaymentData['sale_order_details']?[0]
-        //                   ['material_name'] ??
+        //           ['material_name'] ??
         //               'N/A',
         //           vendor_id_from_ids: widget.vendor_id_from_ids,
         //           branch_id_from_ids: widget.branch_id_from_ids,
         //         ),
         //       ),
         //     ).then((value) => setState(() {
-        //           fetchPaymentDetails();
-        //         }));
+        //       fetchPaymentDetails();
+        //     }));
         //   },
-        //   child: Icon(Icons.add), // FAB icon
+        //   child: Icon(Icons.add),
         //   backgroundColor: Colors.blueGrey[200],
         // ),
+
       ),
     );
   }

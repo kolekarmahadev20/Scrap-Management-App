@@ -44,6 +44,7 @@ class _Add_userState extends State<Add_user> {
     '': 'Select',
     'S': 'Super Admin',
     'A': 'Admin',
+    'SA': 'Sub Admin',
     'U': 'User'
   };
 

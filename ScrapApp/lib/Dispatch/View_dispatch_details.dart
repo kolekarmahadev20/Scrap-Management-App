@@ -506,6 +506,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                       vendor_id_from_ids: widget.vendor_id_from_ids, // Extracted from "Ids"
                       materialId:  widget.materialId, // Extracted from "Ids"
                       balanceqty: balanceQty.toString(),
+                      balanceamount: totalBalance.toString(),
+                      balanceQtyUnit:  ViewPaymentData['sale_order_details'][0]['totunit'] ?? "",
                       sale_order_id: widget.sale_order_id,
                       material_name: ViewDispatchData['sale_order_details']?[0]
                               ['material_name'] ??
@@ -795,6 +797,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                                   vendor_id_from_ids: widget.vendor_id_from_ids, // Extracted from "Ids"
                                   materialId:  widget.materialId, // Extracted from "Ids"
                                   balanceqty: balanceQty.toString(),
+                                  balanceQtyUnit:  ViewPaymentData['sale_order_details'][0]['totunit'] ?? "",
+                                  balanceamount: totalBalance.toString(),
                                   sale_order_id: widget.sale_order_id,
                                   bidder_id: widget.bidder_id,
                                   status: index['status'] ?? '',

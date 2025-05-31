@@ -601,42 +601,45 @@ class _ProfilePageState extends State<ProfilePage> {
       barrierDismissible: false,
       builder: (context) {
         final TextEditingController remarkController = TextEditingController();
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0),
-          ),
-          title: Text('Enter Late Login Remark'),
-          content: TextField(
-            controller: remarkController,
-            maxLines: 3,
-            decoration: InputDecoration(
-              hintText: 'Write your remark here...',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+        return WillPopScope(
+          onWillPop: () async => false,
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+            title: Text('Enter Late Login Remark'),
+            content: TextField(
+              controller: remarkController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'Write your remark here...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  SystemNavigator.pop();
+                },
+                child: Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (remarkController.text.isNotEmpty) {
+                    await _submitLateLoginRemark(remarkController.text);
+                    // Refresh the page by calling setState
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Remark cannot be empty')),
+                    );
+                  }
+                },
+                child: Text('Submit'),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                SystemNavigator.pop();
-              },
-              child: Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (remarkController.text.isNotEmpty) {
-                  await _submitLateLoginRemark(remarkController.text);
-                  // Refresh the page by calling setState
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Remark cannot be empty')),
-                  );
-                }
-              },
-              child: Text('Submit'),
-            ),
-          ],
         );
       },
     );
@@ -647,22 +650,25 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0),
-          ),
-          title: Text(
-            "Admin will shortly connect to you. Please wait for their response.",
-            style: TextStyle(fontSize: 16),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                SystemNavigator.pop();
-              },
-              child: Text('OK'),
+        return WillPopScope(
+          onWillPop: () async => false,
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0),
             ),
-          ],
+            title: Text(
+              "Admin will shortly connect to you. Please wait for their response.",
+              style: TextStyle(fontSize: 16),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  SystemNavigator.pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          ),
         );
       },
     );

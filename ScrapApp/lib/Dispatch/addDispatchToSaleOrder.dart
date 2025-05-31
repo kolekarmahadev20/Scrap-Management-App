@@ -23,6 +23,8 @@ class addDispatchToSaleOrder extends StatefulWidget {
   final String bidder_id;
   final String totalQty;
   final String balanceqty;
+  final String balanceQtyUnit;
+  final String balanceamount;
   final String branch_id_from_ids;
   final String vendor_id_from_ids;
   final String materialId;
@@ -36,6 +38,8 @@ class addDispatchToSaleOrder extends StatefulWidget {
     required this.branch_id_from_ids,
     required this.vendor_id_from_ids,
     required this.materialId,
+    required this.balanceamount,
+    required this.balanceQtyUnit,
   });
 
   @override
@@ -55,6 +59,10 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   final TextEditingController netWeightController = TextEditingController();
   final TextEditingController quantityController = TextEditingController();
   final TextEditingController noteController = TextEditingController();
+
+  final TextEditingController balanceQtyController = TextEditingController();
+  final TextEditingController balanceQtyUnitController = TextEditingController();
+  final TextEditingController balanceAmountController = TextEditingController();
 
   String? username = '';
   String uuid = '';
@@ -105,6 +113,10 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
     await materialNameId();
     fetchPaymentDetails();
     materialController.text = widget.material_name;
+
+    balanceQtyController.text = widget.balanceqty;
+    balanceQtyUnitController.text =  widget.balanceQtyUnit;
+    balanceAmountController.text =  widget.balanceamount;
 
     // Add listeners for weight calculations
     firstWeightNoController.addListener(calculateNetWeight);
@@ -726,6 +738,13 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
                             children: [
                               buildTextField("Material", materialController,
                                   true, false, Colors.white, context),
+
+                              buildTextField("SO Balance Qty", balanceQtyController,
+                                  true, false, Colors.white, context),
+                              buildTextField("SO Balance Amount", balanceAmountController,
+                                  true, false, Colors.white, context),
+
+
                               buildTextField("Invoice No", invoiceController,
                                   false, false, Colors.white, context),
                               buildTextField("Date", dateController, false,
@@ -764,7 +783,9 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
                                   context),
                               buildTextField("Note", noteController, false,
                                   false, Colors.white, context),
-                              LayoutBuilder(
+                              if(userType != 'U')
+
+                                LayoutBuilder(
                                 builder: (context, constraints) {
                                   return Row(
                                     crossAxisAlignment:

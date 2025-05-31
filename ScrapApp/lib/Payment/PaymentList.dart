@@ -68,8 +68,8 @@ class _PaymentListState extends State<PaymentList> {
         headers: {"Accept": "application/json"},
         body: {
         'user_id': username,
-'uuid':uuid,
-          'user_pass': password,
+        'uuid':uuid,
+         'user_pass': password,
         },
       );
       if (response.statusCode == 200) {
