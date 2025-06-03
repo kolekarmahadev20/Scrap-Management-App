@@ -648,51 +648,52 @@ class _Edit_UserState extends State<Edit_User> {
 
 
   // Function to build a reusable TypeAhead dropdown
-  Widget buildCheckboxDropdownVendor({
-    required String label,
-    required List<Map<String, String>> items,
-    required Map<String, String> selectedVendors,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 10),
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: Column(
-            children: items.map((vendor) {
-              final vendorName = vendor['name']!;
-              final vendorId = vendor['id']!;
+  // Widget buildCheckboxDropdownVendor({
+  //   required String label,
+  //   required List<Map<String, String>> items,
+  //   required Map<String, String> selectedVendors,
+  // }) {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       Text(
+  //         label,
+  //         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+  //       ),
+  //       SizedBox(height: 10),
+  //       Container(
+  //         decoration: BoxDecoration(
+  //           border: Border.all(color: Colors.grey),
+  //           borderRadius: BorderRadius.circular(5),
+  //         ),
+  //         child: Column(
+  //           children: items.map((vendor) {
+  //             final vendorName = vendor['name']!;
+  //             final vendorId = vendor['id']!;
+  //
+  //             return CheckboxListTile(
+  //               title: Text(vendorName),
+  //               value: selectedVendors.isNotEmpty &&
+  //                   selectedVendors.containsKey(vendorName),
+  //               onChanged: (bool? value) {
+  //                 setState(() {
+  //                   selectedVendors.clear(); // Pehle se selected vendor remove karein
+  //                   if (value == true) {
+  //                     selectedVendors[vendorName] = vendorId;
+  //                   }
+  //                   _fetchPlants(selectedVendors);
+  //                 });
+  //               },
+  //             );
+  //           }).toList(),
+  //         ),
+  //       ),
+  //       SizedBox(height: 20),
+  //     ],
+  //   );
+  // }
 
-              return CheckboxListTile(
-                title: Text(vendorName),
-                value: selectedVendors.isNotEmpty &&
-                    selectedVendors.containsKey(vendorName),
-                onChanged: (bool? value) {
-                  setState(() {
-                    selectedVendors.clear(); // Pehle se selected vendor remove karein
-                    if (value == true) {
-                      selectedVendors[vendorName] = vendorId;
-                    }
-                    _fetchPlants(selectedVendors);
-                  });
-                },
-              );
-            }).toList(),
-          ),
-        ),
-        SizedBox(height: 20),
-      ],
-    );
-  }
-
+  //multiple selction
   // Widget buildCheckboxDropdownVendor({
   //   required String label,
   //   required List<Map<String, String>> items,
@@ -737,12 +738,85 @@ class _Edit_UserState extends State<Edit_User> {
   //   );
   // }
 
+
+
+  Widget buildCheckboxDropdownVendor({
+    required String label,
+    required List<Map<String, String>> items,
+    required Map<String, String> selectedVendors,
+  }) {
+    bool allSelected = selectedVendors.length == items.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Column(
+            children: [
+              // Select All Checkbox
+              CheckboxListTile(
+                title: Text("Select All"),
+                value: allSelected,
+                onChanged: (bool? value) {
+                  setState(() {
+                    if (value == true) {
+                      // Select all vendors
+                      for (var vendor in items) {
+                        selectedVendors[vendor['name']!] = vendor['id']!;
+                      }
+                    } else {
+                      // Deselect all
+                      selectedVendors.clear();
+                    }
+                    _fetchPlants(selectedVendors);
+                  });
+                },
+              ),
+              Divider(height: 1),
+              // Individual Vendor Checkboxes
+              ...items.map((vendor) {
+                final vendorName = vendor['name']!;
+                final vendorId = vendor['id']!;
+                return CheckboxListTile(
+                  title: Text(vendorName),
+                  value: selectedVendors.containsKey(vendorName),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      if (value == true) {
+                        selectedVendors[vendorName] = vendorId;
+                      } else {
+                        selectedVendors.remove(vendorName);
+                      }
+                      _fetchPlants(selectedVendors);
+                    });
+                  },
+                );
+              }).toList(),
+            ],
+          ),
+        ),
+        SizedBox(height: 20),
+      ],
+    );
+  }
+
   Widget buildCheckboxListPlant({
     required String label,
     required List<Map<String, String>> items, // Location list with name & id
     required List<String> selectedValues,
     required Map<String, String> selectedLocations,
   }) {
+    bool allSelected = selectedValues.length == items.length;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -758,55 +832,130 @@ class _Edit_UserState extends State<Edit_User> {
             borderRadius: BorderRadius.circular(8.0),
           ),
           child: Column(
-            children: items.map((location) {
-              final locationName = location['name']!;
-              final locationId = location['id']!;
-
-              return CheckboxListTile(
-                title: Text(locationName),
-                value: selectedValues.contains(locationName),
-                onChanged: (bool? isChecked) {
+            children: [
+              // Select All Checkbox
+              CheckboxListTile(
+                title: Text("Select All"),
+                value: allSelected,
+                onChanged: (bool? value) {
                   setState(() {
-                    if (isChecked == true) {
-                      selectedValues.add(locationName);
-                      selectedLocations[locationName] = locationId;
+                    if (value == true) {
+                      selectedValues.clear();
+                      selectedLocations.clear();
+                      for (var location in items) {
+                        final name = location['name']!;
+                        final id = location['id']!;
+                        selectedValues.add(name);
+                        selectedLocations[name] = id;
+                      }
                     } else {
-                      selectedValues.remove(locationName);
-                      selectedLocations.remove(locationName);
+                      selectedValues.clear();
+                      selectedLocations.clear();
                     }
                   });
                 },
-              );
-            }).toList(),
+              ),
+              Divider(height: 1),
+              // Individual checkboxes
+              ...items.map((location) {
+                final locationName = location['name']!;
+                final locationId = location['id']!;
+
+                return CheckboxListTile(
+                  title: Text(locationName),
+                  value: selectedValues.contains(locationName),
+                  onChanged: (bool? isChecked) {
+                    setState(() {
+                      if (isChecked == true) {
+                        selectedValues.add(locationName);
+                        selectedLocations[locationName] = locationId;
+                      } else {
+                        selectedValues.remove(locationName);
+                        selectedLocations.remove(locationName);
+                      }
+                    });
+                  },
+                );
+              }).toList(),
+            ],
           ),
         ),
-        // SizedBox(height: 10),
-        // InputDecorator(
-        //   decoration: InputDecoration(
-        //     labelText: "$label Selected",
-        //     border: OutlineInputBorder(),
-        //   ),
-        //   child: Wrap(
-        //     spacing: 8.0,
-        //     runSpacing: 4.0,
-        //     children: selectedValues.map((value) {
-        //       return Chip(
-        //         label: Text(value),
-        //         deleteIcon: Icon(Icons.close),
-        //         onDeleted: () {
-        //           setState(() {
-        //             selectedValues.remove(value);
-        //             selectedLocations.remove(value);
-        //           });
-        //         },
-        //       );
-        //     }).toList(),
-        //   ),
-        // ),
         SizedBox(height: 20),
       ],
     );
   }
+
+
+  // Widget buildCheckboxListPlant({
+  //   required String label,
+  //   required List<Map<String, String>> items, // Location list with name & id
+  //   required List<String> selectedValues,
+  //   required Map<String, String> selectedLocations,
+  // }) {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       Text(
+  //         label,
+  //         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+  //       ),
+  //       SizedBox(height: 10),
+  //       Container(
+  //         padding: EdgeInsets.all(8.0),
+  //         decoration: BoxDecoration(
+  //           border: Border.all(color: Colors.grey),
+  //           borderRadius: BorderRadius.circular(8.0),
+  //         ),
+  //         child: Column(
+  //           children: items.map((location) {
+  //             final locationName = location['name']!;
+  //             final locationId = location['id']!;
+  //
+  //             return CheckboxListTile(
+  //               title: Text(locationName),
+  //               value: selectedValues.contains(locationName),
+  //               onChanged: (bool? isChecked) {
+  //                 setState(() {
+  //                   if (isChecked == true) {
+  //                     selectedValues.add(locationName);
+  //                     selectedLocations[locationName] = locationId;
+  //                   } else {
+  //                     selectedValues.remove(locationName);
+  //                     selectedLocations.remove(locationName);
+  //                   }
+  //                 });
+  //               },
+  //             );
+  //           }).toList(),
+  //         ),
+  //       ),
+  //       // SizedBox(height: 10),
+  //       // InputDecorator(
+  //       //   decoration: InputDecoration(
+  //       //     labelText: "$label Selected",
+  //       //     border: OutlineInputBorder(),
+  //       //   ),
+  //       //   child: Wrap(
+  //       //     spacing: 8.0,
+  //       //     runSpacing: 4.0,
+  //       //     children: selectedValues.map((value) {
+  //       //       return Chip(
+  //       //         label: Text(value),
+  //       //         deleteIcon: Icon(Icons.close),
+  //       //         onDeleted: () {
+  //       //           setState(() {
+  //       //             selectedValues.remove(value);
+  //       //             selectedLocations.remove(value);
+  //       //           });
+  //       //         },
+  //       //       );
+  //       //     }).toList(),
+  //       //   ),
+  //       // ),
+  //       SizedBox(height: 20),
+  //     ],
+  //   );
+  // }
 
   Widget buildTypeAheadDropdownorganization({
     required String label,

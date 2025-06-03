@@ -775,7 +775,9 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                     ),
 
                     if (readonly != 'Y') ...[
-                      if (index['status'] != 'c')
+                      if ((index['user_status'] != 'c' && userType == 'U') ||
+                          (index['status'] != 'c' && userType != 'U'))
+
                         ElevatedButton(
                           onPressed: () {
                             dynamic imagesData = index['images'];
@@ -786,12 +788,15 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                             } else if (imagesData is String && imagesData.isNotEmpty) {
                               imagesUrl = imagesData;
                             }
-
+                            print("POKO");
+                            print(userType);
+                            print(index['user_status']);
 
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => EditDispatchDetails(
+
                                   // balanceqty:balanceQty.toStringAsFixed(2),
                                   branch_id_from_ids: widget.branch_id_from_ids, // Extracted from "Ids"
                                   vendor_id_from_ids: widget.vendor_id_from_ids, // Extracted from "Ids"
@@ -802,6 +807,7 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                                   sale_order_id: widget.sale_order_id,
                                   bidder_id: widget.bidder_id,
                                   status: index['status'] ?? '',
+                                  status_byuser: index['user_status'] ?? '',
                                   lift_id: index['lift_id'] ?? '',
                                   material_name: index['material_name'] ?? '',
                                   invoiceNo: index['invoice_no'] ?? '',
@@ -836,6 +842,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                           ),
                         ),
                     ]
+
+
 
                     // if(index['status'] != 'c')
                     //  ElevatedButton(
@@ -953,7 +961,8 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                     ),
                   ],
                 ),
-                Row(
+                if(userType != 'U')
+                  Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
@@ -972,6 +981,33 @@ class _View_dispatch_detailsState extends State<View_dispatch_details> {
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                         color: index['status'] == 'p'
+                            ? Colors.red
+                            : Colors.green.shade600,
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_ios, size: 20, color: Colors.grey[600]),
+                  ],
+                ),
+                if(userType == 'U')
+                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Status:",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    Text(
+                      index['user_status'] == 'p'
+                          ? "Dispatch Pending"
+                          : "Dispatch Completed",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: index['user_status'] == 'p'
                             ? Colors.red
                             : Colors.green.shade600,
                       ),

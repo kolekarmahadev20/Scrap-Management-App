@@ -35,6 +35,8 @@ class EditDispatchDetails extends StatefulWidget {
   final String? imagesUrl;
   final String totalQty;
   final String status;
+  final String status_byuser;
+
   final String balanceqty;
   final String branch_id_from_ids;
   final String vendor_id_from_ids;
@@ -66,6 +68,7 @@ class EditDispatchDetails extends StatefulWidget {
     required this.materialId,
     required this.balanceamount,
     required this.balanceQtyUnit,
+    required this.status_byuser,
 
 
 
@@ -109,6 +112,7 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
   String? MaterialSelected;
   String? materialId;
   bool isDispatchCompleted = false;
+  bool isDispatchDone = false;
 
   List<String> orderIDs = [
     'Select',
@@ -176,7 +180,7 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
     dateController.text = formatDate(widget.date) ?? 'N/A';
 
     isDispatchCompleted = (widget.status == "p") ?  false:true ;
-
+    isDispatchDone = (widget.status_byuser == "p") ?  false:true ;
     truckNoController.text=(widget.truckNo ?? 'N/A').toUpperCase();
     firstWeightNoController.text = widget.firstweight ?? "N/A";
     fullWeightController.text = widget.full_weight ?? "N/A";
@@ -561,6 +565,7 @@ print("widget.sale_order_id");
       request.fields['qty'] = quantityController.text;
       request.fields['note'] = noteController.text;
       request.fields['status'] = isDispatchCompleted ? 'c' : 'p';
+      request.fields['user_status'] = isDispatchDone ? 'c' : 'p';
 
       // Function to add images to the request
       Future<void> addImages(List<File> images, String keyword, http.MultipartRequest request) async {
@@ -843,6 +848,70 @@ print("widget.sale_order_id");
                                         onChanged: (bool? newValue) {
                                           setState(() {
                                             isDispatchCompleted =
+                                                newValue ?? false;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                    Text('No'),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+
+                      if(userType == 'U')
+                        LayoutBuilder(
+                        builder: (context, constraints) {
+                          return Row(
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex:
+                                2, // Adjusts the label width proportionally
+                                child: Padding(
+                                  padding: EdgeInsets.all(
+                                      8.0), // Adds padding around the text
+                                  child: Text(
+                                    'Dispatch Done ?',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              Expanded(
+                                flex:
+                                3, // Adjusts the radio buttons area proportionally
+                                child: Row(
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.start,
+                                  children: [
+                                    Flexible(
+                                      child: Radio<bool>(
+                                        value: true,
+                                        groupValue: isDispatchDone,
+                                        onChanged: (bool? newValue) {
+                                          setState(() {
+                                            isDispatchDone =
+                                                newValue ?? false;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                    Text('Yes'),
+                                    Flexible(
+                                      child: Radio<bool>(
+                                        value: false,
+                                        groupValue: isDispatchDone,
+                                        onChanged: (bool? newValue) {
+                                          setState(() {
+                                            isDispatchDone =
                                                 newValue ?? false;
                                           });
                                         },

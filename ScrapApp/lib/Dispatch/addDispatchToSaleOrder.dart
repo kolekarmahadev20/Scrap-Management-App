@@ -79,6 +79,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
   String? MaterialSelected;
   String? materialId;
   bool isDispatchCompleted = false;
+  bool isDispatchDone = false;
 
   List<String> orderIDs = [
     'Select',
@@ -530,6 +531,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       request.fields['qty'] = quantityController.text ?? '';
       request.fields['note'] = noteController.text ?? '';
       request.fields['status'] = isDispatchCompleted ? 'c' : 'p';
+      request.fields['user_status'] = isDispatchDone ? 'c' : 'p';
 
       print("======== Request Fields ========");
       request.fields.forEach((key, value) {
@@ -783,8 +785,8 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
                                   context),
                               buildTextField("Note", noteController, false,
                                   false, Colors.white, context),
-                              if(userType != 'U')
 
+                              if(userType != 'U')
                                 LayoutBuilder(
                                 builder: (context, constraints) {
                                   return Row(
@@ -846,6 +848,71 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
                                   );
                                 },
                               ),
+
+                              if(userType == 'U')
+                              LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return Row(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        flex:
+                                        2, // Adjusts the label width proportionally
+                                        child: Padding(
+                                          padding: EdgeInsets.all(
+                                              8.0), // Adds padding around the text
+                                          child: Text(
+                                            'Dispatch Done ?',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      Expanded(
+                                        flex:
+                                        3, // Adjusts the radio buttons area proportionally
+                                        child: Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                          children: [
+                                            Flexible(
+                                              child: Radio<bool>(
+                                                value: true,
+                                                groupValue: isDispatchDone,
+                                                onChanged: (bool? newValue) {
+                                                  setState(() {
+                                                    isDispatchDone =
+                                                        newValue ?? false;
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                            Text('Yes'),
+                                            Flexible(
+                                              child: Radio<bool>(
+                                                value: false,
+                                                groupValue: isDispatchDone,
+                                                onChanged: (bool? newValue) {
+                                                  setState(() {
+                                                    isDispatchDone =
+                                                        newValue ?? false;
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                            Text('No'),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+
                               SizedBox(
                                 height: 40,
                               ),
