@@ -1386,18 +1386,18 @@ class _Edit_UserState extends State<Edit_User> {
                 },
                 isMandatory: true,
               ),
-              // _buildCheckboxWithOptions(
-              //   'Access Refund?',
-              //   isRefundYes,
-              //   isRefundNo,
-              //       (bool? yesChecked) {
-              //     setState(() {
-              //       isRefundYes = yesChecked ?? false;
-              //       isRefundNo = !yesChecked! ?? true;
-              //     });
-              //   },
-              //   isMandatory: true,
-              // ),
+              _buildCheckboxWithOptions(
+                'Access Refund?',
+                isRefundYes,
+                isRefundNo,
+                    (bool? yesChecked) {
+                  setState(() {
+                    isRefundYes = yesChecked ?? false;
+                    isRefundNo = !yesChecked! ?? true;
+                  });
+                },
+                isMandatory: true,
+              ),
               _buildCheckboxWithOptions(
                 'Access Payment?',
                 isPaymentYes,

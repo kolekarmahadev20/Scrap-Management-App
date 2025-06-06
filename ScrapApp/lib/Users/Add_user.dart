@@ -1247,18 +1247,18 @@ class _Add_userState extends State<Add_user> {
               },
               isMandatory: true,
             ),
-            // _buildCheckboxWithOptions(
-            //   'Access Refund?',
-            //   isRefundYes,
-            //   isRefundNo,
-            //   (bool? yesChecked) {
-            //     setState(() {
-            //       isRefundYes = yesChecked ?? false;
-            //       isRefundNo = !yesChecked! ?? true;
-            //     });
-            //   },
-            //   isMandatory: true,
-            // ),
+            _buildCheckboxWithOptions(
+              'Access Refund?',
+              isRefundYes,
+              isRefundNo,
+              (bool? yesChecked) {
+                setState(() {
+                  isRefundYes = yesChecked ?? false;
+                  isRefundNo = !yesChecked! ?? true;
+                });
+              },
+              isMandatory: true,
+            ),
             _buildCheckboxWithOptions(
               'Access Payment?',
               isPaymentYes,

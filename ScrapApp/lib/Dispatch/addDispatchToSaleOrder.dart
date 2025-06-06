@@ -779,7 +779,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
                               buildTextField(
                                   "DMT/Quantity Weight",
                                   quantityController,
-                                  true,
+                                  false,
                                   false,
                                   Colors.white,
                                   context),
