@@ -16,13 +16,17 @@ class addPaymentToSaleOrder extends StatefulWidget {
   final String material_name;
   final String branch_id_from_ids;
   final String vendor_id_from_ids;
+  final String materialID;
+
 
   addPaymentToSaleOrder({
-   required this.sale_order_id,
-   required this.material_name,
+    required this.sale_order_id,
+    required this.material_name,
     required this.branch_id_from_ids,
     required this.vendor_id_from_ids,
-});
+    required this.materialID,
+
+  });
 
   @override
   addPaymentToSaleOrderState createState() => addPaymentToSaleOrderState();
@@ -44,7 +48,7 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
   final TextEditingController remarkController = TextEditingController();
 
   String? username = '';
- String uuid = '';
+  String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -82,7 +86,7 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
   }
 
   Future<void> checkLogin() async {
-     final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     uuid = prefs.getString("uuid")!;
     uuid = prefs.getString("uuid")!;
@@ -93,10 +97,16 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
 
 
   Future<void> addPaymentDetails() async {
-    if (selectedPaymentType == null || selectedPaymentType!.isEmpty) {
+    if (selectedPaymentType == null || selectedPaymentType!.isEmpty )  {
       Fluttertoast.showToast(msg: 'Please select a payment type.');
       return;
     }
+
+    if (selectedPaymentType == 'Select'){
+      Fluttertoast.showToast(msg: 'Please kindly select the Payment type.');
+      return;
+    }
+
     if (dateController1.text.isEmpty) {
       Fluttertoast.showToast(msg: 'Please enter a payment date.');
       return;
@@ -119,6 +129,21 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
         isLoading = true;
       });
       await checkLogin();
+      // ✅ Print all values before sending
+      print("======= Payment Details to API =======");
+      print("user_id        : $username");
+      print("uuid           : $uuid");
+      print("user_pass      : $password");
+      print("sale_order_id  : ${widget.sale_order_id}");
+      print("payment_type   : $selectedPaymentType");
+      print("pay_date       : ${dateController1.text}");
+      print("emd_type       : ${(selectedPaymentType == 'E' && _isChecked) ? 'F' : 'C'}");
+      print("amt            : ${amountController.text}");
+      print("pay_ref_no     : ${refNoController.text}");
+      print("typeoftransfer : ${typeTransController.text}");
+      print("remark         : ${remarkController.text}");
+      print("mat_id         : ${widget.materialID}");
+      print("======================================");
       final url = Uri.parse("${URL}add_payment_toSaleOrder");
       var response = await http.post(
         url,
@@ -135,6 +160,7 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
           'pay_ref_no':refNoController.text,
           'typeoftransfer':typeTransController.text,
           'remark':remarkController.text,
+          'mat_id':widget.materialID,
         },
       );
       if (response.statusCode == 200) {
@@ -192,7 +218,9 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
           'user_pass': password,
           'sale_order_id':widget.sale_order_id,
           'branch_id':widget.branch_id_from_ids,
-          'vendor_id':widget.vendor_id_from_ids
+          'vendor_id':widget.vendor_id_from_ids,
+          'mat_id': widget.materialID,
+
         },
       );
       if (response.statusCode == 200) {
@@ -481,8 +509,8 @@ class addPaymentToSaleOrderState extends State<addPaymentToSaleOrder> {
                 absorbing: isDateField,
                 child: Container(
                   decoration: BoxDecoration(
-                     borderRadius: BorderRadius.circular(12),
-                    color: color
+                      borderRadius: BorderRadius.circular(12),
+                      color: color
                   ),
                   child: TextFormField(
 

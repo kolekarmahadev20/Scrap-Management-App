@@ -69,7 +69,7 @@ class _PaymentListState extends State<PaymentList> {
         body: {
         'user_id': username,
         'uuid':uuid,
-         'user_pass': password,
+          'user_pass': password,
         },
       );
       if (response.statusCode == 200) {
@@ -562,6 +562,14 @@ class _PaymentListState extends State<PaymentList> {
                   icon: Icon(Icons.arrow_forward_ios, size: 18),
                   color: Colors.grey[600],
                   onPressed: () {
+                    // 🔍 Print values before navigating to View_payment_detail
+                    print("Navigating to View_payment_detail with values:");
+                    print("sale_order_id: ${index['sale_order_id']}");
+                    print("bidder_id: ${index['bidder_id']}");
+                    print("branch_id_from_ids: ${index['branch_id_from_ids']}");
+                    print("vendor_id_from_ids: ${index['vendor_id_from_ids']}");
+                    print("materialId: ${index['mat_id_from_ids']}");
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -587,7 +595,7 @@ class _PaymentListState extends State<PaymentList> {
                         bidder_id: index['bidder_id'],
                         branch_id_from_ids: index['branch_id_from_ids'], // Extracted from "Ids"
                         vendor_id_from_ids: index['vendor_id_from_ids'], // Extracted from "Ids"
-                        materialId: index['vendor_id_from_ids'], // Extracted from "Ids"
+                        materialId: index['mat_id_from_ids'], // Extracted from "Ids"
 
                       ),
                     ),

@@ -82,8 +82,16 @@ class _RefundListState extends State<RefundList> {
             if (item.containsKey("ids") && item["ids"] != null) {
               item["vendor_id_from_ids"] = item["ids"]["vendor_id"];
               item["branch_id_from_ids"] = item["ids"]["branch_id"];
+              item["material_id_from_ids"] = item["ids"]["mat_id"];
             }
+            // 🔍 Print values for debugging
+            print("Mapped item: sale_order_id: ${item['sale_order_id']}, "
+                "bidder_id: ${item['bidder_id']}, "
+                "vendor_id_from_ids: ${item['vendor_id_from_ids']}, "
+                "branch_id_from_ids: ${item['branch_id_from_ids']}, "
+                "material_id_from_ids: ${item['material_id_from_ids']}");
           }
+
 
           filteredRefundList = refundList;
         });
@@ -580,6 +588,14 @@ class _RefundListState extends State<RefundList> {
                   icon: Icon(Icons.arrow_forward_ios, size: 18), // Adjusted trailing icon size
                   color: Colors.grey[600],
                   onPressed: () {
+                    // 🔍 Print values before navigating
+                    print("Navigating to View_refund_details with values:");
+                    print("sale_order_id: ${index['sale_order_id']}");
+                    print("bidder_id: ${index['bidder_id']}");
+                    print("vendor_id_from_ids: ${index['vendor_id_from_ids']}");
+                    print("branch_id_from_ids: ${index['branch_id_from_ids']}");
+                    print("material_id_from_ids: ${index['material_id_from_ids']}");
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => View_refund_details(
@@ -587,6 +603,7 @@ class _RefundListState extends State<RefundList> {
                         bidder_id: index['bidder_id'],
                         branch_id_from_ids: index['branch_id_from_ids'], // Extracted from "Ids"
                         vendor_id_from_ids: index['vendor_id_from_ids'], // Extracted from "Ids"
+                        materialId: index['material_id_from_ids'], // Extracted from "Ids"
 
 
                       )),
@@ -603,6 +620,7 @@ class _RefundListState extends State<RefundList> {
                       bidder_id: index['bidder_id'],
                       branch_id_from_ids: index['branch_id_from_ids'], // Extracted from "Ids"
                       vendor_id_from_ids: index['vendor_id_from_ids'], // Extracted from "Ids"
+                      materialId: index['mat_id'], // Extracted from "Ids"
                     )),
                   ).then((value) => setState((){
                     fetchRefundList();

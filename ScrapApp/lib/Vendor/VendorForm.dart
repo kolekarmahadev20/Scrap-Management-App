@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -96,8 +95,8 @@ class _VendorFormState extends State<VendorForm> {
     final response = await http.post(
       Uri.parse(url),
       body: {
-      'user_id': username,
-'uuid':uuid,
+        'user_id': username,
+        'uuid':uuid,
         'user_pass': password,
         'auctioneer_name':vendorNameController.text??'',
         'address':addressController.text??'',

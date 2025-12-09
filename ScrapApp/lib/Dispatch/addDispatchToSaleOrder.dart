@@ -24,10 +24,13 @@ class addDispatchToSaleOrder extends StatefulWidget {
   final String totalQty;
   final String balanceqty;
   final String balanceQtyUnit;
+
   final String balanceamount;
   final String branch_id_from_ids;
   final String vendor_id_from_ids;
   final String materialId;
+  final String materialRate;
+  final String? soValidity; // example: "2025-09-02" or "02-09-2025"
 
   addDispatchToSaleOrder({
     required this.sale_order_id,
@@ -40,6 +43,9 @@ class addDispatchToSaleOrder extends StatefulWidget {
     required this.materialId,
     required this.balanceamount,
     required this.balanceQtyUnit,
+    required this.materialRate,
+    required this.soValidity, // <- add here
+
   });
 
   @override
@@ -117,7 +123,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
 
     balanceQtyController.text = widget.balanceqty;
     balanceQtyUnitController.text =  widget.balanceQtyUnit;
-    balanceAmountController.text =  widget.balanceamount;
+    // balanceAmountController.text =  widget.balanceamount;
 
     // Add listeners for weight calculations
     firstWeightNoController.addListener(calculateNetWeight);
@@ -280,8 +286,16 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
           'sale_order_id': widget.sale_order_id,
           'branch_id':widget.branch_id_from_ids,
           'vendor_id':widget.vendor_id_from_ids,
+          'mat_id': widget.materialId,
         },
       );
+
+
+      print('asfasf:${widget.sale_order_id}');
+      print('asfasf:${widget.branch_id_from_ids}');
+      print('asfasf:${widget.vendor_id_from_ids}');
+      print('asfasf:${widget.materialId}');
+
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         setState(() {
@@ -289,6 +303,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
           totalEmd = jsonData['total_EMD'].toString() ?? 'N/A';
           totalCmd = jsonData['total_CMD'].toString() ?? 'N/A';
           rate = jsonData['rate'].toString();
+          balanceAmountController.text =  jsonData['totalAmount'].toString();
 
           print(rate);
         });
@@ -503,6 +518,30 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
         );
         return; // Exit the function early
       }
+      String? soValidityStr = widget.soValidity; // Pass this from View_dispatch_details
+      if (soValidityStr != null && soValidityStr.isNotEmpty) {
+        try {
+          DateTime soValidity = DateTime.parse(soValidityStr); // API usually returns in yyyy-MM-dd
+          DateTime today = DateTime.now();
+          DateTime todayDateOnly = DateTime(today.year, today.month, today.day);
+          DateTime soValidityDateOnly = DateTime(soValidity.year, soValidity.month, soValidity.day);
+
+          print("today:$todayDateOnly");
+          print("soValidity:$soValidityDateOnly");
+
+          if (todayDateOnly.isAfter(soValidityDateOnly)) {
+            Fluttertoast.showToast(
+              msg:
+              'SO validity expired. You cannot add dispatch after ${DateFormat("dd-MM-yyyy").format(soValidity)}.',
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+            );
+            return; // ⛔ Stop here
+          }
+        } catch (e) {
+          print("Invalid SO Validity Date format: $e");
+        }
+      }
 
       setState(() {
         isLoading = true;
@@ -521,6 +560,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
       request.fields['rate'] = rate ?? '';
       request.fields['advance_payment'] = advancePayment ?? '';
       request.fields['lotno'] = materialId ?? '';
+      request.fields['material_rate'] = widget.materialRate ?? '';
       request.fields['invoice_no'] = invoiceController.text ?? '';
       request.fields['date_time'] = dateController.text ?? '';
       request.fields['truck_no'] = truckNoController.text ?? '';
@@ -743,7 +783,7 @@ class addDispatchToSaleOrderState extends State<addDispatchToSaleOrder> {
 
                               buildTextField("SO Balance Qty", balanceQtyController,
                                   true, false, Colors.white, context),
-                              buildTextField("SO Balance Amount", balanceAmountController,
+                              buildTextField("Balance Payment", balanceAmountController,
                                   true, false, Colors.white, context),
 
 

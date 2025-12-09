@@ -90,7 +90,7 @@ class ReferedSaleOrderListState extends State<ReferedSaleOrderList> {
     }
   }
 
-  void filterResults() {
+  void filterResults()  {
     List<dynamic> searchResults = saleOrderList;
 
     // Apply Material filter

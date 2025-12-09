@@ -3,9 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
-import '../AppClass/AppDrawer.dart';
-import '../AppClass/appBar.dart';
-import '../URL_CONSTANT.dart';
+import '../../AppClass/AppDrawer.dart';
+import '../../AppClass/appBar.dart';
+import '../../URL_CONSTANT.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'dart:math'; // For Random
 import 'dart:math';
@@ -16,20 +16,36 @@ class Add_user extends StatefulWidget {
 }
 
 class _Add_userState extends State<Add_user> {
+
+  // Material Port Controllers & Lists
+  final TextEditingController _materialPortController = TextEditingController();
+  final List<Map<String, String>> _materialPortList = []; // Stores material_port data
+  final List<String> _materialPortOptions = []; // Stores material_port_name for suggestions
+  final List<String> _selectedMaterialPortValues = [];
+  final Map<String, String> _selectedMaterialPorts = {}; // Maps material_port_name to material_port_id
+
+
+  // Location Port Controllers & Lists
+  final TextEditingController _locationPortController = TextEditingController();
+  final List<Map<String, String>> _locationPortList = []; // Stores location_port data
+  final List<String> _locationPortOptions = []; // Stores location_port_name for suggestions
+  final List<String> _selectedLocationPortValues = [];
+  final Map<String, String> _selectedLocationPorts = {}; // Maps location_port_name to location_port_id
+
+
   final TextEditingController _vendorController = TextEditingController();
   final List<Map<String, String>> _vendorList = []; // Stores vendor data
   final List<String> _vendorOptions = []; // Stores vendor_name for suggestions
   final List<String> _selectedVendorValues = [];
-  final Map<String, String> _selectedVendors =
-      {}; // Maps vendor_name to vendor_id
+  final Map<String, String> _selectedVendors = {}; // Maps vendor_name to vendor_id
 
   final TextEditingController _locationController = TextEditingController();
   final List<Map<String, String>> _locationList = []; // Stores location data
   final List<String> _locationOptions =
-      []; // Stores location_name for suggestions
+  []; // Stores location_name for suggestions
   final List<String> _selectedLocationValues = [];
   final Map<String, String> _selectedLocations =
-      {}; // Maps location_name to location_id
+  {}; // Maps location_name to location_id
 
   final TextEditingController _organizationController = TextEditingController();
   final List<Map<String, String>> _organizationList = [];
@@ -69,6 +85,9 @@ class _Add_userState extends State<Add_user> {
   bool isMobileLoginNo = false;
   bool hasAccessSaleOrderDataYes = false;
   bool hasAccessSaleOrderDataNo = false;
+  bool hasAccessSealDataYes = false;
+  bool hasAccessSealDataNo = false;
+
   bool isRefundYes = false;
   bool isRefundNo = false;
   bool isReceiverYes = false;
@@ -179,7 +198,7 @@ class _Add_userState extends State<Add_user> {
         if (responseData["status"] == "success") {
           Fluttertoast.showToast(
               msg:
-                  "This aadhar card number is already registered"); // Show toast message
+              "This aadhar card number is already registered"); // Show toast message
           return false; // Stop addUser() from executing
         } else {
           return true; // Continue to addUser()
@@ -250,8 +269,12 @@ class _Add_userState extends State<Add_user> {
     }
     final vendorIds = _selectedVendors.values.toList(); // Extract IDs
     final plantIds = _selectedLocations.values.toList(); // Extract IDs
+
+    final locationportIds = _selectedLocationPorts.values.toList(); // Extract IDs
+    final materialportIds = _selectedMaterialPorts.values.toList(); // Extract IDs
+
     final organizationIds =
-        _selectedOrganization.values.toList(); // Extract IDs
+    _selectedOrganization.values.toList(); // Extract IDs
     final organizationIdsString = organizationIds.join(',');
 
     print(_selectedorganizationValues);
@@ -286,11 +309,17 @@ class _Add_userState extends State<Add_user> {
 
         'mob_login': isMobileLoginYes ? 'Y' : 'N',
         'acces_sale_order': hasAccessSaleOrderDataYes ? 'Y' : 'N',
+        'access_seal': hasAccessSealDataYes ? 'Y' : 'N',
         'acces_dispatch': isDispatchYes ? 'Y' : 'N',
         'acces_payment': isPaymentYes ? 'Y' : 'N',
         'acces_refund': isRefundYes ? 'Y' : 'N',
         'vendor_ids': vendorIds.join(',') ?? '',
         'plant_id': plantIds.join(',') ?? '',
+
+        'location_port_id': locationportIds.join(',') ?? '',
+        'material_port_id': materialportIds.join(',') ?? '',
+
+
         // 'org_id': organizationIds.join('')?? '',
         'org_id': _selectedorganizationValues.join(',') ?? '',
         'person_name': fullNameController.text ?? '',
@@ -385,10 +414,37 @@ class _Add_userState extends State<Add_user> {
 
         // Check if 'vendor_list' exists and is not null
         if (data != null) {
+
+          final locationList = data['vendor_list'] as List?;
           final vendorList = data['vendor_list'] as List?;
-          final locationList = data['location'] as List?;
+          final locationportList = data['location_port'] as List?;
+          final materialportList = data['material_port'] as List?;
 
           setState(() {
+
+            //materialport
+            if (materialportList != null) {
+              for (var materialport in materialportList) {
+                final materialName = materialport['material_name'];
+                final materialId = materialport['material_id'];
+                _materialPortList.add({"id": materialId, "name": materialName});
+                _materialPortOptions.add(materialName);
+              }
+            }
+
+            //locationport
+            if (locationportList != null) {
+              for (var locationport in locationportList) {
+                if (locationport['is_available_for_seal'] == "1") { // ✅ filter
+                  final locationName = locationport['location_name'];
+                  final locationId = locationport['location_id'];
+                  _locationPortList.add({"id": locationId, "name": locationName});
+                  _locationPortOptions.add(locationName);
+                }
+              }
+            }
+
+
             // Process vendor list
             if (vendorList != null) {
               for (var vendor in vendorList) {
@@ -400,14 +456,14 @@ class _Add_userState extends State<Add_user> {
             }
 
             employees =
-                List<Map<String, String>>.from(data['users'].map((x) => {
-                      'id': x['person_id']?.toString() ??
-                          '', // Handle null safely
-                      'full_name': x['person_name']?.toString() ??
-                          '', // Handle null safely
-                      'username': x['uname']?.toString() ??
-                          '', // Use emp_code instead of uname
-                    }));
+            List<Map<String, String>>.from(data['users'].map((x) => {
+              'id': x['person_id']?.toString() ??
+                  '', // Handle null safely
+              'full_name': x['person_name']?.toString() ??
+                  '', // Handle null safely
+              'username': x['uname']?.toString() ??
+                  '', // Use emp_code instead of uname
+            }));
 
             // Process location list
             // if (locationList != null) {
@@ -574,6 +630,143 @@ class _Add_userState extends State<Add_user> {
   //   );
   // }
 
+
+
+  Widget buildCheckboxDropdownMaterialPort({
+    required String label,
+    required List<Map<String, String>> items,
+    required Map<String, String> selectedMaterialPort,
+  }) {
+    bool allSelected = selectedMaterialPort.length == items.length;
+
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Column(
+            children: [
+              // Select All Checkbox
+              CheckboxListTile(
+                title: Text("Select All"),
+                value: allSelected,
+                onChanged: (bool? value) {
+                  setState(() {
+                    if (value == true) {
+                      // Select all vendors
+                      for (var materialport in items) {
+                        _selectedMaterialPorts[materialport['name']!] = materialport['id']!;
+                      }
+                    } else {
+                      // Deselect all
+                      _selectedMaterialPorts.clear();
+                    }
+                  });
+                },
+              ),
+              Divider(height: 1),
+              // Individual Vendor Checkboxes
+              ...items.map((materialport) {
+                final materialportName = materialport['name']!;
+                final materialportId = materialport['id']!;
+                return CheckboxListTile(
+                  title: Text(materialportName),
+                  value: _selectedMaterialPorts.containsKey(materialportName),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      if (value == true) {
+                        _selectedMaterialPorts[materialportName] = materialportId;
+                      } else {
+                        _selectedMaterialPorts.remove(materialportName);
+                      }
+                    });
+                  },
+                );
+              }).toList(),
+            ],
+          ),
+        ),
+        SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget buildCheckboxDropdownLocationPort({
+    required String label,
+    required List<Map<String, String>> items,
+    required Map<String, String> selectedLocationPort,
+  }) {
+    bool allSelected = selectedLocationPort.length == items.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Column(
+            children: [
+              // Select All Checkbox
+              CheckboxListTile(
+                title: Text("Select All"),
+                value: allSelected,
+                onChanged: (bool? value) {
+                  setState(() {
+                    if (value == true) {
+                      // Select all vendors
+                      for (var locationport in items) {
+                        _selectedLocationPorts[locationport['name']!] = locationport['id']!;
+                      }
+                    } else {
+                      // Deselect all
+                      _selectedLocationPorts.clear();
+                    }
+                  });
+                },
+              ),
+              Divider(height: 1),
+              // Individual Vendor Checkboxes
+              ...items.map((locationport) {
+                final locationPortName = locationport['name']!;
+                final locationPortId = locationport['id']!;
+                return CheckboxListTile(
+                  title: Text(locationPortName),
+                  value: _selectedLocationPorts.containsKey(locationPortName),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      if (value == true) {
+                        _selectedLocationPorts[locationPortName] = locationPortId;
+                      } else {
+                        _selectedLocationPorts.remove(locationPortName);
+                      }
+                    });
+                  },
+                );
+              }).toList(),
+            ],
+          ),
+        ),
+        SizedBox(height: 20),
+      ],
+    );
+  }
+
   Widget buildCheckboxDropdownVendor({
     required String label,
     required List<Map<String, String>> items,
@@ -643,81 +836,152 @@ class _Add_userState extends State<Add_user> {
     );
   }
 
-  Widget buildCheckboxListPlant({
-    required String label,
-    required List<Map<String, String>> items, // Location list with name & id
-    required List<String> selectedValues,
-    required Map<String, String> selectedLocations,
-  }) {
-    bool allSelected = selectedValues.length == items.length;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 10),
-        Container(
-          padding: EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          child: Column(
-            children: [
-              // Select All Checkbox
-              CheckboxListTile(
-                title: Text("Select All"),
-                value: allSelected,
-                onChanged: (bool? value) {
-                  setState(() {
-                    if (value == true) {
-                      selectedValues.clear();
-                      selectedLocations.clear();
-                      for (var location in items) {
-                        final name = location['name']!;
-                        final id = location['id']!;
-                        selectedValues.add(name);
-                        selectedLocations[name] = id;
-                      }
-                    } else {
-                      selectedValues.clear();
-                      selectedLocations.clear();
-                    }
-                  });
-                },
+  Widget buildPlantRowField() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Label on the left
+          Flexible(
+            flex: 3,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 100),
+              child: const Text(
+                "Plant Name",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              Divider(height: 1),
-              // Individual checkboxes
-              ...items.map((location) {
-                final locationName = location['name']!;
-                final locationId = location['id']!;
+            ),
+          ),
 
-                return CheckboxListTile(
-                  title: Text(locationName),
-                  value: selectedValues.contains(locationName),
-                  onChanged: (bool? isChecked) {
-                    setState(() {
-                      if (isChecked == true) {
-                        selectedValues.add(locationName);
-                        selectedLocations[locationName] = locationId;
-                      } else {
-                        selectedValues.remove(locationName);
-                        selectedLocations.remove(locationName);
-                      }
-                    });
+          const SizedBox(width: 10),
+
+          // Field on the right
+          Flexible(
+            flex: 7,
+            child: GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (ctx) {
+                    return AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      title: const Text("Select Plant"),
+                      content: SizedBox(
+                        width: double.maxFinite,
+                        height: 400,
+                        child: Scrollbar(
+                          thumbVisibility: true,
+                          child: SingleChildScrollView(
+                            child: StatefulBuilder(
+                              builder: (BuildContext context, StateSetter setStateDialog) {
+                                bool allSelected = _selectedLocations.length == _locationList.length;
+
+                                // 🔹 Create a sorted copy of plant list
+                                final sortedPlantList = _locationList
+                                    .map((plant) => {'name': plant['name']!.trim(), 'id': plant['id']!})
+                                    .toList();
+
+                                sortedPlantList.sort((a, b) => a['name']!.toLowerCase().compareTo(b['name']!.toLowerCase()));
+
+
+                                // Build checkboxes
+                                final plantCheckboxes = sortedPlantList.map((plant) {
+                                  final name = plant['name']!;
+                                  final id = plant['id']!;
+                                  return CheckboxListTile(
+                                    title: Text(name.toUpperCase()),
+                                    value: _selectedLocations.containsKey(name),
+                                    onChanged: (bool? value) {
+                                      setStateDialog(() {
+                                        if (value == true) {
+                                          _selectedLocations[name] = id;
+                                        } else {
+                                          _selectedLocations.remove(name);
+                                        }
+                                      });
+                                    },
+                                  );
+                                }).toList();
+
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Select All Checkbox
+                                    CheckboxListTile(
+                                      title: const Text(
+                                        "Select All",
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                      value: allSelected,
+                                      onChanged: (bool? value) {
+                                        setStateDialog(() {
+                                          if (value == true) {
+                                            for (var plant in _locationList) {
+                                              _selectedLocations[plant['name']!] = plant['id']!;
+                                            }
+                                          } else {
+                                            _selectedLocations.clear();
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    const Divider(),
+
+                                    // Sorted plant checkboxes
+                                    ...plantCheckboxes,
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text("CLOSE"),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            setState(() {}); // refresh main screen TextField
+                          },
+                          child: const Text("DONE"),
+                        ),
+                      ],
+                    );
                   },
                 );
-              }).toList(),
-            ],
+              },
+              child: AbsorbPointer(
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    hintText: "Select Plant",
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    suffixIcon: const Icon(Icons.arrow_drop_down),
+                  ),
+                  controller: TextEditingController(
+                    text: _selectedLocations.keys.map((e) => e.toUpperCase()).join(", "),
+                  ),
+                ),
+              ),
+            ),
           ),
-        ),
-        SizedBox(height: 20),
-      ],
+        ],
+      ),
     );
   }
+
 
   Widget buildTypeAheadDropdownorganization({
     required String label,
@@ -755,20 +1019,20 @@ class _Add_userState extends State<Add_user> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           contentPadding:
-                              EdgeInsets.symmetric(vertical: 7, horizontal: 12),
+                          EdgeInsets.symmetric(vertical: 7, horizontal: 12),
                         ),
                       ),
                       suggestionsCallback: (pattern) {
                         return items
                             .where((item) => item
-                                .toLowerCase()
-                                .contains(pattern.toLowerCase()))
+                            .toLowerCase()
+                            .contains(pattern.toLowerCase()))
                             .toList();
                       },
                       itemBuilder: (context, suggestion) {
                         return ListTile(
                           title:
-                              Text(suggestion, style: TextStyle(fontSize: 14)),
+                          Text(suggestion, style: TextStyle(fontSize: 14)),
                           dense: true,
                         );
                       },
@@ -777,8 +1041,8 @@ class _Add_userState extends State<Add_user> {
                           setState(() {
                             selectedValues.add(suggestion);
                             final organizationId = _organizationList.firstWhere(
-                                (organization) =>
-                                    organization['name'] == suggestion)['id'];
+                                    (organization) =>
+                                organization['name'] == suggestion)['id'];
                             _selectedOrganization[suggestion] = organizationId!;
                           });
                         }
@@ -920,7 +1184,7 @@ class _Add_userState extends State<Add_user> {
               items: options.entries.map((entry) {
                 return DropdownMenuItem<String>(
                   value:
-                      entry.key, // Set the correct value for each dropdown item
+                  entry.key, // Set the correct value for each dropdown item
                   child: Text(entry.value),
                 );
               }).toList(),
@@ -986,12 +1250,12 @@ class _Add_userState extends State<Add_user> {
   }
 
   Widget buildSearchableDropdown(
-    String label,
-    String? value,
-    Function(String) onChanged,
-    List<Map<String, String>> employees,
-    TextEditingController controller,
-  ) {
+      String label,
+      String? value,
+      Function(String) onChanged,
+      List<Map<String, String>> employees,
+      TextEditingController controller,
+      ) {
     return Padding(
       padding: const EdgeInsets.all(7.0),
       child: Row(
@@ -1001,24 +1265,35 @@ class _Add_userState extends State<Add_user> {
             width: 100, // Adjust width as needed
             child: Text(
               label,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.black, // 🔹 Force black for label
+              ),
             ),
           ),
           Expanded(
             child: TypeAheadFormField<Map<String, String>>(
               textFieldConfiguration: TextFieldConfiguration(
                 controller: controller,
+                style: const TextStyle(
+                  color: Colors.black, // 🔹 Force entered/selected text black
+                  fontSize: 15,
+                ),
                 decoration: InputDecoration(
                   hintText: 'Select an employee',
+                  hintStyle: const TextStyle(color: Colors.black54), // subtle grey hint
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
                   suffixIcon: IconButton(
-                    icon: Icon(Icons.cancel),
+                    icon: const Icon(Icons.cancel, color: Colors.grey),
                     onPressed: () {
                       controller.clear();
                       onChanged('');
 
+                      // Clear other related fields
                       employeeCodeController.clear();
                       emailIdController.clear();
                       adharNumberController.clear();
@@ -1032,8 +1307,8 @@ class _Add_userState extends State<Add_user> {
               suggestionsCallback: (pattern) {
                 final suggestions = employees.where((employee) {
                   return employee['full_name']!
-                          .toLowerCase()
-                          .contains(pattern.toLowerCase()) ||
+                      .toLowerCase()
+                      .contains(pattern.toLowerCase()) ||
                       employee['username']!
                           .toLowerCase()
                           .contains(pattern.toLowerCase());
@@ -1042,14 +1317,19 @@ class _Add_userState extends State<Add_user> {
               },
               itemBuilder: (context, Map<String, String> suggestion) {
                 if (suggestion['id'] == 'cancel') {
-                  return ListTile(
-                    leading: Icon(Icons.cancel),
-                    title: Text(suggestion['full_name']!),
+                  return const ListTile(
+                    leading: Icon(Icons.cancel, color: Colors.red),
+                    title: Text(
+                      "Cancel",
+                      style: TextStyle(color: Colors.black),
+                    ),
                   );
                 }
                 return ListTile(
                   title: Text(
-                      '${suggestion['full_name']} - (${suggestion['username']})'),
+                    '${suggestion['full_name']} - (${suggestion['username']})',
+                    style: const TextStyle(color: Colors.black), // 🔹 Black suggestions
+                  ),
                 );
               },
               onSuggestionSelected: (Map<String, String> suggestion) {
@@ -1058,7 +1338,7 @@ class _Add_userState extends State<Add_user> {
                   onChanged('');
                 } else {
                   controller.text =
-                      '${suggestion['full_name']} - (${suggestion['username']})';
+                  '${suggestion['full_name']} - (${suggestion['username']})';
                   onChanged(suggestion['id']!);
                 }
               },
@@ -1068,6 +1348,459 @@ class _Add_userState extends State<Add_user> {
       ),
     );
   }
+
+  Widget buildVendorRowField() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Label on the left
+          Flexible(
+            flex: 3,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 100),
+              child: const Text(
+                "Vendor",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 10),
+
+          // TextField on the right
+          Flexible(
+            flex: 7,
+            child: GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (ctx) {
+                    return AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      title: const Text("Select Vendor"),
+                      content: SizedBox(
+                        width: double.maxFinite,
+                        height: 400,
+                        child: Scrollbar(
+                          thumbVisibility: true,
+                          child: SingleChildScrollView(
+                            child: StatefulBuilder(
+                              builder: (BuildContext context, StateSetter setStateDialog) {
+                                bool allSelected = _selectedVendors.length == _vendorList.length;
+
+                                final sortedVendorList = _vendorList
+                                    .map((vendor) => {
+                                  'name': vendor['name']!.trim(), // remove extra spaces
+                                  'id': vendor['id']!
+                                })
+                                    .toList();
+
+                                sortedVendorList.sort(
+                                        (a, b) => a['name']!.toLowerCase().compareTo(b['name']!.toLowerCase())
+                                );
+
+
+                                // Build vendor checkboxes
+                                final vendorCheckboxes = sortedVendorList.map((vendor) {
+                                  final name = vendor['name']!;
+                                  final id = vendor['id']!;
+                                  return CheckboxListTile(
+                                    title: Text(name.toUpperCase()),
+                                    value: _selectedVendors.containsKey(name),
+                                    onChanged: (bool? value) {
+                                      setStateDialog(() {
+                                        if (value == true) {
+                                          _selectedVendors[name] = id;
+                                        } else {
+                                          _selectedVendors.remove(name);
+                                        }
+                                        _fetchPlants(_selectedVendors);
+                                      });
+                                    },
+                                  );
+                                }).toList();
+
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Select All Checkbox
+                                    CheckboxListTile(
+                                      title: const Text(
+                                        "Select All",
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                      value: allSelected,
+                                      onChanged: (bool? value) {
+                                        setStateDialog(() {
+                                          if (value == true) {
+                                            for (var vendor in _vendorList) {
+                                              _selectedVendors[vendor['name']!] = vendor['id']!;
+                                            }
+                                          } else {
+                                            _selectedVendors.clear();
+                                          }
+                                          _fetchPlants(_selectedVendors);
+                                        });
+                                      },
+                                    ),
+                                    const Divider(),
+
+                                    // Sorted vendor checkboxes
+                                    ...vendorCheckboxes,
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text("CLOSE"),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            setState(() {}); // refresh main screen TextField
+                          },
+                          child: const Text("DONE"),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: AbsorbPointer(
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    hintText: "Select Vendor",
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    suffixIcon: const Icon(Icons.arrow_drop_down),
+                  ),
+                    controller: TextEditingController(
+                      text: _selectedVendors.keys.map((e) => e.toUpperCase()).join(", "),
+                    ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Widget buildMaterialRowField() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Label on the left
+          Flexible(
+            flex: 3,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 100),
+              child: const Text(
+                "Material",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 10),
+
+          // TextField on the right
+          Flexible(
+            flex: 7,
+            child: GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (ctx) {
+                    return AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      title: const Text("Select Material"),
+                      content: SizedBox(
+                        width: double.maxFinite,
+                        height: 400,
+                        child: Scrollbar(
+                          thumbVisibility: true,
+                          child: SingleChildScrollView(
+                            child: StatefulBuilder(
+                              builder: (BuildContext context, StateSetter setStateDialog) {
+                                bool allSelected = _selectedMaterialPorts.length == _materialPortList.length;
+
+                                final sortedMaterialList = _materialPortList
+                                    .map((material) => {
+                                  'name': material['name']!.trim(), // remove extra spaces
+                                  'id': material['id']!
+                                })
+                                    .toList();
+
+                                sortedMaterialList.sort(
+                                        (a, b) => a['name']!.toLowerCase().compareTo(b['name']!.toLowerCase())
+                                );
+
+                                // Build checkboxes
+                                final materialCheckboxes = sortedMaterialList.map((material) {
+                                  final name = material['name']!;
+                                  final id = material['id']!;
+                                  return CheckboxListTile(
+                                    title: Text(name.toUpperCase()),
+                                    value: _selectedMaterialPorts.containsKey(name),
+                                    onChanged: (bool? value) {
+                                      setStateDialog(() {
+                                        if (value == true) {
+                                          _selectedMaterialPorts[name] = id;
+                                        } else {
+                                          _selectedMaterialPorts.remove(name);
+                                        }
+                                      });
+                                    },
+                                  );
+                                }).toList();
+
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Select All Checkbox
+                                    CheckboxListTile(
+                                      title: const Text(
+                                        "Select All",
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                      value: allSelected,
+                                      onChanged: (bool? value) {
+                                        setStateDialog(() {
+                                          if (value == true) {
+                                            for (var material in _materialPortList) {
+                                              _selectedMaterialPorts[material['name']!] = material['id']!;
+                                            }
+                                          } else {
+                                            _selectedMaterialPorts.clear();
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    const Divider(),
+
+                                    // Sorted material checkboxes
+                                    ...materialCheckboxes,
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text("CLOSE"),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            setState(() {}); // refresh main screen TextField
+                          },
+                          child: const Text("DONE"),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: AbsorbPointer(
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    hintText: "Select Material",
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    suffixIcon: const Icon(Icons.arrow_drop_down),
+                  ),
+                  controller: TextEditingController(
+                    text: _selectedMaterialPorts.keys.map((e) => e.toUpperCase()).join(", "),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Widget buildLocationRowField() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Label on the left
+          Flexible(
+            flex: 3,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 100),
+              child: const Text(
+                "Location Port",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 10),
+
+          // TextField on the right
+          Flexible(
+            flex: 7,
+            child: GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (ctx) {
+                    return AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      title: const Text("Select Location Port"),
+                      content: SizedBox(
+                        width: double.maxFinite,
+                        height: 400,
+                        child: Scrollbar(
+                          thumbVisibility: true,
+                          child: SingleChildScrollView(
+                            child: StatefulBuilder(
+                              builder: (BuildContext context, StateSetter setStateDialog) {
+                                bool allSelected = _selectedLocationPorts.length == _locationPortList.length;
+
+                                final sortedLocationList = _locationPortList
+                                    .map((loc) => {
+                                  'name': loc['name']!.trim(), // remove extra spaces
+                                  'id': loc['id']!
+                                })
+                                    .toList();
+
+                                sortedLocationList.sort(
+                                        (a, b) => a['name']!.toLowerCase().compareTo(b['name']!.toLowerCase())
+                                );
+
+                                // Build checkboxes
+                                final locationCheckboxes = sortedLocationList.map((loc) {
+                                  final name = loc['name']!;
+                                  final id = loc['id']!;
+                                  return CheckboxListTile(
+                                    title: Text(name.toUpperCase()),
+                                    value: _selectedLocationPorts.containsKey(name),
+                                    onChanged: (bool? value) {
+                                      setStateDialog(() {
+                                        if (value == true) {
+                                          _selectedLocationPorts[name] = id;
+                                        } else {
+                                          _selectedLocationPorts.remove(name);
+                                        }
+                                      });
+                                    },
+                                  );
+                                }).toList();
+
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Select All Checkbox
+                                    CheckboxListTile(
+                                      title: const Text(
+                                        "Select All",
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                      value: allSelected,
+                                      onChanged: (bool? value) {
+                                        setStateDialog(() {
+                                          if (value == true) {
+                                            for (var loc in _locationPortList) {
+                                              _selectedLocationPorts[loc['name']!] = loc['id']!;
+                                            }
+                                          } else {
+                                            _selectedLocationPorts.clear();
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    const Divider(),
+
+                                    // Sorted location checkboxes
+                                    ...locationCheckboxes,
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text("CLOSE"),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            setState(() {}); // refresh main screen TextField
+                          },
+                          child: const Text("DONE"),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: AbsorbPointer(
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    hintText: "Select Location Port",
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    suffixIcon: const Icon(Icons.arrow_drop_down),
+                  ),
+                  controller: TextEditingController(
+                    text: _selectedLocationPorts.keys.map((e) => e.toUpperCase()).join(", "),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -1136,7 +1869,7 @@ class _Add_userState extends State<Add_user> {
             buildSearchableDropdown(
               "Full Name",
               selectedEmployeeId,
-              (value) {
+                  (value) {
                 setState(() {
                   selectedEmployeeId = value;
                   fetchEmployeeDetails(selectedEmployeeId);
@@ -1152,44 +1885,13 @@ class _Add_userState extends State<Add_user> {
               controller: _organizationController,
               selectedValues: _selectedorganizationValues,
             ),
+            buildLocationRowField(),
+            buildMaterialRowField(),
 
-            buildCheckboxDropdownVendor(
-              label: "Vendor",
-              items: _vendorList,
-              selectedVendors:
-                  _selectedVendors, // Pass the correct Map<String, String>
-            ),
 
-            if (_selectedVendors.isNotEmpty)
-              _locationList.isNotEmpty
-                  ? buildCheckboxListPlant(
-                      label: "Plant Name",
-                      items: _locationList,
-                      selectedValues: _selectedLocationValues,
-                      selectedLocations: _selectedLocations,
-                    )
-                  : Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Plant Name",
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black),
-                          ),
-                          Text(
-                            "No Plant Found",
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black),
-                          ),
-                        ],
-                      ),
-                    ),
+            buildVendorRowField(),
+
+            buildPlantRowField(),
 
             // _buildTextField("Full Name", fullNameController),
             _buildTextField('Aadhaar Number', adharNumberController),
@@ -1205,17 +1907,17 @@ class _Add_userState extends State<Add_user> {
             //   });
             // }, isMandatory: true),
             _buildCheckboxWithOptions('Active?', isActiveYes, isActiveNo,
-                (bool? yesChecked) {
-              setState(() {
-                isActiveYes = yesChecked ?? false;
-                isActiveNo = !yesChecked! ?? true;
-              });
-            }, isMandatory: true),
+                    (bool? yesChecked) {
+                  setState(() {
+                    isActiveYes = yesChecked ?? false;
+                    isActiveNo = !yesChecked! ?? true;
+                  });
+                }, isMandatory: true),
             _buildCheckboxWithOptions(
               'Mobile Login?',
               isMobileLoginYes,
               isMobileLoginNo,
-              (bool? yesChecked) {
+                  (bool? yesChecked) {
                 setState(() {
                   isMobileLoginYes = yesChecked ?? false;
                   isMobileLoginNo = !yesChecked! ?? true;
@@ -1224,10 +1926,23 @@ class _Add_userState extends State<Add_user> {
               isMandatory: true,
             ),
             _buildCheckboxWithOptions(
+              'Access Seal Data?',
+              hasAccessSealDataYes,
+              hasAccessSealDataNo ,
+                  (bool? yesChecked) {
+                setState(() {
+                  hasAccessSealDataYes = yesChecked ?? false;
+                  hasAccessSealDataNo  = !(yesChecked ?? true);
+                });
+              },
+              isMandatory: true,
+            ),
+
+            _buildCheckboxWithOptions(
               'Access Sale Order?',
               hasAccessSaleOrderDataYes,
               hasAccessSaleOrderDataNo,
-              (bool? yesChecked) {
+                  (bool? yesChecked) {
                 setState(() {
                   hasAccessSaleOrderDataYes = yesChecked ?? false;
                   hasAccessSaleOrderDataNo = !(yesChecked ?? true);
@@ -1239,7 +1954,7 @@ class _Add_userState extends State<Add_user> {
               'Access Dispatch?',
               isDispatchYes,
               isDispatchNo,
-              (bool? yesChecked) {
+                  (bool? yesChecked) {
                 setState(() {
                   isDispatchYes = yesChecked ?? false;
                   isDispatchNo = !yesChecked! ?? true;
@@ -1251,7 +1966,7 @@ class _Add_userState extends State<Add_user> {
               'Access Refund?',
               isRefundYes,
               isRefundNo,
-              (bool? yesChecked) {
+                  (bool? yesChecked) {
                 setState(() {
                   isRefundYes = yesChecked ?? false;
                   isRefundNo = !yesChecked! ?? true;
@@ -1263,7 +1978,7 @@ class _Add_userState extends State<Add_user> {
               'Access Payment?',
               isPaymentYes,
               isPaymentNo,
-              (bool? yesChecked) {
+                  (bool? yesChecked) {
                 setState(() {
                   isPaymentYes = yesChecked ?? false;
                   isPaymentNo = !yesChecked! ?? true;

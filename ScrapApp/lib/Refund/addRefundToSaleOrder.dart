@@ -15,12 +15,14 @@ class addRefundToSaleOrder extends StatefulWidget {
   final String material_name;
   final String branch_id_from_ids;
   final String vendor_id_from_ids;
+  final String materialId;
 
   addRefundToSaleOrder({
     required this.sale_order_id,
     required this.material_name,
     required this.branch_id_from_ids,
     required this.vendor_id_from_ids,
+    required this.materialId,
   });
 
   @override
@@ -41,7 +43,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
   final TextEditingController nfaController = TextEditingController();
 
   String? username = '';
- String uuid = '';
+  String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -61,8 +63,10 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
     "Refund EMD": "RE",
     "Refund CMD": "Rc",
     "Penalty": "PE",
+    "Forfeit": "FR",   // 🔹 New option
     "Refund All": "RA"
   };
+
 
   @override
   void initState() {
@@ -90,7 +94,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
 
 
   Future<void> checkLogin() async {
-     final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     uuid = prefs.getString("uuid")!;
     uuid = prefs.getString("uuid")!;
@@ -102,9 +106,10 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
 
   Future<void> fetchRefundPaymentDetails() async {
 
-    print(widget.branch_id_from_ids);
     print(widget.sale_order_id);
+    print(widget.branch_id_from_ids);
     print(widget.vendor_id_from_ids);
+    print(widget.materialId);
 
     print("asfgasfsaf");
 
@@ -120,7 +125,9 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
           'user_pass': password,
           'sale_order_id':widget.sale_order_id,
           'branch_id':widget.branch_id_from_ids,
-          'vendor_id':widget.vendor_id_from_ids
+          'vendor_id':widget.vendor_id_from_ids,
+          'mat_id': widget.materialId,
+
         },
       );
       if (response.statusCode == 200) {
@@ -300,7 +307,7 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
                             setState(() {
                               selectedPaymentType = value;
                               amountController.clear();
-                              if(selectedPaymentType == "RA"){
+                              if(selectedPaymentType == "RA" || selectedPaymentType == "FR" || selectedPaymentType == "PE") {
                                 amountController.text = totalAmount;
                               }else if(selectedPaymentType == "Rc"){
                                 amountController.text = totalCmdController.text;
@@ -319,9 +326,12 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
                             buildTextField("Amount", amountController, false,false ,Colors.white, context),
                             buildTextField("NFA No.", nfaController, false,false ,Colors.white, context),
                             buildTextField("Date", dateController1, false,true , Colors.white,context),
-                          ] else if (selectedPaymentType == "P") ...[
+                          ] else if (selectedPaymentType == "PE") ...[
                             buildTextField("Amount", amountController, false,false ,Colors.white, context),
                             buildTextField("Date", dateController1, false,true ,Colors.white, context),
+                            buildTextField("NFA No.", refNoController, false,false , Colors.white,context),
+                            buildTextField("Remark", noteController, false,false , Colors.white,context),
+
                           ]  else if (selectedPaymentType == "RA") ...[
                             buildTextField("Amount", amountController, false,false ,Colors.white, context),
                             buildTextField("NFA No.", nfaController, false,false ,Colors.white, context),
@@ -388,54 +398,10 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
   }
 
   void validateAndAddRefundDetails() {
-    // Map selectedPaymentType to the corresponding total amount controller
+    // Parse entered amount
     double? enteramt = double.tryParse(amountController.text.toString());
 
-    print("Type of enteramt: ${enteramt.runtimeType}");
-
-    final paymentTypeMap = {
-      "RA": int.tryParse(totalAmount),
-      "Rc": totalCmdController.text,
-      "RE": totalEmdController.text,
-      "R": totalPaymentController.text,
-      "PE": totalPaymentController.text,
-
-    };
-
-    // Get the total amount based on the selected payment type
-    // Retrieve the value from the map without casting
-    // Ensure we have a String representation of totalAmountValue
-    final dynamic totalAmountValue = paymentTypeMap[selectedPaymentType];
-    print("totalAmountValue:$totalAmountValue");
-
-    String totalAmountStr;
-
-    if (totalAmountValue is int) {
-      totalAmountStr = totalAmountValue.toString();
-      print("Converted int to String: $totalAmountStr");
-    } else if (totalAmountValue is String) {
-      totalAmountStr = totalAmountValue;
-      print("Value is already a String: $totalAmountStr");
-    } else {
-      totalAmountStr = '';
-      print("Unexpected type or null: $totalAmountValue");
-    }
-
-// Now use totalAmountStr safely throughout your code
-    print("Final Total Amount String: $totalAmountStr");
-
-
-    if (totalAmountStr == null) {
-      Fluttertoast.showToast(
-        msg: "Invalid payment type selected.",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
-      return;
-    }if(enteramt == null || enteramt <= 0){
+    if (enteramt == null || enteramt <= 0) {
       Fluttertoast.showToast(
         msg: "Invalid Amount",
         toastLength: Toast.LENGTH_SHORT,
@@ -447,17 +413,34 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
       return;
     }
 
-    // print("totalAmountStr:$totalAmountStr");
+    // Map selectedPaymentType to the corresponding total amount
+    final paymentTypeMap = {
+      "RA": totalAmount,       // Refund All
+      "FR": totalAmount,       // Forfeit same as Refund All
+      "Rc": totalCmdController.text,
+      "RE": totalEmdController.text,
+      "R": totalPaymentController.text,
+      "PE": totalAmount,
+    };
 
-    int enteredAmount = int.tryParse(amountController.text) ?? 0;
+    final String? totalAmountStr = paymentTypeMap[selectedPaymentType];
+
+    if (totalAmountStr == null || totalAmountStr.isEmpty) {
+      Fluttertoast.showToast(
+        msg: "Invalid payment type selected.",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      return;
+    }
+
     double totalAmt = double.tryParse(totalAmountStr) ?? 0.0;
-
-    // print("totalAmountStr:$totalAmountStr");
-    // print("enteredAmount:$enteredAmount");
-    // print("totalAmt:$totalAmt");
+    int enteredAmount = int.tryParse(amountController.text) ?? 0;
 
     if (enteredAmount > totalAmt) {
-
       Fluttertoast.showToast(
         msg: "Amount: $enteredAmount should not be greater than available amount: $totalAmt",
         toastLength: Toast.LENGTH_SHORT,
@@ -466,10 +449,13 @@ class addRefundToSaleOrderState extends State<addRefundToSaleOrder> {
         textColor: Colors.white,
         fontSize: 16.0,
       );
-    } else {
-      addRefundDetails();
+      return;
     }
+
+    // Amount is valid, proceed
+    addRefundDetails();
   }
+
 
 
   Widget buildDropdown(

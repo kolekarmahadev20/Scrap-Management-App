@@ -150,7 +150,13 @@ class _ForgotPunchOutPageState extends State<ForgotPunchOutPage> {
 
 
 
-            _users.sort((a, b) => (b['attendance_id']).compareTo(a['attendance_id']));
+            // _users.sort((a, b) => (b['attendance_id']).compareTo(a['attendance_id'])
+            // );
+            _users.sort((a, b) {
+              DateTime timeA = DateTime.parse(a['punchInTime']);
+              DateTime timeB = DateTime.parse(b['punchInTime']);
+              return timeB.compareTo(timeA); // latest first
+            });
             _filteredUsers = _users; // Initialize the filtered list with all users
 
           }
@@ -212,6 +218,14 @@ class _ForgotPunchOutPageState extends State<ForgotPunchOutPage> {
 
           print(data);
           print("Asgasg");
+          print("Api Credentials");
+          print(username);
+          print(password);
+          print(uuid);
+          print(adminID);
+          print(admin_status);
+          print(userType);
+          print(attendanceID);
           setState(() {
             _fetchLateLoggedOutUsers();
           });

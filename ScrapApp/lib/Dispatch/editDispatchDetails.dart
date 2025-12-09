@@ -36,14 +36,13 @@ class EditDispatchDetails extends StatefulWidget {
   final String totalQty;
   final String status;
   final String status_byuser;
-
+  final String materialRate;
   final String balanceqty;
   final String branch_id_from_ids;
   final String vendor_id_from_ids;
   final String materialId;
   final String balanceQtyUnit;
   final String balanceamount;
-
 
   EditDispatchDetails({
     required this.status,
@@ -69,9 +68,7 @@ class EditDispatchDetails extends StatefulWidget {
     required this.balanceamount,
     required this.balanceQtyUnit,
     required this.status_byuser,
-
-
-
+    required this.materialRate,
   });
 
   @override
@@ -87,15 +84,15 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
   final TextEditingController firstWeightNoController = TextEditingController();
   final TextEditingController fullWeightController = TextEditingController();
   final TextEditingController moistureWeightController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController netWeightController = TextEditingController();
   final TextEditingController quantityController = TextEditingController();
   final TextEditingController noteController = TextEditingController();
 
   final TextEditingController balanceQtyController = TextEditingController();
-  final TextEditingController balanceQtyUnitController = TextEditingController();
+  final TextEditingController balanceQtyUnitController =
+      TextEditingController();
   final TextEditingController balanceAmountController = TextEditingController();
-
 
   String? username = '';
   String uuid = '';
@@ -127,8 +124,6 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
   List<String> imgUrls = [];
   List<File> _images = [];
 
-
-
   void clearFields() {
     selectedOrderId = null;
     materialController.clear();
@@ -145,7 +140,6 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
     _initializeData();
     fetchImageList();
     // print("Images URL: ${widget.imagesUrl ?? 'No images available'}");
-
   }
 
   Future<void> _initializeData() async {
@@ -157,8 +151,8 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
     fetchPaymentDetails();
 
     balanceQtyController.text = widget.balanceqty;
-    balanceQtyUnitController.text =  widget.balanceQtyUnit;
-    balanceAmountController.text =  widget.balanceamount;
+    balanceQtyUnitController.text = widget.balanceQtyUnit;
+    balanceAmountController.text = widget.balanceamount;
 
     // Add listeners for weight calculations
     firstWeightNoController.addListener(calculateNetWeight);
@@ -166,8 +160,7 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
     moistureWeightController.addListener(calculateNetWeight);
   }
 
-  getData(){
-
+  getData() {
     // if (widget.imagesUrl != null && widget.imagesUrl!.isNotEmpty) {
     //   imgUrls = widget.imagesUrl!
     //       .split(',') // ✅ If it's a string, split by comma
@@ -176,18 +169,18 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
     // }
 
     materialController.text = widget.material_name ?? '';
-    invoiceController.text=widget.invoiceNo ?? 'N/A';
+    invoiceController.text = widget.invoiceNo ?? 'N/A';
     dateController.text = formatDate(widget.date) ?? 'N/A';
 
-    isDispatchCompleted = (widget.status == "p") ?  false:true ;
-    isDispatchDone = (widget.status_byuser == "p") ?  false:true ;
-    truckNoController.text=(widget.truckNo ?? 'N/A').toUpperCase();
+    isDispatchCompleted = (widget.status == "p") ? false : true;
+    isDispatchDone = (widget.status_byuser == "p") ? false : true;
+    truckNoController.text = (widget.truckNo ?? 'N/A').toUpperCase();
     firstWeightNoController.text = widget.firstweight ?? "N/A";
     fullWeightController.text = widget.full_weight ?? "N/A";
     moistureWeightController.text = widget.moisweight ?? "N/A";
     netWeightController.text = widget.netweight ?? "N/A";
-    quantityController.text=widget.qty ?? 'N/A';
-    noteController.text=widget.note ?? 'N/A';
+    quantityController.text = widget.qty ?? 'N/A';
+    noteController.text = widget.note ?? 'N/A';
   }
 
   Future<void> checkLogin() async {
@@ -217,7 +210,8 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
       return;
     }
 
-    double moistureWeight = double.tryParse(moistureWeightController.text) ?? 0.0;
+    double moistureWeight =
+        double.tryParse(moistureWeightController.text) ?? 0.0;
 
     print("First Weight: $firstWeight");
     print("Full Weight: $fullWeight");
@@ -239,14 +233,16 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
 
     // ✅ Check if netWeight is greater than totalQty first
     if (netWeight > balanceqty) {
-      print("Error: Net weight ($netWeight) exceeds total quantity ($balanceqty).");
+      print(
+          "Error: Net weight ($netWeight) exceeds total quantity ($balanceqty).");
 
       netWeightController.clear();
       quantityController.clear();
       fullWeightController.clear();
 
       Fluttertoast.showToast(
-        msg: "Net weight ($netWeight) cannot exceed total quantity ($balanceqty)!",
+        msg:
+            "Net weight ($netWeight) cannot exceed total quantity ($balanceqty)!",
         gravity: ToastGravity.CENTER,
       );
       return;
@@ -274,7 +270,6 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
     print("Final Net Weight: ${netWeightController.text}");
     print("Final DMT Weight: ${quantityController.text}");
   }
-
 
   // void calculateNetWeight() {
   //   double firstWeight = double.tryParse(firstWeightNoController.text) ?? 0.0;
@@ -323,16 +318,16 @@ class EditDispatchDetailsState extends State<EditDispatchDetails> {
   Future<File?> compressImage(File file) async {
     final dir = await getTemporaryDirectory();
     final targetPath =
-    path.join(dir.path, '${DateTime.now().millisecondsSinceEpoch}.jpg');
+        path.join(dir.path, '${DateTime.now().millisecondsSinceEpoch}.jpg');
     return await FlutterImageCompress.compressAndGetFile(
         file.absolute.path, targetPath,
         quality: 20);
   }
 
   Future<void> fetchPaymentDetails() async {
-
-print(widget.sale_order_id);
-print("widget.sale_order_id");
+    print(widget.sale_order_id);
+    print(widget.materialId);
+    print("widget.sale_order_id");
 
     try {
       setState(() {
@@ -348,10 +343,9 @@ print("widget.sale_order_id");
           'uuid': uuid,
           'user_pass': password,
           'sale_order_id': widget.sale_order_id,
-          'sale_order_id': widget.sale_order_id,
-          'branch_id':widget.branch_id_from_ids,
-          'vendor_id':widget.vendor_id_from_ids,
-
+          'branch_id': widget.branch_id_from_ids,
+          'vendor_id': widget.vendor_id_from_ids,
+          'mat_id': widget.materialId,
         },
       );
       if (response.statusCode == 200) {
@@ -390,7 +384,6 @@ print("widget.sale_order_id");
 
   List<String> imagesUrl = [];
 
-
   Future<void> fetchImageList() async {
     await checkLogin();
     final url = Uri.parse("${URL}check_url");
@@ -419,11 +412,14 @@ print("widget.sale_order_id");
 
       // ✅ Check if response is a Map before using containsKey
       if (decoded is Map<String, dynamic>) {
-        if (decoded.containsKey("ot") && decoded["ot"] is Map<String, dynamic>) {
+        if (decoded.containsKey("ot") &&
+            decoded["ot"] is Map<String, dynamic>) {
           Map<String, dynamic> otData = decoded["ot"];
 
           otData.forEach((key, value) {
-            if (value is Map && value.containsKey("images") && value["images"] is List) {
+            if (value is Map &&
+                value.containsKey("images") &&
+                value["images"] is List) {
               List<dynamic> images = value["images"];
 
               for (var path in images) {
@@ -466,14 +462,14 @@ print("widget.sale_order_id");
         url,
         headers: {"Accept": "application/json"},
         body: {
-          'user_id':username,
-          'uuid':uuid,
-          'user_pass':password,
-          'lift_id':widget.lift_id,
-          'sale_order_id':widget.sale_order_id,
-          'material_id':materialId,
-          'invoice_no':widget.invoiceNo,
-          'img_path':image,
+          'user_id': username,
+          'uuid': uuid,
+          'user_pass': password,
+          'lift_id': widget.lift_id,
+          'sale_order_id': widget.sale_order_id,
+          'material_id': materialId,
+          'invoice_no': widget.invoiceNo,
+          'img_path': image,
         },
       );
 
@@ -483,7 +479,7 @@ print("widget.sale_order_id");
 
         if (jsonData["status"] == "1") {
           Fluttertoast.showToast(
-            msg:"Image deleted Successfully", // "Image deleted successfully."
+            msg: "Image deleted Successfully", // "Image deleted successfully."
             toastLength: Toast.LENGTH_SHORT,
             gravity: ToastGravity.BOTTOM,
             backgroundColor: Colors.green,
@@ -522,10 +518,7 @@ print("widget.sale_order_id");
     }
   }
 
-
-
   Future<void> editDispatchDetails() async {
-
     if (truckNoController.text.trim().length < 7) {
       Fluttertoast.showToast(
         msg: 'Truck Number must be at least 7 characters long.',
@@ -534,7 +527,6 @@ print("widget.sale_order_id");
       );
       return; // Exit the function early
     }
-
 
     try {
       setState(() {
@@ -566,9 +558,15 @@ print("widget.sale_order_id");
       request.fields['note'] = noteController.text;
       request.fields['status'] = isDispatchCompleted ? 'c' : 'p';
       request.fields['user_status'] = isDispatchDone ? 'c' : 'p';
+      request.fields['material_rate'] = widget.materialRate ?? '';
 
+      print("======== Request Fields ========");
+      request.fields.forEach((key, value) {
+        print("$key: $value");
+      });
       // Function to add images to the request
-      Future<void> addImages(List<File> images, String keyword, http.MultipartRequest request) async {
+      Future<void> addImages(List<File> images, String keyword,
+          http.MultipartRequest request) async {
         Set<String> addedHashes = {}; // Unique image tracking
 
         for (var image in images) {
@@ -582,7 +580,8 @@ print("widget.sale_order_id");
             print('Image Hash: $imageHash');
 
             if (!addedHashes.contains(imageHash)) {
-              String fileName = '$keyword${compressedImage.path.split('/').last}';
+              String fileName =
+                  '$keyword${compressedImage.path.split('/').last}';
               print('Generated File Name: $fileName');
 
               var stream = http.ByteStream(compressedImage.openRead());
@@ -601,15 +600,12 @@ print("widget.sale_order_id");
               print('Generated File Name: $fileName');
               print('Adding image to request: $fileName');
               print('Total files in request: ${request.files.length}');
-
-
             } else {
               print('Skipping duplicate image');
             }
           }
         }
       }
-
 
       // Add images from different sources
       if (vehicleFront.isNotEmpty) await addImages(vehicleFront, "Fr", request);
@@ -659,12 +655,14 @@ print("widget.sale_order_id");
             context,
             MaterialPageRoute(
                 builder: (context) => View_dispatch_details(
-                  sale_order_id: widget.sale_order_id,
-                  bidder_id: widget.bidder_id,
-                  branch_id_from_ids: widget.branch_id_from_ids, // Extracted from "Ids"
-                  vendor_id_from_ids: widget.vendor_id_from_ids, // Extracted from "Ids"
-                  materialId:  widget.materialId, // Extracted from "Ids"
-                )), // Navigate to the desired screen
+                      sale_order_id: widget.sale_order_id,
+                      bidder_id: widget.bidder_id,
+                      branch_id_from_ids:
+                          widget.branch_id_from_ids, // Extracted from "Ids"
+                      vendor_id_from_ids:
+                          widget.vendor_id_from_ids, // Extracted from "Ids"
+                      materialId: widget.materialId, // Extracted from "Ids"
+                    )), // Navigate to the desired screen
           );
         }
       } else {
@@ -688,7 +686,6 @@ print("widget.sale_order_id");
     var bytes = await file.readAsBytes();
     return md5.convert(bytes).toString(); // Using MD5 hash
   }
-
 
   showLoading() {
     return Container(
@@ -724,395 +721,447 @@ print("widget.sale_order_id");
           isLoading
               ? showLoading()
               : Container(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            color: Colors.grey[100],
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    "Dispatch",
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white, // Background color
-                      border: Border.all(color: Colors.blueGrey[400]!),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26, // Shadow color
-                          blurRadius: 4, // Softness of the shadow
-                          offset: Offset(2, 2), // Position of the shadow
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 8,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "EDIT MATERIAL LIFTING DETAIL",
-                              style: TextStyle(
-                                fontSize: 16, // Keep previous font size
-                                color: Colors.black54,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16),
-                Expanded(
-                  child:SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  color: Colors.grey[100],
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      buildTextField("Material", materialController,true, false , Colors.white,context),
-                      buildTextField("SO Balance Qty", balanceQtyController,
-                          true, false, Colors.white, context),
-                      buildTextField("SO Balance Amount", balanceAmountController,
-                          true, false, Colors.white, context),
-                      buildTextField("Invoice No", invoiceController , false,false ,Colors.white, context),
-                      buildTextField("Date", dateController as TextEditingController, true,false , Colors.white,context),
-                      buildTextField("Truck No", truckNoController, true,false ,Colors.white, context),
-                      buildTextField("First Weight", firstWeightNoController, false,false ,Colors.white, context),
-                      buildTextField("Gross Weight", fullWeightController, false,false , Colors.white,context),
-                      buildTextField("Net", netWeightController, true,false ,Colors.grey[400]!, context),
-                      buildTextField("Moisture Weight", moistureWeightController, false,false ,Colors.white, context),
-                      buildTextField("DMT/Quantity Weight", quantityController, false,false , Colors.white,context),
-                      buildTextField("Note", noteController, false,false , Colors.white,context),
-                      if(userType != 'U')
-                        LayoutBuilder(
-                        builder: (context, constraints) {
-                          return Row(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                flex:
-                                2, // Adjusts the label width proportionally
-                                child: Padding(
-                                  padding: EdgeInsets.all(
-                                      8.0), // Adds padding around the text
-                                  child: Text(
-                                    'Dispatch\nCompleted',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex:
-                                3, // Adjusts the radio buttons area proportionally
-                                child: Row(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.start,
-                                  children: [
-                                    Flexible(
-                                      child: Radio<bool>(
-                                        value: true,
-                                        groupValue: isDispatchCompleted,
-                                        onChanged: (bool? newValue) {
-                                          setState(() {
-                                            isDispatchCompleted =
-                                                newValue ?? false;
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                    Text('Yes'),
-                                    Flexible(
-                                      child: Radio<bool>(
-                                        value: false,
-                                        groupValue: isDispatchCompleted,
-                                        onChanged: (bool? newValue) {
-                                          setState(() {
-                                            isDispatchCompleted =
-                                                newValue ?? false;
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                    Text('No'),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-
-                      if(userType == 'U')
-                        LayoutBuilder(
-                        builder: (context, constraints) {
-                          return Row(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                flex:
-                                2, // Adjusts the label width proportionally
-                                child: Padding(
-                                  padding: EdgeInsets.all(
-                                      8.0), // Adds padding around the text
-                                  child: Text(
-                                    'Dispatch Done ?',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              Expanded(
-                                flex:
-                                3, // Adjusts the radio buttons area proportionally
-                                child: Row(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.start,
-                                  children: [
-                                    Flexible(
-                                      child: Radio<bool>(
-                                        value: true,
-                                        groupValue: isDispatchDone,
-                                        onChanged: (bool? newValue) {
-                                          setState(() {
-                                            isDispatchDone =
-                                                newValue ?? false;
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                    Text('Yes'),
-                                    Flexible(
-                                      child: Radio<bool>(
-                                        value: false,
-                                        groupValue: isDispatchDone,
-                                        onChanged: (bool? newValue) {
-                                          setState(() {
-                                            isDispatchDone =
-                                                newValue ?? false;
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                    Text('No'),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-
-                      SizedBox(
-                        height: 40,
-                      ),
-                      ImageWidget(
-                          value: 'Add Images',
-                          cameraIcon: Icon(Icons.camera_alt,
-                              color: Colors.blue),
-                          galleryIcon: Icon(Icons.photo_library,
-                              color: Colors.green),
-                          onImagesSelected: (images) {
-                            // Handle selected images
-                            setState(() {
-                              other.addAll(
-                                  images); // Store uploaded images
-                            });
-                          }),
-
-
-                      SizedBox(
-                        height: 40,
-                      ),
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(), // Prevents scrolling inside a scrollable parent
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3, // Adjust based on UI needs
-                          crossAxisSpacing: 8.0,
-                          mainAxisSpacing: 8.0,
-                          childAspectRatio: 1, // Ensures square images
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          "Dispatch",
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                            letterSpacing: 1.5,
+                          ),
                         ),
-                        itemCount: _images.length,
-                        itemBuilder: (context, index) {
-                          final image = _images[index];
-
-                          return Stack(
-                            alignment: Alignment.topRight,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10), // Rounded corners
-                                child: Image.file(
-                                  image,
-                                  height: 150.0,
-                                  width: 150.0,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              Positioned(
-                                top: 5,
-                                right: 5,
-                                child: IconButton(
-                                  icon: Icon(Icons.delete_forever, color: Colors.red),
-                                  onPressed: () {
-                                    setState(() {
-                                      _images.removeAt(index);
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-
-                      SizedBox(
-                        height: 20,
-                      ),
-
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(), // Prevents GridView from scrolling inside a scrollable parent
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3, // Adjust columns per row
-                          crossAxisSpacing: 8.0,
-                          mainAxisSpacing: 8.0,
-                          childAspectRatio: 1, // Ensures square images
-                        ),
-                        itemCount: imagesUrl.length,
-                        itemBuilder: (context, index) {
-                          final image = imagesUrl[index];
-
-                          return Stack(
-                            alignment: Alignment.topRight,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10), // Rounded corners
-                                child: Image.network(
-                                  image,
-                                  height: 150.0,
-                                  width: 150.0,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              Positioned(
-                                top: 5,
-                                right: 5,
-                                child: IconButton(
-                                  icon: Icon(Icons.delete_forever, color: Colors.red),
-                                  onPressed: () async {
-                                    bool deleteConfirmed = await showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: Text("Confirmation"),
-                                          content: Text("Are you sure you want to delete this image?"),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.of(context).pop(false), // No
-                                              child: Text("No"),
-                                            ),
-                                            TextButton(
-                                              onPressed: () async {
-                                                 //await deleteImage(image); // Wait for deleteImage to complete
-                                                Navigator.of(context).pop(true); // Then close the dialog
-                                              },
-                                              child: Text("Yes"),
-                                            ),
-
-                                          ],
-                                        );
-                                      },
-                                    );
-
-                                    if (deleteConfirmed == true) {
-                                      setState(() {
-                                        imagesUrl.removeAt(index);
-                                      });
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                      SizedBox(
-                        height: 60,
                       ),
                       Padding(
-                        padding:
-                        const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Row(
-                          mainAxisAlignment:
-                          MainAxisAlignment.center,
-                          children: [
-                            // ElevatedButton(
-                            //   onPressed: () {
-                            //     clearFields();
-                            //     Navigator.of(context).pop();
-                            //   },
-                            //   child: Text("Back"),
-                            //   style: ElevatedButton.styleFrom(
-                            //     foregroundColor: Colors.white,
-                            //     backgroundColor: Colors.indigo[800],
-                            //     padding: EdgeInsets.symmetric(
-                            //         horizontal: 50, vertical: 12),
-                            //     shape: RoundedRectangleBorder(
-                            //       borderRadius: BorderRadius.circular(12),
-                            //     ),
-                            //   ),
-                            // ),
-                            ElevatedButton(
-                              onPressed: () {
-                                editDispatchDetails();
-                                // clearFields();
-                              },
-                              child: Text("Add"),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.indigo[800],
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 50, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white, // Background color
+                            border: Border.all(color: Colors.blueGrey[400]!),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26, // Shadow color
+                                blurRadius: 4, // Softness of the shadow
+                                offset: Offset(2, 2), // Position of the shadow
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              SizedBox(
+                                height: 8,
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "EDIT MATERIAL LIFTING DETAIL",
+                                    style: TextStyle(
+                                      fontSize: 16, // Keep previous font size
+                                      color: Colors.black54,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 8,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       SizedBox(height: 16),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              buildTextField("Material", materialController,
+                                  true, false, Colors.white, context),
+                              buildTextField(
+                                  "SO Balance Qty",
+                                  balanceQtyController,
+                                  true,
+                                  false,
+                                  Colors.white,
+                                  context),
+                              buildTextField(
+                                  "SO Balance Amount",
+                                  balanceAmountController,
+                                  true,
+                                  false,
+                                  Colors.white,
+                                  context),
+                              buildTextField("Invoice No", invoiceController,
+                                  false, false, Colors.white, context),
+                              buildTextField(
+                                  "Date",
+                                  dateController as TextEditingController,
+                                  true,
+                                  false,
+                                  Colors.white,
+                                  context),
+                              buildTextField("Truck No", truckNoController,
+                                  true, false, Colors.white, context),
+                              buildTextField(
+                                  "First Weight",
+                                  firstWeightNoController,
+                                  false,
+                                  false,
+                                  Colors.white,
+                                  context),
+                              buildTextField(
+                                  "Gross Weight",
+                                  fullWeightController,
+                                  false,
+                                  false,
+                                  Colors.white,
+                                  context),
+                              buildTextField("Net", netWeightController, true,
+                                  false, Colors.grey[400]!, context),
+                              buildTextField(
+                                  "Moisture Weight",
+                                  moistureWeightController,
+                                  false,
+                                  false,
+                                  Colors.white,
+                                  context),
+                              buildTextField(
+                                  "DMT/Quantity Weight",
+                                  quantityController,
+                                  false,
+                                  false,
+                                  Colors.white,
+                                  context),
+                              buildTextField("Note", noteController, false,
+                                  false, Colors.white, context),
+                              if (userType != 'U')
+                                LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    return Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          flex:
+                                              2, // Adjusts the label width proportionally
+                                          child: Padding(
+                                            padding: EdgeInsets.all(
+                                                8.0), // Adds padding around the text
+                                            child: Text(
+                                              'Dispatch\nCompleted',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex:
+                                              3, // Adjusts the radio buttons area proportionally
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Flexible(
+                                                child: Radio<bool>(
+                                                  value: true,
+                                                  groupValue:
+                                                      isDispatchCompleted,
+                                                  onChanged: (bool? newValue) {
+                                                    setState(() {
+                                                      isDispatchCompleted =
+                                                          newValue ?? false;
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                              Text('Yes'),
+                                              Flexible(
+                                                child: Radio<bool>(
+                                                  value: false,
+                                                  groupValue:
+                                                      isDispatchCompleted,
+                                                  onChanged: (bool? newValue) {
+                                                    setState(() {
+                                                      isDispatchCompleted =
+                                                          newValue ?? false;
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                              Text('No'),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              if (userType == 'U')
+                                LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    return Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          flex:
+                                              2, // Adjusts the label width proportionally
+                                          child: Padding(
+                                            padding: EdgeInsets.all(
+                                                8.0), // Adds padding around the text
+                                            child: Text(
+                                              'Dispatch Done ?',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex:
+                                              3, // Adjusts the radio buttons area proportionally
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Flexible(
+                                                child: Radio<bool>(
+                                                  value: true,
+                                                  groupValue: isDispatchDone,
+                                                  onChanged: (bool? newValue) {
+                                                    setState(() {
+                                                      isDispatchDone =
+                                                          newValue ?? false;
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                              Text('Yes'),
+                                              Flexible(
+                                                child: Radio<bool>(
+                                                  value: false,
+                                                  groupValue: isDispatchDone,
+                                                  onChanged: (bool? newValue) {
+                                                    setState(() {
+                                                      isDispatchDone =
+                                                          newValue ?? false;
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                              Text('No'),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              SizedBox(
+                                height: 40,
+                              ),
+                              ImageWidget(
+                                  value: 'Add Images',
+                                  cameraIcon: Icon(Icons.camera_alt,
+                                      color: Colors.blue),
+                                  galleryIcon: Icon(Icons.photo_library,
+                                      color: Colors.green),
+                                  onImagesSelected: (images) {
+                                    // Handle selected images
+                                    setState(() {
+                                      other.addAll(
+                                          images); // Store uploaded images
+                                    });
+                                  }),
+                              SizedBox(
+                                height: 40,
+                              ),
+                              GridView.builder(
+                                shrinkWrap: true,
+                                physics:
+                                    NeverScrollableScrollPhysics(), // Prevents scrolling inside a scrollable parent
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3, // Adjust based on UI needs
+                                  crossAxisSpacing: 8.0,
+                                  mainAxisSpacing: 8.0,
+                                  childAspectRatio: 1, // Ensures square images
+                                ),
+                                itemCount: _images.length,
+                                itemBuilder: (context, index) {
+                                  final image = _images[index];
+
+                                  return Stack(
+                                    alignment: Alignment.topRight,
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                            10), // Rounded corners
+                                        child: Image.file(
+                                          image,
+                                          height: 150.0,
+                                          width: 150.0,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      Positioned(
+                                        top: 5,
+                                        right: 5,
+                                        child: IconButton(
+                                          icon: Icon(Icons.delete_forever,
+                                              color: Colors.red),
+                                          onPressed: () {
+                                            setState(() {
+                                              _images.removeAt(index);
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              GridView.builder(
+                                shrinkWrap: true,
+                                physics:
+                                    NeverScrollableScrollPhysics(), // Prevents GridView from scrolling inside a scrollable parent
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3, // Adjust columns per row
+                                  crossAxisSpacing: 8.0,
+                                  mainAxisSpacing: 8.0,
+                                  childAspectRatio: 1, // Ensures square images
+                                ),
+                                itemCount: imagesUrl.length,
+                                itemBuilder: (context, index) {
+                                  final image = imagesUrl[index];
+
+                                  return Stack(
+                                    alignment: Alignment.topRight,
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                            10), // Rounded corners
+                                        child: Image.network(
+                                          image,
+                                          height: 150.0,
+                                          width: 150.0,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      Positioned(
+                                        top: 5,
+                                        right: 5,
+                                        child: IconButton(
+                                          icon: Icon(Icons.delete_forever,
+                                              color: Colors.red),
+                                          onPressed: () async {
+                                            bool deleteConfirmed =
+                                                await showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: Text("Confirmation"),
+                                                  content: Text(
+                                                      "Are you sure you want to delete this image?"),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.of(context)
+                                                              .pop(false), // No
+                                                      child: Text("No"),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () async {
+                                                        //await deleteImage(image); // Wait for deleteImage to complete
+                                                        Navigator.of(context).pop(
+                                                            true); // Then close the dialog
+                                                      },
+                                                      child: Text("Yes"),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+
+                                            if (deleteConfirmed == true) {
+                                              setState(() {
+                                                imagesUrl.removeAt(index);
+                                              });
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                              SizedBox(
+                                height: 60,
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    // ElevatedButton(
+                                    //   onPressed: () {
+                                    //     clearFields();
+                                    //     Navigator.of(context).pop();
+                                    //   },
+                                    //   child: Text("Back"),
+                                    //   style: ElevatedButton.styleFrom(
+                                    //     foregroundColor: Colors.white,
+                                    //     backgroundColor: Colors.indigo[800],
+                                    //     padding: EdgeInsets.symmetric(
+                                    //         horizontal: 50, vertical: 12),
+                                    //     shape: RoundedRectangleBorder(
+                                    //       borderRadius: BorderRadius.circular(12),
+                                    //     ),
+                                    //   ),
+                                    // ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        editDispatchDetails();
+                                        // clearFields();
+                                      },
+                                      child: Text("Add"),
+                                      style: ElevatedButton.styleFrom(
+                                        foregroundColor: Colors.white,
+                                        backgroundColor: Colors.indigo[800],
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 50, vertical: 12),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 16),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
-                  ),
                 ),
-              ],
-            ),
-          ),
         ]),
       ),
     );
@@ -1158,14 +1207,14 @@ print("widget.sale_order_id");
               ),
               child: TextField(
                 onTap:
-                isDateField ? () => _selectDate(context, controller) : null,
+                    isDateField ? () => _selectDate(context, controller) : null,
                 controller: controller,
                 decoration: InputDecoration(
                   suffixIcon: isDateField
                       ? IconButton(
-                    icon: Icon(Icons.calendar_today),
-                    onPressed: () => _selectDate(context, controller),
-                  )
+                          icon: Icon(Icons.calendar_today),
+                          onPressed: () => _selectDate(context, controller),
+                        )
                       : null,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -1185,7 +1234,7 @@ print("widget.sale_order_id");
                     ),
                   ),
                   contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
                 readOnly: isReadOnly,
               ),
@@ -1245,7 +1294,7 @@ class _ImageWidgetState extends State<ImageWidget> {
   Future<void> _captureImageFromCamera() async {
     final picker = ImagePicker();
     final XFile? capturedFile =
-    await picker.pickImage(source: ImageSource.camera);
+        await picker.pickImage(source: ImageSource.camera);
 
     if (capturedFile != null) {
       setState(() {
@@ -1301,50 +1350,50 @@ class _ImageWidgetState extends State<ImageWidget> {
               IconButton(
                 icon: widget.galleryIcon,
                 onPressed:
-                _pickImagesFromGallery, // Calls the gallery picker function
+                    _pickImagesFromGallery, // Calls the gallery picker function
               ),
             ],
           ),
         ),
         _images.isNotEmpty
             ? GridView.builder(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3, // Display 3 images per row
-            crossAxisSpacing: 4.0,
-            mainAxisSpacing: 4.0,
-          ),
-          itemCount: _images.length,
-          itemBuilder: (context, index) {
-            return Stack(
-              children: [
-                Container(
-                  height: 100, // Set fixed height for images
-                  width: 100, // Set fixed width for images
-                  child: ClipRRect(
-                    borderRadius:
-                    BorderRadius.circular(8), // Rounded corners
-                    child: Image.file(
-                      _images[index],
-                      fit: BoxFit
-                          .cover, // Ensure the image fits within the container
-                    ),
-                  ),
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3, // Display 3 images per row
+                  crossAxisSpacing: 4.0,
+                  mainAxisSpacing: 4.0,
                 ),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: IconButton(
-                    icon: Icon(Icons.delete, color: Colors.red),
-                    onPressed: () =>
-                        _deleteImage(index), // Delete the selected image
-                  ),
-                ),
-              ],
-            );
-          },
-        )
+                itemCount: _images.length,
+                itemBuilder: (context, index) {
+                  return Stack(
+                    children: [
+                      Container(
+                        height: 100, // Set fixed height for images
+                        width: 100, // Set fixed width for images
+                        child: ClipRRect(
+                          borderRadius:
+                              BorderRadius.circular(8), // Rounded corners
+                          child: Image.file(
+                            _images[index],
+                            fit: BoxFit
+                                .cover, // Ensure the image fits within the container
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () =>
+                              _deleteImage(index), // Delete the selected image
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              )
             : Container(),
       ],
     );

@@ -14,12 +14,15 @@ class View_refund_details extends StatefulWidget {
   final String vendor_id_from_ids;
   final String? sale_order_id;
   final String bidder_id;
+  final String materialId;
 
   View_refund_details({
     required this.sale_order_id,
     required this.bidder_id,
     required this.branch_id_from_ids,
-    required this.vendor_id_from_ids
+    required this.vendor_id_from_ids,
+    required this.materialId
+
   });
 
   @override
@@ -129,7 +132,9 @@ class _View_refund_detailsState extends State<View_refund_details> {
           'user_pass': password,
           'sale_order_id':widget.sale_order_id,
           'branch_id':widget.branch_id_from_ids,
-          'vendor_id':widget.vendor_id_from_ids
+          'vendor_id':widget.vendor_id_from_ids,
+          'mat_id': widget.materialId,
+
         },
       );
       if (response.statusCode == 200) {
@@ -293,6 +298,7 @@ class _View_refund_detailsState extends State<View_refund_details> {
                               'N/A',
                           branch_id_from_ids: widget.branch_id_from_ids, // Extracted from "Ids"
                           vendor_id_from_ids: widget.vendor_id_from_ids, // Extracted from "Ids"
+                          materialId: widget.materialId, // Extracted from "Ids"
                         ),
                       ),
                     ).then((value) => setState(() {

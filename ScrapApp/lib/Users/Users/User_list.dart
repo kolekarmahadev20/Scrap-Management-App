@@ -5,9 +5,10 @@ import 'package:scrapapp/Leave/Leave_Application.dart';
 import 'package:scrapapp/Pages/StartPage.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../AppClass/AppDrawer.dart';
-import '../AppClass/appBar.dart';
-import '../URL_CONSTANT.dart';
+
+import '../../AppClass/AppDrawer.dart';
+import '../../AppClass/appBar.dart';
+import '../../URL_CONSTANT.dart';
 import 'Add_user.dart';
 import 'Edit_User.dart';
 
@@ -15,6 +16,7 @@ import 'Edit_User.dart';
 // User model to parse JSON data
 class User {
   final String personId;
+  final String userId;
   final String empCode;
   final String personName;
   final String username;
@@ -37,6 +39,7 @@ class User {
   final String? uuid;
   final String? orgId;
   final String isDuplicate;
+  final String branchName;
   final String duplicateEmpId;
   final String termAccept;
   final String terminationStatus;
@@ -57,12 +60,20 @@ class User {
   final String? read_only;
   final String? attendance_only;
 
+  final String? location_port_id;
+  final String? material_port_id;
+  final String? access_seal;
 
 
   User({
+    required this.location_port_id,
+    required this.material_port_id,
+    required this.access_seal,
+
     required this.orgID,
     required this.personId,
     required this.empCode,
+    required this.userId,
     required this.personName,
     required this.username,
     required this.fatherName,
@@ -76,6 +87,7 @@ class User {
     required this.address,
     required this.familyPhone,
     required this.adharNum,
+    required this.branchName,
     required this.empEmail,
     required this.empComStatus,
     this.userType,
@@ -108,7 +120,10 @@ class User {
     return User(
       personId: json['person_id'] ?? 'NA',
       empCode: json['emp_code']  ?? 'NA',
-      personName: json['person_name']  ?? 'NA',
+      personName: json['person_name']?.toString() ?? '',
+      branchName: json['branch_name']?.toString() ?? '',
+      userId: json['user_id']?.toString() ?? '',
+
       fatherName: json['father_name'] ?? 'NA',
       motherName: json['mother_name']  ?? 'NA',
       dob: json['dob']  ?? 'NA',
@@ -139,12 +154,18 @@ class User {
       contactDetails: json['contact_details'] ?? 'NA',
       approveStatus: json['approve_status']?? 'NA',
       aprovePerson: json['aprove_person']?? 'NA',
+
+      access_seal: json['access_seal']?? 'NA',
       accesSaleOrder: json['acces_sale_order']?? 'NA',
       accesDispatch: json['acces_dispatch']?? 'NA',
       accesRefund: json['acces_refund']?? 'NA',
       accesPayment: json['acces_payment']?? 'NA',
       vendorId: json['vendor_id']?? 'NA',
       plantId: json['plant_id']?? 'NA',
+
+      location_port_id: json['location_port_id']?? 'NA',
+      material_port_id: json['material_port_id']?? 'NA',
+
       orgID: json['org_id']??'NA',
       read_only: json['read_only']?? 'NA',
       attendance_only: json['attendance_only']??'NA',
@@ -156,7 +177,7 @@ class view_user extends StatefulWidget {
 
   final int currentPage;
   view_user({required this.currentPage});
-  
+
   @override
   _view_userState createState() => _view_userState();
 }
@@ -249,6 +270,35 @@ class _view_userState extends State<view_user> {
   //   return filteredUsers;
   // }
 
+  Future<List<Map<String, dynamic>>> fetchPersonNameSuggestions(String query) async {
+    await checkLogin(); // ensure uuid, username, password are set
+
+    final url = '${URL}plantWiseUser';
+
+    final response = await http.post(
+      Uri.parse(url),
+      body: {
+        'user_id': username ?? '',
+        'user_pass': password ?? '',
+        'uuid': uuid,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      if (data['status'] == "1") {
+        List users = data['user_data'];
+        return users
+            .where((user) => (user['person_name'] ?? '')
+            .toLowerCase()
+            .contains(query.toLowerCase()))
+            .map<Map<String, dynamic>>((user) => user)
+            .toList();
+      }
+    }
+    return [];
+  }
 
   Future<List<User>> _getUsers(String searchText) async {
     List<User> allUsers = await futureUsers;
@@ -284,8 +334,8 @@ class _view_userState extends State<view_user> {
 
 
   Future<void> _navigateToEditUser(User user) async {
-    final result = 
-    await 
+    final result =
+    await
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -305,7 +355,7 @@ class _view_userState extends State<view_user> {
 
   //Fetching user details from sharedpreferences
   Future<void> checkLogin() async {
-     final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     uuid = prefs.getString("uuid")!;
     password = prefs.getString("password");
@@ -322,7 +372,7 @@ class _view_userState extends State<view_user> {
       appBar: CustomAppBar(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-         Navigator.push(context, MaterialPageRoute(builder: (context) => Add_user()));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => Add_user()));
         },
         child: Icon(Icons.add),
       ),
@@ -341,7 +391,8 @@ class _view_userState extends State<view_user> {
                 }
 
                 List<User> users = snapshot.data ?? [];
-                users.sort((a, b) => a.personName.toLowerCase().compareTo(b.personName.toLowerCase()));
+                users.sort((a, b) => (a.personName ?? '').toLowerCase().compareTo((b.personName ?? '').toLowerCase()));
+
                 users = _filterUsers(users);
 
                 return SingleChildScrollView(
@@ -393,28 +444,53 @@ class _view_userState extends State<view_user> {
           Row(
             children: [
               Expanded(
-                child: TypeAheadField<User>(
+                child: TypeAheadField<Map<String, dynamic>>(
                   textFieldConfiguration: TextFieldConfiguration(
                     controller: _typeAheadController,
                     decoration: InputDecoration(
-                      labelText: 'Search by username /full name',
+                      labelText: 'Search by Person Name',
                       border: OutlineInputBorder(),
                     ),
                   ),
                   suggestionsCallback: (pattern) async {
-                    return await _getUsers(pattern);
+                    return await fetchPersonNameSuggestions(pattern);
                   },
-                  itemBuilder: (context, User user) {
+                  itemBuilder: (context, Map<String, dynamic> user) {
                     return ListTile(
-                      title: Text('${user.personName} - (${user.username})'),
+                      title: Text('${user['person_name']}'),
+                      subtitle: Text(user['branch_names'] ?? 'No Branch'),
                     );
                   },
-                  onSuggestionSelected: (User user) {
-                    setState(() {
-                      selectedUser = user;
-                      _typeAheadController.text = '${user.personName} - (${user.username})';
-                    });
+                  onSuggestionSelected: (Map<String, dynamic> selectedSuggestion) async {
+                    List<User> allUsers = await futureUsers;
+
+                    User? matchedUser;
+                    try {
+                      matchedUser = allUsers.firstWhere(
+                            (user) => user.personId == selectedSuggestion['person_id'],
+                      );
+                    } catch (e) {
+                      matchedUser = null;
+                    }
+
+                    if (matchedUser != null) {
+                      setState(() {
+                        selectedUser = matchedUser;
+                        _typeAheadController.text =
+                        '${selectedSuggestion['person_name'] ?? ''} - ${selectedSuggestion['branch_names'] ?? ''}';
+                      });
+                    }
+                    else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("User not found in loaded data."),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   },
+
+
                 ),
               ),
               SizedBox(width: 10),
@@ -563,7 +639,13 @@ class UserCard extends StatelessWidget {
                 ],
               ),
               Text(
-                user.personName,
+                user.personName ?? 'No name',
+                style: TextStyle(fontSize: 24, color: Colors.blue),
+              ),
+              SizedBox(height: 10),
+
+              Text(
+                user.branchName ?? 'No name',
                 style: TextStyle(fontSize: 24, color: Colors.blue),
               ),
               SizedBox(height: 10),
@@ -801,7 +883,4 @@ class _SubDetailsState extends State<SubDetails> {
     );
   }
 }
-
-
-
 

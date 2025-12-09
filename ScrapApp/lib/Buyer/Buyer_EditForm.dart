@@ -85,7 +85,7 @@ class _Buyer_EditFormState extends State<Buyer_EditForm> {
 
   //Variables for user details
   String? username = '';
- String uuid = '';
+  String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';

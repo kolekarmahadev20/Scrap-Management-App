@@ -90,20 +90,20 @@ class _ProfilePageState extends State<ProfilePage> {
     checkLogin().then((_) {
       _loadInitialData();  // ← Single method for all initial loads
     });
-    _loadLocation();
-    checkLogin().then((_) {
-      setState(() {});
-    });
-    fetchPunchTimeFromDatabase(); // First call
+    // _loadLocation();
+    // checkLogin().then((_) {
+    //   setState(() {});
+    // });
+    // fetchPunchTimeFromDatabase(); // First call
+    //
+    // fetchLogoutPunchTimeFromDatabase(); // Second call after a small delay
+    //
+    // fetchAttendanceData(
 
-    fetchLogoutPunchTimeFromDatabase(); // Second call after a small delay
-
-    fetchAttendanceData(
-
-    );
-    Future.delayed(Duration(seconds: 2), () {
-      debugLateLoginStatus();  // See what's happening
-    });
+    // );
+    // Future.delayed(Duration(seconds: 2), () {
+    //   debugLateLoginStatus();  // See what's happening
+    // });
   }
   Future<void> _loadInitialData() async {
     setState(() => isInitialLoading = true); // ✅ Start loading
@@ -124,18 +124,18 @@ class _ProfilePageState extends State<ProfilePage> {
     _gpsCheckTimer.cancel();
   }
 
-  Future<void> _loadLocation() async {
-    final prefs = await SharedPreferences.getInstance();
-    latitude = prefs.getDouble('latitude');
-    longitude = prefs.getDouble('longitude');
-
-    if (latitude != null && longitude != null) {
-      debugPrint('Saved Latitude: $latitude');
-      debugPrint('Saved Longitude: $longitude');
-    } else {
-      debugPrint('Location not found in SharedPreferences');
-    }
-  }
+  // Future<void> _loadLocation() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   latitude = prefs.getDouble('latitude');
+  //   longitude = prefs.getDouble('longitude');
+  //
+  //   if (latitude != null && longitude != null) {
+  //     debugPrint('Saved Latitude: $latitude');
+  //     debugPrint('Saved Longitude: $longitude');
+  //   } else {
+  //     debugPrint('Location not found in SharedPreferences');
+  //   }
+  // }
 
 
   // Future<void> _loadLocation() async {
@@ -695,7 +695,8 @@ class _ProfilePageState extends State<ProfilePage> {
     } finally {}
   }
 
-  Future<void> trackadminresponse() async {
+
+ Future<void> trackadminresponse() async {
     if (remarkSubmittedSuccessfully) {
       // Remark already submitted successfully, avoid showing dialog repeatedly
       print("Remark already submitted successfully - skipping dialog");
@@ -878,7 +879,6 @@ class _ProfilePageState extends State<ProfilePage> {
       print('Error submitting remark: $e');
     }
   }
-
 
 
   void _showLateLoginRemarkDialog() {

@@ -288,9 +288,15 @@ class _LeaveApplicationState extends State<LeaveApplication> {
           setState(() {
             // Keep "All Location" as the first option
             locationMap = {'All Location': '0'};
-            for (var location in data['location']) {
-              locationMap[location['location_name']] = location['location_name'];
+            for (var location in data['plant']) {
+              locationMap[location['plant_name']] = location['plant_id'];
             }
+
+            //     locationMap = {'All Location': '0'};
+            //             for (var location in data['location']) {
+            //               locationMap[location['location_name']] = location['location_name'];
+            //             }
+
           });
         } else {
           print("Error: No locations found.");

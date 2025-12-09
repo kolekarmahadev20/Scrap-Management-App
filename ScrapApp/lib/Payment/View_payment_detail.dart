@@ -266,7 +266,8 @@ class _View_payment_detailState extends State<View_payment_detail> {
                           bidder_id: widget.bidder_id,
                           branch_id_from_ids: widget.branch_id_from_ids,
                           vendor_id_from_ids: widget.vendor_id_from_ids,
-                        )), // Navigate to DispatchList Page
+                           materialId: widget.materialId,
+                    )), // Navigate to DispatchList Page
               );
             }
           });
@@ -287,6 +288,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                       'N/A',
                   vendor_id_from_ids: widget.vendor_id_from_ids,
                   branch_id_from_ids: widget.branch_id_from_ids,
+                  materialID: widget.materialId,
                 ),
               ),
             ).then((value) => setState(() {
@@ -893,6 +895,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                           vendor_id_from_ids: widget.vendor_id_from_ids,
                           sale_order_id: widget.sale_order_id,
                           bidder_id: widget.bidder_id,
+                          materialID: widget.materialId,
                           paymentId: index['payment_id'] ?? 'N/A',
                           paymentType: index['payment_type'] ?? 'N/A',
                           date1: index['date'] ?? 'N/A',
@@ -914,6 +917,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                     builder: (context) => View_Payment_Amount(
                         sale_order_id: widget.sale_order_id,
                         bidder_id: widget.bidder_id,
+                        materialID: widget.materialId,
                         branch_id_from_ids: widget.branch_id_from_ids,
                         vendor_id_from_ids: widget.vendor_id_from_ids,
                         paymentId: index['payment_id'] ?? 'N/A',
@@ -1053,6 +1057,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                           vendor_id_from_ids: widget.vendor_id_from_ids,
                           sale_order_id: widget.sale_order_id,
                           bidder_id: widget.bidder_id,
+                          materialID: widget.materialId,
                           paymentId: index['payment_id'] ?? "N/A",
                           paymentType: index['payment_type'] ?? "N/A",
                           date1: index['date'] ?? "N/A",
@@ -1076,6 +1081,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                         vendor_id_from_ids: widget.vendor_id_from_ids,
                         sale_order_id: widget.sale_order_id,
                         bidder_id: widget.bidder_id,
+                        materialID: widget.materialId,
                         paymentId: index['payment_id'] ?? "N/A",
                         paymentType: index['payment_type'] ?? "N/A",
                         date1: index['date'] ?? "N/A",
@@ -1211,6 +1217,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                         vendor_id_from_ids: widget.vendor_id_from_ids,
                         sale_order_id: widget.sale_order_id,
                         bidder_id: widget.bidder_id,
+                        materialID: widget.materialId,
                         paymentId: index['payment_id'] ?? "N/A",
                         paymentType: index['payment_type'] ?? "N/A",
                         date1: index['date'] ?? "N/A",
@@ -1234,6 +1241,7 @@ class _View_payment_detailState extends State<View_payment_detail> {
                       vendor_id_from_ids: widget.vendor_id_from_ids,
                       sale_order_id: widget.sale_order_id,
                       bidder_id: widget.bidder_id,
+                      materialID: widget.materialId,
                       paymentId: index['payment_id'] ?? "N/A",
                       paymentType: index['payment_type'] ?? "N/A",
                       date1: index['date'] ?? "N/A",

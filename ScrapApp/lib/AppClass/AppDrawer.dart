@@ -19,11 +19,14 @@ import '../Pages/ForgotPunchOutPage.dart';
 import '../Pages/Search.dart';
 import '../Pages/SummaryReport.dart';
 import '../URL_CONSTANT.dart';
-import '../Users/User_list.dart';
+import '../Users/Users/User_list.dart';
+import '../Seal Detail/SealDetailpage.dart';
 import '../Vendor/Vendor_list.dart';
+import '../Delivery_Details/Delivery_Details.dart';
 import 'package:http/http.dart' as http;
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:android_intent_plus/flag.dart';
+
 
 class AppDrawer extends StatefulWidget {
 
@@ -50,23 +53,27 @@ class _AppDrawerState extends State<AppDrawer> {
   String? acces_payment = '';
   String? readonly = '';
   String? attendonly = '';
+  String? access_seal = '';
 
   String? appVersionID;
   String? personId;
   String? apkURL;
 
+  String fullVersion = '';
   String? versionID;
   bool _isUpdateAvailable = false;
 
+
   @override
-  initState(){
+  void initState() {
     super.initState();
-    checkLogin();
     getAppVersion();
     checkLogin().then((_) {
-      setState(() {});  // Rebuilds the widget after `userType` is updated.
+      print("APP VERSION FROM BUILD(): $versionID");
     });
   }
+
+
 
   Future<void> checkLogin() async {
     final prefs = await SharedPreferences.getInstance();
@@ -85,29 +92,40 @@ class _AppDrawerState extends State<AppDrawer> {
     acces_payment = prefs.getString("acces_payment");
     readonly = prefs.getString("readonly");
     attendonly = prefs.getString("attendonly");
+    access_seal = prefs.getString("access_seal");
+
     appVersionID = prefs.getString("appVersion");
     personId = prefs.getString("personId");
     apkURL = prefs.getString("apkURL");
+
   }
 
   Future<void> getAppVersion() async {
+    print("GETVERSION CALLED");
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
+
+    versionID = packageInfo.version;
+    fullVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
+    print('Full Version: $fullVersion');
+
+    // Store version in SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('appVersion', fullVersion); // ✅ store full version
+    appVersionID = fullVersion; // update variable
 
     String appName = packageInfo.appName;
     String packageName = packageInfo.packageName;
-    versionID = packageInfo.version;
 
     print('App Name: $appName');
     print('Package Name: $packageName');
     print('Version: $versionID');
+    print('APPVersion stored: $appVersionID');
 
-    // 🔍 Compare current with latest version
     setState(() {
-      _isUpdateAvailable = appVersionID != versionID;
-      print('A PPVersion: $appVersionID');
-
+      _isUpdateAvailable = appVersionID != fullVersion;
     });
   }
+
 
   Future<void> _logout(BuildContext context) async {
     SharedPreferences login = await SharedPreferences.getInstance();
@@ -162,6 +180,14 @@ class _AppDrawerState extends State<AppDrawer> {
                         SizedBox(height: 4.0),
                         Text(
                           "$person_email",
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
+                        ),
+                        SizedBox(height: 4.0),
+                        Text(
+                          "App  Version : $fullVersion",
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: 14,
@@ -311,6 +337,24 @@ class _AppDrawerState extends State<AppDrawer> {
                         });
                       },
                     ),
+                  if(access_seal == 'Y')
+                    _buildDrawerItem(
+                      context,
+                      20, // unique index for Seal Data
+                      icon: Icons.verified_outlined,
+                      text: "Seal Data",
+                      onTap: () {
+                        Timer(Duration(milliseconds: 300), () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SealDataScreen(currentPage: 20),
+                            ),
+                          );
+                        });
+                      },
+                    ),
                   // _buildDrawerItem(
                   //   context,
                   //   9,
@@ -406,6 +450,24 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     },
                   ),
+                  if(access_seal == 'Y')
+                    _buildDrawerItem(
+                      context,
+                      21, // unique index for Seal Delivery Details
+                      icon: Icons.flight_takeoff,
+                      text: "Seal Delivery Details",
+                      onTap: () {
+                        Timer(Duration(milliseconds: 300), () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SealDeliveryDetails(currentPage: 21),
+                            ),
+                          );
+                        });
+                      },
+                    ),
                   if((userType == 'S' || userType == 'A')&& attendonly == 'N')
                     _buildDrawerItem(
                       context,
@@ -573,9 +635,4 @@ class _AppDrawerState extends State<AppDrawer> {
       print('Error: $e');
     }
   }
-
-
-
-
-
 }

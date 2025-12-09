@@ -1,5 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
@@ -25,7 +28,7 @@ class _StartDashBoardPageState extends State<StartPage> {
 
 
   bool _obscureText = true; // Variable to manage password visibility
-
+  LocationData? _locationData;
 
   var isActive = '';
   var ismobLogin = '';
@@ -92,6 +95,8 @@ class _StartDashBoardPageState extends State<StartPage> {
   }
 
 
+
+
 /*---------------------------------------------------------------------------------------------------------------*/
 // Function to save user data
   Future<void> saveUserData(bool isLoggedIn ,String name, String contact, String email, String empCode, String address, String person_id,String uuid) async {
@@ -112,7 +117,7 @@ class _StartDashBoardPageState extends State<StartPage> {
       String person_email, String person_name,String uuid,
       String is_active,String mob_login,String acces_sale_order,
       String acces_dispatch,String acces_refund,String acces_payment,String remainingDays,
-      String attendonly,String readonly, String appVersion, String personId, String apkURL
+      String attendonly,String readonly, String appVersion, String personId, String apkURL,String pinCodes,String access_seal
       )async{
     final login = await SharedPreferences.getInstance();
     await login.setString("username", username);
@@ -136,6 +141,8 @@ class _StartDashBoardPageState extends State<StartPage> {
     await login.setString("appVersion", appVersion!);
     await login.setString("personId", personId!);
     await login.setString("apkURL", apkURL!);
+    await login.setString("pinCodes", pinCodes);
+    await login.setString("access_seal", access_seal);
 
 
   }
@@ -191,17 +198,32 @@ class _StartDashBoardPageState extends State<StartPage> {
 
         var appVersion = user_data['version']?? "N?A";
         var apkURL = user_data['apk_url']?? "N?A";
+        var pinCodes = user_data['pin_code'] ?? "N/A";
+        var access_seal = user_data['access_seal'] ?? "N/A";
+
+        print("pinCodes");
+
+        print(pinCodes);
 
         await saveUserData(true ,person_name, contact, person_email, emp_code, emp_address,person_id,_deviceID!);
         await checkLogin(username, password ,loginType ,userType,person_email,person_name,_deviceID!,
             is_active,mob_login,
             acces_sale_order,acces_dispatch
             ,acces_refund,acces_payment,remainingDays,
-            attendonly,readonly,appVersion,person_id,apkURL
+            attendonly,readonly,appVersion,person_id,apkURL,pinCodes,access_seal
+        );
+
+        await _loadLocation(
+          pinCodes,
+          userType,
+          person_name,
+          _deviceID,
+          person_id,
         );
 
         if (userType == "S") {
           Navigator.pushReplacement(
+
               context,
               MaterialPageRoute(builder: (context) => DashBoard(currentPage: 1))
           );
@@ -254,6 +276,197 @@ class _StartDashBoardPageState extends State<StartPage> {
 
 /*---------------------------------------------------------------------------------------------------------------*/
 
+  // Future<void> _loadLocation(
+  //     String? pinCodes,
+  //     String? userType,
+  //     String? personName,
+  //     String? deviceID,
+  //     String? personID,
+  //     ) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   double? latitude = prefs.getDouble('latitude');
+  //   double? longitude = prefs.getDouble('longitude');
+  //
+  //   if (latitude != null && longitude != null) {
+  //     debugPrint('Saved Latitude: $latitude');
+  //     debugPrint('Saved Longitude: $longitude');
+  //
+  //     // Get current area name and pincode
+  //     List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
+  //     Placemark place = placemarks.first;
+  //     String? currentPincode = place.postalCode;
+  //     String areaName = "${place.subLocality ?? ''}, ${place.locality ?? ''}".trim();
+  //
+  //     debugPrint('Current Pincode: $currentPincode');
+  //     debugPrint('Area: $areaName');
+  //
+  //     if (userType == 'S' || userType == 'A') {
+  //       debugPrint('Skipping location check for userType: $userType');
+  //       return;
+  //     }
+  //
+  //     if (pinCodes != null && pinCodes.isNotEmpty) {
+  //       List<String> allowedPincodes = pinCodes
+  //           .split(',')
+  //           .map((p) => p.trim())
+  //           .toSet()
+  //           .toList(); // remove duplicates
+  //
+  //       debugPrint('Allowed Pincode: $allowedPincodes');
+  //
+  //       if (!allowedPincodes.contains(currentPincode?.trim())) {
+  //         WidgetsBinding.instance.addPostFrameCallback((_) {
+  //           showDialog(
+  //             context: context,
+  //             barrierDismissible: false,
+  //             builder: (context) => WillPopScope(
+  //               onWillPop: () async => false,
+  //               child: AlertDialog(
+  //                 title: Text("Access Denied"),
+  //                 content: Text(
+  //                   "Your current location's pincode ($currentPincode) in $areaName is not allowed.",
+  //                 ),
+  //                 actions: [
+  //                   TextButton(
+  //                     onPressed: () async {
+  //                       await sendMailLocation(currentPincode: currentPincode!,
+  //                         deviceID: _deviceID ?? '',
+  //                         personName: personName ?? '',
+  //                         personID: personID ?? '',
+  //                       );
+  //                       SystemNavigator.pop();
+  //                     },
+  //                     child: Text("OK"),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           );
+  //         });
+  //       } else {
+  //         debugPrint("User's pincode is in the allowed list.");
+  //       }
+  //     }
+  //   } else {
+  //     debugPrint('Latitude or longitude not found in SharedPreferences');
+  //   }
+  // }
+
+  Future<void> sendMailLocation({
+    required String currentPincode,
+    required String deviceID,
+    required String personName,
+    required String personID,
+  }) async {
+    try {
+      final url = Uri.parse("${URL}send_mail_location");
+
+      String username = usernameController.text;
+      String password = passwordController.text;
+
+      final response = await http.post(
+        url,
+        body: {
+          'user_id': personID ?? '',
+          'user_pass': password ?? '',
+          'uuid': _deviceID,
+          'user_name': username,
+          'user_pincode': currentPincode,
+          'current_pin': currentPincode,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        try {
+          final responseBody = json.decode(response.body);
+          final message = responseBody['msg'] ?? '';
+
+          if (message == "Mail Sent Successfully") {
+            Fluttertoast.showToast(msg: "Mail Sent Successfully");
+          } else {
+            Fluttertoast.showToast(msg: "$message");
+          }
+        } catch (e) {
+          // Fluttertoast.showToast(msg: "Unexpected response from server.");
+        }
+      } else {
+        Fluttertoast.showToast(msg: "Server error: ${response.statusCode}");
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: "Network or server error");
+    }
+  }
+
+
+  // Future<void> _loadLocation() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   double? latitude = prefs.getDouble('latitude');
+  //   double? longitude = prefs.getDouble('longitude');
+  //
+  //   if (latitude != null && longitude != null) {
+  //     debugPrint('Saved Latitude: $latitude');
+  //     debugPrint('Saved Longitude: $longitude');
+  //
+  //     // Get current area name and pincode
+  //     List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
+  //     Placemark place = placemarks.first;
+  //     String? currentPincode = place.postalCode;
+  //     String areaName = "${place.subLocality ?? ''}, ${place.locality ?? ''}".trim();
+  //
+  //     debugPrint('Current Pincode: $currentPincode');
+  //     debugPrint('Area: $areaName');
+  //
+  //     if (userType == 'S' || userType == 'A') {
+  //       debugPrint('Skipping location check for userType: $userType');
+  //       return;
+  //     }
+  //
+  //     if (storedPinCodes != null && storedPinCodes!.isNotEmpty) {
+  //       List<String> allowedPincodes = storedPinCodes!
+  //           .replaceAll('[', '')
+  //           .replaceAll(']', '')
+  //           .split(',')
+  //           .map((p) => p.trim())
+  //           .toSet()
+  //           .toList();
+  //
+  //       debugPrint('Current Pincode: ${currentPincode?.trim()}');
+  //       debugPrint('Allowed Pincode: $allowedPincodes');
+  //
+  //       if (!allowedPincodes.contains(currentPincode?.trim())) {
+  //         WidgetsBinding.instance.addPostFrameCallback((_) {
+  //           showDialog(
+  //             context: context,
+  //             barrierDismissible: false,
+  //             builder: (context) => WillPopScope(
+  //               onWillPop: () async => false,
+  //               child: AlertDialog(
+  //                 title: Text("Access Denied"),
+  //                 content: Text(
+  //                   "Your current location's pincode ($currentPincode) in $areaName is not allowed.",
+  //                 ),
+  //                 actions: [
+  //                   TextButton(
+  //                     onPressed: () {
+  //                       Navigator.of(context).pop();
+  //                       // sendMailLocation(storedPinCodes!);
+  //                       // SystemNavigator.pop();
+  //                     },
+  //                     child: Text("OK"),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           );
+  //         });
+  //       } else {
+  //         debugPrint("User's pincode is in the allowed list.");
+  //       }
+  //     }
+  //   } else {
+  //     debugPrint('Latitude or longitude not found in SharedPreferences');
+  //   }
+  // }
 
 
   @override
@@ -483,6 +696,7 @@ class _StartDashBoardPageState extends State<StartPage> {
     );
   }
 }
+
 class BottomCurveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {

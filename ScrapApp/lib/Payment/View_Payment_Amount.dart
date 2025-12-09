@@ -25,6 +25,7 @@ class View_Payment_Amount extends StatefulWidget {
   final String? typeOfTransfer;
   final String? remark;
   final String? freezed;
+  final String? materialID;
 
   View_Payment_Amount({
 
@@ -39,7 +40,9 @@ class View_Payment_Amount extends StatefulWidget {
     required this.remark,
     required this.freezed,
     required this.branch_id_from_ids,
-    required this.vendor_id_from_ids
+    required this.vendor_id_from_ids,
+    required this.materialID
+
   });
 
   @override
@@ -114,7 +117,8 @@ class _View_Payment_AmountState extends State<View_Payment_Amount> {
           'user_pass': password,
           'sale_order_id':widget.sale_order_id,
           'branch_id':widget.branch_id_from_ids,
-          'vendor_id':widget.vendor_id_from_ids
+          'vendor_id':widget.vendor_id_from_ids,
+          'mat_id': widget.materialID,
         },
       );
       if (response.statusCode == 200) {

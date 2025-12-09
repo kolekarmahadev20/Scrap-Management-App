@@ -19,6 +19,10 @@ class _ImageViewerState extends State<ImageViewer> {
   @override
   void initState() {
     super.initState();
+
+    print('widget');
+
+    print(widget.imgData);
     _pageController.addListener(() {
       setState(() {
         currentPage = _pageController.page?.round() ?? 0;
@@ -52,8 +56,9 @@ class _ImageViewerState extends State<ImageViewer> {
             builder: (context, index) {
               return PhotoViewGalleryPageOptions(
                 imageProvider: NetworkImage(uniqueImgData[index]['url']!),
-                minScale: PhotoViewComputedScale.contained, // Normal Scale
-                maxScale: PhotoViewComputedScale.covered * 2.5, // Zoom Level
+                minScale: PhotoViewComputedScale.contained * 0.8,  // can zoom out slightly
+                initialScale: PhotoViewComputedScale.contained,    // fit perfectly on load
+                maxScale: PhotoViewComputedScale.contained * 3.0,  // zoom in without cropping// Zoom Level
                 heroAttributes: PhotoViewHeroAttributes(tag: index), // Unique tag per image
               );
             },

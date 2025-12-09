@@ -366,7 +366,7 @@ class _Summary_ReportState extends State<Summary_Report> {
                 'All Location': 'All Location',
                 ...{
                   for (var item in data['plant'])
-                    item['branch_name']: item['branch_id'] ?? '0'
+                    item['plant_name']: item['plant_id'] ?? '0'
                 }
               };
             });

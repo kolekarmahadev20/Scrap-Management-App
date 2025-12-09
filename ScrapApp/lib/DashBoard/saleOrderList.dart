@@ -19,7 +19,7 @@ class saleOrderList extends StatefulWidget {
 
 class saleOrderListState extends State<saleOrderList> {
   String? username = '';
- String uuid = '';
+  String uuid = '';
   String? password = '';
   String? loginType = '';
   String? userType = '';
@@ -30,10 +30,12 @@ class saleOrderListState extends State<saleOrderList> {
   TextEditingController searchController =
       TextEditingController(); // Controller for search input
 
-  TextEditingController searchMaterialController = TextEditingController(); // Controller for search input
-  TextEditingController searchVendorController = TextEditingController(); // Controller for search input
-  TextEditingController searchBidderController = TextEditingController(); // Controller for search input
-
+  TextEditingController searchMaterialController =
+      TextEditingController(); // Controller for search input
+  TextEditingController searchVendorController =
+      TextEditingController(); // Controller for search input
+  TextEditingController searchBidderController =
+      TextEditingController(); // Controller for search input
 
   @override
   void initState() {
@@ -45,7 +47,7 @@ class saleOrderListState extends State<saleOrderList> {
   }
 
   Future<void> checkLogin() async {
-     final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     username = prefs.getString("username");
     uuid = prefs.getString("uuid")!;
     uuid = prefs.getString("uuid")!;
@@ -66,7 +68,7 @@ class saleOrderListState extends State<saleOrderList> {
         headers: {"Accept": "application/json"},
         body: {
           'user_id': username,
-          'uuid':uuid,
+          'uuid': uuid,
           'user_pass': password,
         },
       );
@@ -93,16 +95,21 @@ class saleOrderListState extends State<saleOrderList> {
 
     // Apply Material filter
     if (searchMaterialController.text.isNotEmpty) {
-      List<String> searchTerms = searchMaterialController.text.toLowerCase().trim().split(' '); // Split words
+      List<String> searchTerms = searchMaterialController.text
+          .toLowerCase()
+          .trim()
+          .split(' '); // Split words
       searchResults = searchResults.where((order) {
         String description = order['description'].toString().toLowerCase();
-        return searchTerms.every((term) => description.contains(term)); // Check if all words exist
+        return searchTerms.every(
+            (term) => description.contains(term)); // Check if all words exist
       }).toList();
     }
 
     // Apply Vendor filter
     if (searchVendorController.text.isNotEmpty) {
-      List<String> searchTerms = searchVendorController.text.toLowerCase().trim().split(' ');
+      List<String> searchTerms =
+          searchVendorController.text.toLowerCase().trim().split(' ');
       searchResults = searchResults.where((order) {
         String vendorName = order['vendor_name'].toString().toLowerCase();
         return searchTerms.every((term) => vendorName.contains(term));
@@ -111,7 +118,8 @@ class saleOrderListState extends State<saleOrderList> {
 
     // Apply Bidder filter
     if (searchBidderController.text.isNotEmpty) {
-      List<String> searchTerms = searchBidderController.text.toLowerCase().trim().split(' ');
+      List<String> searchTerms =
+          searchBidderController.text.toLowerCase().trim().split(' ');
       searchResults = searchResults.where((order) {
         String bidderName = order['branch_name'].toString().toLowerCase();
         return searchTerms.every((term) => bidderName.contains(term));
@@ -359,12 +367,16 @@ class saleOrderListState extends State<saleOrderList> {
                                 label: Text("Filter"),
                                 style: ElevatedButton.styleFrom(
                                   foregroundColor: Colors.white,
-                                  backgroundColor: Colors.blueGrey[400], // Text color
+                                  backgroundColor:
+                                      Colors.blueGrey[400], // Text color
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12), // Rounded corners
+                                    borderRadius: BorderRadius.circular(
+                                        12), // Rounded corners
                                   ),
                                   elevation: 5,
-                                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Consistent padding
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8), // Consistent padding
                                 ),
                               ),
                             ),
@@ -432,8 +444,7 @@ class saleOrderListState extends State<saleOrderList> {
                 bidder_id: index['buyer_id'],
                 branch_id_from_ids: index['branch_id'],
                 vendor_id_from_ids: index['vendor_id'],
-                materialId:index['branch_id'],
-
+                materialId: index['mat_id'],
               ),
             ),
           );
@@ -506,10 +517,12 @@ class saleOrderListState extends State<saleOrderList> {
                   bottomRight: Radius.circular(15),
                 ),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12.0, vertical: 8.0),
                   leading: CircleAvatar(
                     backgroundColor: Colors.indigo[800]!,
-                    child: Icon(Icons.border_outer, size: 22, color: Colors.white),
+                    child:
+                        Icon(Icons.border_outer, size: 22, color: Colors.white),
                   ),
                   title: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -526,7 +539,8 @@ class saleOrderListState extends State<saleOrderList> {
                               ),
                             ),
                             TextSpan(
-                              text: "${(index['vendor_name'] ?? 'N/A').toString().toUpperCase()}", // ✅ Value converted to uppercase
+                              text:
+                                  "${(index['vendor_name'] ?? 'N/A').toString().toUpperCase()}", // ✅ Value converted to uppercase
                               style: TextStyle(
                                 color: Colors.black54,
                                 fontWeight: FontWeight.normal,
@@ -554,7 +568,8 @@ class saleOrderListState extends State<saleOrderList> {
                               ),
                             ),
                             TextSpan(
-                              text: "${(index['bidder_name'] ?? 'N/A').toString().toUpperCase()}", // ✅ Value converted to uppercase
+                              text:
+                                  "${(index['bidder_name'] ?? 'N/A').toString().toUpperCase()}", // ✅ Value converted to uppercase
                               style: TextStyle(
                                 color: Colors.black54,
                                 fontWeight: FontWeight.normal,
@@ -576,7 +591,8 @@ class saleOrderListState extends State<saleOrderList> {
                               ),
                             ),
                             TextSpan(
-                              text: "${(index['branch_name'] ?? 'N/A').toString().toUpperCase()}", // ✅ Value converted to uppercase
+                              text:
+                                  "${(index['branch_name'] ?? 'N/A').toString().toUpperCase()}", // ✅ Value converted to uppercase
                               style: TextStyle(
                                 color: Colors.black54,
                                 fontWeight: FontWeight.normal,
@@ -598,7 +614,9 @@ class saleOrderListState extends State<saleOrderList> {
                               ),
                             ),
                             TextSpan(
-                              text: formatDate(index['valid_upto'])?.toUpperCase() ?? 'N/A',
+                              text: formatDate(index['valid_upto'])
+                                      ?.toUpperCase() ??
+                                  'N/A',
                               style: TextStyle(
                                 color: Colors.black54,
                                 fontWeight: FontWeight.normal,
@@ -610,7 +628,8 @@ class saleOrderListState extends State<saleOrderList> {
                       ),
                     ],
                   ),
-                  trailing: Icon(Icons.arrow_forward_ios, color: Colors.black54, size: 20), // Arrow Icon
+                  trailing: Icon(Icons.arrow_forward_ios,
+                      color: Colors.black54, size: 20), // Arrow Icon
                   onTap: () {
                     // Navigate to ViewPaymentDetail page with required parameters
                     Navigator.push(
@@ -621,8 +640,7 @@ class saleOrderListState extends State<saleOrderList> {
                           bidder_id: index['buyer_id'],
                           branch_id_from_ids: index['branch_id'],
                           vendor_id_from_ids: index['vendor_id'],
-                          materialId:index['branch_id'],
-
+                          materialId: index['mat_id'],
                         ),
                       ),
                     );
