@@ -1,7 +1,8 @@
-# .github/workflows/flutter-release-apk.yml
 name: Build and Upload Release APK
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
