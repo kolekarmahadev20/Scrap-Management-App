@@ -276,81 +276,81 @@ class _StartDashBoardPageState extends State<StartPage> {
 
 /*---------------------------------------------------------------------------------------------------------------*/
 
-  // Future<void> _loadLocation(
-  //     String? pinCodes,
-  //     String? userType,
-  //     String? personName,
-  //     String? deviceID,
-  //     String? personID,
-  //     ) async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   double? latitude = prefs.getDouble('latitude');
-  //   double? longitude = prefs.getDouble('longitude');
-  //
-  //   if (latitude != null && longitude != null) {
-  //     debugPrint('Saved Latitude: $latitude');
-  //     debugPrint('Saved Longitude: $longitude');
-  //
-  //     // Get current area name and pincode
-  //     List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
-  //     Placemark place = placemarks.first;
-  //     String? currentPincode = place.postalCode;
-  //     String areaName = "${place.subLocality ?? ''}, ${place.locality ?? ''}".trim();
-  //
-  //     debugPrint('Current Pincode: $currentPincode');
-  //     debugPrint('Area: $areaName');
-  //
-  //     if (userType == 'S' || userType == 'A') {
-  //       debugPrint('Skipping location check for userType: $userType');
-  //       return;
-  //     }
-  //
-  //     if (pinCodes != null && pinCodes.isNotEmpty) {
-  //       List<String> allowedPincodes = pinCodes
-  //           .split(',')
-  //           .map((p) => p.trim())
-  //           .toSet()
-  //           .toList(); // remove duplicates
-  //
-  //       debugPrint('Allowed Pincode: $allowedPincodes');
-  //
-  //       if (!allowedPincodes.contains(currentPincode?.trim())) {
-  //         WidgetsBinding.instance.addPostFrameCallback((_) {
-  //           showDialog(
-  //             context: context,
-  //             barrierDismissible: false,
-  //             builder: (context) => WillPopScope(
-  //               onWillPop: () async => false,
-  //               child: AlertDialog(
-  //                 title: Text("Access Denied"),
-  //                 content: Text(
-  //                   "Your current location's pincode ($currentPincode) in $areaName is not allowed.",
-  //                 ),
-  //                 actions: [
-  //                   TextButton(
-  //                     onPressed: () async {
-  //                       await sendMailLocation(currentPincode: currentPincode!,
-  //                         deviceID: _deviceID ?? '',
-  //                         personName: personName ?? '',
-  //                         personID: personID ?? '',
-  //                       );
-  //                       SystemNavigator.pop();
-  //                     },
-  //                     child: Text("OK"),
-  //                   ),
-  //                 ],
-  //               ),
-  //             ),
-  //           );
-  //         });
-  //       } else {
-  //         debugPrint("User's pincode is in the allowed list.");
-  //       }
-  //     }
-  //   } else {
-  //     debugPrint('Latitude or longitude not found in SharedPreferences');
-  //   }
-  // }
+  Future<void> _loadLocation(
+      String? pinCodes,
+      String? userType,
+      String? personName,
+      String? deviceID,
+      String? personID,
+      ) async {
+    final prefs = await SharedPreferences.getInstance();
+    double? latitude = prefs.getDouble('latitude');
+    double? longitude = prefs.getDouble('longitude');
+
+    if (latitude != null && longitude != null) {
+      debugPrint('Saved Latitude: $latitude');
+      debugPrint('Saved Longitude: $longitude');
+
+      // Get current area name and pincode
+      List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
+      Placemark place = placemarks.first;
+      String? currentPincode = place.postalCode;
+      String areaName = "${place.subLocality ?? ''}, ${place.locality ?? ''}".trim();
+
+      debugPrint('Current Pincode: $currentPincode');
+      debugPrint('Area: $areaName');
+
+      if (userType == 'S' || userType == 'A') {
+        debugPrint('Skipping location check for userType: $userType');
+        return;
+      }
+
+      if (pinCodes != null && pinCodes.isNotEmpty) {
+        List<String> allowedPincodes = pinCodes
+            .split(',')
+            .map((p) => p.trim())
+            .toSet()
+            .toList(); // remove duplicates
+
+        debugPrint('Allowed Pincode: $allowedPincodes');
+
+        if (!allowedPincodes.contains(currentPincode?.trim())) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => WillPopScope(
+                onWillPop: () async => false,
+                child: AlertDialog(
+                  title: Text("Access Denied"),
+                  content: Text(
+                    "Your current location's pincode ($currentPincode) in $areaName is not allowed.",
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () async {
+                        await sendMailLocation(currentPincode: currentPincode!,
+                          deviceID: _deviceID ?? '',
+                          personName: personName ?? '',
+                          personID: personID ?? '',
+                        );
+                        SystemNavigator.pop();
+                      },
+                      child: Text("OK"),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          });
+        } else {
+          debugPrint("User's pincode is in the allowed list.");
+        }
+      }
+    } else {
+      debugPrint('Latitude or longitude not found in SharedPreferences');
+    }
+  }
 
   Future<void> sendMailLocation({
     required String currentPincode,
