@@ -1,4 +1,3 @@
-	# register workflow for github
 name: Build and Upload Release APK
 
 on:
@@ -30,7 +29,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.run_number }}
+          tag_name: "v${{ github.run_number }}"
           name: "ScrapApp build ${{ github.run_number }}"
           draft: false
           prerelease: false
