@@ -26,6 +26,7 @@ import '../Delivery_Details/Delivery_Details.dart';
 import 'package:http/http.dart' as http;
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:android_intent_plus/flag.dart';
+import 'package:scrapapp/Pages/UpdateApp.dart';
 
 
 class AppDrawer extends StatefulWidget {
@@ -545,7 +546,18 @@ class _AppDrawerState extends State<AppDrawer> {
                       title: Text("Logout"),
                     ),
                   ),
-
+                  _buildDrawerItem(
+                    context,
+                    14,
+                    icon: Icons.free_cancellation_outlined,
+                    text: "Update App",
+                    onTap: () {
+                      Timer(Duration(milliseconds: 300), () {
+                        Navigator.pop(context); // Close the drawer
+                        Navigator.push(context, MaterialPageRoute(builder: (context) =>  UpdatePage()));
+                      });'';
+                    },
+                  ),
                 ],
               ),
             ),
