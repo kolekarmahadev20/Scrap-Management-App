@@ -106,7 +106,7 @@ class _AppDrawerState extends State<AppDrawer> {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
     versionID = packageInfo.version;
-    fullVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
+    fullVersion = '${packageInfo.version}';
     print('Full Version: $fullVersion');
 
     // Store version in SharedPreferences
