@@ -60,7 +60,9 @@ dependencies:
   connectivity_plus: ^5.0.2
   internet_connection_checker: ^1.0.0+1
   back_button_interceptor: ^6.0.0
-#  firebase_core: ^2.27.0
+  permission_handler: ^11.0.1
+
+  #  firebase_core: ^2.27.0
 #  firebase_messaging: ^14.7.10
 
 #  open_filex: ^4.4.0
