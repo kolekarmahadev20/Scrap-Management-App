@@ -18,7 +18,6 @@ class UpdatePage extends StatefulWidget {
 
 class _UpdatePageState extends State<UpdatePage> {
   String currentVersion = "";
-  String buildNumber = "";
   String latestVersion = "";
   String apkUrl = "";
 
@@ -32,250 +31,114 @@ class _UpdatePageState extends State<UpdatePage> {
     checkForUpdate();
   }
 
-  /// -------------------------------
-  /// CHECK FOR UPDATE FROM GITHUB
-  /// -------------------------------
+  /// --------------------------------
+  /// CHECK UPDATE
+  /// --------------------------------
   Future<void> checkForUpdate() async {
-    try {
-      final info = await PackageInfo.fromPlatform();
-      currentVersion = info.version;
-      buildNumber = info.buildNumber;
+    final info = await PackageInfo.fromPlatform();
+    currentVersion = info.version;
 
-      final response = await http.get(
-        Uri.parse(
-          "https://api.github.com/repos/kolekarmahadev20/Scrap-Management-App/releases/latest",
-        ),
-      );
+    final res = await http.get(Uri.parse(
+      "https://api.github.com/repos/kolekarmahadev20/Scrap-Management-App/releases/latest",
+    ));
 
-      if (response.statusCode != 200) {
-        loading = false;
-        setState(() {});
-        return;
-      }
+    final data = jsonDecode(res.body);
 
-      final data = jsonDecode(response.body);
+    latestVersion = data["tag_name"].replaceAll("v", "").split("+").first;
+    apkUrl = data["assets"][0]["browser_download_url"];
 
-      latestVersion = data['tag_name']
-          .toString()
-          .replaceFirst('v', '')
-          .split('+')
-          .first;
+    updateAvailable = _isNewer(latestVersion, currentVersion);
 
-      if (data['assets'] == null || data['assets'].isEmpty) {
-        loading = false;
-        setState(() {});
-        return;
-      }
-
-      apkUrl = data['assets'][0]['browser_download_url'];
-      updateAvailable = _isNewerVersion(latestVersion, currentVersion);
-
-      loading = false;
-      setState(() {});
-    } catch (e) {
-      loading = false;
-      setState(() {});
-    }
+    setState(() => loading = false);
   }
 
-  /// -------------------------------
-  /// VERSION COMPARISON
-  /// -------------------------------
-  bool _isNewerVersion(String latest, String current) {
-    final latestParts =
-    latest.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-    final currentParts =
-    current.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-
-    final maxLength =
-    latestParts.length > currentParts.length ? latestParts.length : currentParts.length;
-
-    for (int i = 0; i < maxLength; i++) {
-      final l = i < latestParts.length ? latestParts[i] : 0;
-      final c = i < currentParts.length ? currentParts[i] : 0;
-
-      if (l > c) return true;
-      if (l < c) return false;
+  bool _isNewer(String latest, String current) {
+    final l = latest.split(".").map(int.parse).toList();
+    final c = current.split(".").map(int.parse).toList();
+    for (int i = 0; i < 3; i++) {
+      if (l[i] > c[i]) return true;
+      if (l[i] < c[i]) return false;
     }
     return false;
   }
 
-  /// -------------------------------
-  /// DOWNLOAD & INSTALL APK
-  /// -------------------------------
+  /// --------------------------------
+  /// DOWNLOAD APK
+  /// --------------------------------
+  Future<String> _downloadApk() async {
+    final dir = await getExternalStorageDirectory();
+    final file = File("${dir!.path}/update.apk");
+
+    final res = await http.get(Uri.parse(apkUrl));
+    await file.writeAsBytes(res.bodyBytes);
+
+    return file.path;
+  }
+
+  /// --------------------------------
+  /// INSTALL APK
+  /// --------------------------------
+  Future<void> _installApk(String path) async {
+    final intent = AndroidIntent(
+      action: 'action_view',
+      data: Uri.file(path).toString(),
+      type: 'application/vnd.android.package-archive',
+      flags: [1 << 0, 1 << 2],
+    );
+
+    await intent.launch();
+  }
+
+  /// --------------------------------
+  /// MAIN UPDATE FLOW
+  /// --------------------------------
   Future<void> downloadAndInstall() async {
     setState(() => downloading = true);
 
-    try {
-      // 1️⃣ Storage permission
-      if (!await Permission.storage.request().isGranted) {
-        openAppSettings();
-        return;
-      }
-
-      // 2️⃣ Install unknown apps permission
-      if (!await Permission.requestInstallPackages.isGranted) {
-        await Permission.requestInstallPackages.request();
-        if (!await Permission.requestInstallPackages.isGranted) {
-          openAppSettings();
-          return;
-        }
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Downloading update...")),
-      );
-
-      final path = await _downloadApk();
-
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-      // 3️⃣ Open installer
-      await OpenFile.open(path);
-
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Update failed: $e")),
-      );
+    // Storage permission
+    if (!await Permission.storage.request().isGranted) {
+      setState(() => downloading = false);
+      return;
     }
+
+    // Install packages permission (Android 8+)
+    if (!await Permission.requestInstallPackages.request().isGranted) {
+      openAppSettings();
+      setState(() => downloading = false);
+      return;
+    }
+
+    final path = await _downloadApk();
+
+    await OpenFile.open(path);       // works on most phones
+    await _installApk(path);        // fallback for Samsung / MIUI
 
     setState(() => downloading = false);
   }
 
-  Future<String> _downloadApk() async {
-    final directory = await getExternalStorageDirectory();
-
-    if (directory == null) {
-      throw Exception("Storage not available");
-    }
-
-    final filePath = "${directory.path}/scrapapp_update.apk";
-
-    final response = await http.get(Uri.parse(apkUrl));
-
-    if (response.statusCode != 200) {
-      throw Exception("Failed to download APK");
-    }
-
-    final file = File(filePath);
-    await file.writeAsBytes(response.bodyBytes);
-
-    return filePath;
-  }
-
-
-
-  /// -------------------------------
+  /// --------------------------------
   /// UI
-  /// -------------------------------
+  /// --------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: const Text("App Update"),
-        backgroundColor: Colors.deepPurple,
-      ),
+      appBar: AppBar(title: const Text("App Update")),
       body: loading
-          ? const Center(
+          ? const Center(child: CircularProgressIndicator())
+          : Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: Colors.deepPurple),
-            SizedBox(height: 20),
-            Text(
-              "Checking for updates...",
-              style: TextStyle(fontSize: 16, color: Colors.black54),
-            ),
+            Text("Current: $currentVersion"),
+            Text("Latest: $latestVersion"),
+            const SizedBox(height: 20),
+            updateAvailable
+                ? ElevatedButton(
+              onPressed: downloading ? null : downloadAndInstall,
+              child: Text(downloading ? "Downloading..." : "Update App"),
+            )
+                : const Text("App is up to date"),
           ],
-        ),
-      )
-          : Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                elevation: 4,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 25),
-                  child: Column(
-                    children: [
-                      const Text("Current Version"),
-                      const SizedBox(height: 5),
-                      Text(
-                        "$currentVersion ($buildNumber)",
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      const Text("Latest Version"),
-                      const SizedBox(height: 5),
-                      Text(
-                        latestVersion,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 40),
-              updateAvailable
-                  ? ElevatedButton.icon(
-                onPressed:
-                downloading ? null : downloadAndInstall,
-                icon: const Icon(Icons.download, size: 28),
-                label: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  child: Text(
-                    downloading
-                        ? "Downloading..."
-                        : "Download & Install Update",
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-              )
-                  : Column(
-                children: const [
-                  Icon(
-                    Icons.check_circle,
-                    color: Colors.green,
-                    size: 50,
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    "Your app is up to date!",
-                    style: TextStyle(
-                      color: Colors.green,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
         ),
       ),
     );
