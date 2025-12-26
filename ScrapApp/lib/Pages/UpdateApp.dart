@@ -106,61 +106,64 @@ class _UpdatePageState extends State<UpdatePage> {
   Future<void> downloadAndInstall() async {
     setState(() => downloading = true);
 
-    // Request storage permission
-    if (!await Permission.storage.request().isGranted) {
+    try {
+      // 1️⃣ Storage permission
+      if (!await Permission.storage.request().isGranted) {
+        openAppSettings();
+        return;
+      }
+
+      // 2️⃣ Install unknown apps permission
+      if (!await Permission.requestInstallPackages.isGranted) {
+        await Permission.requestInstallPackages.request();
+        if (!await Permission.requestInstallPackages.isGranted) {
+          openAppSettings();
+          return;
+        }
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Storage permission is required")),
+        const SnackBar(content: Text("Downloading update...")),
       );
-      setState(() => downloading = false);
-      return;
-    }
 
-    // Request install unknown apps permission
-    if (!await Permission.requestInstallPackages.request().isGranted) {
+      final path = await _downloadApk();
+
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+      // 3️⃣ Open installer
+      await OpenFile.open(path);
+
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text("Enable 'Install unknown apps' permission")),
+        SnackBar(content: Text("Update failed: $e")),
       );
-      setState(() => downloading = false);
-      return;
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Downloading update..."),
-        duration: Duration(days: 1),
-      ),
-    );
-
-    final dir = await getExternalStorageDirectory(); // External storage
-    final filePath = "${dir!.path}/scrapapp_update.apk";
-
-    final response = await http.get(Uri.parse(apkUrl));
-    final file = File(filePath);
-    await file.writeAsBytes(response.bodyBytes);
-
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Download complete. Installing..."),
-        duration: Duration(seconds: 5),
-      ),
-    );
-
-    // Open APK installer
-    final intent = AndroidIntent(
-      action: 'action_view',
-      data: Uri.file(filePath).toString(),
-      type: 'application/vnd.android.package-archive',
-      flags: <int>[
-        1 << 0, // FLAG_GRANT_READ_URI_PERMISSION
-        1 << 2, // FLAG_ACTIVITY_NEW_TASK
-      ],
-    );
-    await intent.launch();
 
     setState(() => downloading = false);
   }
+
+  Future<String> _downloadApk() async {
+    final directory = await getExternalStorageDirectory();
+
+    if (directory == null) {
+      throw Exception("Storage not available");
+    }
+
+    final filePath = "${directory.path}/scrapapp_update.apk";
+
+    final response = await http.get(Uri.parse(apkUrl));
+
+    if (response.statusCode != 200) {
+      throw Exception("Failed to download APK");
+    }
+
+    final file = File(filePath);
+    await file.writeAsBytes(response.bodyBytes);
+
+    return filePath;
+  }
+
+
 
   /// -------------------------------
   /// UI
