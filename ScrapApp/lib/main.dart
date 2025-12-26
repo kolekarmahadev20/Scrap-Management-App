@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:scrapapp/Pages/splashScreen.dart';
+// import 'package:firebase_core/firebase_core.dart';
 import 'LocationService.dart';
 import 'Internet_Connection/ConnectionOverlay.dart';
 import 'Internet_Connection/ConnectivityService.dart';
+import 'Pages/splashScreen.dart';
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  // ✅ Start connectivity monitoring
-  ConnectivityService().initialize();
-  // ✅ Start location service
-  LocationService();
+void main() async {
+
   runApp(MyApp());
 }
 
@@ -29,7 +26,7 @@ class MyApp extends StatelessWidget {
       ),
       home: SplashScreen(),
 
-      /// ✅ Add the overlay here to ensure Directionality exists
+      // ✅ Add connectivity overlay without breaking UI
       builder: (context, child) {
         return ConnectionOverlay(child: child!);
       },
